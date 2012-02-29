@@ -8,4 +8,5 @@ cover
 *~
 build
 dist
-python_keystoneclient.egg-info
+python_glanceclient.egg-info
+ChangeLog

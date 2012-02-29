@@ -2,15 +2,19 @@ import os
 import sys
 from setuptools import setup, find_packages
 
+from glanceclient.openstack.common.setup import parse_requirements
+from glanceclient.openstack.common.setup import parse_dependency_links
+from glanceclient.openstack.common.setup import write_requirements
+from glanceclient.openstack.common.setup import write_git_changelog
+
+requires = parse_requirements()
+depend_links = parse_dependency_links()
+write_requirements()
+write_git_changelog()
+
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
-requirements = ['httplib2', 'prettytable']
-if sys.version_info < (2, 6):
-    requirements.append('simplejson')
-if sys.version_info < (2, 7):
-    requirements.append('argparse')
 
 setup(
     name = "python-glanceclient",
@@ -31,9 +35,9 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
     ],
-    install_requires = requirements,
+    install_requires=requires,
+    dependency_links=depend_links,
 
-    tests_require = ["nose", "mock", "mox"],
     test_suite = "nose.collector",
 
     entry_points = {
