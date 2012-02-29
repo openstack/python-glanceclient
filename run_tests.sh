@@ -4,7 +4,7 @@ set -eu
 
 function usage {
   echo "Usage: $0 [OPTION]..."
-  echo "Run python-keystoneclient test suite"
+  echo "Run python-glanceclient test suite"
   echo ""
   echo "  -V, --virtual-env        Always use virtualenv.  Install automatically if not present"
   echo "  -N, --no-virtual-env     Don't use virtualenv.  Run tests in local environment"
