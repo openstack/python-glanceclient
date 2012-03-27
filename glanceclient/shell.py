@@ -1,5 +1,4 @@
-# Copyright 2010 Jacob Kaplan-Moss
-# Copyright 2011 OpenStack LLC.
+# Copyright 2012 OpenStack LLC.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -20,27 +19,14 @@ Command-line interface to the OpenStack Images API.
 
 import argparse
 import httplib2
-import os
 import sys
 
-from glanceclient import exceptions as exc
-from glanceclient import utils
-from glanceclient.v2_0 import shell as shell_v2_0
-from glanceclient.generic import shell as shell_generic
+from keystoneclient.v2_0 import client as ksclient
 
-
-def env(*vars, **kwargs):
-    """Search for the first defined of possibly many env vars
-
-    Returns the first environment variable defined in vars, or
-    returns the default defined in kwargs.
-
-    """
-    for v in vars:
-        value = os.environ.get(v, None)
-        if value:
-            return value
-    return kwargs.get('default', '')
+from glanceclient.common import exceptions as exc
+from glanceclient.common import utils
+from glanceclient.v1 import shell as shell_v1
+from glanceclient.v1 import client as client_v1
 
 
 class OpenStackImagesShell(object):
@@ -52,7 +38,7 @@ class OpenStackImagesShell(object):
             epilog='See "glance help COMMAND" '\
                    'for help on a specific command.',
             add_help=False,
-            formatter_class=OpenStackHelpFormatter,
+            formatter_class=HelpFormatter,
         )
 
         # Global arguments
@@ -66,33 +52,33 @@ class OpenStackImagesShell(object):
             action='store_true',
             help=argparse.SUPPRESS)
 
-        parser.add_argument('--username',
-            default=env('OS_USERNAME'),
+        parser.add_argument('--os-username',
+            default=utils.env('OS_USERNAME'),
             help='Defaults to env[OS_USERNAME]')
 
-        parser.add_argument('--password',
-            default=env('OS_PASSWORD'),
+        parser.add_argument('--os-password',
+            default=utils.env('OS_PASSWORD'),
             help='Defaults to env[OS_PASSWORD]')
 
-        parser.add_argument('--tenant_name',
-            default=env('OS_TENANT_NAME'),
-            help='Defaults to env[OS_TENANT_NAME]')
-
-        parser.add_argument('--tenant_id',
-            default=env('OS_TENANT_ID'), dest='os_tenant_id',
+        parser.add_argument('--os-tenant-id',
+            default=utils.env('OS_TENANT_ID'),
             help='Defaults to env[OS_TENANT_ID]')
 
-        parser.add_argument('--auth_url',
-            default=env('OS_AUTH_URL'),
+        parser.add_argument('--os-auth-url',
+            default=utils.env('OS_AUTH_URL'),
             help='Defaults to env[OS_AUTH_URL]')
 
-        parser.add_argument('--region_name',
-            default=env('OS_REGION_NAME'),
+        parser.add_argument('--os-region-name',
+            default=utils.env('OS_REGION_NAME'),
             help='Defaults to env[OS_REGION_NAME]')
 
-        parser.add_argument('--identity_api_version',
-            default=env('OS_IDENTITY_API_VERSION', 'KEYSTONE_VERSION'),
-            help='Defaults to env[OS_IDENTITY_API_VERSION] or 2.0')
+        parser.add_argument('--os-auth-token',
+            default=utils.env('OS_AUTH_TOKEN'),
+            help='Defaults to env[OS_AUTH_TOKEN]')
+
+        parser.add_argument('--os-image-url',
+            default=utils.env('OS_IMAGE_URL'),
+            help='Defaults to env[OS_IMAGE_URL]')
 
         return parser
 
@@ -101,16 +87,7 @@ class OpenStackImagesShell(object):
 
         self.subcommands = {}
         subparsers = parser.add_subparsers(metavar='<subcommand>')
-
-        try:
-            actions_module = {
-                '2.0': shell_v2_0,
-            }[version]
-        except KeyError:
-            actions_module = shell_v2_0
-
-        self._find_actions(subparsers, actions_module)
-        self._find_actions(subparsers, shell_generic)
+        self._find_actions(subparsers, shell_v1)
         self._find_actions(subparsers, self)
 
         return parser
@@ -128,7 +105,7 @@ class OpenStackImagesShell(object):
                 help=help,
                 description=desc,
                 add_help=False,
-                formatter_class=OpenStackHelpFormatter
+                formatter_class=HelpFormatter
             )
             subparser.add_argument('-h', '--help',
                 action='help',
@@ -139,19 +116,28 @@ class OpenStackImagesShell(object):
                 subparser.add_argument(*args, **kwargs)
             subparser.set_defaults(func=callback)
 
+    def _authenticate(self, username, password, tenant_id, auth_url):
+        _ksclient = ksclient.Client(username=username,
+                                    password=password,
+                                    tenant_id=tenant_id,
+                                    auth_url=auth_url)
+        endpoint = _ksclient.service_catalog.url_for(service_type='image',
+                                                     endpoint_type='publicURL')
+        return (endpoint, _ksclient.auth_token)
+
     def main(self, argv):
         # Parse args once to find version
         parser = self.get_base_parser()
         (options, args) = parser.parse_known_args(argv)
 
         # build available subcommands based on version
-        api_version = options.identity_api_version
+        api_version = '1'
         subcommand_parser = self.get_subcommand_parser(api_version)
         self.parser = subcommand_parser
 
         # Handle top-level --help/-h before attempting to parse
         # a command off the command line
-        if options.help:
+        if options.help or not argv:
             self.do_help(options)
             return 0
 
@@ -167,51 +153,45 @@ class OpenStackImagesShell(object):
             self.do_help(args)
             return 0
 
-        #FIXME(usrleon): Here should be restrict for project id same as
-        # for username or apikey but for compatibility it is not.
+        auth_reqd = (utils.is_authentication_required(args.func) or
+                        not (args.os_auth_token and args.os_image_url))
 
-        if not utils.isunauthenticated(args.func):
-            if not args.username:
-                raise exc.CommandError("You must provide a username "
-                        "via either --username or env[OS_USERNAME]")
-
-            if not args.password:
-                raise exc.CommandError("You must provide a password "
-                        "via either --password or env[OS_PASSWORD]")
-
-            if not args.auth_url:
-                raise exc.CommandError("You must provide an auth url "
-                        "via either --auth_url or via env[OS_AUTH_URL]")
-
-        if utils.isunauthenticated(args.func):
-            self.cs = shell_generic.CLIENT_CLASS(endpoint=args.auth_url)
+        if not auth_reqd:
+            endpoint = args.os_image_url
+            token = args.os_auth_token
         else:
-            api_version = options.identity_api_version
-            self.cs = self.get_api_class(api_version)(
-                username=args.username,
-                tenant_name=args.tenant_name,
-                tenant_id=args.os_tenant_id,
-                password=args.password,
-                auth_url=args.auth_url,
-                region_name=args.region_name)
+            if not args.os_username:
+                raise exc.CommandError("You must provide a username via"
+                        " either --os-username or env[OS_USERNAME]")
+
+            if not args.os_password:
+                raise exc.CommandError("You must provide a password via"
+                        " either --os-password or env[OS_PASSWORD]")
+
+            if not args.os_tenant_id:
+                raise exc.CommandError("You must provide a tenant_id via"
+                        " either --os-tenant-id or via env[OS_TENANT_ID]")
+
+            if not args.os_auth_url:
+                raise exc.CommandError("You must provide an auth url via"
+                        " either --os-auth-url or via env[OS_AUTH_URL]")
+
+            endpoint, token = self._authenticate(args.os_username,
+                                                 args.os_password,
+                                                 args.os_tenant_id,
+                                                 args.os_auth_url)
+
+        image_service = client_v1.Client(endpoint, token)
 
         try:
-            args.func(self.cs, args)
+            args.func(image_service, args)
         except exc.Unauthorized:
             raise exc.CommandError("Invalid OpenStack Identity credentials.")
         except exc.AuthorizationFailure:
             raise exc.CommandError("Unable to authorize user")
 
-    def get_api_class(self, version):
-        try:
-            return {
-                "2.0": shell_v2_0.CLIENT_CLASS,
-            }[version]
-        except KeyError:
-            return shell_v2_0.CLIENT_CLASS
-
     @utils.arg('command', metavar='<subcommand>', nargs='?',
-                          help='Display help for <subcommand>')
+               help='Display help for <subcommand>')
     def do_help(self, args):
         """
         Display help about this program or one of its subcommands.
@@ -226,12 +206,11 @@ class OpenStackImagesShell(object):
             self.parser.print_help()
 
 
-# I'm picky about my shell help.
-class OpenStackHelpFormatter(argparse.HelpFormatter):
+class HelpFormatter(argparse.HelpFormatter):
     def start_section(self, heading):
         # Title-case the headings
         heading = '%s%s' % (heading[0].upper(), heading[1:])
-        super(OpenStackHelpFormatter, self).start_section(heading)
+        super(HelpFormatter, self).start_section(heading)
 
 
 def main():
@@ -240,7 +219,7 @@ def main():
 
     except Exception, e:
         if httplib2.debuglevel == 1:
-            raise  # dump stack.
+            raise
         else:
             print >> sys.stderr, e
         sys.exit(1)

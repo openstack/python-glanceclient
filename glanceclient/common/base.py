@@ -1,5 +1,4 @@
-# Copyright 2010 Jacob Kaplan-Moss
-# Copyright 2011 OpenStack LLC.
+# Copyright 2012 OpenStack LLC.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -18,7 +17,7 @@
 Base utilities to build API operation managers and objects on top of.
 """
 
-from glanceclient import exceptions
+from glanceclient.common import exceptions
 
 
 # Python 2.4 compat
@@ -81,7 +80,7 @@ class Manager(object):
         return self.resource_class(self, body[response_key])
 
     def _delete(self, url):
-        resp, body = self.api.delete(url)
+        self.api.delete(url)
 
     def _update(self, url, body, response_key=None, method="PUT"):
         methods = {"PUT": self.api.put,
@@ -94,45 +93,6 @@ class Manager(object):
         # PUT requests may not return a body
         if body:
             return self.resource_class(self, body[response_key])
-
-
-class ManagerWithFind(Manager):
-    """
-    Like a `Manager`, but with additional `find()`/`findall()` methods.
-    """
-    def find(self, **kwargs):
-        """
-        Find a single item with attributes matching ``**kwargs``.
-
-        This isn't very efficient: it loads the entire list then filters on
-        the Python side.
-        """
-        rl = self.findall(**kwargs)
-        try:
-            return rl[0]
-        except IndexError:
-            msg = "No %s matching %s." % (self.resource_class.__name__, kwargs)
-            raise exceptions.NotFound(404, msg)
-
-    def findall(self, **kwargs):
-        """
-        Find all items with attributes matching ``**kwargs``.
-
-        This isn't very efficient: it loads the entire list then filters on
-        the Python side.
-        """
-        found = []
-        searches = kwargs.items()
-
-        for obj in self.list():
-            try:
-                if all(getattr(obj, attr) == value
-                                    for (attr, value) in searches):
-                    found.append(obj)
-            except AttributeError:
-                continue
-
-        return found
 
 
 class Resource(object):

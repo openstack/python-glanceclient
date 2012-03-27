@@ -1,5 +1,3 @@
-# Copyright 2010 Jacob Kaplan-Moss
-# Copyright 2011 Nebula, Inc.
 """
 Exception definitions.
 """
@@ -125,7 +123,7 @@ def from_response(response, body):
         else:
             # If we didn't get back a properly formed error message we
             # probably couldn't communicate with Keystone at all.
-            message = "Unable to communicate with identity service: %s." % body
+            message = "Unable to communicate with image service: %s." % body
             details = None
         return cls(code=response.status, message=message, details=details)
     else:

@@ -28,7 +28,7 @@ Python API
 By way of a quick-start::
 
     # use v2.0 auth with http://example.com:5000/v2.0")
-    >>> from glanceclient.v2_0 import client
+    >>> from glanceclient.v1 import client
     >>> glance = client.Client(username=USERNAME, password=PASSWORD, tenant_name=TENANT, auth_url=KEYSTONE_URL)
     >>> glance.images.list()
     >>> image = glance.images.create(name="My Test Image")
@@ -50,20 +50,15 @@ Command-line API
 Installing this package gets you a command-line tool, ``glance``, that you
 can use to interact with Glance's Identity API.
 
-You'll need to provide your OpenStack tenant, username and password. You can do this
-with the ``tenant_name``, ``--username`` and ``--password`` params, but it's
-easier to just set them as environment variables::
+You'll need to provide your OpenStack username, password, tenant, and auth
+endpoint. You can do this with the ``--tenant_id``, ``--username``,
+``--password``, and ``--auth_url`` params, but it's easier to just set them
+as environment variables::
 
-    export OS_TENANT_NAME=project
+    export OS_TENANT_id=
     export OS_USERNAME=user
     export OS_PASSWORD=pass
-
-You will also need to define the authentication url with ``--auth_url`` and the
-version of the API with ``--identity_api_version``.  Or set them as an environment
-variables as well::
-
     export OS_AUTH_URL=http://example.com:5000/v2.0
-    export OS_IDENTITY_API_VERSION=2.0
 
 Since the Identity service that Glance uses can return multiple regional image
 endpoints in the Service Catalog, you can specify the one you want with
@@ -74,9 +69,8 @@ You'll find complete documentation on the shell by running
 ``glance help``::
 
     usage: glance [--username USERNAME] [--password PASSWORD]
-                  [--tenant_name TENANT_NAME | --tenant_id TENANT_ID]
+                  [--tenant_id TENANT_id]
                   [--auth_url AUTH_URL] [--region_name REGION_NAME]
-                  [--identity_api_version IDENTITY_API_VERSION]
                   <subcommand> ...
 
     Command-line interface to the OpenStack Identity API.
@@ -103,7 +97,5 @@ You'll find complete documentation on the shell by running
       --auth_url AUTH_URL   Defaults to env[OS_AUTH_URL]
       --region_name REGION_NAME
                             Defaults to env[OS_REGION_NAME]
-      --identity_api_version IDENTITY_API_VERSION
-                            Defaults to env[OS_IDENTITY_API_VERSION] or 2.0
 
 See "glance help COMMAND" for help on a specific command.
