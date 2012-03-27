@@ -20,7 +20,7 @@ def read(fname):
 setuptools.setup(
     name="python-glanceclient",
     version="2012.1",
-    description="Client library for OpenStack Glance API",
+    description="Client library for OpenStack Image API",
     long_description=read('README.rst'),
     url='https://github.com/openstack/python-glanceclient',
     license='Apache',
@@ -36,8 +36,7 @@ setuptools.setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
     ],
-    #install_requires=requires,
-    install_requires=[],
+    install_requires=requires,
     dependency_links=dependency_links,
     test_suite="nose.collector",
     entry_points={'console_scripts': ['glance = glanceclient.shell:main']},

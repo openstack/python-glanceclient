@@ -153,8 +153,8 @@ class OpenStackImagesShell(object):
             self.do_help(args)
             return 0
 
-        auth_reqd = (utils.is_authentication_required(args.func) or
-                        not (args.os_auth_token and args.os_image_url))
+        auth_reqd = (utils.is_authentication_required(args.func) and
+                     not (args.os_auth_token and args.os_image_url))
 
         if not auth_reqd:
             endpoint = args.os_image_url
