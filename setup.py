@@ -19,7 +19,7 @@ def read(fname):
 
 setuptools.setup(
     name="python-glanceclient",
-    version="2012.1",
+    version="2012.2",
     description="Client library for OpenStack Image API",
     long_description=read('README.rst'),
     url='https://github.com/openstack/python-glanceclient',
