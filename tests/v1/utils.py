@@ -63,8 +63,23 @@ fixtures = {
         'PUT': ({}, None),
     },
     '/v1/images/1/members/1': {
+        'GET': (
+            {},
+            {'member': {
+                'member_id': '1',
+                'can_share': False,
+            }},
+        ),
         'PUT': ({}, None),
         'DELETE': ({}, None),
+    },
+    '/v1/shared_images/1': {
+        'GET': (
+            {},
+            {'shared_images': [
+                {'image_id': '1', 'can_share': False},
+            ]},
+        ),
     },
 }
 

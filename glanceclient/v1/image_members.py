@@ -20,25 +20,60 @@ class ImageMember(base.Resource):
     def __repr__(self):
         return "<ImageMember %s>" % self._info
 
+    def delete(self):
+        self.manager.delete(self)
+
 
 class ImageMemberManager(base.Manager):
     resource_class = ImageMember
 
     def get(self, image, member_id):
-        url = '/v1/images/%s' % (base.getid(image), member_id)
-        return self._get(url, 'member')
-
-    def list(self, image):
-        url = '/v1/images/%s/members' % base.getid(image)
-        return self._list(url, 'members')
-
-    def delete(self, image, member):
         image_id = base.getid(image)
-        try:
-            member_id = base.getid(member)
-        except AttributeError:
-            member_id = member
+        url = '/v1/images/%s/members/%s' % (image_id, member_id)
+        resp, body = self.api.get(url)
+        member = body['member']
+        member['image_id'] = image_id
+        return ImageMember(self, member, loaded=True)
 
+    def list(self, image=None, member=None):
+        out = []
+        if image and member:
+            try:
+                out.append(self.get(image, member))
+            #TODO: narrow this down to 404
+            except:
+                pass
+        elif image:
+            out.extend(self._list_by_image(image))
+        elif member:
+            out.extend(self._list_by_member(member))
+        else:
+            #TODO: figure out what is appropriate to do here as we are
+            # unable to provide the requested response
+            pass
+        return out
+
+    def _list_by_image(self, image):
+        image_id = base.getid(image)
+        resp, body = self.api.get('/v1/images/%s/members' %  image_id)
+        out = []
+        for member in body['members']:
+            member['image_id'] = image_id
+            out.append(ImageMember(self, member, loaded=True))
+        return out
+
+    def _list_by_member(self, member):
+        member_id = base.getid(member)
+        resp, body = self.api.get('/v1/shared_images/%s' %  member_id)
+        out = []
+        for member in body['shared_images']:
+            member['member_id'] = member_id
+            out.append(ImageMember(self, member, loaded=True))
+        return out
+
+    def delete(self, member):
+        member_id = member.member_id
+        image_id = member.image_id
         self._delete("/v1/images/%s/members/%s" % (image_id, member_id))
 
     def create(self, image, member_id, can_share=False):
