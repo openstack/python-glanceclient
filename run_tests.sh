@@ -50,7 +50,7 @@ function run_tests {
 function run_pep8 {
   echo "Running pep8..."
   PEP8_OPTIONS="--exclude=$PEP8_EXCLUDE --repeat"
-  PEP8_INCLUDE="glanceclient/* setup.py run_tests.py tools/install_venv.py"
+  PEP8_INCLUDE="glanceclient/*.py setup.py run_tests.py tools/install_venv.py"
   ${wrapper} pep8 $PEP8_OPTIONS $PEP8_INCLUDE
 }
 
