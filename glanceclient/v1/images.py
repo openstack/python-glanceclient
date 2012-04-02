@@ -22,6 +22,9 @@ class Image(base.Resource):
     def __repr__(self):
         return "<Image %s>" % self._info
 
+    def update(self, **fields):
+        self.manager.update(self, **fields)
+
     def delete(self):
         return self.manager.delete(self)
 
@@ -49,13 +52,13 @@ class ImageManager(base.Manager):
                 headers['x-image-meta-%s' % key] = value
         return headers
 
-    def get(self, image):
+    def get(self, image_id):
         """Get the metadata for a specific image.
 
         :param image: image object or id to look up
         :rtype: :class:`Image`
         """
-        resp, body = self.api.head('/v1/images/%s' % base.getid(image))
+        resp, body = self.api.head('/v1/images/%s' % image_id)
         meta = self._image_meta_from_headers(resp)
         return Image(self, meta)
 
@@ -97,3 +100,14 @@ class ImageManager(base.Manager):
         resp, body = self.api.put(url, headers=send_meta)
         recv_meta = self._image_meta_from_headers(resp)
         return Image(self, recv_meta)
+
+    def delete_member(self, image, image_member):
+        """Remove a member from an image"""
+        image_id = base.getid(image)
+        try:
+            member_id = image_member.member_id
+        except AttributeError:
+            member_id = image_member
+
+        url = '/v1/images/%s/members/%s' % (image_id, member_id)
+        resp, body = self.api.delete(url)

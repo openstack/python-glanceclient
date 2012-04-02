@@ -33,13 +33,6 @@ def getid(obj):
     Abstracts the common pattern of allowing both an object or an object's ID
     (UUID) as a parameter when dealing with relationships.
     """
-
-    # Try to return the object's UUID first, if we have a UUID.
-    try:
-        if obj.uuid:
-            return obj.uuid
-    except AttributeError:
-        pass
     try:
         return obj.id
     except AttributeError:
@@ -86,10 +79,12 @@ class Manager(object):
         methods = {"PUT": self.api.put,
                    "POST": self.api.post}
         try:
-            resp, body = methods[method](url, body=body)
+            _method = methods[method]
         except KeyError:
-            raise exceptions.ClientException("Invalid update method: %s"
-                                             % method)
+            msg = "Invalid update method: %s" % method
+            raise exceptions.ClientException(msg)
+
+        resp, body = _method(url, body=body)
         # PUT requests may not return a body
         if body:
             return self.resource_class(self, body[response_key])

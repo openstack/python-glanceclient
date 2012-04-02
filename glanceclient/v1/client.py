@@ -17,6 +17,7 @@ import logging
 
 from glanceclient.common import http
 from glanceclient.v1 import images
+from glanceclient.v1 import image_members
 
 
 logger = logging.getLogger(__name__)
@@ -36,3 +37,4 @@ class Client(http.HTTPClient):
         """ Initialize a new client for the Images v1 API. """
         super(Client, self).__init__(endpoint, token=token, timeout=timeout)
         self.images = images.ImageManager(self)
+        self.image_members = image_members.ImageMemberManager(self)

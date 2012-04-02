@@ -57,3 +57,27 @@ class ImageManagerTest(unittest.TestCase):
         self.assertEqual(self.api.calls, expect)
         self.assertEqual(image.id, '1')
         self.assertEqual(image.name, 'image-2')
+
+
+class ImageTest(unittest.TestCase):
+    def setUp(self):
+        self.api = utils.FakeAPI()
+        self.mgr = glanceclient.v1.images.ImageManager(self.api)
+
+    def test_delete(self):
+        image = self.mgr.get('1')
+        image.delete()
+        expect = [
+            ('HEAD', '/v1/images/1', {}, None),
+            ('DELETE', '/v1/images/1', {}, None),
+        ]
+        self.assertEqual(self.api.calls, expect)
+
+    def test_update(self):
+        image = self.mgr.get('1')
+        image.update(name='image-5')
+        expect = [
+            ('HEAD', '/v1/images/1', {}, None),
+            ('PUT', '/v1/images/1', {'x-image-meta-name': 'image-5'}, None),
+        ]
+        self.assertEqual(self.api.calls, expect)
