@@ -18,9 +18,11 @@ import urllib
 
 from glanceclient.common import base
 
-CREATE_PARAMS = ['id', 'name', 'disk_format', 'container_format', 'min_disk',
+UPDATE_PARAMS = ('name', 'disk_format', 'container_format', 'min_disk',
                  'min_ram', 'owner', 'size', 'is_public', 'protected',
-                 'location', 'checksum', 'copy_from', 'properties']
+                 'location', 'checksum', 'copy_from', 'properties')
+
+CREATE_PARAMS = UPDATE_PARAMS + ('id',)
 
 
 class Image(base.Resource):
@@ -91,6 +93,8 @@ class ImageManager(base.Manager):
 
         TODO(bcwaldon): document accepted params
         """
+        image_data = kwargs.pop('data', None)
+
         fields = {}
         for field in kwargs:
             if field in CREATE_PARAMS:
@@ -104,16 +108,24 @@ class ImageManager(base.Manager):
         if copy_from is not None:
             hdrs['x-glance-api-copy-from'] = copy_from
 
-        resp, body = self.api.post('/v1/images', headers=hdrs)
+        resp, body = self.api.post('/v1/images', headers=hdrs, body=image_data)
         return Image(self, body['image'])
 
     def update(self, image, **kwargs):
         """Update an image"""
         fields = {}
-        if 'name' in kwargs:
-            fields['name'] = kwargs['name']
-        send_meta = self._image_meta_to_headers(fields)
-        url = '/v1/images/%s' % base.getid(image)
-        resp, body = self.api.put(url, headers=send_meta)
-        recv_meta = self._image_meta_from_headers(resp)
-        return Image(self, recv_meta)
+        for field in kwargs:
+            if field in UPDATE_PARAMS:
+                fields[field] = kwargs[field]
+            else:
+                msg = 'update() got an unexpected keyword argument \'%s\''
+                raise TypeError(msg % field)
+
+        copy_from = fields.pop('copy_from', None)
+        hdrs = self._image_meta_to_headers(fields)
+        if copy_from is not None:
+            hdrs['x-glance-api-copy-from'] = copy_from
+
+        image_id = base.getid(image)
+        resp, body = self.api.put('/v1/images/%s' % image_id, headers=hdrs)
+        return Image(self, body['image'])

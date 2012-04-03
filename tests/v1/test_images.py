@@ -1,4 +1,5 @@
 
+import StringIO
 import unittest
 
 from tests.v1 import utils
@@ -43,7 +44,7 @@ class ImageManagerTest(unittest.TestCase):
         expect = [('DELETE', '/v1/images/1', {}, None)]
         self.assertEqual(self.api.calls, expect)
 
-    def test_create_no_data(self):
+    def test_create_without_data(self):
         params = {
             'id': '1',
             'name': 'image-1',
@@ -82,9 +83,37 @@ class ImageManagerTest(unittest.TestCase):
         self.assertEqual(image.min_disk, '10')
         self.assertEqual(image.properties, {'a': 'b', 'c': 'd'})
 
+    def test_create_with_data(self):
+        image_data = StringIO.StringIO('XXX')
+        self.mgr.create(data=image_data)
+        expect = [('POST', '/v1/images', {}, image_data)]
+        self.assertEqual(self.api.calls, expect)
+
     def test_update(self):
-        image = self.mgr.update('1', name='image-2')
-        expect_hdrs = {'x-image-meta-name': 'image-2'}
+        fields = {
+            'name': 'image-2',
+            'container_format': 'ovf',
+            'disk_format': 'vhd',
+            'owner': 'asdf',
+            'size': 1024,
+            'min_ram': 512,
+            'min_disk': 10,
+            'copy_from': 'http://example.com',
+            'properties': {'a': 'b', 'c': 'd'},
+        }
+        image = self.mgr.update('1', **fields)
+        expect_hdrs = {
+            'x-image-meta-name': 'image-2',
+            'x-image-meta-container_format': 'ovf',
+            'x-image-meta-disk_format': 'vhd',
+            'x-image-meta-owner': 'asdf',
+            'x-image-meta-size': '1024',
+            'x-image-meta-min_ram': '512',
+            'x-image-meta-min_disk': '10',
+            'x-glance-api-copy-from': 'http://example.com',
+            'x-image-meta-property-a': 'b',
+            'x-image-meta-property-c': 'd',
+        }
         expect = [('PUT', '/v1/images/1', expect_hdrs, None)]
         self.assertEqual(self.api.calls, expect)
         self.assertEqual(image.id, '1')
