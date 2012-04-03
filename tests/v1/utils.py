@@ -18,11 +18,19 @@ fixtures = {
         'POST': (
             {
                 'location': '/v1/images/1',
-                'x-image-meta-id': '1',
-                'x-image-meta-name': 'image-1',
-                'x-image-meta-property-arch': 'x86_64',
             },
-            None),
+            {'image': {
+                'id': '1',
+                'name': 'image-1',
+                'container_format': 'ovf',
+                'disk_format': 'vhd',
+                'owner': 'asdf',
+                'size': '1024',
+                'min_ram': '512',
+                'min_disk': '10',
+                'properties': {'a': 'b', 'c': 'd'},
+
+            }}),
     },
     '/v1/images/detail': {
         'GET': (

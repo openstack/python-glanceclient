@@ -16,6 +16,7 @@
 import copy
 
 from glanceclient.common import utils
+import glanceclient.v1.images
 
 
 def do_image_list(gc, args):
@@ -26,7 +27,7 @@ def do_image_list(gc, args):
 
 
 def _image_show(image):
-    # Flatten image properties dict
+    # Flatten image properties dict for display
     info = copy.deepcopy(image._info)
     for (k, v) in info.pop('properties').iteritems():
         info['Property \'%s\'' % k] = v
@@ -41,10 +42,61 @@ def do_image_show(gc, args):
     _image_show(image)
 
 
-@utils.arg('--id', metavar='<IMAGE_ID>', help='ID of image to reserve.')
-@utils.arg('--name', metavar='<NAME>', help='Name of image.')
-@utils.arg('--disk_format', metavar='<CONTAINER_FORMAT>', help='Disk format of image.')
-@utils.arg('--container_format', metavar='<DISK_FORMAT>', help='Container format of image.')
+@utils.arg('--id', metavar='<IMAGE_ID>',
+           help='ID of image to reserve.')
+@utils.arg('--name', metavar='<NAME>',
+           help='Name of image.')
+@utils.arg('--disk_format', metavar='<CONTAINER_FORMAT>',
+           help='Disk format of image.')
+@utils.arg('--container_format', metavar='<DISK_FORMAT>',
+           help='Container format of image.')
+@utils.arg('--owner', metavar='<TENANT_ID>',
+           help='Tenant who should own image.')
+@utils.arg('--size', metavar='<SIZE>',
+           help='Size of image data (in bytes).')
+@utils.arg('--min_disk', metavar='<DISK_GB>',
+           help='Minimum size of disk needed to boot image (in gigabytes).')
+@utils.arg('--min_ram', metavar='<DISK_RAM>',
+           help='Minimum amount of ram needed to boot image (in megabytes).')
+@utils.arg('--location', metavar='<IMAGE_URL>',
+           help=('URL where the data for this image already resides.'
+                 ' For example, if the image data is stored in the filesystem'
+                 ' local to the glance server at \'/usr/share/image.tar.gz\','
+                 ' you would specify \'file:///usr/share/image.tar.gz\'.'))
+@utils.arg('--checksum', metavar='<CHECKSUM>',
+           help='Hash of image data used Glance can use for verification.')
+@utils.arg('--copy_from', metavar='<IMAGE_URL>',
+           help=('Similar to \'--location\' in usage, but this indicates that'
+                 ' the Glance server should immediately copy the data and'
+                 ' store it in its configured image store.'))
+@utils.arg('--public', action='store_true', default=False,
+           help='Make image accessible to the public.')
+@utils.arg('--protected', action='store_true', default=False,
+           help='Prevent image from being deleted.')
+@utils.arg('--property', metavar="<key=value>", action='append', default=[],
+           help=("Arbitrary property to associate with image. "
+                 "May be used multiple times."))
 def do_image_create(gc, args):
-    image = gc.images.create(*args)
+    # Filter out None values
+    fields = dict(filter(lambda x: x[1] is not None, vars(args).items()))
+
+    fields['is_public'] = fields.pop('public')
+
+    raw_properties = fields.pop('property')
+    fields['properties'] = {}
+    for datum in raw_properties:
+        key, value = datum.split('=', 1)
+        fields['properties'][key] = value
+
+    # Filter out values we can't use
+    CREATE_PARAMS = glanceclient.v1.images.CREATE_PARAMS
+    fields = dict(filter(lambda x: x[0] in CREATE_PARAMS, fields.items()))
+
+    image = gc.images.create(**fields)
     _image_show(image)
+
+
+@utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to delete.')
+def do_image_delete(gc, args):
+    """Delete a specific image."""
+    gc.images.delete(args.id)

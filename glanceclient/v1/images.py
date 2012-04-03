@@ -13,9 +13,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
 import urllib
 
 from glanceclient.common import base
+
+CREATE_PARAMS = ['id', 'name', 'disk_format', 'container_format', 'min_disk',
+                 'min_ram', 'owner', 'size', 'is_public', 'protected',
+                 'location', 'checksum', 'copy_from', 'properties']
 
 
 class Image(base.Resource):
@@ -45,11 +50,11 @@ class ImageManager(base.Manager):
 
     def _image_meta_to_headers(self, fields):
         headers = {}
-        for key, value in fields.iteritems():
-            if key == 'properties':
-                headers['x-image-meta-property-%s' % key] = value
-            else:
-                headers['x-image-meta-%s' % key] = value
+        fields_copy = copy.deepcopy(fields)
+        for key, value in fields_copy.pop('properties', {}).iteritems():
+            headers['x-image-meta-property-%s' % key] = str(value)
+        for key, value in fields_copy.iteritems():
+            headers['x-image-meta-%s' % key] = str(value)
         return headers
 
     def get(self, image_id):
@@ -73,7 +78,7 @@ class ImageManager(base.Manager):
         if limit:
             params['limit'] = int(limit)
         if marker:
-            params['marker'] = int(marker)
+            params['marker'] = marker
         query = '?%s' % urllib.urlencode(params) if params else ''
         return self._list('/v1/images/detail%s' % query, "images")
 
@@ -82,13 +87,25 @@ class ImageManager(base.Manager):
         self._delete("/v1/images/%s" % base.getid(image))
 
     def create(self, **kwargs):
-        """Create an image"""
+        """Create an image
+
+        TODO(bcwaldon): document accepted params
+        """
         fields = {}
-        if 'name' in kwargs:
-            fields['name'] = kwargs['name']
-        resp, body = self.api.post('/v1/images', body={'image': fields})
-        meta = self._image_meta_from_headers(resp)
-        return Image(self, meta)
+        for field in kwargs:
+            if field in CREATE_PARAMS:
+                fields[field] = kwargs[field]
+            else:
+                msg = 'create() got an unexpected keyword argument \'%s\''
+                raise TypeError(msg % field)
+
+        copy_from = fields.pop('copy_from', None)
+        hdrs = self._image_meta_to_headers(fields)
+        if copy_from is not None:
+            hdrs['x-glance-api-copy-from'] = copy_from
+
+        resp, body = self.api.post('/v1/images', headers=hdrs)
+        return Image(self, body['image'])
 
     def update(self, image, **kwargs):
         """Update an image"""
@@ -100,14 +117,3 @@ class ImageManager(base.Manager):
         resp, body = self.api.put(url, headers=send_meta)
         recv_meta = self._image_meta_from_headers(resp)
         return Image(self, recv_meta)
-
-    def delete_member(self, image, image_member):
-        """Remove a member from an image"""
-        image_id = base.getid(image)
-        try:
-            member_id = image_member.member_id
-        except AttributeError:
-            member_id = image_member
-
-        url = '/v1/images/%s/members/%s' % (image_id, member_id)
-        resp, body = self.api.delete(url)
