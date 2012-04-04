@@ -86,7 +86,8 @@ class ImageManagerTest(unittest.TestCase):
     def test_create_with_data(self):
         image_data = StringIO.StringIO('XXX')
         self.mgr.create(data=image_data)
-        expect = [('POST', '/v1/images', {}, image_data)]
+        expect_headers = {'x-image-meta-size': '3'}
+        expect = [('POST', '/v1/images', expect_headers, image_data)]
         self.assertEqual(self.api.calls, expect)
 
     def test_update(self):
@@ -118,6 +119,13 @@ class ImageManagerTest(unittest.TestCase):
         self.assertEqual(self.api.calls, expect)
         self.assertEqual(image.id, '1')
         self.assertEqual(image.name, 'image-2')
+
+    def test_update_with_data(self):
+        image_data = StringIO.StringIO('XXX')
+        self.mgr.update('1', data=image_data)
+        expect_headers = {'x-image-meta-size': '3'}
+        expect = [('PUT', '/v1/images/1', expect_headers, image_data)]
+        self.assertEqual(self.api.calls, expect)
 
 
 class ImageTest(unittest.TestCase):

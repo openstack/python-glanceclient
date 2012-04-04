@@ -14,6 +14,8 @@
 #    under the License.
 
 import copy
+import errno
+import os
 import urllib
 
 from glanceclient.common import base
@@ -88,12 +90,42 @@ class ImageManager(base.Manager):
         """Delete an image."""
         self._delete("/v1/images/%s" % base.getid(image))
 
+    def _get_file_size(self, obj):
+        """Analyze file-like object and attempt to determine its size.
+
+        :param obj: file-like object, typically redirected from stdin.
+        :retval The file's size or None if it cannot be determined.
+        """
+        # For large images, we need to supply the size of the
+        # image file. See LP Bugs #827660 and #845788.
+        if hasattr(obj, 'seek') and hasattr(obj, 'tell'):
+            try:
+                obj.seek(0, os.SEEK_END)
+                obj_size = obj.tell()
+                obj.seek(0)
+                return obj_size
+            except IOError, e:
+                if e.errno == errno.ESPIPE:
+                    # Illegal seek. This means the user is trying
+                    # to pipe image data to the client, e.g.
+                    # echo testdata | bin/glance add blah..., or
+                    # that stdin is empty
+                    return None
+                else:
+                    raise
+
     def create(self, **kwargs):
         """Create an image
 
         TODO(bcwaldon): document accepted params
         """
         image_data = kwargs.pop('data', None)
+        if image_data is not None:
+            image_size = self._get_file_size(image_data)
+            if image_size != 0:
+                kwargs.setdefault('size', image_size)
+            else:
+                image_data = None
 
         fields = {}
         for field in kwargs:
@@ -112,7 +144,18 @@ class ImageManager(base.Manager):
         return Image(self, body['image'])
 
     def update(self, image, **kwargs):
-        """Update an image"""
+        """Update an image
+
+        TODO(bcwaldon): document accepted params
+        """
+        image_data = kwargs.pop('data', None)
+        if image_data is not None:
+            image_size = self._get_file_size(image_data)
+            if image_size != 0:
+                kwargs.setdefault('size', image_size)
+            else:
+                image_data = None
+
         fields = {}
         for field in kwargs:
             if field in UPDATE_PARAMS:
@@ -127,5 +170,6 @@ class ImageManager(base.Manager):
             hdrs['x-glance-api-copy-from'] = copy_from
 
         image_id = base.getid(image)
-        resp, body = self.api.put('/v1/images/%s' % image_id, headers=hdrs)
+        resp, body = self.api.put('/v1/images/%s' % image_id, headers=hdrs,
+                                  body=image_data)
         return Image(self, body['image'])

@@ -71,9 +71,9 @@ class HTTPClient(httplib2.Http):
         _kwargs = copy.copy(kwargs)
         _kwargs.setdefault('headers', kwargs.get('headers', {}))
         _kwargs['headers']['User-Agent'] = USER_AGENT
-        if 'body' in kwargs:
-            _kwargs['headers']['Content-Type'] = 'application/json'
-            _kwargs['body'] = json.dumps(kwargs['body'])
+        if 'body' in kwargs and kwargs['body'] is not None:
+            _kwargs['headers']['Content-Type'] = 'application/octet-stream'
+            _kwargs['body'] = kwargs['body']
 
         resp, body = super(HTTPClient, self).request(url, method, **_kwargs)
         self.http_log((url, method,), _kwargs, resp, body)

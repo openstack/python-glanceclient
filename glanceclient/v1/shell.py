@@ -14,6 +14,7 @@
 #    under the License.
 
 import copy
+import sys
 
 from glanceclient.common import utils
 import glanceclient.v1.images
@@ -53,7 +54,8 @@ def do_image_show(gc, args):
 @utils.arg('--owner', metavar='<TENANT_ID>',
            help='Tenant who should own image.')
 @utils.arg('--size', metavar='<SIZE>',
-           help='Size of image data (in bytes).')
+           help=('Size of image data (in bytes). Only used with'
+                 ' \'--location\' and \'--copy_from\'.'))
 @utils.arg('--min_disk', metavar='<DISK_GB>',
            help='Minimum size of disk needed to boot image (in gigabytes).')
 @utils.arg('--min_ram', metavar='<DISK_RAM>',
@@ -92,10 +94,14 @@ def do_image_create(gc, args):
     CREATE_PARAMS = glanceclient.v1.images.CREATE_PARAMS
     fields = dict(filter(lambda x: x[0] in CREATE_PARAMS, fields.items()))
 
+    if 'location' not in fields and 'copy_from' not in fields:
+        fields['data'] = sys.stdin
+
     image = gc.images.create(**fields)
     _image_show(image)
 
 
+@utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to modify.')
 @utils.arg('--name', metavar='<NAME>',
            help='Name of image.')
 @utils.arg('--disk_format', metavar='<CONTAINER_FORMAT>',
@@ -132,6 +138,8 @@ def do_image_update(gc, args):
     # Filter out None values
     fields = dict(filter(lambda x: x[1] is not None, vars(args).items()))
 
+    image_id = fields.pop('id')
+
     raw_properties = fields.pop('property')
     fields['properties'] = {}
     for datum in raw_properties:
@@ -142,7 +150,10 @@ def do_image_update(gc, args):
     UPDATE_PARAMS = glanceclient.v1.images.UPDATE_PARAMS
     fields = dict(filter(lambda x: x[0] in UPDATE_PARAMS, fields.items()))
 
-    image = gc.images.create(**fields)
+    if 'location' not in fields and 'copy_from' not in fields:
+        fields['data'] = sys.stdin
+
+    image = gc.images.update(image_id, **fields)
     _image_show(image)
 
 
