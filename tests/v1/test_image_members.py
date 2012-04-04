@@ -25,7 +25,7 @@ class ImageMemberManagerTest(unittest.TestCase):
 
     def test_list_by_member(self):
         members = self.mgr.list(member='1')
-        expect = [('GET', '/v1/shared_images/1', {}, None)]
+        expect = [('GET', '/v1/shared-images/1', {}, None)]
         self.assertEqual(self.api.calls, expect)
         self.assertEqual(len(members), 1)
         self.assertEqual(members[0].member_id, '1')
@@ -41,12 +41,8 @@ class ImageMemberManagerTest(unittest.TestCase):
         self.assertEqual(member.can_share, False)
 
     def test_delete(self):
-        member = self.mgr.get(self.image, '1')
-        self.mgr.delete(member)
-        expect = [
-            ('GET', '/v1/images/1/members/1', {}, None),
-            ('DELETE', '/v1/images/1/members/1', {}, None),
-        ]
+        self.mgr.delete('1', '1')
+        expect = [('DELETE', '/v1/images/1/members/1', {}, None)]
         self.assertEqual(self.api.calls, expect)
 
     def test_create(self):

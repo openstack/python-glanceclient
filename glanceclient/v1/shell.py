@@ -47,18 +47,18 @@ def do_image_show(gc, args):
            help='ID of image to reserve.')
 @utils.arg('--name', metavar='<NAME>',
            help='Name of image.')
-@utils.arg('--disk_format', metavar='<CONTAINER_FORMAT>',
+@utils.arg('--disk-format', metavar='<CONTAINER_FORMAT>',
            help='Disk format of image.')
-@utils.arg('--container_format', metavar='<DISK_FORMAT>',
+@utils.arg('--container-format', metavar='<DISK_FORMAT>',
            help='Container format of image.')
 @utils.arg('--owner', metavar='<TENANT_ID>',
            help='Tenant who should own image.')
 @utils.arg('--size', metavar='<SIZE>',
            help=('Size of image data (in bytes). Only used with'
                  ' \'--location\' and \'--copy_from\'.'))
-@utils.arg('--min_disk', metavar='<DISK_GB>',
+@utils.arg('--min-disk', metavar='<DISK_GB>',
            help='Minimum size of disk needed to boot image (in gigabytes).')
-@utils.arg('--min_ram', metavar='<DISK_RAM>',
+@utils.arg('--min-ram', metavar='<DISK_RAM>',
            help='Minimum amount of ram needed to boot image (in megabytes).')
 @utils.arg('--location', metavar='<IMAGE_URL>',
            help=('URL where the data for this image already resides.'
@@ -67,7 +67,7 @@ def do_image_show(gc, args):
                  ' you would specify \'file:///usr/share/image.tar.gz\'.'))
 @utils.arg('--checksum', metavar='<CHECKSUM>',
            help='Hash of image data used Glance can use for verification.')
-@utils.arg('--copy_from', metavar='<IMAGE_URL>',
+@utils.arg('--copy-from', metavar='<IMAGE_URL>',
            help=('Similar to \'--location\' in usage, but this indicates that'
                  ' the Glance server should immediately copy the data and'
                  ' store it in its configured image store.'))
@@ -104,17 +104,17 @@ def do_image_create(gc, args):
 @utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to modify.')
 @utils.arg('--name', metavar='<NAME>',
            help='Name of image.')
-@utils.arg('--disk_format', metavar='<CONTAINER_FORMAT>',
+@utils.arg('--disk-format', metavar='<CONTAINER_FORMAT>',
            help='Disk format of image.')
-@utils.arg('--container_format', metavar='<DISK_FORMAT>',
+@utils.arg('--container-format', metavar='<DISK_FORMAT>',
            help='Container format of image.')
 @utils.arg('--owner', metavar='<TENANT_ID>',
            help='Tenant who should own image.')
 @utils.arg('--size', metavar='<SIZE>',
            help='Size of image data (in bytes).')
-@utils.arg('--min_disk', metavar='<DISK_GB>',
+@utils.arg('--min-disk', metavar='<DISK_GB>',
            help='Minimum size of disk needed to boot image (in gigabytes).')
-@utils.arg('--min_ram', metavar='<DISK_RAM>',
+@utils.arg('--min-ram', metavar='<DISK_RAM>',
            help='Minimum amount of ram needed to boot image (in megabytes).')
 @utils.arg('--location', metavar='<IMAGE_URL>',
            help=('URL where the data for this image already resides.'
@@ -123,13 +123,13 @@ def do_image_create(gc, args):
                  ' you would specify \'file:///usr/share/image.tar.gz\'.'))
 @utils.arg('--checksum', metavar='<CHECKSUM>',
            help='Hash of image data used Glance can use for verification.')
-@utils.arg('--copy_from', metavar='<IMAGE_URL>',
+@utils.arg('--copy-from', metavar='<IMAGE_URL>',
            help=('Similar to \'--location\' in usage, but this indicates that'
                  ' the Glance server should immediately copy the data and'
                  ' store it in its configured image store.'))
-@utils.arg('--is_public', type=bool,
+@utils.arg('--is-public', type=bool,
            help='Make image accessible to the public.')
-@utils.arg('--is_protected', type=bool,
+@utils.arg('--is-protected', type=bool,
            help='Prevent image from being deleted.')
 @utils.arg('--property', metavar="<key=value>", action='append', default=[],
            help=("Arbitrary property to associate with image. "
@@ -161,3 +161,40 @@ def do_image_update(gc, args):
 def do_image_delete(gc, args):
     """Delete a specific image."""
     gc.images.delete(args.id)
+
+
+@utils.arg('--image-id', metavar='<IMAGE_ID>',
+           help='Filter results by an image ID.')
+@utils.arg('--tenant-id', metavar='<TENANT_ID>',
+           help='Filter results by a tenant ID.')
+def do_member_list(gc, args):
+    if args.image_id and args.tenant_id:
+        print 'Unable to filter members by both --image-id and --tenant-id.'
+        sys.exit(1)
+    elif args.image_id:
+        kwargs = {'image': args.image_id}
+    elif args.tenant_id:
+        kwargs = {'member': args.tenant_id}
+    else:
+        print 'Unable to list all members. Specify --image-id or --tenant-id'
+        sys.exit(1)
+
+    members = gc.image_members.list(**kwargs)
+    columns = ['Image ID', 'Member ID', 'Can Share']
+    utils.print_list(members, columns)
+
+@utils.arg('image_id', metavar='<IMAGE_ID>',
+           help='Image to add member to.')
+@utils.arg('tenant_id', metavar='<TENANT_ID>',
+           help='Tenant to add as member')
+@utils.arg('--can-share', action='store_true', default=False,
+           help='Allow the specified tenant to share this image.')
+def do_member_create(gc, args):
+    gc.image_members.create(args.image_id, args.tenant_id, args.can_share)
+
+@utils.arg('image_id', metavar='<IMAGE_ID>',
+           help='Image to add member to.')
+@utils.arg('tenant_id', metavar='<TENANT_ID>',
+           help='Tenant to add as member')
+def do_member_delete(gc, args):
+    gc.image_members.delete(args.image_id, args.tenant_id)

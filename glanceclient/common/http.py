@@ -57,6 +57,8 @@ class HTTPClient(httplib2.Http):
             string_parts.append(header)
 
         logger.debug("REQ: %s\n" % "".join(string_parts))
+        if 'raw_body' in kwargs:
+            logger.debug("REQ BODY (RAW): %s\n" % (kwargs['raw_body']))
         if 'body' in kwargs:
             logger.debug("REQ BODY: %s\n" % (kwargs['body']))
         logger.debug("RESP: %s\nRESP BODY: %s\n", resp, body)
@@ -71,9 +73,14 @@ class HTTPClient(httplib2.Http):
         _kwargs = copy.copy(kwargs)
         _kwargs.setdefault('headers', kwargs.get('headers', {}))
         _kwargs['headers']['User-Agent'] = USER_AGENT
-        if 'body' in kwargs and kwargs['body'] is not None:
-            _kwargs['headers']['Content-Type'] = 'application/octet-stream'
-            _kwargs['body'] = kwargs['body']
+        if 'raw_body' in _kwargs:
+            raw_body = _kwargs.pop('raw_body')
+            if raw_body is not None:
+                _kwargs['headers']['Content-Type'] = 'application/octet-stream'
+                _kwargs['body'] = raw_body
+        elif 'body' in kwargs and kwargs['body'] is not None:
+            _kwargs['headers']['Content-Type'] = 'application/json'
+            _kwargs['body'] = json.dumps(kwargs['body'])
 
         resp, body = super(HTTPClient, self).request(url, method, **_kwargs)
         self.http_log((url, method,), _kwargs, resp, body)

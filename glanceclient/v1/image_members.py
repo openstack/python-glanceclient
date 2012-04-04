@@ -64,16 +64,14 @@ class ImageMemberManager(base.Manager):
 
     def _list_by_member(self, member):
         member_id = base.getid(member)
-        resp, body = self.api.get('/v1/shared_images/%s' %  member_id)
+        resp, body = self.api.get('/v1/shared-images/%s' %  member_id)
         out = []
         for member in body['shared_images']:
             member['member_id'] = member_id
             out.append(ImageMember(self, member, loaded=True))
         return out
 
-    def delete(self, member):
-        member_id = member.member_id
-        image_id = member.image_id
+    def delete(self, image_id, member_id):
         self._delete("/v1/images/%s/members/%s" % (image_id, member_id))
 
     def create(self, image, member_id, can_share=False):

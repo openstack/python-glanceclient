@@ -87,7 +87,7 @@ fixtures = {
         'PUT': ({}, None),
         'DELETE': ({}, None),
     },
-    '/v1/shared_images/1': {
+    '/v1/shared-images/1': {
         'GET': (
             {},
             {'shared_images': [
@@ -116,11 +116,11 @@ class FakeAPI(object):
     def head(self, url):
         return self._request('HEAD', url)
 
-    def post(self, url, headers=None, body=None):
-        return self._request('POST', url, headers, body)
+    def post(self, url, headers=None, body=None, raw_body=None):
+        return self._request('POST', url, headers, body or raw_body)
 
-    def put(self, url, headers=None, body=None):
-        return self._request('PUT', url, headers, body)
+    def put(self, url, headers=None, body=None, raw_body=None):
+        return self._request('PUT', url, headers, body or raw_body)
 
     def delete(self, url):
         return self._request('DELETE', url)
