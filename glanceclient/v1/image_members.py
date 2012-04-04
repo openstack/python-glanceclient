@@ -59,7 +59,7 @@ class ImageMemberManager(base.Manager):
 
     def _list_by_image(self, image):
         image_id = base.getid(image)
-        resp, body = self.api.get('/v1/images/%s/members' %  image_id)
+        resp, body = self.api.get('/v1/images/%s/members' % image_id)
         out = []
         for member in body['members']:
             member['image_id'] = image_id
@@ -68,7 +68,7 @@ class ImageMemberManager(base.Manager):
 
     def _list_by_member(self, member):
         member_id = base.getid(member)
-        resp, body = self.api.get('/v1/shared-images/%s' %  member_id)
+        resp, body = self.api.get('/v1/shared-images/%s' % member_id)
         out = []
         for member in body['shared_images']:
             member['member_id'] = member_id

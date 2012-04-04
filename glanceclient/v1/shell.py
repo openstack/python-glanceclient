@@ -183,6 +183,7 @@ def do_member_list(gc, args):
     columns = ['Image ID', 'Member ID', 'Can Share']
     utils.print_list(members, columns)
 
+
 @utils.arg('image_id', metavar='<IMAGE_ID>',
            help='Image to add member to.')
 @utils.arg('tenant_id', metavar='<TENANT_ID>',
@@ -191,6 +192,7 @@ def do_member_list(gc, args):
            help='Allow the specified tenant to share this image.')
 def do_member_create(gc, args):
     gc.image_members.create(args.image_id, args.tenant_id, args.can_share)
+
 
 @utils.arg('image_id', metavar='<IMAGE_ID>',
            help='Image to add member to.')
