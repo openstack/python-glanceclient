@@ -24,13 +24,11 @@ class ImageMemberManagerTest(unittest.TestCase):
         self.assertEqual(members[0].can_share, False)
 
     def test_list_by_member(self):
-        members = self.mgr.list(member='1')
+        resource_class = glanceclient.v1.image_members.ImageMember
+        member = resource_class(self.api, {'member_id': '1'}, True)
+        self.mgr.list(member=member)
         expect = [('GET', '/v1/shared-images/1', {}, None)]
         self.assertEqual(self.api.calls, expect)
-        self.assertEqual(len(members), 1)
-        self.assertEqual(members[0].member_id, '1')
-        self.assertEqual(members[0].image_id, '1')
-        self.assertEqual(members[0].can_share, False)
 
     def test_get(self):
         member = self.mgr.get(self.image, '1')
@@ -63,9 +61,9 @@ class ImageMemberManagerTest(unittest.TestCase):
     def test_replace_objects(self):
         body = [
             glanceclient.v1.image_members.ImageMember(
-                self.mgr, {'member_id': '2', 'can_share': False}),
+                self.mgr, {'member_id': '2', 'can_share': False}, True),
             glanceclient.v1.image_members.ImageMember(
-                self.mgr, {'member_id': '3', 'can_share': True}),
+                self.mgr, {'member_id': '3', 'can_share': True}, True),
         ]
         self.mgr.replace(self.image, body)
         expect_body = {

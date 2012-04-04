@@ -20,6 +20,10 @@ class ImageMember(base.Resource):
     def __repr__(self):
         return "<ImageMember %s>" % self._info
 
+    @property
+    def id(self):
+        return self.member_id
+
     def delete(self):
         self.manager.delete(self)
 
