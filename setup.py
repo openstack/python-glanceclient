@@ -2,15 +2,13 @@ import os
 
 import setuptools
 
-#from glanceclient.openstack.common.setup import parse_requirements
-#from glanceclient.openstack.common.setup import parse_dependency_links
-#from glanceclient.openstack.common.setup import write_requirements
+from glanceclient.openstack.common.setup import parse_requirements
+from glanceclient.openstack.common.setup import parse_dependency_links
 from glanceclient.openstack.common.setup import write_git_changelog
 
 
-#requires = parse_requirements()
-#dependency_links = parse_dependency_links()
-#write_requirements()
+requires = parse_requirements()
+dependency_links = parse_dependency_links()
 write_git_changelog()
 
 
@@ -36,8 +34,8 @@ setuptools.setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
     ],
-#    install_requires=requires,
-#    dependency_links=dependency_links,
+    install_requires=requires,
+    dependency_links=dependency_links,
     test_suite="nose.collector",
     entry_points={'console_scripts': ['glance = glanceclient.shell:main']},
 )
