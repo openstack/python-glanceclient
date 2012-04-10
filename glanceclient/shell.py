@@ -64,6 +64,10 @@ class OpenStackImagesShell(object):
             default=utils.env('OS_TENANT_ID'),
             help='Defaults to env[OS_TENANT_ID]')
 
+        parser.add_argument('--os-tenant-name',
+            default=utils.env('OS_TENANT_NAME'),
+            help='Defaults to env[OS_TENANT_NAME]')
+
         parser.add_argument('--os-auth-url',
             default=utils.env('OS_AUTH_URL'),
             help='Defaults to env[OS_AUTH_URL]')
@@ -116,11 +120,20 @@ class OpenStackImagesShell(object):
                 subparser.add_argument(*args, **kwargs)
             subparser.set_defaults(func=callback)
 
-    def _authenticate(self, username, password, tenant_id, auth_url):
-        _ksclient = ksclient.Client(username=username,
-                                    password=password,
-                                    tenant_id=tenant_id,
-                                    auth_url=auth_url)
+    def _authenticate(self, **kwargs):
+        """Get an endpoint and auth token from Keystone.
+
+        :param username: name of user
+        :param password: user's password
+        :param tenant_id: unique identifier of tenant
+        :param tenant_name: name of tenant
+        :param auth_url: endpoint to authenticate against
+        """
+        _ksclient = ksclient.Client(username=kwargs.get('username'),
+                                    password=kwargs.get('password'),
+                                    tenant_id=kwargs.get('tenant_id'),
+                                    tenant_name=kwargs.get('tenant_name'),
+                                    auth_url=kwargs.get('auth_url'))
         endpoint = _ksclient.service_catalog.url_for(service_type='image',
                                                      endpoint_type='publicURL')
         return (endpoint, _ksclient.auth_token)
@@ -168,18 +181,21 @@ class OpenStackImagesShell(object):
                 raise exc.CommandError("You must provide a password via"
                         " either --os-password or env[OS_PASSWORD]")
 
-            if not args.os_tenant_id:
+            if not (args.os_tenant_id or args.os_tenant_name):
                 raise exc.CommandError("You must provide a tenant_id via"
                         " either --os-tenant-id or via env[OS_TENANT_ID]")
 
             if not args.os_auth_url:
                 raise exc.CommandError("You must provide an auth url via"
                         " either --os-auth-url or via env[OS_AUTH_URL]")
-
-            endpoint, token = self._authenticate(args.os_username,
-                                                 args.os_password,
-                                                 args.os_tenant_id,
-                                                 args.os_auth_url)
+            kwargs = {
+                'username': args.os_username,
+                'password': args.os_password,
+                'tenant_id': args.os_tenant_id,
+                'tenant_name': args.os_tenant_name,
+                'auth_url': args.os_auth_url
+            }
+            endpoint, token = self._authenticate(**kwargs)
 
         image_service = client_v1.Client(endpoint, token)
 
