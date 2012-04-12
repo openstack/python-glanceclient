@@ -71,7 +71,7 @@ class ImageManager(base.Manager):
         meta = self._image_meta_from_headers(resp)
         return Image(self, meta)
 
-    def list(self, limit=None, marker=None):
+    def list(self, limit=None, marker=None, filters=None):
         """Get a list of images.
 
         :param limit: maximum number of images to return. Used for pagination.
@@ -83,6 +83,8 @@ class ImageManager(base.Manager):
             params['limit'] = int(limit)
         if marker:
             params['marker'] = marker
+        if filters:
+            params.update(filters)
         query = '?%s' % urllib.urlencode(params) if params else ''
         return self._list('/v1/images/detail%s' % query, "images")
 

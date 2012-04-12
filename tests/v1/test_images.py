@@ -32,6 +32,11 @@ class ImageManagerTest(unittest.TestCase):
         expect = [('GET', '/v1/images/detail?marker=20', {}, None)]
         self.assertEqual(self.api.calls, expect)
 
+    def test_list_with_filter(self):
+        self.mgr.list(filters={'name': "foo"})
+        expect = [('GET', '/v1/images/detail?name=foo', {}, None)]
+        self.assertEqual(self.api.calls, expect)
+
     def test_get(self):
         image = self.mgr.get('1')
         expect = [('HEAD', '/v1/images/1', {}, None)]
