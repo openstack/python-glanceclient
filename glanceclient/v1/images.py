@@ -110,7 +110,7 @@ class ImageManager(base.Manager):
                     # to pipe image data to the client, e.g.
                     # echo testdata | bin/glance add blah..., or
                     # that stdin is empty
-                    return None
+                    return 0
                 else:
                     raise
 
