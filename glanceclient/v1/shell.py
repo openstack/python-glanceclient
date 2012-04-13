@@ -23,7 +23,8 @@ import glanceclient.v1.images
 def do_image_list(gc, args):
     """List images."""
     images = gc.images.list()
-    columns = ['ID', 'Name', 'Status']
+    columns = ['ID', 'Name', 'Disk Format', 'Container Format',
+               'Size', 'Status']
     utils.print_list(images, columns)
 
 
