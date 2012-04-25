@@ -19,6 +19,7 @@ Command-line interface to the OpenStack Images API.
 
 import argparse
 import httplib2
+import re
 import sys
 
 from keystoneclient.v2_0 import client as ksclient
@@ -120,6 +121,21 @@ class OpenStackImagesShell(object):
                 subparser.add_argument(*args, **kwargs)
             subparser.set_defaults(func=callback)
 
+    # TODO(dtroyer): move this into the common client support?
+    # Compatibility check to remove API version as the trailing component
+    # in a service endpoint; also removes a trailing '/'
+    def _strip_version(self, endpoint):
+        """Strip a version from the last component of an endpoint if present"""
+
+        # Get rid of trailing '/' if present
+        if endpoint.endswith('/'):
+            endpoint = endpoint[:-1]
+        url_bits = endpoint.split('/')
+        # regex to match 'v1' or 'v2.0' etc
+        if re.match('v\d+\.?\d*', url_bits[-1]):
+            endpoint = '/'.join(url_bits[:-1])
+        return endpoint
+
     def _authenticate(self, **kwargs):
         """Get an endpoint and auth token from Keystone.
 
@@ -136,6 +152,7 @@ class OpenStackImagesShell(object):
                                     auth_url=kwargs.get('auth_url'))
         endpoint = _ksclient.service_catalog.url_for(service_type='image',
                                                      endpoint_type='publicURL')
+        endpoint = self._strip_version(endpoint)
         return (endpoint, _ksclient.auth_token)
 
     def main(self, argv):
