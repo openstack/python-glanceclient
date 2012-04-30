@@ -1,4 +1,5 @@
 import os
+import sys
 
 import setuptools
 
@@ -10,6 +11,9 @@ from glanceclient.openstack.common.setup import write_git_changelog
 requires = parse_requirements()
 dependency_links = parse_dependency_links()
 write_git_changelog()
+
+if sys.version_info < (2, 6):
+    requires.append('simplejson')
 
 
 def read(fname):

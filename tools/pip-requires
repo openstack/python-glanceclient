@@ -1,6 +1,5 @@
 argparse
 httplib2
 prettytable
-simplejson
 
 -e git://github.com/openstack/python-keystoneclient.git#egg=python-keystoneclient
