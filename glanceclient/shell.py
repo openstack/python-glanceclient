@@ -85,6 +85,10 @@ class OpenStackImagesShell(object):
             default=utils.env('OS_IMAGE_URL'),
             help='Defaults to env[OS_IMAGE_URL]')
 
+        parser.add_argument('--os-service-type',
+            default=utils.env('OS_SERVICE_TYPE'),
+            help='Defaults to env[OS_SERVICE_TYPE]')
+
         return parser
 
     def get_subcommand_parser(self, version):
@@ -150,8 +154,10 @@ class OpenStackImagesShell(object):
                                     tenant_id=kwargs.get('tenant_id'),
                                     tenant_name=kwargs.get('tenant_name'),
                                     auth_url=kwargs.get('auth_url'))
-        endpoint = _ksclient.service_catalog.url_for(service_type='image',
-                                                     endpoint_type='publicURL')
+        service_type = kwargs.get('service_type') or 'image'
+        endpoint = _ksclient.service_catalog.url_for(
+                             service_type=service_type,
+                             endpoint_type='publicURL')
         endpoint = self._strip_version(endpoint)
         return (endpoint, _ksclient.auth_token)
 
@@ -210,7 +216,8 @@ class OpenStackImagesShell(object):
                 'password': args.os_password,
                 'tenant_id': args.os_tenant_id,
                 'tenant_name': args.os_tenant_name,
-                'auth_url': args.os_auth_url
+                'auth_url': args.os_auth_url,
+                'service_type': args.os_service_type
             }
             endpoint, token = self._authenticate(**kwargs)
 
