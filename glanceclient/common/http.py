@@ -69,30 +69,16 @@ class HTTPClient(httplib2.Http):
         Wrapper around httplib2.Http.request to handle tasks such as
         setting headers, JSON encoding/decoding, and error handling.
         """
+        url = self.endpoint + url
+
         # Copy the kwargs so we can reuse the original in case of redirects
-        _kwargs = copy.copy(kwargs)
-        _kwargs.setdefault('headers', kwargs.get('headers', {}))
-        _kwargs['headers']['User-Agent'] = USER_AGENT
-        if 'raw_body' in _kwargs:
-            raw_body = _kwargs.pop('raw_body')
-            if raw_body is not None:
-                _kwargs['headers']['Content-Type'] = 'application/octet-stream'
-                _kwargs['body'] = raw_body
-        elif 'body' in kwargs and kwargs['body'] is not None:
-            _kwargs['headers']['Content-Type'] = 'application/json'
-            _kwargs['body'] = json.dumps(kwargs['body'])
+        kwargs['headers'] = copy.deepcopy(kwargs.get('headers', {}))
+        kwargs['headers'].setdefault('User-Agent', USER_AGENT)
+        if self.auth_token:
+            kwargs['headers'].setdefault('X-Auth-Token', self.auth_token)
 
-        resp, body = super(HTTPClient, self).request(url, method, **_kwargs)
-        self.http_log((url, method,), _kwargs, resp, body)
-
-        if body:
-            try:
-                body = json.loads(body)
-            except ValueError:
-                logger.debug("Could not decode JSON from body: %s" % body)
-        else:
-            logger.debug("No body was returned.")
-            body = None
+        resp, body = super(HTTPClient, self).request(url, method, **kwargs)
+        self.http_log((url, method,), kwargs, resp, body)
 
         if 400 <= resp.status < 600:
             logger.exception("Request returned failure status.")
@@ -103,26 +89,28 @@ class HTTPClient(httplib2.Http):
 
         return resp, body
 
-    def request(self, url, method, **kwargs):
+    def json_request(self, method, url, **kwargs):
         kwargs.setdefault('headers', {})
-        if self.auth_token:
-            kwargs['headers']['X-Auth-Token'] = self.auth_token
+        kwargs['headers'].setdefault('Content-Type', 'application/json')
 
-        req_url = self.endpoint + url
-        resp, body = self._http_request(req_url, method, **kwargs)
+        if 'body' in kwargs:
+            kwargs['body'] = json.dumps(kwargs['body'])
+
+        resp, body = self._http_request(url, method, **kwargs)
+
+        if body:
+            try:
+                body = json.loads(body)
+            except ValueError:
+                logger.debug("Could not decode JSON from body: %s" % body)
+        else:
+            logger.debug("No body was returned.")
+            body = None
+
         return resp, body
 
-    def head(self, url, **kwargs):
-        return self.request(url, 'HEAD', **kwargs)
-
-    def get(self, url, **kwargs):
-        return self.request(url, 'GET', **kwargs)
-
-    def post(self, url, **kwargs):
-        return self.request(url, 'POST', **kwargs)
-
-    def put(self, url, **kwargs):
-        return self.request(url, 'PUT', **kwargs)
-
-    def delete(self, url, **kwargs):
-        return self.request(url, 'DELETE', **kwargs)
+    def raw_request(self, method, url, **kwargs):
+        kwargs.setdefault('headers', {})
+        kwargs['headers'].setdefault('Content-Type',
+                                     'application/octet-stream')
+        return self._http_request(url, method, **kwargs)

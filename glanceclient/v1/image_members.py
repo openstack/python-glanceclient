@@ -34,7 +34,7 @@ class ImageMemberManager(base.Manager):
     def get(self, image, member_id):
         image_id = base.getid(image)
         url = '/v1/images/%s/members/%s' % (image_id, member_id)
-        resp, body = self.api.get(url)
+        resp, body = self.api.json_request('GET', url)
         member = body['member']
         member['image_id'] = image_id
         return ImageMember(self, member, loaded=True)
@@ -59,7 +59,8 @@ class ImageMemberManager(base.Manager):
 
     def _list_by_image(self, image):
         image_id = base.getid(image)
-        resp, body = self.api.get('/v1/images/%s/members' % image_id)
+        url = '/v1/images/%s/members' % image_id
+        resp, body = self.api.json_request('GET', url)
         out = []
         for member in body['members']:
             member['image_id'] = image_id
@@ -68,7 +69,8 @@ class ImageMemberManager(base.Manager):
 
     def _list_by_member(self, member):
         member_id = base.getid(member)
-        resp, body = self.api.get('/v1/shared-images/%s' % member_id)
+        url = '/v1/shared-images/%s' % member_id
+        resp, body = self.api.json_request('GET', url)
         out = []
         for member in body['shared_images']:
             member['member_id'] = member_id
@@ -98,4 +100,4 @@ class ImageMemberManager(base.Manager):
                     obj['can_share'] = member['can_share']
             memberships.append(obj)
         url = '/v1/images/%s/members' % base.getid(image)
-        self.api.put(url, {}, {'memberships': memberships})
+        self.api.json_request('PUT', url, {}, {'memberships': memberships})

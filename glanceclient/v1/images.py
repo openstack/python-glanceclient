@@ -15,6 +15,7 @@
 
 import copy
 import errno
+import json
 import os
 import urllib
 
@@ -67,7 +68,7 @@ class ImageManager(base.Manager):
         :param image: image object or id to look up
         :rtype: :class:`Image`
         """
-        resp, body = self.api.head('/v1/images/%s' % image_id)
+        resp, body = self.api.raw_request('HEAD', '/v1/images/%s' % image_id)
         meta = self._image_meta_from_headers(resp)
         return Image(self, meta)
 
@@ -142,9 +143,9 @@ class ImageManager(base.Manager):
         if copy_from is not None:
             hdrs['x-glance-api-copy-from'] = copy_from
 
-        resp, body = self.api.post('/v1/images', headers=hdrs,
-                                   raw_body=image_data)
-        return Image(self, body['image'])
+        resp, body = self.api.raw_request(
+                'POST', '/v1/images', headers=hdrs, body=image_data)
+        return Image(self, json.loads(body)['image'])
 
     def update(self, image, **kwargs):
         """Update an image
@@ -172,7 +173,7 @@ class ImageManager(base.Manager):
         if copy_from is not None:
             hdrs['x-glance-api-copy-from'] = copy_from
 
-        image_id = base.getid(image)
-        resp, body = self.api.put('/v1/images/%s' % image_id, headers=hdrs,
-                                  raw_body=image_data)
-        return Image(self, body['image'])
+        url = '/v1/images/%s' % base.getid(image)
+        resp, body = self.api.raw_request(
+                'PUT', url, headers=hdrs, body=image_data)
+        return Image(self, json.loads(body)['image'])
