@@ -19,6 +19,7 @@ import uuid
 import prettytable
 
 from glanceclient.common import exceptions
+from glanceclient.openstack.common import importutils
 
 
 # Decorator for cli-args
@@ -115,3 +116,10 @@ def env(*vars, **kwargs):
         if value:
             return value
     return kwargs.get('default', '')
+
+
+def import_versioned_module(version, submodule=None):
+    module = 'glanceclient.v%s' % version
+    if submodule:
+        module = '.'.join((module, submodule))
+    return importutils.import_module(module)

@@ -24,10 +24,9 @@ import sys
 
 from keystoneclient.v2_0 import client as ksclient
 
+import glanceclient.client
 from glanceclient.common import exceptions as exc
 from glanceclient.common import utils
-from glanceclient.v1 import shell as shell_v1
-from glanceclient.v1 import client as client_v1
 
 
 class OpenStackImagesShell(object):
@@ -36,7 +35,7 @@ class OpenStackImagesShell(object):
         parser = argparse.ArgumentParser(
             prog='glance',
             description=__doc__.strip(),
-            epilog='See "glance help COMMAND" '\
+            epilog='See "glance help COMMAND" '
                    'for help on a specific command.',
             add_help=False,
             formatter_class=HelpFormatter,
@@ -90,6 +89,10 @@ class OpenStackImagesShell(object):
             default=utils.env('OS_IMAGE_URL'),
             help='Defaults to env[OS_IMAGE_URL]')
 
+        parser.add_argument('--os-image-api-version',
+            default=utils.env('OS_IMAGE_API_VERSION', default='1'),
+            help='Defaults to env[OS_IMAGE_API_VERSION] or 1')
+
         parser.add_argument('--os-service-type',
             default=utils.env('OS_SERVICE_TYPE'),
             help='Defaults to env[OS_SERVICE_TYPE]')
@@ -101,7 +104,8 @@ class OpenStackImagesShell(object):
 
         self.subcommands = {}
         subparsers = parser.add_subparsers(metavar='<subcommand>')
-        self._find_actions(subparsers, shell_v1)
+        submodule = utils.import_versioned_module(version, 'shell')
+        self._find_actions(subparsers, submodule)
         self._find_actions(subparsers, self)
 
         return parser
@@ -172,7 +176,7 @@ class OpenStackImagesShell(object):
         (options, args) = parser.parse_known_args(argv)
 
         # build available subcommands based on version
-        api_version = '1'
+        api_version = options.os_image_api_version
         subcommand_parser = self.get_subcommand_parser(api_version)
         self.parser = subcommand_parser
 
@@ -226,8 +230,8 @@ class OpenStackImagesShell(object):
             }
             endpoint, token = self._authenticate(**kwargs)
 
-        image_service = client_v1.Client(endpoint, token,
-                                         insecure=args.insecure)
+        image_service = glanceclient.client.Client(
+                api_version, endpoint, token, insecure=args.insecure)
 
         try:
             args.func(image_service, args)
