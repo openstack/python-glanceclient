@@ -23,6 +23,8 @@ import os
 import re
 import subprocess
 
+from setuptools.command import sdist
+
 
 def parse_mailmap(mailmap='.mailmap'):
     mapping = {}
@@ -31,14 +33,15 @@ def parse_mailmap(mailmap='.mailmap'):
         for l in fp:
             l = l.strip()
             if not l.startswith('#') and ' ' in l:
-                canonical_email, alias = l.split(' ')
+                canonical_email, alias = [x for x in l.split(' ')
+                                          if x.startswith('<')]
                 mapping[alias] = canonical_email
     return mapping
 
 
 def canonicalize_emails(changelog, mapping):
-    """ Takes in a string and an email alias mapping and replaces all
-        instances of the aliases in the string with their real email
+    """Takes in a string and an email alias mapping and replaces all
+       instances of the aliases in the string with their real email.
     """
     for alias, email in mapping.iteritems():
         changelog = changelog.replace(alias, email)
@@ -97,7 +100,7 @@ def _run_shell_command(cmd):
 
 
 def write_vcsversion(location):
-    """ Produce a vcsversion dict that mimics the old one produced by bzr
+    """Produce a vcsversion dict that mimics the old one produced by bzr.
     """
     if os.path.isdir('.git'):
         branch_nick_cmd = 'git branch | grep -Ei "\* (.*)" | cut -f2 -d" "'
@@ -118,10 +121,63 @@ version_info = {
 
 
 def write_git_changelog():
-    """ Write a changelog based on the git changelog """
+    """Write a changelog based on the git changelog."""
     if os.path.isdir('.git'):
         git_log_cmd = 'git log --stat'
         changelog = _run_shell_command(git_log_cmd)
         mailmap = parse_mailmap()
         with open("ChangeLog", "w") as changelog_file:
             changelog_file.write(canonicalize_emails(changelog, mailmap))
+
+
+def generate_authors():
+    """Create AUTHORS file using git commits."""
+    jenkins_email = 'jenkins@review.openstack.org'
+    old_authors = 'AUTHORS.in'
+    new_authors = 'AUTHORS'
+    if os.path.isdir('.git'):
+        # don't include jenkins email address in AUTHORS file
+        git_log_cmd = ("git log --format='%aN <%aE>' | sort -u | "
+                       "grep -v " + jenkins_email)
+        changelog = _run_shell_command(git_log_cmd)
+        mailmap = parse_mailmap()
+        with open(new_authors, 'w') as new_authors_fh:
+            new_authors_fh.write(canonicalize_emails(changelog, mailmap))
+            if os.path.exists(old_authors):
+                with open(old_authors, "r") as old_authors_fh:
+                    new_authors_fh.write('\n' + old_authors_fh.read())
+
+
+def get_cmdclass():
+    """Return dict of commands to run from setup.py."""
+
+    cmdclass = dict()
+
+    class LocalSDist(sdist.sdist):
+        """Builds the ChangeLog and Authors files from VC first."""
+
+        def run(self):
+            write_git_changelog()
+            generate_authors()
+            # sdist.sdist is an old style class, can't use super()
+            sdist.sdist.run(self)
+
+    cmdclass['sdist'] = LocalSDist
+
+    # If Sphinx is installed on the box running setup.py,
+    # enable setup.py to build the documentation, otherwise,
+    # just ignore it
+    try:
+        from sphinx.setup_command import BuildDoc
+
+        class LocalBuildDoc(BuildDoc):
+            def run(self):
+                for builder in ['html', 'man']:
+                    self.builder = builder
+                    self.finalize_options()
+                    BuildDoc.run(self)
+        cmdclass['build_sphinx'] = LocalBuildDoc
+    except ImportError:
+        pass
+
+    return cmdclass
