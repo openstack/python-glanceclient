@@ -13,23 +13,29 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import json
+
+
 fixtures = {
     '/v1/images': {
         'POST': (
             {
                 'location': '/v1/images/1',
             },
-            {'image': {
-                'id': '1',
-                'name': 'image-1',
-                'container_format': 'ovf',
-                'disk_format': 'vhd',
-                'owner': 'asdf',
-                'size': '1024',
-                'min_ram': '512',
-                'min_disk': '10',
-                'properties': {'a': 'b', 'c': 'd'},
-            }}),
+            json.dumps(
+                {'image': {
+                    'id': '1',
+                    'name': 'image-1',
+                    'container_format': 'ovf',
+                    'disk_format': 'vhd',
+                    'owner': 'asdf',
+                    'size': '1024',
+                    'min_ram': '512',
+                    'min_disk': '10',
+                    'properties': {'a': 'b', 'c': 'd'},
+                }},
+            ),
+        ),
     },
     '/v1/images/detail': {
         'GET': (
@@ -53,17 +59,19 @@ fixtures = {
             None),
         'PUT': (
             {},
-            {'image': {
-                'id': '1',
-                'name': 'image-2',
-                'container_format': 'ovf',
-                'disk_format': 'vhd',
-                'owner': 'asdf',
-                'size': '1024',
-                'min_ram': '512',
-                'min_disk': '10',
-                'properties': {'a': 'b', 'c': 'd'},
-            }},
+            json.dumps(
+                {'image': {
+                    'id': '1',
+                    'name': 'image-2',
+                    'container_format': 'ovf',
+                    'disk_format': 'vhd',
+                    'owner': 'asdf',
+                    'size': '1024',
+                    'min_ram': '512',
+                    'min_disk': '10',
+                    'properties': {'a': 'b', 'c': 'd'},
+                }},
+            ),
         ),
         'DELETE': ({}, None),
     },
@@ -110,17 +118,8 @@ class FakeAPI(object):
         url = url.split('?', 1)[0]
         return fixtures[url][method]
 
-    def get(self, url):
-        return self._request('GET', url)
+    def raw_request(self, *args, **kwargs):
+        return self._request(*args, **kwargs)
 
-    def head(self, url):
-        return self._request('HEAD', url)
-
-    def post(self, url, headers=None, body=None, raw_body=None):
-        return self._request('POST', url, headers, body or raw_body)
-
-    def put(self, url, headers=None, body=None, raw_body=None):
-        return self._request('PUT', url, headers, body or raw_body)
-
-    def delete(self, url):
-        return self._request('DELETE', url)
+    def json_request(self, *args, **kwargs):
+        return self._request(*args, **kwargs)

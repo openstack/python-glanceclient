@@ -17,9 +17,6 @@
 Base utilities to build API operation managers and objects on top of.
 """
 
-from glanceclient.common import exceptions
-
-
 # Python 2.4 compat
 try:
     all
@@ -50,11 +47,7 @@ class Manager(object):
         self.api = api
 
     def _list(self, url, response_key, obj_class=None, body=None):
-        resp = None
-        if body:
-            resp, body = self.api.post(url, body=body)
-        else:
-            resp, body = self.api.get(url)
+        resp, body = self.api.json_request('GET', url)
 
         if obj_class is None:
             obj_class = self.resource_class
@@ -62,29 +55,11 @@ class Manager(object):
         data = body[response_key]
         return [obj_class(self, res, loaded=True) for res in data if res]
 
-    def _get(self, url, response_key):
-        resp, body = self.api.get(url)
-        return self.resource_class(self, body[response_key])
-
-    def _create(self, url, body, response_key, return_raw=False):
-        resp, body = self.api.post(url, body=body)
-        if return_raw:
-            return body[response_key]
-        return self.resource_class(self, body[response_key])
-
     def _delete(self, url):
-        self.api.delete(url)
+        self.api.raw_request('DELETE', url)
 
-    def _update(self, url, body, response_key=None, method="PUT"):
-        methods = {"PUT": self.api.put,
-                   "POST": self.api.post}
-        try:
-            _method = methods[method]
-        except KeyError:
-            msg = "Invalid update method: %s" % method
-            raise exceptions.ClientException(msg)
-
-        resp, body = _method(url, body=body)
+    def _update(self, url, body, response_key=None):
+        resp, body = self.api.json_request('PUT', url, body=body)
         # PUT requests may not return a body
         if body:
             return self.resource_class(self, body[response_key])
