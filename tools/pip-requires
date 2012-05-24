@@ -2,4 +2,4 @@ argparse
 httplib2
 prettytable
 
--e https://github.com/openstack/python-keystoneclient/zipball/master#egg=python-keystoneclient
+-f https://github.com/openstack/python-keystoneclient/zipball/master#egg=python-keystoneclient
