@@ -10,6 +10,7 @@ from glanceclient.openstack.common.setup import write_git_changelog
 
 requires = parse_requirements()
 dependency_links = parse_dependency_links()
+tests_require = parse_requirements(['tools/test-requires'])
 write_git_changelog()
 
 if sys.version_info < (2, 6):
@@ -40,6 +41,7 @@ setuptools.setup(
     ],
     install_requires=requires,
     dependency_links=dependency_links,
+    tests_require=tests_require,
     test_suite="nose.collector",
     entry_points={'console_scripts': ['glance = glanceclient.shell:main']},
 )

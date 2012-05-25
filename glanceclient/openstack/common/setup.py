@@ -66,6 +66,9 @@ def parse_requirements(requirements_files=['requirements.txt',
                                 line))
         elif re.match(r'\s*-f\s+', line):
             pass
+        elif re.match(r'\s*https?:', line):
+            requirements.append(re.sub(r'\s*https?:.*#egg=(.*)$', r'\1',
+                                line))
         else:
             requirements.append(line)
 
@@ -80,6 +83,8 @@ def parse_dependency_links(requirements_files=['requirements.txt',
             continue
         if re.match(r'\s*-[ef]\s+', line):
             dependency_links.append(re.sub(r'\s*-[ef]\s+', '', line))
+        elif re.match(r'\s*https?:', line):
+            dependency_links.append(line)
     return dependency_links
 
 
