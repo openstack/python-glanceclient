@@ -29,13 +29,14 @@ USER_AGENT = 'python-glanceclient'
 
 class HTTPClient(httplib2.Http):
 
-    def __init__(self, endpoint, token=None, timeout=600):
+    def __init__(self, endpoint, token=None, timeout=600, insecure=False):
         super(HTTPClient, self).__init__(timeout=timeout)
         self.endpoint = endpoint
         self.auth_token = token
 
         # httplib2 overrides
         self.force_exception_to_status_code = True
+        self.disable_ssl_certificate_validation = insecure
 
     def http_log(self, args, kwargs, resp, body):
         if os.environ.get('GLANCECLIENT_DEBUG', False):

@@ -53,6 +53,11 @@ class OpenStackImagesShell(object):
             action='store_true',
             help=argparse.SUPPRESS)
 
+        parser.add_argument('--insecure',
+            default=False,
+            action='store_true',
+            help=argparse.SUPPRESS)
+
         parser.add_argument('--os-username',
             default=utils.env('OS_USERNAME'),
             help='Defaults to env[OS_USERNAME]')
@@ -221,7 +226,8 @@ class OpenStackImagesShell(object):
             }
             endpoint, token = self._authenticate(**kwargs)
 
-        image_service = client_v1.Client(endpoint, token)
+        image_service = client_v1.Client(endpoint, token,
+                                         insecure=args.insecure)
 
         try:
             args.func(image_service, args)

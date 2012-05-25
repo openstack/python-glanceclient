@@ -33,8 +33,9 @@ class Client(http.HTTPClient):
                             http requests. (optional)
     """
 
-    def __init__(self, endpoint, token=None, timeout=600):
+    def __init__(self, endpoint, token=None, timeout=600, insecure=False):
         """ Initialize a new client for the Images v1 API. """
-        super(Client, self).__init__(endpoint, token=token, timeout=timeout)
+        super(Client, self).__init__(endpoint, token=token,
+                                     timeout=timeout, insecure=insecure)
         self.images = images.ImageManager(self)
         self.image_members = image_members.ImageMemberManager(self)
