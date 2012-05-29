@@ -1,6 +1,7 @@
 include AUTHORS
 include HACKING.rst README.rst
 include LICENSE
+include ChangeLog
 include run_tests.sh
 include openstack-common.conf tox.ini
 recursive-include tests *
