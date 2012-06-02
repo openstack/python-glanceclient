@@ -3,6 +3,7 @@ import sys
 
 import setuptools
 
+from glanceclient.openstack.common.setup import generate_authors
 from glanceclient.openstack.common.setup import parse_requirements
 from glanceclient.openstack.common.setup import parse_dependency_links
 from glanceclient.openstack.common.setup import write_git_changelog
@@ -12,6 +13,7 @@ requires = parse_requirements()
 dependency_links = parse_dependency_links()
 tests_require = parse_requirements(['tools/test-requires'])
 write_git_changelog()
+generate_authors()
 
 if sys.version_info < (2, 6):
     requires.append('simplejson')

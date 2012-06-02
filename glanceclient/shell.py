@@ -36,7 +36,7 @@ class OpenStackImagesShell(object):
         parser = argparse.ArgumentParser(
             prog='glance',
             description=__doc__.strip(),
-            epilog='See "glance help COMMAND" '\
+            epilog='See "glance help COMMAND" '
                    'for help on a specific command.',
             add_help=False,
             formatter_class=HelpFormatter,
