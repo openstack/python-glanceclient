@@ -17,6 +17,7 @@ import logging
 
 from glanceclient.common import http
 from glanceclient.v2 import images
+from glanceclient.v2 import schemas
 
 
 logger = logging.getLogger(__name__)
@@ -32,7 +33,8 @@ class Client(object):
                             http requests. (optional)
     """
 
-    def __init__(self, endpoint, token=None, timeout=600):
+    def __init__(self, endpoint, token=None, timeout=600, **kwargs):
         self.http_client = http.HTTPClient(
                 endpoint, token=token, timeout=timeout)
         self.images = images.Controller(self.http_client)
+        self.schemas = schemas.Controller(self.http_client)

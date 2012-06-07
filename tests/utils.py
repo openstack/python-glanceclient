@@ -13,19 +13,21 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from glanceclient.common import utils
 
+class FakeAPI(object):
+    def __init__(self, fixtures):
+        self.fixtures = fixtures
+        self.calls = []
 
-def do_image_list(gc, args):
-    """List images."""
-    images = gc.images.list()
-    columns = ['ID', 'Name']
-    utils.print_list(images, columns)
+    def _request(self, method, url, headers=None, body=None):
+        call = (method, url, headers or {}, body)
+        self.calls.append(call)
+        # drop any query params
+        url = url.split('?', 1)[0]
+        return self.fixtures[url][method]
 
+    def raw_request(self, *args, **kwargs):
+        return self._request(*args, **kwargs)
 
-@utils.arg('name', metavar='<NAME>', help='Name of model to describe.')
-def do_explain(gc, args):
-    """Describe a specific model."""
-    schema = gc.schemas.get(args.name)
-    columns = ['Name', 'Description']
-    utils.print_list(schema.properties, columns)
+    def json_request(self, *args, **kwargs):
+        return self._request(*args, **kwargs)
