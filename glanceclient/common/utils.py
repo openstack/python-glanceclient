@@ -38,7 +38,7 @@ def pretty_choice_list(l):
 
 def print_list(objs, fields, formatters={}):
     pt = prettytable.PrettyTable([f for f in fields], caching=False)
-    pt.aligns = ['l' for f in fields]
+    pt.align = 'l'
 
     for o in objs:
         row = []
