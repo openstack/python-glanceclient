@@ -22,6 +22,11 @@ class EndpointNotFound(Exception):
     pass
 
 
+class SchemaNotFound(KeyError):
+    """Could not find schema"""
+    pass
+
+
 class ClientException(Exception):
     """
     The base exception class for all exceptions this library raises.
