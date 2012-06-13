@@ -13,3 +13,5 @@ python_glanceclient.egg-info
 ChangeLog
 run_tests.err.log
 .tox
+doc/source/api
+*.egg
