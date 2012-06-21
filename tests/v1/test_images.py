@@ -62,6 +62,10 @@ fixtures = {
                 'x-image-meta-property-arch': 'x86_64',
             },
             None),
+        'GET': (
+            {},
+            'XXX',
+        ),
         'PUT': (
             {},
             json.dumps(
@@ -120,6 +124,12 @@ class ImageManagerTest(unittest.TestCase):
         self.assertEqual(self.api.calls, expect)
         self.assertEqual(image.id, '1')
         self.assertEqual(image.name, 'image-1')
+
+    def test_data(self):
+        data = self.mgr.data('1')
+        expect = [('GET', '/v1/images/1', {}, None)]
+        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(data, 'XXX')
 
     def test_delete(self):
         self.mgr.delete('1')
@@ -232,3 +242,13 @@ class ImageTest(unittest.TestCase):
             ('PUT', '/v1/images/1', {'x-image-meta-name': 'image-5'}, None),
         ]
         self.assertEqual(self.api.calls, expect)
+
+    def test_data(self):
+        image = self.mgr.get('1')
+        data = image.data()
+        expect = [
+            ('HEAD', '/v1/images/1', {}, None),
+            ('GET', '/v1/images/1', {}, None),
+        ]
+        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(data, 'XXX')
