@@ -66,6 +66,10 @@ def do_image_show(gc, args):
                  ' For example, if the image data is stored in the filesystem'
                  ' local to the glance server at \'/usr/share/image.tar.gz\','
                  ' you would specify \'file:///usr/share/image.tar.gz\'.'))
+@utils.arg('--file', metavar='<FILE>',
+           help=('Local file that contains disk image to be uploaded during'
+                 ' creation or update.  Alternatively, images can be passed to'
+                 ' the client via stdin.'))
 @utils.arg('--checksum', metavar='<CHECKSUM>',
            help='Hash of image data used Glance can use for verification.')
 @utils.arg('--copy-from', metavar='<IMAGE_URL>',
@@ -96,7 +100,10 @@ def do_image_create(gc, args):
     fields = dict(filter(lambda x: x[0] in CREATE_PARAMS, fields.items()))
 
     if 'location' not in fields and 'copy_from' not in fields:
-        fields['data'] = sys.stdin
+        if args.file:
+            fields['data'] = open(args.file, 'r')
+        else:
+            fields['data'] = sys.stdin
 
     image = gc.images.create(**fields)
     _image_show(image)
@@ -152,7 +159,10 @@ def do_image_update(gc, args):
     fields = dict(filter(lambda x: x[0] in UPDATE_PARAMS, fields.items()))
 
     if 'location' not in fields and 'copy_from' not in fields:
-        fields['data'] = sys.stdin
+        if args.fields:
+            fields['data'] = open(args.file, 'r')
+        else:
+            fields['data'] = sys.stdin
 
     image = gc.images.update(image_id, **fields)
     _image_show(image)
