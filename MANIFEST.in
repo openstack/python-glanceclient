@@ -4,5 +4,6 @@ include LICENSE
 include ChangeLog
 include run_tests.sh
 include openstack-common.conf tox.ini
+include glanceclient/versioninfo
 recursive-include tests *
 recursive-include tools *
