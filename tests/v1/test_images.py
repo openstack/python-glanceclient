@@ -118,6 +118,11 @@ class ImageManagerTest(unittest.TestCase):
         expect = [('GET', '/v1/images/detail?name=foo', {}, None)]
         self.assertEqual(self.api.calls, expect)
 
+    def test_list_with_property_filters(self):
+        self.mgr.list(filters={'properties': {'ping': 'pong'}})
+        expect = [('GET', '/v1/images/detail?property-ping=pong', {}, None)]
+        self.assertEqual(self.api.calls, expect)
+
     def test_get(self):
         image = self.mgr.get('1')
         expect = [('HEAD', '/v1/images/1', {}, None)]

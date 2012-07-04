@@ -98,6 +98,9 @@ class ImageManager(base.Manager):
         if marker:
             params['marker'] = marker
         if filters:
+            properties = filters.pop('properties', {})
+            for key, value in properties.items():
+                params['property-%s' % key] = value
             params.update(filters)
         query = '?%s' % urllib.urlencode(params) if params else ''
         return self._list('/v1/images/detail%s' % query, "images")
