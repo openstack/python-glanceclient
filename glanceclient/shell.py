@@ -57,6 +57,10 @@ class OpenStackImagesShell(object):
             action='store_true',
             help=argparse.SUPPRESS)
 
+        parser.add_argument('--timeout',
+            default=600,
+            help='Number of seconds to wait for a response')
+
         parser.add_argument('--os-username',
             default=utils.env('OS_USERNAME'),
             help='Defaults to env[OS_USERNAME]')
@@ -269,11 +273,14 @@ class OpenStackImagesShell(object):
             }
             endpoint, token = self._authenticate(**kwargs)
 
-        image_service = glanceclient.client.Client(
-                api_version, endpoint, token, insecure=args.insecure)
+        client = glanceclient.client.Client(api_version,
+                                            endpoint,
+                                            token,
+                                            insecure=args.insecure,
+                                            timeout=args.timeout)
 
         try:
-            args.func(image_service, args)
+            args.func(client, args)
         except exc.Unauthorized:
             raise exc.CommandError("Invalid OpenStack Identity credentials.")
         except exc.AuthorizationFailure:
