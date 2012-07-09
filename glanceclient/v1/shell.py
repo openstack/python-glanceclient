@@ -20,9 +20,18 @@ from glanceclient.common import utils
 import glanceclient.v1.images
 
 
+@utils.arg('--size-min', metavar='<SIZE>',
+           help='Filter images to those with a size greater than this.')
+@utils.arg('--size-max', metavar='<SIZE>',
+           help='Filter images to those with a size less than this.')
 def do_image_list(gc, args):
     """List images."""
-    images = gc.images.list()
+    filters = [
+        ('size_min', args.size_min),
+        ('size_max', args.size_max),
+    ]
+    filters = dict(filter(lambda f: f[1] is not None, filters))
+    images = gc.images.list(filters=filters)
     columns = ['ID', 'Name', 'Disk Format', 'Container Format',
                'Size', 'Status']
     utils.print_list(images, columns)
