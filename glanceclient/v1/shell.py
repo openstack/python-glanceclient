@@ -32,12 +32,20 @@ import glanceclient.v1.images
            help='Filter images to those with a size greater than this.')
 @utils.arg('--size-max', metavar='<SIZE>',
            help='Filter images to those with a size less than this.')
+@utils.arg('--property-filter', metavar='<KEY=VALUE>',
+           help="Filter images by a user-defined image property.",
+            action='append', dest='properties', default=[])
 def do_image_list(gc, args):
     """List images."""
     filter_keys = ['name', 'status', 'container_format', 'disk_format',
                'size_min', 'size_max']
     filter_items = [(key, getattr(args, key)) for key in filter_keys]
     filters = dict([item for item in filter_items if item[1] is not None])
+
+    if args.properties:
+        property_filter_items = [p.split('=', 1) for p in args.properties]
+        filters['properties'] = dict(property_filter_items)
+
     images = gc.images.list(filters=filters)
     columns = ['ID', 'Name', 'Disk Format', 'Container Format',
                'Size', 'Status']
