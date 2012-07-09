@@ -20,17 +20,24 @@ from glanceclient.common import utils
 import glanceclient.v1.images
 
 
+@utils.arg('--name', metavar='<NAME>',
+           help='Filter images to those that have this name.')
+@utils.arg('--status', metavar='<STATUS>',
+           help='Filter images to those that have this status.')
+@utils.arg('--container-format', metavar='<CONTAINER_FORMAT>',
+           help='Filter images to those that have this container format.')
+@utils.arg('--disk-format', metavar='<DISK_FORMAT>',
+           help='Filter images to those that have this disk format.')
 @utils.arg('--size-min', metavar='<SIZE>',
            help='Filter images to those with a size greater than this.')
 @utils.arg('--size-max', metavar='<SIZE>',
            help='Filter images to those with a size less than this.')
 def do_image_list(gc, args):
     """List images."""
-    filters = [
-        ('size_min', args.size_min),
-        ('size_max', args.size_max),
-    ]
-    filters = dict(filter(lambda f: f[1] is not None, filters))
+    filter_keys = ['name', 'status', 'container_format', 'disk_format',
+               'size_min', 'size_max']
+    filter_items = [(key, getattr(args, key)) for key in filter_keys]
+    filters = dict([item for item in filter_items if item[1] is not None])
     images = gc.images.list(filters=filters)
     columns = ['ID', 'Name', 'Disk Format', 'Container Format',
                'Size', 'Status']
