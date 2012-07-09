@@ -176,6 +176,15 @@ class ImageManager(base.Manager):
             else:
                 image_data = None
 
+        hdrs = {}
+
+        try:
+            purge_props = 'true' if kwargs.pop('purge_props') else 'false'
+        except KeyError:
+            pass
+        else:
+            hdrs['x-glance-registry-purge-props'] = purge_props
+
         fields = {}
         for field in kwargs:
             if field in UPDATE_PARAMS:
@@ -185,7 +194,7 @@ class ImageManager(base.Manager):
                 raise TypeError(msg % field)
 
         copy_from = fields.pop('copy_from', None)
-        hdrs = self._image_meta_to_headers(fields)
+        hdrs.update(self._image_meta_to_headers(fields))
         if copy_from is not None:
             hdrs['x-glance-api-copy-from'] = copy_from
 

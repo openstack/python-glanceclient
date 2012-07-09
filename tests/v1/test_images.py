@@ -224,6 +224,12 @@ class ImageManagerTest(unittest.TestCase):
         expect = [('PUT', '/v1/images/1', expect_headers, image_data)]
         self.assertEqual(self.api.calls, expect)
 
+    def test_update_with_purge_props(self):
+        self.mgr.update('1', purge_props=True)
+        expect_headers = {'x-glance-registry-purge-props': 'true'}
+        expect = [('PUT', '/v1/images/1', expect_headers, None)]
+        self.assertEqual(self.api.calls, expect)
+
 
 class ImageTest(unittest.TestCase):
     def setUp(self):

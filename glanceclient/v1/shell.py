@@ -170,6 +170,10 @@ def do_image_create(gc, args):
 @utils.arg('--property', metavar="<key=value>", action='append', default=[],
            help=("Arbitrary property to associate with image. "
                  "May be used multiple times."))
+@utils.arg('--purge-props', action='store_true', default=False,
+           help=("If this flag is present, delete all image properties "
+                 "not explicitly set in the update request. Otherwise, "
+                 "those properties not referenced are preserved."))
 def do_image_update(gc, args):
     # Filter out None values
     fields = dict(filter(lambda x: x[1] is not None, vars(args).items()))
@@ -192,7 +196,7 @@ def do_image_update(gc, args):
         else:
             fields['data'] = sys.stdin
 
-    image = gc.images.update(image_id, **fields)
+    image = gc.images.update(image_id, purge_props=args.purge_props, **fields)
     _image_show(image)
 
 
