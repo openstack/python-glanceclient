@@ -14,6 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from glanceclient import version
 
-__version__ = version.version_info.deferred_version_string()
+from glanceclient.openstack.common import version as common_version
+
+version_info = common_version.VersionInfo('glanceclient',
+                                          python_package='python-glanceclient')
