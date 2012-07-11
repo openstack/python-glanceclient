@@ -102,7 +102,7 @@ def do_image_show(gc, args):
                  ' store it in its configured image store.'))
 @utils.arg('--public', action='store_true', default=False,
            help='Make image accessible to the public.')
-@utils.arg('--protected', action='store_true', default=False,
+@utils.arg('--is-protected', type=utils.string_to_bool,
            help='Prevent image from being deleted.')
 @utils.arg('--property', metavar="<key=value>", action='append', default=[],
            help=("Arbitrary property to associate with image. "
