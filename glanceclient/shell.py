@@ -283,8 +283,6 @@ class OpenStackImagesShell(object):
             args.func(client, args)
         except exc.Unauthorized:
             raise exc.CommandError("Invalid OpenStack Identity credentials.")
-        except exc.AuthorizationFailure:
-            raise exc.CommandError("Unable to authorize user")
 
     @utils.arg('command', metavar='<subcommand>', nargs='?',
                help='Display help for <subcommand>')
