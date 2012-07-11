@@ -40,6 +40,7 @@ setuptools.setup(
     install_requires=requires,
     dependency_links=dependency_links,
     tests_require=tests_require,
+    setup_requires=['setuptools-git>=0.4'],
     test_suite="nose.collector",
     entry_points={'console_scripts': ['glance = glanceclient.shell:main']},
 )
