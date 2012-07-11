@@ -18,7 +18,6 @@ Command-line interface to the OpenStack Images API.
 """
 
 import argparse
-import httplib2
 import re
 import sys
 
@@ -234,10 +233,6 @@ class OpenStackImagesShell(object):
         # Parse args again and call whatever callback was selected
         args = subcommand_parser.parse_args(argv)
 
-        # Deal with global arguments
-        if args.debug:
-            httplib2.debuglevel = 1
-
         # Short-circuit and deal with help command right away.
         if args.func == self.do_help:
             self.do_help(args)
@@ -315,8 +310,5 @@ def main():
         OpenStackImagesShell().main(sys.argv[1:])
 
     except Exception, e:
-        if httplib2.debuglevel == 1:
-            raise
-        else:
-            print >> sys.stderr, e
+        print >> sys.stderr, e
         sys.exit(1)

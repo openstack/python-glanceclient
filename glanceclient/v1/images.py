@@ -74,7 +74,7 @@ class ImageManager(base.Manager):
         :rtype: :class:`Image`
         """
         resp, body = self.api.raw_request('HEAD', '/v1/images/%s' % image_id)
-        meta = self._image_meta_from_headers(resp)
+        meta = self._image_meta_from_headers(dict(resp.getheaders()))
         return Image(self, meta)
 
     def data(self, image):
@@ -84,7 +84,7 @@ class ImageManager(base.Manager):
         :rtype: iterable containing image data
         """
         image_id = base.getid(image)
-        resp, body = self.api.raw_request('GET', '/v1/images/%s' % image_id)
+        _, body = self.api.raw_request('GET', '/v1/images/%s' % image_id)
         return body
 
     def list(self, **kwargs):

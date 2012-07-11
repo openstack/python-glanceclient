@@ -23,6 +23,11 @@ class SchemaNotFound(KeyError):
     pass
 
 
+class InvalidEndpoint(ValueError):
+    """The provided endpoint could not be used"""
+    pass
+
+
 class ClientException(Exception):
     """
     The base exception class for all exceptions this library raises.
@@ -104,28 +109,7 @@ _code_map = dict((c.http_status, c) for c in [BadRequest, Unauthorized,
                    Forbidden, NotFound, OverLimit, HTTPNotImplemented])
 
 
-def from_response(response, body):
-    """
-    Return an instance of an ClientException or subclass
-    based on an httplib2 response.
-
-    Usage::
-
-        resp, body = http.request(...)
-        if resp.status != 200:
-            raise exception_from_response(resp, body)
-    """
+def from_response(response):
+    """Return an instance of an ClientException based on httplib response."""
     cls = _code_map.get(response.status, ClientException)
-    if body:
-        if hasattr(body, 'keys'):
-            error = body[body.keys()[0]]
-            message = error.get('message', None)
-            details = error.get('details', None)
-        else:
-            # If we didn't get back a properly formed error message we
-            # probably couldn't communicate with Keystone at all.
-            message = "Unable to communicate with image service: %s." % body
-            details = None
-        return cls(code=response.status, message=message, details=details)
-    else:
-        return cls(code=response.status)
+    return cls(code=response.status)

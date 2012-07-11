@@ -3,12 +3,11 @@ OpenStack Client interface. Handles the REST calls and responses.
 """
 
 import copy
+import httplib
 import logging
 import os
-import StringIO
 import urlparse
 
-import httplib2
 
 try:
     import json
@@ -29,18 +28,26 @@ USER_AGENT = 'python-glanceclient'
 CHUNKSIZE = 1024 * 64  # 64kB
 
 
-class HTTPClient(httplib2.Http):
+class HTTPClient(object):
 
     def __init__(self, endpoint, token=None, timeout=600, insecure=False):
-        super(HTTPClient, self).__init__(timeout=timeout)
-        self.endpoint = endpoint
+        parts = urlparse.urlparse(endpoint)
+        self.connection_class = self.get_connection_class(parts.scheme)
+        self.endpoint = (parts.hostname, parts.port)
         self.auth_token = token
 
-        # httplib2 overrides
-        self.force_exception_to_status_code = True
-        self.disable_ssl_certificate_validation = insecure
+    @staticmethod
+    def get_connection_class(scheme):
+        try:
+            return getattr(httplib, '%sConnection' % scheme.upper())
+        except AttributeError:
+            msg = 'Unsupported scheme: %s' % scheme
+            raise exc.InvalidEndpoint(msg)
 
-    def http_log(self, args, kwargs, resp, body):
+    def get_connection(self):
+        return self.connection_class(*self.endpoint)
+
+    def http_log(self, args, kwargs, resp):
         if os.environ.get('GLANCECLIENT_DEBUG', False):
             ch = logging.StreamHandler()
             logger.setLevel(logging.DEBUG)
@@ -64,37 +71,34 @@ class HTTPClient(httplib2.Http):
             logger.debug("REQ BODY (RAW): %s\n" % (kwargs['raw_body']))
         if 'body' in kwargs:
             logger.debug("REQ BODY: %s\n" % (kwargs['body']))
-        logger.debug("RESP: %s\nRESP BODY: %s\n", resp, body)
+        logger.debug("RESP: %s", resp)
 
     def _http_request(self, url, method, **kwargs):
         """ Send an http request with the specified characteristics.
 
-        Wrapper around httplib2.Http.request to handle tasks such as
-        setting headers, JSON encoding/decoding, and error handling.
+        Wrapper around httplib.HTTP(S)Connection.request to handle tasks such
+        as setting headers and error handling.
         """
-        url = self.endpoint + url
-
         # Copy the kwargs so we can reuse the original in case of redirects
         kwargs['headers'] = copy.deepcopy(kwargs.get('headers', {}))
         kwargs['headers'].setdefault('User-Agent', USER_AGENT)
         if self.auth_token:
             kwargs['headers'].setdefault('X-Auth-Token', self.auth_token)
 
-        resp, body = super(HTTPClient, self).request(url, method, **kwargs)
-        self.http_log((url, method,), kwargs, resp, body)
+        conn = self.get_connection()
+        conn.request(method, url, **kwargs)
+        resp = conn.getresponse()
+
+        self.http_log((url, method,), kwargs, resp)
 
         if 400 <= resp.status < 600:
             logger.exception("Request returned failure status.")
-            raise exc.from_response(resp, body)
+            raise exc.from_response(resp)
         elif resp.status in (301, 302, 305):
             # Redirected. Reissue the request to the new location.
             return self._http_request(resp['location'], method, **kwargs)
 
-        #NOTE(bcwaldon): body has been loaded to a string at this point,
-        # but we want to move to a world where it can be read from a
-        # socket-level cache. This is here until we can do that.
-        body_iter = ResponseBodyIterator(StringIO.StringIO(body))
-
+        body_iter = ResponseBodyIterator(resp)
         return resp, body_iter
 
     def json_request(self, method, url, **kwargs):

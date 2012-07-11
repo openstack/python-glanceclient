@@ -13,6 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
+import StringIO
+
+from glanceclient.common import http
+
 
 class FakeAPI(object):
     def __init__(self, fixtures):
@@ -25,7 +30,18 @@ class FakeAPI(object):
         return self.fixtures[url][method]
 
     def raw_request(self, *args, **kwargs):
-        return self._request(*args, **kwargs)
+        fixture = self._request(*args, **kwargs)
+        body_iter = http.ResponseBodyIterator(StringIO.StringIO(fixture[1]))
+        return FakeResponse(fixture[0]), body_iter
 
     def json_request(self, *args, **kwargs):
-        return self._request(*args, **kwargs)
+        fixture = self._request(*args, **kwargs)
+        return FakeResponse(fixture[0]), fixture[1]
+
+
+class FakeResponse(object):
+    def __init__(self, headers):
+        self.headers = headers
+
+    def getheaders(self):
+        return copy.deepcopy(self.headers).items()
