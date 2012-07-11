@@ -163,9 +163,9 @@ def do_image_create(gc, args):
            help=('Similar to \'--location\' in usage, but this indicates that'
                  ' the Glance server should immediately copy the data and'
                  ' store it in its configured image store.'))
-@utils.arg('--is-public', type=bool,
+@utils.arg('--is-public', type=utils.string_to_bool,
            help='Make image accessible to the public.')
-@utils.arg('--is-protected', type=bool,
+@utils.arg('--is-protected', type=utils.string_to_bool,
            help='Prevent image from being deleted.')
 @utils.arg('--property', metavar="<key=value>", action='append', default=[],
            help=("Arbitrary property to associate with image. "
