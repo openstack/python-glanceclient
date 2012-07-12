@@ -113,6 +113,9 @@ def do_image_create(gc, args):
 
     fields['is_public'] = fields.pop('public')
 
+    if 'is_protected' in fields:
+        fields['protected'] = fields.pop('is_protected')
+
     raw_properties = fields.pop('property')
     fields['properties'] = {}
     for datum in raw_properties:
@@ -179,6 +182,9 @@ def do_image_update(gc, args):
     fields = dict(filter(lambda x: x[1] is not None, vars(args).items()))
 
     image_id = fields.pop('id')
+
+    if 'is_protected' in fields:
+        fields['protected'] = fields.pop('is_protected')
 
     raw_properties = fields.pop('property')
     fields['properties'] = {}
