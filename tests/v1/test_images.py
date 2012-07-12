@@ -131,7 +131,7 @@ class ImageManagerTest(unittest.TestCase):
         self.assertEqual(image.name, 'image-1')
 
     def test_data(self):
-        data = self.mgr.data('1')
+        data = ''.join([b for b in self.mgr.data('1')])
         expect = [('GET', '/v1/images/1', {}, None)]
         self.assertEqual(self.api.calls, expect)
         self.assertEqual(data, 'XXX')
@@ -256,7 +256,7 @@ class ImageTest(unittest.TestCase):
 
     def test_data(self):
         image = self.mgr.get('1')
-        data = image.data()
+        data = ''.join([b for b in image.data()])
         expect = [
             ('HEAD', '/v1/images/1', {}, None),
             ('GET', '/v1/images/1', {}, None),

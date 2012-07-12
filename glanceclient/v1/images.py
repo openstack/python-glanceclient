@@ -159,8 +159,9 @@ class ImageManager(base.Manager):
         if copy_from is not None:
             hdrs['x-glance-api-copy-from'] = copy_from
 
-        resp, body = self.api.raw_request(
+        resp, body_iter = self.api.raw_request(
                 'POST', '/v1/images', headers=hdrs, body=image_data)
+        body = ''.join([c for c in body_iter])
         return Image(self, json.loads(body)['image'])
 
     def update(self, image, **kwargs):
@@ -199,6 +200,7 @@ class ImageManager(base.Manager):
             hdrs['x-glance-api-copy-from'] = copy_from
 
         url = '/v1/images/%s' % base.getid(image)
-        resp, body = self.api.raw_request(
+        resp, body_iter = self.api.raw_request(
                 'PUT', url, headers=hdrs, body=image_data)
+        body = ''.join([c for c in body_iter])
         return Image(self, json.loads(body)['image'])
