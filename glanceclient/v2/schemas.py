@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from glanceclient.common import exceptions
+from glanceclient import exc
 
 
 class SchemaProperty(object):
@@ -55,4 +55,4 @@ class Controller(object):
         for link in schema_index['links']:
             if link['rel'] == schema_name:
                 return link['href']
-        raise exceptions.SchemaNotFound(schema_name)
+        raise exc.SchemaNotFound(schema_name)

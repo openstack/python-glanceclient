@@ -14,6 +14,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from glanceclient import version
+#NOTE(bcwaldon): this try/except block is needed to run setup.py due to
+# its need to import local code before installing required dependencies
+try:
+    import glanceclient.client
+    Client = glanceclient.client.Client
+except ImportError:
+    import warnings
+    warnings.warn("Could not import glanceclient.client", ImportWarning)
 
-__version__ = version.version_info.deferred_version_string()
+import glanceclient.version
+
+__version__ = glanceclient.version.version_info.deferred_version_string()

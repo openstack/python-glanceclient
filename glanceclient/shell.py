@@ -24,8 +24,8 @@ import sys
 
 from keystoneclient.v2_0 import client as ksclient
 
-import glanceclient.client
-from glanceclient.common import exceptions as exc
+import glanceclient
+from glanceclient import exc
 from glanceclient.common import utils
 
 
@@ -273,11 +273,11 @@ class OpenStackImagesShell(object):
             }
             endpoint, token = self._authenticate(**kwargs)
 
-        client = glanceclient.client.Client(api_version,
-                                            endpoint,
-                                            token,
-                                            insecure=args.insecure,
-                                            timeout=args.timeout)
+        client = glanceclient.Client(api_version,
+                                     endpoint,
+                                     token,
+                                     insecure=args.insecure,
+                                     timeout=args.timeout)
 
         try:
             args.func(client, args)

@@ -20,7 +20,7 @@ if not hasattr(urlparse, 'parse_qsl'):
     urlparse.parse_qsl = cgi.parse_qsl
 
 
-from glanceclient.common import exceptions
+from glanceclient import exc
 
 
 logger = logging.getLogger(__name__)
@@ -83,7 +83,7 @@ class HTTPClient(httplib2.Http):
 
         if 400 <= resp.status < 600:
             logger.exception("Request returned failure status.")
-            raise exceptions.from_response(resp, body)
+            raise exc.from_response(resp, body)
         elif resp.status in (301, 302, 305):
             # Redirected. Reissue the request to the new location.
             return self._http_request(resp['location'], method, **kwargs)
