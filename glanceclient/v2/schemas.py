@@ -52,7 +52,7 @@ class Controller(object):
 
     def _find_schema_uri(self, schema_name):
         _, schema_index = self.http_client.json_request('GET', '/v2/schemas')
-        for link in schema_index['links']:
-            if link['rel'] == schema_name:
-                return link['href']
-        raise exc.SchemaNotFound(schema_name)
+        try:
+            return schema_index[schema_name]
+        except KeyError:
+            raise exc.SchemaNotFound(schema_name)

@@ -23,10 +23,10 @@ fixtures = {
     '/v2/schemas': {
         'GET': (
             {},
-            {'links': [
-                {'rel': 'image', 'href': '/v2/schemas/image'},
-                {'rel': 'access', 'href': '/v2/schemas/image/access'},
-            ]},
+            {
+                'image': '/v2/schemas/image',
+                'access': '/v2/schemas/image/access',
+            },
         ),
     },
     '/v2/schemas/image': {
