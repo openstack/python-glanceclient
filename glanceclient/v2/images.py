@@ -19,6 +19,9 @@ class Image(object):
         self.id = id
         self.name = name
 
+    def iteritems(self):
+        return {'id': self.id, 'name': self.name}.iteritems()
+
 
 class Controller(object):
     def __init__(self, http_client):
@@ -27,3 +30,8 @@ class Controller(object):
     def list(self):
         resp, body = self.http_client.json_request('GET', '/v2/images')
         return [Image(i['id'], i['name']) for i in body['images']]
+
+    def get(self, image_id):
+        url = '/v2/images/%s' % image_id
+        resp, body = self.http_client.json_request('GET', url)
+        return Image(body['image']['id'], body['image']['name'])

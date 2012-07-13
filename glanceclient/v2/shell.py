@@ -24,6 +24,13 @@ def do_image_list(gc, args):
     utils.print_list(images, columns)
 
 
+@utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to describe.')
+def do_image_show(gc, args):
+    """Describe a specific image."""
+    image = gc.images.get(args.id)
+    utils.print_dict(image)
+
+
 @utils.arg('model', metavar='<MODEL>', help='Name of model to describe.')
 def do_explain(gc, args):
     """Describe a specific model."""
