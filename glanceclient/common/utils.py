@@ -57,7 +57,7 @@ def print_list(objs, fields, formatters={}):
 
 def print_dict(d):
     pt = prettytable.PrettyTable(['Property', 'Value'], caching=False)
-    pt.aligns = ['l', 'l']
+    pt.align = 'l'
     [pt.add_row(list(r)) for r in d.iteritems()]
     print pt.get_string(sortby='Property')
 
