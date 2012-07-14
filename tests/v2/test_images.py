@@ -62,7 +62,8 @@ class TestController(unittest.TestCase):
         self.controller = images.Controller(self.api, FakeModel)
 
     def test_list_images(self):
-        images = self.controller.list()
+        #NOTE(bcwaldon): cast to list since the controller returns a generator
+        images = list(self.controller.list())
         self.assertEqual(images[0].id, '3a4560a1-e585-443e-9b39-553b46ec92d1')
         self.assertEqual(images[0].name, 'image-1')
         self.assertEqual(images[1].id, '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810')

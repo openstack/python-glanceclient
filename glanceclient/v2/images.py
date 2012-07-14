@@ -20,14 +20,16 @@ class Controller(object):
         self.model = model
 
     def list(self):
+        """Retrieve a listing of Image objects
+
+        :returns generator over list of Images
+        """
         resp, body = self.http_client.json_request('GET', '/v2/images')
-        images = []
         for image in body['images']:
             #NOTE(bcwaldon): remove 'self' for now until we have an elegant
             # way to pass it into the model constructor without conflict
             image.pop('self', None)
-            images.append(self.model(**image))
-        return images
+            yield self.model(**image)
 
     def get(self, image_id):
         url = '/v2/images/%s' % image_id
