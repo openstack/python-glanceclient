@@ -28,6 +28,8 @@ def do_image_list(gc, args):
 def do_image_show(gc, args):
     """Describe a specific image."""
     image = gc.images.get(args.id)
+    ignore = ['self', 'access', 'file', 'schema']
+    image = dict([item for item in image.iteritems() if item[0] not in ignore])
     utils.print_dict(image)
 
 
