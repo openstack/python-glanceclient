@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
+
 from glanceclient import exc
 
 
@@ -39,6 +41,9 @@ class Schema(object):
         self.name = raw_schema['name']
         raw_properties = raw_schema['properties']
         self.properties = translate_schema_properties(raw_properties)
+
+    def raw(self):
+        return copy.deepcopy(self._raw_schema)
 
 
 class Controller(object):

@@ -15,6 +15,8 @@
 
 import unittest
 
+import warlock
+
 from glanceclient.v2 import images
 from tests import utils
 
@@ -49,22 +51,15 @@ fixtures = {
 }
 
 
-class TestImage(unittest.TestCase):
-    def test_image_minimum(self):
-        raw_image = {
-            'id': '8a5b2424-9751-498b-925f-66f62747c501',
-            'name': 'image-7',
-        }
-        image = images.Image(**raw_image)
-        self.assertEqual(image.id, '8a5b2424-9751-498b-925f-66f62747c501')
-        self.assertEqual(image.name, 'image-7')
+fake_schema = {'name': 'image', 'properties': {'id': {}, 'name': {}}}
+FakeModel = warlock.model_factory(fake_schema)
 
 
 class TestController(unittest.TestCase):
     def setUp(self):
         super(TestController, self).setUp()
         self.api = utils.FakeAPI(fixtures)
-        self.controller = images.Controller(self.api)
+        self.controller = images.Controller(self.api, FakeModel)
 
     def test_list_images(self):
         images = self.controller.list()

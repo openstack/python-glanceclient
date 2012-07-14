@@ -14,24 +14,25 @@
 #    under the License.
 
 
-class Image(object):
-    def __init__(self, id, name):
-        self.id = id
-        self.name = name
-
-    def iteritems(self):
-        return {'id': self.id, 'name': self.name}.iteritems()
-
-
 class Controller(object):
-    def __init__(self, http_client):
+    def __init__(self, http_client, model):
         self.http_client = http_client
+        self.model = model
 
     def list(self):
         resp, body = self.http_client.json_request('GET', '/v2/images')
-        return [Image(i['id'], i['name']) for i in body['images']]
+        images = []
+        for image in body['images']:
+            #NOTE(bcwaldon): remove 'self' for now until we have an elegant
+            # way to pass it into the model constructor without conflict
+            image.pop('self', None)
+            images.append(self.model(**image))
+        return images
 
     def get(self, image_id):
         url = '/v2/images/%s' % image_id
         resp, body = self.http_client.json_request('GET', url)
-        return Image(body['image']['id'], body['image']['name'])
+        #NOTE(bcwaldon): remove 'self' for now until we have an elegant
+        # way to pass it into the model constructor without conflict
+        body['image'].pop('self', None)
+        return self.model(**body['image'])
