@@ -84,7 +84,7 @@ FakeModel = warlock.model_factory(fake_schema)
 class TestController(unittest.TestCase):
     def setUp(self):
         super(TestController, self).setUp()
-        self.api = utils.FakeAPI(fixtures, strict_url_check=True)
+        self.api = utils.FakeAPI(fixtures)
         self.controller = images.Controller(self.api, FakeModel)
 
     def test_list_images(self):

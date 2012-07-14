@@ -36,6 +36,8 @@ import glanceclient.v1.images
 @utils.arg('--property-filter', metavar='<KEY=VALUE>',
            help="Filter images by a user-defined image property.",
             action='append', dest='properties', default=[])
+@utils.arg('--page-size', metavar='<SIZE>', default=None, type=int,
+           help='Number of images to request in each paginated request.')
 def do_image_list(gc, args):
     """List images."""
     filter_keys = ['name', 'status', 'container_format', 'disk_format',
@@ -47,7 +49,10 @@ def do_image_list(gc, args):
         property_filter_items = [p.split('=', 1) for p in args.properties]
         filters['properties'] = dict(property_filter_items)
 
-    images = gc.images.list(filters=filters)
+    kwargs = {'filters': filters}
+    if args.page_size is not None:
+        kwargs['page_size'] = args.page_size
+    images = gc.images.list(**kwargs)
     columns = ['ID', 'Name', 'Disk Format', 'Container Format',
                'Size', 'Status']
     utils.print_list(images, columns)

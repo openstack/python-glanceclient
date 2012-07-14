@@ -27,6 +27,8 @@ UPDATE_PARAMS = ('name', 'disk_format', 'container_format', 'min_disk',
 
 CREATE_PARAMS = UPDATE_PARAMS + ('id',)
 
+DEFAULT_PAGE_SIZE = 20
+
 
 class Image(base.Resource):
     def __repr__(self):
@@ -85,25 +87,45 @@ class ImageManager(base.Manager):
         resp, body = self.api.raw_request('GET', '/v1/images/%s' % image_id)
         return body
 
-    def list(self, limit=None, marker=None, filters=None):
+    def list(self, **kwargs):
         """Get a list of images.
 
-        :param limit: maximum number of images to return. Used for pagination.
-        :param marker: id of image last seen by caller. Used for pagination.
+        :param page_size: number of items to request in each paginated request
+        :param limit: maximum number of images to return
+        :param marker: begin returning images that appear later in the image
+                       list than that represented by this image id
+        :param filters: dict of direct comparison filters that mimics the
+                        structure of an image object
         :rtype: list of :class:`Image`
         """
-        params = {}
-        if limit:
-            params['limit'] = int(limit)
-        if marker:
-            params['marker'] = marker
-        if filters:
-            properties = filters.pop('properties', {})
-            for key, value in properties.items():
-                params['property-%s' % key] = value
-            params.update(filters)
-        query = '?%s' % urllib.urlencode(params) if params else ''
-        return self._list('/v1/images/detail%s' % query, "images")
+        limit = kwargs.get('limit')
+
+        def paginate(qp, seen=0):
+            url = '/v1/images/detail?%s' % urllib.urlencode(qp)
+            images = self._list(url, "images")
+            for image in images:
+                seen += 1
+                yield image
+
+            page_size = qp.get('limit')
+            if (page_size and len(images) == page_size and
+                    (limit is None or 0 < seen < limit)):
+                qp['marker'] = image.id
+                for image in paginate(qp, seen):
+                    yield image
+
+        params = {'limit': kwargs.get('page_size', DEFAULT_PAGE_SIZE)}
+
+        if 'marker' in kwargs:
+            params['marker'] = kwargs['marker']
+
+        filters = kwargs.get('filters', {})
+        properties = filters.pop('properties', {})
+        for key, value in properties.items():
+            params['property-%s' % key] = value
+        params.update(filters)
+
+        return paginate(params)
 
     def delete(self, image):
         """Delete an image."""

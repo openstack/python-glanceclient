@@ -42,7 +42,87 @@ fixtures = {
             ),
         ),
     },
-    '/v1/images/detail': {
+    '/v1/images/detail?limit=20': {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': 'a',
+                    'name': 'image-1',
+                    'properties': {'arch': 'x86_64'},
+                },
+                {
+                    'id': 'b',
+                    'name': 'image-2',
+                    'properties': {'arch': 'x86_64'},
+                },
+            ]},
+        ),
+    },
+    '/v1/images/detail?marker=a&limit=20': {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': 'b',
+                    'name': 'image-1',
+                    'properties': {'arch': 'x86_64'},
+                },
+                {
+                    'id': 'c',
+                    'name': 'image-2',
+                    'properties': {'arch': 'x86_64'},
+                },
+            ]},
+        ),
+    },
+    '/v1/images/detail?limit=2': {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': 'a',
+                    'name': 'image-1',
+                    'properties': {'arch': 'x86_64'},
+                },
+                {
+                    'id': 'b',
+                    'name': 'image-2',
+                    'properties': {'arch': 'x86_64'},
+                },
+            ]},
+        ),
+    },
+    '/v1/images/detail?marker=b&limit=2': {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': 'c',
+                    'name': 'image-3',
+                    'properties': {'arch': 'x86_64'},
+                },
+            ]},
+        ),
+    },
+    '/v1/images/detail?limit=20&name=foo': {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': 'a',
+                    'name': 'image-1',
+                    'properties': {'arch': 'x86_64'},
+                },
+                {
+                    'id': 'b',
+                    'name': 'image-2',
+                    'properties': {'arch': 'x86_64'},
+                },
+            ]},
+        ),
+    },
+    '/v1/images/detail?property-ping=pong&limit=20': {
         'GET': (
             {},
             {'images': [
@@ -94,33 +174,42 @@ class ImageManagerTest(unittest.TestCase):
         self.api = utils.FakeAPI(fixtures)
         self.mgr = glanceclient.v1.images.ImageManager(self.api)
 
-    def test_list(self):
-        images = self.mgr.list()
-        expect = [('GET', '/v1/images/detail', {}, None)]
+    def test_paginated_list(self):
+        images = list(self.mgr.list(page_size=2))
+        expect = [
+            ('GET', '/v1/images/detail?limit=2', {}, None),
+            ('GET', '/v1/images/detail?marker=b&limit=2', {}, None),
+        ]
         self.assertEqual(self.api.calls, expect)
-        self.assertEqual(len(images), 1)
-        self.assertEqual(images[0].id, '1')
-        self.assertEqual(images[0].name, 'image-1')
-        self.assertEqual(images[0].properties, {'arch': 'x86_64'})
+        self.assertEqual(len(images), 3)
+        self.assertEqual(images[0].id, 'a')
+        self.assertEqual(images[1].id, 'b')
+        self.assertEqual(images[2].id, 'c')
 
-    def test_list_with_limit(self):
-        self.mgr.list(limit=10)
-        expect = [('GET', '/v1/images/detail?limit=10', {}, None)]
+    def test_list_with_limit_less_than_page_size(self):
+        list(self.mgr.list(page_size=20, limit=10))
+        expect = [('GET', '/v1/images/detail?limit=20', {}, None)]
+        self.assertEqual(self.api.calls, expect)
+
+    def test_list_with_limit_greater_than_page_size(self):
+        list(self.mgr.list(page_size=20, limit=30))
+        expect = [('GET', '/v1/images/detail?limit=20', {}, None)]
         self.assertEqual(self.api.calls, expect)
 
     def test_list_with_marker(self):
-        self.mgr.list(marker=20)
-        expect = [('GET', '/v1/images/detail?marker=20', {}, None)]
+        list(self.mgr.list(marker='a'))
+        expect = [('GET', '/v1/images/detail?marker=a&limit=20', {}, None)]
         self.assertEqual(self.api.calls, expect)
 
     def test_list_with_filter(self):
-        self.mgr.list(filters={'name': "foo"})
-        expect = [('GET', '/v1/images/detail?name=foo', {}, None)]
+        list(self.mgr.list(filters={'name': "foo"}))
+        expect = [('GET', '/v1/images/detail?limit=20&name=foo', {}, None)]
         self.assertEqual(self.api.calls, expect)
 
     def test_list_with_property_filters(self):
-        self.mgr.list(filters={'properties': {'ping': 'pong'}})
-        expect = [('GET', '/v1/images/detail?property-ping=pong', {}, None)]
+        list(self.mgr.list(filters={'properties': {'ping': 'pong'}}))
+        url = '/v1/images/detail?property-ping=pong&limit=20'
+        expect = [('GET', url, {}, None)]
         self.assertEqual(self.api.calls, expect)
 
     def test_get(self):
