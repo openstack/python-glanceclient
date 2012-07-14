@@ -15,15 +15,16 @@
 
 
 class FakeAPI(object):
-    def __init__(self, fixtures):
+    def __init__(self, fixtures, strict_url_check=False):
         self.fixtures = fixtures
         self.calls = []
+        self.strict_url_check = strict_url_check
 
     def _request(self, method, url, headers=None, body=None):
         call = (method, url, headers or {}, body)
         self.calls.append(call)
-        # drop any query params
-        url = url.split('?', 1)[0]
+        if not self.strict_url_check:
+            url = url.split('?', 1)[0]
         return self.fixtures[url][method]
 
     def raw_request(self, *args, **kwargs):

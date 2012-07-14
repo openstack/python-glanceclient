@@ -22,7 +22,7 @@ from tests import utils
 
 
 fixtures = {
-    '/v2/images': {
+    '/v2/images?limit=20': {
         'GET': (
             {},
             {'images': [
@@ -30,6 +30,32 @@ fixtures = {
                     'id': '3a4560a1-e585-443e-9b39-553b46ec92d1',
                     'name': 'image-1',
                 },
+                {
+                    'id': '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810',
+                    'name': 'image-2',
+                },
+            ]},
+        ),
+    },
+    '/v2/images?limit=1': {
+        'GET': (
+            {},
+            {
+                'images': [
+                   {
+                        'id': '3a4560a1-e585-443e-9b39-553b46ec92d1',
+                        'name': 'image-1',
+                    },
+                ],
+                'next': ('/v2/images?limit=1&'
+                         'marker=3a4560a1-e585-443e-9b39-553b46ec92d1'),
+            },
+        ),
+    },
+    ('/v2/images?limit=1&marker=3a4560a1-e585-443e-9b39-553b46ec92d1'): {
+        'GET': (
+            {},
+            {'images': [
                 {
                     'id': '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810',
                     'name': 'image-2',
@@ -58,12 +84,20 @@ FakeModel = warlock.model_factory(fake_schema)
 class TestController(unittest.TestCase):
     def setUp(self):
         super(TestController, self).setUp()
-        self.api = utils.FakeAPI(fixtures)
+        self.api = utils.FakeAPI(fixtures, strict_url_check=True)
         self.controller = images.Controller(self.api, FakeModel)
 
     def test_list_images(self):
         #NOTE(bcwaldon): cast to list since the controller returns a generator
         images = list(self.controller.list())
+        self.assertEqual(images[0].id, '3a4560a1-e585-443e-9b39-553b46ec92d1')
+        self.assertEqual(images[0].name, 'image-1')
+        self.assertEqual(images[1].id, '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810')
+        self.assertEqual(images[1].name, 'image-2')
+
+    def test_list_images_paginated(self):
+        #NOTE(bcwaldon): cast to list since the controller returns a generator
+        images = list(self.controller.list(page_size=1))
         self.assertEqual(images[0].id, '3a4560a1-e585-443e-9b39-553b46ec92d1')
         self.assertEqual(images[0].name, 'image-1')
         self.assertEqual(images[1].id, '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810')
