@@ -14,6 +14,7 @@
 #    under the License.
 
 import os
+import sys
 import uuid
 
 import prettytable
@@ -47,7 +48,7 @@ def print_list(objs, fields, formatters={}):
                 row.append(formatters[field](o))
             else:
                 field_name = field.lower().replace(' ', '_')
-                data = getattr(o, field_name, '')
+                data = getattr(o, field_name, None) or ''
                 row.append(data)
         pt.add_row(row)
 
@@ -56,7 +57,7 @@ def print_list(objs, fields, formatters={}):
 
 def print_dict(d):
     pt = prettytable.PrettyTable(['Property', 'Value'], caching=False)
-    pt.aligns = ['l', 'l']
+    pt.align = 'l'
     [pt.add_row(list(r)) for r in d.iteritems()]
     print pt.get_string(sortby='Property')
 
@@ -123,3 +124,9 @@ def import_versioned_module(version, submodule=None):
     if submodule:
         module = '.'.join((module, submodule))
     return importutils.import_module(module)
+
+
+def exit(msg=''):
+    if msg:
+        print >> sys.stderr, msg
+    sys.exit(1)

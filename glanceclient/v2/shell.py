@@ -14,6 +14,7 @@
 #    under the License.
 
 from glanceclient.common import utils
+from glanceclient import exc
 
 
 def do_image_list(gc, args):
@@ -23,9 +24,21 @@ def do_image_list(gc, args):
     utils.print_list(images, columns)
 
 
-@utils.arg('name', metavar='<NAME>', help='Name of model to describe.')
+@utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to describe.')
+def do_image_show(gc, args):
+    """Describe a specific image."""
+    image = gc.images.get(args.id)
+    utils.print_dict(image)
+
+
+@utils.arg('model', metavar='<MODEL>', help='Name of model to describe.')
 def do_explain(gc, args):
     """Describe a specific model."""
-    schema = gc.schemas.get(args.name)
-    columns = ['Name', 'Description']
-    utils.print_list(schema.properties, columns)
+    try:
+        schema = gc.schemas.get(args.model)
+    except exc.SchemaNotFound:
+        utils.exit('Unable to find requested model \'%s\'' % args.model)
+    else:
+        formatters = {'Attribute': lambda m: m.name}
+        columns = ['Attribute', 'Description']
+        utils.print_list(schema.properties, columns, formatters)

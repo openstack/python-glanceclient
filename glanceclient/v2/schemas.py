@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
+
 from glanceclient import exc
 
 
@@ -40,6 +42,9 @@ class Schema(object):
         raw_properties = raw_schema['properties']
         self.properties = translate_schema_properties(raw_properties)
 
+    def raw(self):
+        return copy.deepcopy(self._raw_schema)
+
 
 class Controller(object):
     def __init__(self, http_client):
@@ -52,7 +57,7 @@ class Controller(object):
 
     def _find_schema_uri(self, schema_name):
         _, schema_index = self.http_client.json_request('GET', '/v2/schemas')
-        for link in schema_index['links']:
-            if link['rel'] == schema_name:
-                return link['href']
-        raise exc.SchemaNotFound(schema_name)
+        try:
+            return schema_index[schema_name]
+        except KeyError:
+            raise exc.SchemaNotFound(schema_name)

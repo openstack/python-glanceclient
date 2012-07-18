@@ -14,16 +14,27 @@
 #    under the License.
 
 
-class Image(object):
-    def __init__(self, id, name):
-        self.id = id
-        self.name = name
-
-
 class Controller(object):
-    def __init__(self, http_client):
+    def __init__(self, http_client, model):
         self.http_client = http_client
+        self.model = model
 
     def list(self):
+        """Retrieve a listing of Image objects
+
+        :returns generator over list of Images
+        """
         resp, body = self.http_client.json_request('GET', '/v2/images')
-        return [Image(i['id'], i['name']) for i in body['images']]
+        for image in body['images']:
+            #NOTE(bcwaldon): remove 'self' for now until we have an elegant
+            # way to pass it into the model constructor without conflict
+            image.pop('self', None)
+            yield self.model(**image)
+
+    def get(self, image_id):
+        url = '/v2/images/%s' % image_id
+        resp, body = self.http_client.json_request('GET', url)
+        #NOTE(bcwaldon): remove 'self' for now until we have an elegant
+        # way to pass it into the model constructor without conflict
+        body['image'].pop('self', None)
+        return self.model(**body['image'])

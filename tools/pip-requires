@@ -2,3 +2,4 @@ argparse
 httplib2
 prettytable==0.6
 python-keystoneclient>=0.1,<0.2
+warlock==0.1.0

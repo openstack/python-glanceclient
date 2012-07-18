@@ -23,10 +23,10 @@ fixtures = {
     '/v2/schemas': {
         'GET': (
             {},
-            {'links': [
-                {'rel': 'image', 'href': '/v2/schemas/image'},
-                {'rel': 'access', 'href': '/v2/schemas/image/access'},
-            ]},
+            {
+                'image': '/v2/schemas/image',
+                'access': '/v2/schemas/image/access',
+            },
         ),
     },
     '/v2/schemas/image': {
@@ -66,6 +66,11 @@ class TestSchema(unittest.TestCase):
         schema = schemas.Schema(raw_schema)
         self.assertEqual(schema.name, 'Country')
         self.assertEqual([p.name for p in schema.properties], ['size'])
+
+    def test_raw(self):
+        raw_schema = {'name': 'Country', 'properties': {}}
+        schema = schemas.Schema(raw_schema)
+        self.assertEqual(schema.raw(), raw_schema)
 
 
 class TestController(unittest.TestCase):
