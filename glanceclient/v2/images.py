@@ -13,19 +13,35 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+DEFAULT_PAGE_SIZE = 20
+
 
 class Controller(object):
     def __init__(self, http_client, model):
         self.http_client = http_client
         self.model = model
 
-    def list(self):
+    def list(self, page_size=DEFAULT_PAGE_SIZE):
         """Retrieve a listing of Image objects
 
+        :param page_size: Number of images to request in each paginated request
         :returns generator over list of Images
         """
-        resp, body = self.http_client.json_request('GET', '/v2/images')
-        for image in body['images']:
+        def paginate(url):
+            resp, body = self.http_client.json_request('GET', url)
+            for image in body['images']:
+                yield image
+            try:
+                next_url = body['next']
+            except KeyError:
+                return
+            else:
+                for image in paginate(next_url):
+                    yield image
+
+        url = '/v2/images?limit=%s' % page_size
+
+        for image in paginate(url):
             #NOTE(bcwaldon): remove 'self' for now until we have an elegant
             # way to pass it into the model constructor without conflict
             image.pop('self', None)

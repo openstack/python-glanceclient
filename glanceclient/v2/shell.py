@@ -17,9 +17,14 @@ from glanceclient.common import utils
 from glanceclient import exc
 
 
+@utils.arg('--page-size', metavar='<SIZE>', default=None, type=int,
+           help='Number of images to request in each paginated request.')
 def do_image_list(gc, args):
     """List images."""
-    images = gc.images.list()
+    kwargs = {}
+    if args.page_size is not None:
+        kwargs['page_size'] = args.page_size
+    images = gc.images.list(**kwargs)
     columns = ['ID', 'Name']
     utils.print_list(images, columns)
 
@@ -28,6 +33,8 @@ def do_image_list(gc, args):
 def do_image_show(gc, args):
     """Describe a specific image."""
     image = gc.images.get(args.id)
+    ignore = ['self', 'access', 'file', 'schema']
+    image = dict([item for item in image.iteritems() if item[0] not in ignore])
     utils.print_dict(image)
 
 
