@@ -5,6 +5,7 @@ OpenStack Client interface. Handles the REST calls and responses.
 import copy
 import logging
 import os
+import StringIO
 import urlparse
 
 import httplib2
@@ -25,6 +26,7 @@ from glanceclient import exc
 
 logger = logging.getLogger(__name__)
 USER_AGENT = 'python-glanceclient'
+CHUNKSIZE = 1024 * 64  # 64kB
 
 
 class HTTPClient(httplib2.Http):
@@ -88,7 +90,12 @@ class HTTPClient(httplib2.Http):
             # Redirected. Reissue the request to the new location.
             return self._http_request(resp['location'], method, **kwargs)
 
-        return resp, body
+        #NOTE(bcwaldon): body has been loaded to a string at this point,
+        # but we want to move to a world where it can be read from a
+        # socket-level cache. This is here until we can do that.
+        body_iter = ResponseBodyIterator(StringIO.StringIO(body))
+
+        return resp, body_iter
 
     def json_request(self, method, url, **kwargs):
         kwargs.setdefault('headers', {})
@@ -97,7 +104,8 @@ class HTTPClient(httplib2.Http):
         if 'body' in kwargs:
             kwargs['body'] = json.dumps(kwargs['body'])
 
-        resp, body = self._http_request(url, method, **kwargs)
+        resp, body_iter = self._http_request(url, method, **kwargs)
+        body = ''.join([chunk for chunk in body_iter])
 
         if body:
             try:
@@ -115,3 +123,21 @@ class HTTPClient(httplib2.Http):
         kwargs['headers'].setdefault('Content-Type',
                                      'application/octet-stream')
         return self._http_request(url, method, **kwargs)
+
+
+class ResponseBodyIterator(object):
+    """A class that acts as an iterator over an HTTP response."""
+
+    def __init__(self, resp):
+        self.resp = resp
+
+    def __iter__(self):
+        while True:
+            yield self.next()
+
+    def next(self):
+        chunk = self.resp.read(CHUNKSIZE)
+        if chunk:
+            return chunk
+        else:
+            raise StopIteration()
