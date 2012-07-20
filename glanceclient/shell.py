@@ -55,7 +55,10 @@ class OpenStackImagesShell(object):
         parser.add_argument('--insecure',
             default=False,
             action='store_true',
-            help=argparse.SUPPRESS)
+            help="Explicitly allow glanceclient to perform \"insecure\" "
+                 "SSL (https) requests. The server's certificate will "
+                 "not be verified against any certificate authorities. "
+                 "This option should be used with caution.")
 
         parser.add_argument('--timeout',
             default=600,
