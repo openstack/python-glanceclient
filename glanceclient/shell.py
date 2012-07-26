@@ -205,7 +205,8 @@ class OpenStackImagesShell(object):
                                     password=kwargs.get('password'),
                                     tenant_id=kwargs.get('tenant_id'),
                                     tenant_name=kwargs.get('tenant_name'),
-                                    auth_url=kwargs.get('auth_url'))
+                                    auth_url=kwargs.get('auth_url'),
+                                    insecure=kwargs.get('insecure'))
         service_type = kwargs.get('service_type') or 'image'
         endpoint_type = kwargs.get('endpoint_type') or 'publicURL'
         endpoint = _ksclient.service_catalog.url_for(
@@ -267,7 +268,8 @@ class OpenStackImagesShell(object):
                 'tenant_name': args.os_tenant_name,
                 'auth_url': args.os_auth_url,
                 'service_type': args.os_service_type,
-                'endpoint_type': args.os_endpoint_type
+                'endpoint_type': args.os_endpoint_type,
+                'insecure': args.insecure
             }
             endpoint, token = self._authenticate(**kwargs)
 
