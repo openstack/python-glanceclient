@@ -13,16 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-
 import warlock
 
 from glanceclient.common import http
 from glanceclient.v2 import images
 from glanceclient.v2 import schemas
-
-
-logger = logging.getLogger(__name__)
 
 
 class Client(object):

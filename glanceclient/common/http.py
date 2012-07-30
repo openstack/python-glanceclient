@@ -5,6 +5,7 @@ OpenStack Client interface. Handles the REST calls and responses.
 import copy
 import httplib
 import logging
+import StringIO
 import urlparse
 
 
@@ -22,7 +23,7 @@ if not hasattr(urlparse, 'parse_qsl'):
 from glanceclient import exc
 
 
-logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 USER_AGENT = 'python-glanceclient'
 CHUNKSIZE = 1024 * 64  # 64kB
 
@@ -33,6 +34,7 @@ class HTTPClient(object):
         parts = urlparse.urlparse(endpoint)
         self.connection_class = self.get_connection_class(parts.scheme)
         self.endpoint = (parts.hostname, parts.port)
+        self.scheme = parts.scheme
         self.auth_token = token
 
     @staticmethod
@@ -46,24 +48,29 @@ class HTTPClient(object):
     def get_connection(self):
         return self.connection_class(*self.endpoint)
 
-    def http_log(self, args, kwargs, resp):
-        string_parts = ['curl -i']
-        for element in args:
-            if element in ('GET', 'POST'):
-                string_parts.append(' -X %s' % element)
-            else:
-                string_parts.append(' %s' % element)
+    def log_curl_request(self, method, url, kwargs):
+        curl = ['curl -i -X %s' % method]
 
-        for element in kwargs['headers']:
-            header = ' -H "%s: %s"' % (element, kwargs['headers'][element])
-            string_parts.append(header)
+        for (key, value) in kwargs['headers'].items():
+            header = '-H \'%s: %s\'' % (key, value)
+            curl.append(header)
 
-        logger.debug("REQ: %s\n" % "".join(string_parts))
-        if 'raw_body' in kwargs:
-            logger.debug("REQ BODY (RAW): %s\n" % (kwargs['raw_body']))
         if 'body' in kwargs:
-            logger.debug("REQ BODY: %s\n" % (kwargs['body']))
-        logger.debug("RESP: %s", resp)
+            curl.append('-d \'%s\'' % kwargs['body'])
+
+        endpoint_parts = (self.scheme, self.endpoint[0], self.endpoint[1], url)
+        curl.append('%s://%s:%s%s' % endpoint_parts)
+        LOG.debug(' '.join(curl))
+
+    @staticmethod
+    def log_http_response(resp, body=None):
+        status = (resp.version / 10.0, resp.status, resp.reason)
+        dump = ['\nHTTP/%.1f %s %s' % status]
+        dump.extend(['%s: %s' % (k, v) for k, v in resp.getheaders()])
+        dump.append('')
+        if body:
+            dump.extend([body, ''])
+        LOG.debug('\n'.join(dump))
 
     def _http_request(self, url, method, **kwargs):
         """ Send an http request with the specified characteristics.
@@ -77,20 +84,29 @@ class HTTPClient(object):
         if self.auth_token:
             kwargs['headers'].setdefault('X-Auth-Token', self.auth_token)
 
+        self.log_curl_request(method, url, kwargs)
+
         conn = self.get_connection()
         conn.request(method, url, **kwargs)
         resp = conn.getresponse()
 
-        self.http_log((url, method,), kwargs, resp)
+        body_iter = ResponseBodyIterator(resp)
+
+        # Read body into string if it isn't obviously image data
+        if resp.getheader('content-type', None) != 'application/octet-stream':
+            body_str = ''.join([chunk for chunk in body_iter])
+            self.log_http_response(resp, body_str)
+            body_iter = StringIO.StringIO(body_str)
+        else:
+            self.log_http_response(resp)
 
         if 400 <= resp.status < 600:
-            logger.exception("Request returned failure status.")
+            LOG.exception("Request returned failure status.")
             raise exc.from_response(resp)
         elif resp.status in (301, 302, 305):
             # Redirected. Reissue the request to the new location.
             return self._http_request(resp['location'], method, **kwargs)
 
-        body_iter = ResponseBodyIterator(resp)
         return resp, body_iter
 
     def json_request(self, method, url, **kwargs):
@@ -101,15 +117,14 @@ class HTTPClient(object):
             kwargs['body'] = json.dumps(kwargs['body'])
 
         resp, body_iter = self._http_request(url, method, **kwargs)
-        body = ''.join([chunk for chunk in body_iter])
 
-        if body:
+        if 'application/json' in resp.getheader('content-type', None):
+            body = ''.join([chunk for chunk in body_iter])
             try:
                 body = json.loads(body)
             except ValueError:
-                logger.debug("Could not decode JSON from body: %s" % body)
+                LOG.error('Could not decode response body as JSON')
         else:
-            logger.debug("No body was returned.")
             body = None
 
         return resp, body

@@ -13,14 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-
 from glanceclient.common import http
 from glanceclient.v1 import images
 from glanceclient.v1 import image_members
-
-
-logger = logging.getLogger(__name__)
 
 
 class Client(http.HTTPClient):
