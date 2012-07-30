@@ -5,7 +5,6 @@ OpenStack Client interface. Handles the REST calls and responses.
 import copy
 import httplib
 import logging
-import os
 import urlparse
 
 
@@ -48,13 +47,6 @@ class HTTPClient(object):
         return self.connection_class(*self.endpoint)
 
     def http_log(self, args, kwargs, resp):
-        if os.environ.get('GLANCECLIENT_DEBUG', False):
-            ch = logging.StreamHandler()
-            logger.setLevel(logging.DEBUG)
-            logger.addHandler(ch)
-        elif not logger.isEnabledFor(logging.DEBUG):
-            return
-
         string_parts = ['curl -i']
         for element in args:
             if element in ('GET', 'POST'):

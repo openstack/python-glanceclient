@@ -18,6 +18,7 @@ Command-line interface to the OpenStack Images API.
 """
 
 import argparse
+import logging
 import re
 import sys
 
@@ -47,9 +48,9 @@ class OpenStackImagesShell(object):
         )
 
         parser.add_argument('--debug',
-            default=False,
+            default=bool(utils.env('GLANCECLIENT_DEBUG')),
             action='store_true',
-            help=argparse.SUPPRESS)
+            help='Defaults to env[GLANCECLIENT_DEBUG]')
 
         parser.add_argument('--insecure',
             default=False,
@@ -237,6 +238,10 @@ class OpenStackImagesShell(object):
         if args.func == self.do_help:
             self.do_help(args)
             return 0
+
+        LOG = logging.getLogger('glanceclient')
+        LOG.addHandler(logging.StreamHandler())
+        LOG.setLevel(logging.DEBUG if args.debug else logging.INFO)
 
         auth_reqd = (utils.is_authentication_required(args.func) and
                      not (args.os_auth_token and args.os_image_url))
