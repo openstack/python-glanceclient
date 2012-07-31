@@ -52,5 +52,5 @@ class Controller(object):
         resp, body = self.http_client.json_request('GET', url)
         #NOTE(bcwaldon): remove 'self' for now until we have an elegant
         # way to pass it into the model constructor without conflict
-        body['image'].pop('self', None)
-        return self.model(**body['image'])
+        body.pop('self', None)
+        return self.model(**body)

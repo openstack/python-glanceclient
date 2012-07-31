@@ -67,10 +67,8 @@ fixtures = {
         'GET': (
             {},
             {
-                'image': {
-                    'id': '3a4560a1-e585-443e-9b39-553b46ec92d1',
-                    'name': 'image-1',
-                },
+                'id': '3a4560a1-e585-443e-9b39-553b46ec92d1',
+                'name': 'image-1',
             },
         ),
     },
