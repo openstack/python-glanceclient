@@ -90,6 +90,14 @@ class OverLimit(ClientException):
     message = "Over limit"
 
 
+class InternalServerError(ClientException):
+    """
+    HTTP 500 - Internal Server Error
+    """
+    http_status = 500
+    message = "Internal Server Error"
+
+
 # NotImplemented is a python keyword.
 class HTTPNotImplemented(ClientException):
     """
@@ -99,14 +107,23 @@ class HTTPNotImplemented(ClientException):
     message = "Not Implemented"
 
 
+class ServiceUnavailable(ClientException):
+    """
+    HTTP 503 - Service Unavailable
+    """
+    http_status = 503
+    message = "Service Unavailable"
+
+
 # In Python 2.4 Exception is old-style and thus doesn't have a __subclasses__()
 # so we can do this:
 #     _code_map = dict((c.http_status, c)
 #                      for c in ClientException.__subclasses__())
 #
 # Instead, we have to hardcode it:
-_code_map = dict((c.http_status, c) for c in [BadRequest, Unauthorized,
-                   Forbidden, NotFound, OverLimit, HTTPNotImplemented])
+_exc_list = [BadRequest, Unauthorized, Forbidden, NotFound, OverLimit,
+             InternalServerError, HTTPNotImplemented, ServiceUnavailable]
+_code_map = dict((c.http_status, c) for c in _exc_list)
 
 
 def from_response(response):
