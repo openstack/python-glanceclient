@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import errno
 import unittest
 
 import warlock
@@ -72,6 +73,28 @@ fixtures = {
             },
         ),
     },
+    '/v2/images/5cc4bebc-db27-11e1-a1eb-080027cbe205/file': {
+        'GET': (
+            {},
+            'A',
+        ),
+    },
+    '/v2/images/66fb18d6-db27-11e1-a1eb-080027cbe205/file': {
+        'GET': (
+            {
+                'content-md5': 'wrong'
+            },
+            'BB',
+        ),
+    },
+    '/v2/images/1b1c6366-dd57-11e1-af0f-02163e68b1d8/file': {
+        'GET': (
+            {
+                'content-md5': 'defb99e69a9f1f6e06f15006b1f166ae'
+            },
+            'CCC',
+        ),
+    }
 }
 
 
@@ -105,3 +128,38 @@ class TestController(unittest.TestCase):
         image = self.controller.get('3a4560a1-e585-443e-9b39-553b46ec92d1')
         self.assertEqual(image.id, '3a4560a1-e585-443e-9b39-553b46ec92d1')
         self.assertEqual(image.name, 'image-1')
+
+    def test_data_without_checksum(self):
+        body = self.controller.data('5cc4bebc-db27-11e1-a1eb-080027cbe205',
+                                    do_checksum=False)
+        body = ''.join([b for b in body])
+        self.assertEqual(body, 'A')
+
+        body = self.controller.data('5cc4bebc-db27-11e1-a1eb-080027cbe205')
+        body = ''.join([b for b in body])
+        self.assertEqual(body, 'A')
+
+    def test_data_with_wrong_checksum(self):
+        body = self.controller.data('66fb18d6-db27-11e1-a1eb-080027cbe205',
+                                    do_checksum=False)
+        body = ''.join([b for b in body])
+        self.assertEqual(body, 'BB')
+
+        body = self.controller.data('66fb18d6-db27-11e1-a1eb-080027cbe205')
+        try:
+            body = ''.join([b for b in body])
+            self.fail('data did not raise an error.')
+        except IOError, e:
+            self.assertEqual(errno.EPIPE, e.errno)
+            msg = 'was 9d3d9048db16a7eee539e93e3618cbe7 expected wrong'
+            self.assertTrue(msg in str(e))
+
+    def test_data_with_checksum(self):
+        body = self.controller.data('1b1c6366-dd57-11e1-af0f-02163e68b1d8',
+                                    do_checksum=False)
+        body = ''.join([b for b in body])
+        self.assertEqual(body, 'CCC')
+
+        body = self.controller.data('1b1c6366-dd57-11e1-af0f-02163e68b1d8')
+        body = ''.join([b for b in body])
+        self.assertEqual(body, 'CCC')

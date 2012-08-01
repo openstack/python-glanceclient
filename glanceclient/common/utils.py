@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import errno
+import hashlib
 import os
 import sys
 import uuid
@@ -130,3 +132,39 @@ def exit(msg=''):
     if msg:
         print >> sys.stderr, msg
     sys.exit(1)
+
+
+def save_image(data, path):
+    """
+    Save an image to the specified path.
+
+    :param data: binary data of the image
+    :param path: path to save the image to
+    """
+    if path is None:
+        image = sys.stdout
+    else:
+        image = open(path, 'wb')
+    try:
+        for chunk in data:
+            image.write(chunk)
+    finally:
+        if path is not None:
+            image.close()
+
+
+def integrity_iter(iter, checksum):
+    """
+    Check image data integrity.
+
+    :raises: IOError
+    """
+    md5sum = hashlib.md5()
+    for chunk in iter:
+        yield chunk
+        md5sum.update(chunk)
+    md5sum = md5sum.hexdigest()
+    if md5sum != checksum:
+        raise IOError(errno.EPIPE,
+                      'Corrupt image download. Checksum was %s expected %s' %
+                      (md5sum, checksum))

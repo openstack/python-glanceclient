@@ -20,6 +20,7 @@ import os
 import urllib
 
 from glanceclient.common import base
+from glanceclient.common import utils
 
 UPDATE_PARAMS = ('name', 'disk_format', 'container_format', 'min_disk',
                  'min_ram', 'owner', 'size', 'is_public', 'protected',
@@ -40,8 +41,8 @@ class Image(base.Resource):
     def delete(self):
         return self.manager.delete(self)
 
-    def data(self):
-        return self.manager.data(self)
+    def data(self, **kwargs):
+        return self.manager.data(self, **kwargs)
 
 
 class ImageManager(base.Manager):
@@ -77,15 +78,20 @@ class ImageManager(base.Manager):
         meta = self._image_meta_from_headers(dict(resp.getheaders()))
         return Image(self, meta)
 
-    def data(self, image):
+    def data(self, image, do_checksum=True):
         """Get the raw data for a specific image.
 
         :param image: image object or id to look up
+        :param do_checksum: Enable/disable checksum validation
         :rtype: iterable containing image data
         """
         image_id = base.getid(image)
-        _, body = self.api.raw_request('GET', '/v1/images/%s' % image_id)
-        return body
+        resp, body = self.api.raw_request('GET', '/v1/images/%s' % image_id)
+        checksum = resp.getheader('x-image-meta-checksum', None)
+        if do_checksum and checksum is not None:
+            return utils.integrity_iter(body, checksum)
+        else:
+            return body
 
     def list(self, **kwargs):
         """Get a list of images.

@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from glanceclient.common import utils
+
 DEFAULT_PAGE_SIZE = 20
 
 
@@ -54,3 +56,18 @@ class Controller(object):
         # way to pass it into the model constructor without conflict
         body.pop('self', None)
         return self.model(**body)
+
+    def data(self, image_id, do_checksum=True):
+        """
+        Retrieve data of an image.
+
+        :param image_id:    ID of the image to download.
+        :param do_checksum: Enable/disable checksum validation.
+        """
+        url = '/v2/images/%s/file' % image_id
+        resp, body = self.http_client.raw_request('GET', url)
+        checksum = resp.getheader('content-md5', None)
+        if do_checksum and checksum is not None:
+            return utils.integrity_iter(body, checksum)
+        else:
+            return body

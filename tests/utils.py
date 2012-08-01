@@ -45,3 +45,6 @@ class FakeResponse(object):
 
     def getheaders(self):
         return copy.deepcopy(self.headers).items()
+
+    def getheader(self, key, default):
+        return self.headers.get(key, default)

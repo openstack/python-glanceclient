@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import errno
 import json
 import StringIO
 import unittest
@@ -164,7 +165,34 @@ fixtures = {
         ),
         'DELETE': ({}, None),
     },
-
+    '/v1/images/2': {
+       'HEAD': (
+            {
+                'x-image-meta-id': '2'
+            },
+            None,
+        ),
+        'GET': (
+            {
+                'x-image-meta-checksum': 'wrong'
+            },
+            'YYY',
+        ),
+    },
+    '/v1/images/3': {
+       'HEAD': (
+            {
+                'x-image-meta-id': '3'
+            },
+            None,
+        ),
+        'GET': (
+            {
+                'x-image-meta-checksum': '0745064918b49693cca64d6b6a13d28a'
+            },
+            'ZZZ',
+        ),
+    },
 }
 
 
@@ -220,10 +248,43 @@ class ImageManagerTest(unittest.TestCase):
         self.assertEqual(image.name, 'image-1')
 
     def test_data(self):
-        data = ''.join([b for b in self.mgr.data('1')])
+        data = ''.join([b for b in self.mgr.data('1', do_checksum=False)])
         expect = [('GET', '/v1/images/1', {}, None)]
         self.assertEqual(self.api.calls, expect)
         self.assertEqual(data, 'XXX')
+
+        expect += [('GET', '/v1/images/1', {}, None)]
+        data = ''.join([b for b in self.mgr.data('1')])
+        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(data, 'XXX')
+
+    def test_data_with_wrong_checksum(self):
+        data = ''.join([b for b in self.mgr.data('2', do_checksum=False)])
+        expect = [('GET', '/v1/images/2', {}, None)]
+        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(data, 'YYY')
+
+        expect += [('GET', '/v1/images/2', {}, None)]
+        data = self.mgr.data('2')
+        self.assertEqual(self.api.calls, expect)
+        try:
+            data = ''.join([b for b in data])
+            self.fail('data did not raise an error.')
+        except IOError, e:
+            self.assertEqual(errno.EPIPE, e.errno)
+            msg = 'was fd7c5c4fdaa97163ee4ba8842baa537a expected wrong'
+            self.assertTrue(msg in str(e))
+
+    def test_data_with_checksum(self):
+        data = ''.join([b for b in self.mgr.data('3', do_checksum=False)])
+        expect = [('GET', '/v1/images/3', {}, None)]
+        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(data, 'ZZZ')
+
+        expect += [('GET', '/v1/images/3', {}, None)]
+        data = ''.join([b for b in self.mgr.data('3')])
+        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(data, 'ZZZ')
 
     def test_delete(self):
         self.mgr.delete('1')
@@ -352,3 +413,44 @@ class ImageTest(unittest.TestCase):
         ]
         self.assertEqual(self.api.calls, expect)
         self.assertEqual(data, 'XXX')
+
+        data = ''.join([b for b in image.data(do_checksum=False)])
+        expect += [('GET', '/v1/images/1', {}, None)]
+        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(data, 'XXX')
+
+    def test_data_with_wrong_checksum(self):
+        image = self.mgr.get('2')
+        data = ''.join([b for b in image.data(do_checksum=False)])
+        expect = [
+            ('HEAD', '/v1/images/2', {}, None),
+            ('GET', '/v1/images/2', {}, None),
+        ]
+        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(data, 'YYY')
+
+        data = image.data()
+        expect += [('GET', '/v1/images/2', {}, None)]
+        self.assertEqual(self.api.calls, expect)
+        try:
+            data = ''.join([b for b in image.data()])
+            self.fail('data did not raise an error.')
+        except IOError, e:
+            self.assertEqual(errno.EPIPE, e.errno)
+            msg = 'was fd7c5c4fdaa97163ee4ba8842baa537a expected wrong'
+            self.assertTrue(msg in str(e))
+
+    def test_data_with_checksum(self):
+        image = self.mgr.get('3')
+        data = ''.join([b for b in image.data(do_checksum=False)])
+        expect = [
+            ('HEAD', '/v1/images/3', {}, None),
+            ('GET', '/v1/images/3', {}, None),
+        ]
+        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(data, 'ZZZ')
+
+        data = ''.join([b for b in image.data()])
+        expect += [('GET', '/v1/images/3', {}, None)]
+        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(data, 'ZZZ')
