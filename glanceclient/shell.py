@@ -47,12 +47,16 @@ class OpenStackImagesShell(object):
             help=argparse.SUPPRESS,
         )
 
-        parser.add_argument('--debug',
+        parser.add_argument('-d', '--debug',
             default=bool(utils.env('GLANCECLIENT_DEBUG')),
             action='store_true',
             help='Defaults to env[GLANCECLIENT_DEBUG]')
 
-        parser.add_argument('--insecure',
+        parser.add_argument('-v', '--verbose',
+            default=False, action="store_true",
+            help="Print more verbose output")
+
+        parser.add_argument('-k', '--insecure',
             default=False,
             action='store_true',
             help="Explicitly allow glanceclient to perform \"insecure\" "
@@ -64,6 +68,41 @@ class OpenStackImagesShell(object):
             default=600,
             help='Number of seconds to wait for a response')
 
+        parser.add_argument('-f', '--force',
+            dest='force',
+            default=False, action='store_true',
+            help='Prevent select actions from requesting '
+                 'user confirmation.')
+
+        #NOTE(bcwaldon): DEPRECATED
+        parser.add_argument('--dry-run',
+            default=False,
+            action='store_true',
+            help='DEPRECATED! Only used for deprecated legacy commands.')
+
+        #NOTE(bcwaldon): DEPRECATED
+        parser.add_argument('--ssl',
+            dest='use_ssl',
+            default=False,
+            action='store_true',
+            help='DEPRECATED! Send a fully-formed endpoint using '
+                 '--os-image-url instead.')
+
+        #NOTE(bcwaldon): DEPRECATED
+        parser.add_argument('-H', '--host',
+            metavar='ADDRESS',
+            help='DEPRECATED! Send a fully-formed endpoint using '
+                 '--os-image-url instead.')
+
+        #NOTE(bcwaldon): DEPRECATED
+        parser.add_argument('-p', '--port',
+            dest='port',
+            metavar='PORT',
+            type=int,
+            default=9292,
+            help='DEPRECATED! Send a fully-formed endpoint using '
+                 '--os-image-url instead.')
+
         parser.add_argument('--os-username',
             default=utils.env('OS_USERNAME'),
             help='Defaults to env[OS_USERNAME]')
@@ -71,12 +110,22 @@ class OpenStackImagesShell(object):
         parser.add_argument('--os_username',
             help=argparse.SUPPRESS)
 
+        #NOTE(bcwaldon): DEPRECATED
+        parser.add_argument('-I',
+            dest='os_username',
+            help='DEPRECATED! Use --os-username.')
+
         parser.add_argument('--os-password',
             default=utils.env('OS_PASSWORD'),
             help='Defaults to env[OS_PASSWORD]')
 
         parser.add_argument('--os_password',
             help=argparse.SUPPRESS)
+
+        #NOTE(bcwaldon): DEPRECATED
+        parser.add_argument('-K',
+            dest='os_password',
+            help='DEPRECATED! Use --os-password.')
 
         parser.add_argument('--os-tenant-id',
             default=utils.env('OS_TENANT_ID'),
@@ -92,12 +141,22 @@ class OpenStackImagesShell(object):
         parser.add_argument('--os_tenant_name',
             help=argparse.SUPPRESS)
 
+        #NOTE(bcwaldon): DEPRECATED
+        parser.add_argument('-T',
+            dest='os_tenant_name',
+            help='DEPRECATED! Use --os-tenant-name.')
+
         parser.add_argument('--os-auth-url',
             default=utils.env('OS_AUTH_URL'),
             help='Defaults to env[OS_AUTH_URL]')
 
         parser.add_argument('--os_auth_url',
             help=argparse.SUPPRESS)
+
+        #NOTE(bcwaldon): DEPRECATED
+        parser.add_argument('-N',
+            dest='os_auth_url',
+            help='DEPRECATED! Use --os-auth-url.')
 
         parser.add_argument('--os-region-name',
             default=utils.env('OS_REGION_NAME'),
@@ -106,6 +165,11 @@ class OpenStackImagesShell(object):
         parser.add_argument('--os_region_name',
             help=argparse.SUPPRESS)
 
+        #NOTE(bcwaldon): DEPRECATED
+        parser.add_argument('-R',
+            dest='os_region_name',
+            help='DEPRECATED! Use --os-region-name.')
+
         parser.add_argument('--os-auth-token',
             default=utils.env('OS_AUTH_TOKEN'),
             help='Defaults to env[OS_AUTH_TOKEN]')
@@ -113,12 +177,22 @@ class OpenStackImagesShell(object):
         parser.add_argument('--os_auth_token',
             help=argparse.SUPPRESS)
 
+        #NOTE(bcwaldon): DEPRECATED
+        parser.add_argument('-A', '--auth_token',
+            dest='os_auth_token',
+            help='DEPRECATED! Use --os-auth-token.')
+
         parser.add_argument('--os-image-url',
             default=utils.env('OS_IMAGE_URL'),
             help='Defaults to env[OS_IMAGE_URL]')
 
         parser.add_argument('--os_image_url',
             help=argparse.SUPPRESS)
+
+        #NOTE(bcwaldon): DEPRECATED
+        parser.add_argument('-U', '--url',
+            dest='os_image_url',
+            help='DEPRECATED! Use --os-image-url.')
 
         parser.add_argument('--os-image-api-version',
             default=utils.env('OS_IMAGE_API_VERSION', default='1'),
@@ -140,6 +214,10 @@ class OpenStackImagesShell(object):
 
         parser.add_argument('--os_endpoint_type',
             help=argparse.SUPPRESS)
+
+        #NOTE(bcwaldon): DEPRECATED
+        parser.add_argument('-S', '--os_auth_strategy',
+            help='DEPRECATED! This option is completely ignored.')
 
         return parser
 
@@ -216,6 +294,20 @@ class OpenStackImagesShell(object):
         endpoint = self._strip_version(endpoint)
         return (endpoint, _ksclient.auth_token)
 
+    def _get_image_url(self, args):
+        """Translate the available url-related options into a single string.
+
+        Return the endpoint that should be used to talk to Glance if a
+        clear decision can be made. Otherwise, return None.
+        """
+        if args.os_image_url:
+            return args.os_image_url
+        elif args.host:
+            scheme = 'https' if args.use_ssl else 'http'
+            return '%s://%s:%s/' % (scheme, args.host, args.port)
+        else:
+            return None
+
     def main(self, argv):
         # Parse args once to find version
         parser = self.get_base_parser()
@@ -244,11 +336,12 @@ class OpenStackImagesShell(object):
         LOG.addHandler(logging.StreamHandler())
         LOG.setLevel(logging.DEBUG if args.debug else logging.INFO)
 
+        image_url = self._get_image_url(args)
         auth_reqd = (utils.is_authentication_required(args.func) and
-                     not (args.os_auth_token and args.os_image_url))
+                     not (args.os_auth_token and image_url))
 
         if not auth_reqd:
-            endpoint = args.os_image_url
+            endpoint = image_url
             token = args.os_auth_token
         else:
             if not args.os_username:

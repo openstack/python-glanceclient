@@ -20,6 +20,9 @@ import sys
 from glanceclient.common import utils
 import glanceclient.v1.images
 
+#NOTE(bcwaldon): import deprecated cli functions
+from glanceclient.v1.legacy_shell import *
+
 
 @utils.arg('--name', metavar='<NAME>',
            help='Filter images to those that have this name.')
@@ -258,4 +261,9 @@ def do_member_create(gc, args):
 @utils.arg('tenant_id', metavar='<TENANT_ID>',
            help='Tenant to add as member')
 def do_member_delete(gc, args):
-    gc.image_members.delete(args.image_id, args.tenant_id)
+    if not options.dry_run:
+        gc.image_members.delete(args.image_id, args.tenant_id)
+    else:
+        print "Dry run. We would have done the following:"
+        print ('Remove "%(member_id)s" from the member list of image '
+               '"%(image_id)s"' % locals())

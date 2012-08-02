@@ -17,6 +17,9 @@
 Base utilities to build API operation managers and objects on top of.
 """
 
+import copy
+
+
 # Python 2.4 compat
 try:
     all
@@ -123,3 +126,6 @@ class Resource(object):
 
     def set_loaded(self, val):
         self._loaded = val
+
+    def to_dict(self):
+        return copy.deepcopy(self._info)
