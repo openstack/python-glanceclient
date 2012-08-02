@@ -30,9 +30,8 @@ class Client(object):
                             http requests. (optional)
     """
 
-    def __init__(self, endpoint, token=None, timeout=600, **kwargs):
-        self.http_client = http.HTTPClient(
-                endpoint, token=token, timeout=timeout)
+    def __init__(self, *args, **kwargs):
+        self.http_client = http.HTTPClient(*args, **kwargs)
         self.schemas = schemas.Controller(self.http_client)
         self.images = images.Controller(self.http_client,
                                         self._get_image_model())

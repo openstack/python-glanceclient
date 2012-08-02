@@ -64,6 +64,10 @@ class OpenStackImagesShell(object):
                  "not be verified against any certificate authorities. "
                  "This option should be used with caution.")
 
+        parser.add_argument('--ca-file',
+            help='Path of CA SSL certificate(s) used to sign the remote '
+                 'server\'s certificate.')
+
         parser.add_argument('--timeout',
             default=600,
             help='Number of seconds to wait for a response')
@@ -375,11 +379,14 @@ class OpenStackImagesShell(object):
             endpoint = args.os_image_url or \
                     self._get_endpoint(_ksclient, **kwargs)
 
-        client = glanceclient.Client(api_version,
-                                     endpoint,
-                                     token,
-                                     insecure=args.insecure,
-                                     timeout=args.timeout)
+        kwargs = {
+            'token': token,
+            'insecure': args.insecure,
+            'timeout': args.timeout,
+            'ca_file': args.ca_file,
+        }
+
+        client = glanceclient.Client(api_version, endpoint, **kwargs)
 
         try:
             args.func(client, args)
