@@ -64,6 +64,14 @@ class OpenStackImagesShell(object):
                  "not be verified against any certificate authorities. "
                  "This option should be used with caution.")
 
+        parser.add_argument('--cert-file',
+            help='Path of certificate file to use in SSL connection. This '
+                 'file can optionally be prepended with the private key.')
+
+        parser.add_argument('--key-file',
+            help='Path of client key to use in SSL connection. This option is '
+                 'not necessary if your key is prepended to your cert file.')
+
         parser.add_argument('--ca-file',
             help='Path of CA SSL certificate(s) used to sign the remote '
                  'server\'s certificate.')
@@ -384,6 +392,8 @@ class OpenStackImagesShell(object):
             'insecure': args.insecure,
             'timeout': args.timeout,
             'ca_file': args.ca_file,
+            'cert_file': args.cert_file,
+            'key_file': args.key_file,
         }
 
         client = glanceclient.Client(api_version, endpoint, **kwargs)
