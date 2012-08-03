@@ -271,7 +271,7 @@ class OpenStackImagesShell(object):
             endpoint = '/'.join(url_bits[:-1])
         return endpoint
 
-    def _authenticate(self, **kwargs):
+    def _get_ksclient(self, **kwargs):
         """Get an endpoint and auth token from Keystone.
 
         :param username: name of user
@@ -280,19 +280,19 @@ class OpenStackImagesShell(object):
         :param tenant_name: name of tenant
         :param auth_url: endpoint to authenticate against
         """
-        _ksclient = ksclient.Client(username=kwargs.get('username'),
-                                    password=kwargs.get('password'),
-                                    tenant_id=kwargs.get('tenant_id'),
-                                    tenant_name=kwargs.get('tenant_name'),
-                                    auth_url=kwargs.get('auth_url'),
-                                    insecure=kwargs.get('insecure'))
-        service_type = kwargs.get('service_type') or 'image'
-        endpoint_type = kwargs.get('endpoint_type') or 'publicURL'
-        endpoint = _ksclient.service_catalog.url_for(
-                             service_type=service_type,
-                             endpoint_type=endpoint_type)
-        endpoint = self._strip_version(endpoint)
-        return (endpoint, _ksclient.auth_token)
+        return ksclient.Client(username=kwargs.get('username'),
+                               password=kwargs.get('password'),
+                               tenant_id=kwargs.get('tenant_id'),
+                               tenant_name=kwargs.get('tenant_name'),
+                               auth_url=kwargs.get('auth_url'),
+                               insecure=kwargs.get('insecure'))
+
+    def _get_endpoint(self, client, **kwargs):
+        """Get an endpoint using the provided keystone client."""
+        endpoint = client.service_catalog.url_for(
+                service_type=kwargs.get('service_type') or 'image',
+                endpoint_type=kwargs.get('endpoint_type') or 'publicURL')
+        return self._strip_version(endpoint)
 
     def _get_image_url(self, args):
         """Translate the available url-related options into a single string.
@@ -369,7 +369,11 @@ class OpenStackImagesShell(object):
                 'endpoint_type': args.os_endpoint_type,
                 'insecure': args.insecure
             }
-            endpoint, token = self._authenticate(**kwargs)
+            _ksclient = self._get_ksclient(**kwargs)
+            token = args.os_auth_token or _ksclient.auth_token
+
+            endpoint = args.os_image_url or \
+                    self._get_endpoint(_ksclient, **kwargs)
 
         client = glanceclient.Client(api_version,
                                      endpoint,
