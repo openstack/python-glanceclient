@@ -13,23 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""
-Exception definitions.
-"""
+import sys
 
 
 class CommandError(Exception):
-    pass
-
-
-class NoTokenLookupException(Exception):
-    """This form of authentication does not support looking up
-       endpoints from an existing token."""
-    pass
-
-
-class EndpointNotFound(Exception):
-    """Could not find Service or Region in Service Catalog."""
+    """Invalid usage of CLI"""
     pass
 
 
@@ -39,104 +27,119 @@ class InvalidEndpoint(ValueError):
 
 
 class ClientException(Exception):
-    """
-    The base exception class for all exceptions this library raises.
-    """
-    def __init__(self, code, message=None, details=None):
-        self.code = code
-        self.message = message or self.__class__.message
+    """DEPRECATED"""
+
+
+class HTTPException(ClientException):
+    """Base exception for all HTTP-derived exceptions"""
+    code = 'N/A'
+
+    def __init__(self, details=None):
         self.details = details
 
     def __str__(self):
-        return "%s (HTTP %s)" % (self.message, self.code)
+        return "%s (HTTP %s)" % (self.__class__.__name__, self.code)
 
 
-class BadRequest(ClientException):
-    """
-    HTTP 400 - Bad request: you sent some malformed data.
-    """
-    http_status = 400
-    message = "Bad request"
+class BadRequest(HTTPException):
+    """DEPRECATED"""
+    code = 400
 
 
-class Unauthorized(ClientException):
-    """
-    HTTP 401 - Unauthorized: bad credentials.
-    """
-    http_status = 401
-    message = "Unauthorized"
+class HTTPBadRequest(BadRequest):
+    pass
 
 
-class Forbidden(ClientException):
-    """
-    HTTP 403 - Forbidden: your credentials don't give you access to this
-    resource.
-    """
-    http_status = 403
-    message = "Forbidden"
+class Unauthorized(HTTPException):
+    """DEPRECATED"""
+    code = 401
 
 
-class NotFound(ClientException):
-    """
-    HTTP 404 - Not found
-    """
-    http_status = 404
-    message = "Not found"
+class HTTPUnauthorized(Unauthorized):
+    pass
 
 
-class Conflict(ClientException):
-    """
-    HTTP 409 - Conflict
-    """
-    http_status = 409
-    message = "Conflict"
+class Forbidden(HTTPException):
+    """DEPRECATED"""
+    code = 403
 
 
-class OverLimit(ClientException):
-    """
-    HTTP 413 - Over limit: you're over the API limits for this time period.
-    """
-    http_status = 413
-    message = "Over limit"
+class HTTPForbidden(Forbidden):
+    pass
 
 
-class InternalServerError(ClientException):
-    """
-    HTTP 500 - Internal Server Error
-    """
-    http_status = 500
-    message = "Internal Server Error"
+class NotFound(HTTPException):
+    """DEPRECATED"""
+    code = 404
 
 
-# NotImplemented is a python keyword.
-class HTTPNotImplemented(ClientException):
-    """
-    HTTP 501 - Not Implemented: the server does not support this operation.
-    """
-    http_status = 501
-    message = "Not Implemented"
+class HTTPNotFound(NotFound):
+    pass
 
 
-class ServiceUnavailable(ClientException):
-    """
-    HTTP 503 - Service Unavailable
-    """
-    http_status = 503
-    message = "Service Unavailable"
+class HTTPMethodNotAllowed(HTTPException):
+    code = 405
 
 
-# In Python 2.4 Exception is old-style and thus doesn't have a __subclasses__()
-# so we can do this:
-#     _code_map = dict((c.http_status, c)
-#                      for c in ClientException.__subclasses__())
-#
-# Instead, we have to hardcode it:
-_exc_list = [BadRequest, Unauthorized, Forbidden, NotFound, OverLimit,
-             InternalServerError, HTTPNotImplemented, ServiceUnavailable]
-_code_map = dict((c.http_status, c) for c in _exc_list)
+class Conflict(HTTPException):
+    """DEPRECATED"""
+    code = 409
+
+
+class HTTPConflict(Conflict):
+    pass
+
+
+class OverLimit(HTTPException):
+    """DEPRECATED"""
+    code = 413
+
+
+class HTTPOverLimit(OverLimit):
+    pass
+
+
+class HTTPInternalServerError(HTTPException):
+    code = 500
+
+
+class HTTPNotImplemented(HTTPException):
+    code = 501
+
+
+class HTTPBadGateway(HTTPException):
+    code = 502
+
+
+class ServiceUnavailable(HTTPException):
+    """DEPRECATED"""
+    code = 503
+
+
+class HTTPServiceUnavailable(ServiceUnavailable):
+    pass
+
+
+#NOTE(bcwaldon): Build a mapping of HTTP codes to corresponding exception
+# classes
+_code_map = {}
+for obj_name in dir(sys.modules[__name__]):
+    if obj_name.startswith('HTTP'):
+        obj = getattr(sys.modules[__name__], obj_name)
+        _code_map[obj.code] = obj
 
 
 def from_response(response):
-    """Return an instance of an ClientException based on httplib response."""
-    cls = _code_map.get(response.status, ClientException)
-    return cls(code=response.status)
+    """Return an instance of an HTTPException based on httplib response."""
+    cls = _code_map.get(response.status, HTTPException)
+    return cls()
+
+
+class NoTokenLookupException(Exception):
+    """DEPRECATED"""
+    pass
+
+
+class EndpointNotFound(Exception):
+    """DEPRECATED"""
+    pass
