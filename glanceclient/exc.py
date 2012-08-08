@@ -33,11 +33,6 @@ class EndpointNotFound(Exception):
     pass
 
 
-class SchemaNotFound(KeyError):
-    """Could not find schema"""
-    pass
-
-
 class InvalidEndpoint(ValueError):
     """The provided endpoint could not be used"""
     pass

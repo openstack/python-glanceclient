@@ -15,8 +15,6 @@
 
 import copy
 
-from glanceclient import exc
-
 
 class SchemaProperty(object):
     def __init__(self, name, **kwargs):
@@ -51,13 +49,6 @@ class Controller(object):
         self.http_client = http_client
 
     def get(self, schema_name):
-        uri = self._find_schema_uri(schema_name)
+        uri = '/v2/schemas/%s' % schema_name
         _, raw_schema = self.http_client.json_request('GET', uri)
         return Schema(raw_schema)
-
-    def _find_schema_uri(self, schema_name):
-        _, schema_index = self.http_client.json_request('GET', '/v2/schemas')
-        try:
-            return schema_index[schema_name]
-        except KeyError:
-            raise exc.SchemaNotFound(schema_name)
