@@ -75,7 +75,11 @@ class HTTPClient(object):
 
     def get_connection(self):
         _class = self.connection_params[0]
-        return _class(*self.connection_params[1], **self.connection_params[2])
+        try:
+            return _class(*self.connection_params[1],
+                          **self.connection_params[2])
+        except httplib.InvalidUrl:
+            raise exc.InvalidEndpoint()
 
     def log_curl_request(self, method, url, kwargs):
         curl = ['curl -i -X %s' % method]
@@ -126,10 +130,17 @@ class HTTPClient(object):
             kwargs['headers'].setdefault('X-Auth-Token', self.auth_token)
 
         self.log_curl_request(method, url, kwargs)
-
         conn = self.get_connection()
-        conn.request(method, url, **kwargs)
-        resp = conn.getresponse()
+
+        try:
+            conn.request(method, url, **kwargs)
+        except (socket.error, socket.gaierror):
+            raise exc.InvalidEndpoint()
+
+        try:
+            resp = conn.getresponse()
+        except (socket.error, socket.timeout):
+            raise exc.CommunicationError()
 
         body_iter = ResponseBodyIterator(resp)
 
