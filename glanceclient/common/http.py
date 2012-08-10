@@ -16,6 +16,7 @@
 import copy
 import httplib
 import logging
+import os
 import socket
 import StringIO
 import urlparse
@@ -201,7 +202,10 @@ class VerifiedHTTPSConnection(httplib.HTTPSConnection):
                                          cert_file=cert_file)
         self.key_file = key_file
         self.cert_file = cert_file
-        self.ca_file = ca_file
+        if ca_file is not None:
+            self.ca_file = ca_file
+        else:
+            self.ca_file = self.get_system_ca_file()
         self.timeout = timeout
         self.insecure = insecure
 
@@ -232,6 +236,20 @@ class VerifiedHTTPSConnection(httplib.HTTPSConnection):
                 kwargs['keyfile'] = self.key_file
 
         self.sock = ssl.wrap_socket(sock, **kwargs)
+
+    @staticmethod
+    def get_system_ca_file():
+        """"Return path to system default CA file"""
+        # Standard CA file locations for Debian/Ubuntu, RedHat/Fedora,
+        # Suse, FreeBSD/OpenBSD
+        ca_path = ['/etc/ssl/certs/ca-certificates.crt',
+                   '/etc/pki/tls/certs/ca-bundle.crt',
+                   '/etc/ssl/ca-bundle.pem',
+                   '/etc/ssl/cert.pem']
+        for ca in ca_path:
+            if os.path.exists(ca):
+                return ca
+        return None
 
 
 class ResponseBodyIterator(object):

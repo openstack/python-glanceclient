@@ -73,8 +73,9 @@ class OpenStackImagesShell(object):
                  'not necessary if your key is prepended to your cert file.')
 
         parser.add_argument('--ca-file',
-            help='Path of CA SSL certificate(s) used to sign the remote '
-                 'server\'s certificate.')
+            help='Path of CA SSL certificate(s) used to verify the remote '
+                 'server\'s certificate. Without this option glance looks '
+                 'for the default system CA certificates.')
 
         parser.add_argument('--timeout',
             default=600,
