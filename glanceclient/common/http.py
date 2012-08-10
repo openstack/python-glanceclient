@@ -16,9 +16,15 @@
 import copy
 import httplib
 import logging
+import socket
 import StringIO
 import urlparse
 
+try:
+    import ssl
+except ImportError:
+    #TODO(bcwaldon): Handle this failure more gracefully
+    pass
 
 try:
     import json
@@ -41,23 +47,33 @@ CHUNKSIZE = 1024 * 64  # 64kB
 
 class HTTPClient(object):
 
-    def __init__(self, endpoint, token=None, timeout=600, insecure=False):
-        parts = urlparse.urlparse(endpoint)
-        self.connection_class = self.get_connection_class(parts.scheme)
-        self.endpoint = (parts.hostname, parts.port)
-        self.scheme = parts.scheme
-        self.auth_token = token
+    def __init__(self, endpoint, **kwargs):
+        self.endpoint = endpoint
+        self.auth_token = kwargs.get('token')
+        self.connection_params = self.get_connection_params(endpoint, **kwargs)
 
     @staticmethod
-    def get_connection_class(scheme):
-        try:
-            return getattr(httplib, '%sConnection' % scheme.upper())
-        except AttributeError:
-            msg = 'Unsupported scheme: %s' % scheme
+    def get_connection_params(endpoint, **kwargs):
+        parts = urlparse.urlparse(endpoint)
+
+        _args = (parts.hostname, parts.port)
+        _kwargs = {'timeout': float(kwargs.get('timeout', 600))}
+
+        if parts.scheme == 'https':
+            _class = VerifiedHTTPSConnection
+            _kwargs['ca_file'] = kwargs.get('ca_file', None)
+            _kwargs['insecure'] = kwargs.get('insecure', False)
+        elif parts.scheme == 'http':
+            _class = httplib.HTTPConnection
+        else:
+            msg = 'Unsupported scheme: %s' % parts.scheme
             raise exc.InvalidEndpoint(msg)
 
+        return (_class, _args, _kwargs)
+
     def get_connection(self):
-        return self.connection_class(*self.endpoint)
+        _class = self.connection_params[0]
+        return _class(*self.connection_params[1], **self.connection_params[2])
 
     def log_curl_request(self, method, url, kwargs):
         curl = ['curl -i -X %s' % method]
@@ -69,8 +85,7 @@ class HTTPClient(object):
         if 'body' in kwargs:
             curl.append('-d \'%s\'' % kwargs['body'])
 
-        endpoint_parts = (self.scheme, self.endpoint[0], self.endpoint[1], url)
-        curl.append('%s://%s:%s%s' % endpoint_parts)
+        curl.append('%s%s' % (self.endpoint, url))
         LOG.debug(' '.join(curl))
 
     @staticmethod
@@ -145,6 +160,47 @@ class HTTPClient(object):
         kwargs['headers'].setdefault('Content-Type',
                                      'application/octet-stream')
         return self._http_request(url, method, **kwargs)
+
+
+class VerifiedHTTPSConnection(httplib.HTTPSConnection):
+    """httplib-compatibile connection using client-side SSL authentication
+
+    :see http://code.activestate.com/recipes/
+            577548-https-httplib-client-connection-with-certificate-v/
+    """
+
+    def __init__(self, host, port, key_file=None, cert_file=None,
+                 ca_file=None, timeout=None, insecure=False):
+        httplib.HTTPSConnection.__init__(self, host, port, key_file=key_file,
+                                         cert_file=cert_file)
+        self.key_file = key_file
+        self.cert_file = cert_file
+        self.ca_file = ca_file
+        self.timeout = timeout
+        self.insecure = insecure
+
+    def connect(self):
+        """
+        Connect to a host on a given (SSL) port.
+        If ca_file is pointing somewhere, use it to check Server Certificate.
+
+        Redefined/copied and extended from httplib.py:1105 (Python 2.6.x).
+        This is needed to pass cert_reqs=ssl.CERT_REQUIRED as parameter to
+        ssl.wrap_socket(), which forces SSL to check server certificate against
+        our client certificate.
+        """
+        sock = socket.create_connection((self.host, self.port), self.timeout)
+
+        if self._tunnel_host:
+            self.sock = sock
+            self._tunnel()
+
+        if self.insecure is True:
+            kwargs = {'cert_reqs': ssl.CERT_NONE}
+        else:
+            kwargs = {'cert_reqs': ssl.CERT_REQUIRED, 'ca_certs': self.ca_file}
+
+        self.sock = ssl.wrap_socket(sock, **kwargs)
 
 
 class ResponseBodyIterator(object):
