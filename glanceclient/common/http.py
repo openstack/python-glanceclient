@@ -62,6 +62,8 @@ class HTTPClient(object):
         if parts.scheme == 'https':
             _class = VerifiedHTTPSConnection
             _kwargs['ca_file'] = kwargs.get('ca_file', None)
+            _kwargs['cert_file'] = kwargs.get('cert_file', None)
+            _kwargs['key_file'] = kwargs.get('key_file', None)
             _kwargs['insecure'] = kwargs.get('insecure', False)
         elif parts.scheme == 'http':
             _class = httplib.HTTPConnection
@@ -81,6 +83,19 @@ class HTTPClient(object):
         for (key, value) in kwargs['headers'].items():
             header = '-H \'%s: %s\'' % (key, value)
             curl.append(header)
+
+        conn_params_fmt = [
+            ('key_file', '--key %s'),
+            ('cert_file', '--cert %s'),
+            ('ca_file', '--cacert %s'),
+        ]
+        for (key, fmt) in conn_params_fmt:
+            value = self.connection_params[2].get(key)
+            if value:
+                curl.append(fmt % value)
+
+        if self.connection_params[2].get('insecure'):
+            curl.append('-k')
 
         if 'body' in kwargs:
             curl.append('-d \'%s\'' % kwargs['body'])
@@ -199,6 +214,11 @@ class VerifiedHTTPSConnection(httplib.HTTPSConnection):
             kwargs = {'cert_reqs': ssl.CERT_NONE}
         else:
             kwargs = {'cert_reqs': ssl.CERT_REQUIRED, 'ca_certs': self.ca_file}
+
+        if self.cert_file:
+            kwargs['certfile'] = self.cert_file
+            if self.key_file:
+                kwargs['keyfile'] = self.key_file
 
         self.sock = ssl.wrap_socket(sock, **kwargs)
 
