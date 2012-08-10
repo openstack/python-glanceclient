@@ -134,13 +134,13 @@ class HTTPClient(object):
 
         try:
             conn.request(method, url, **kwargs)
-        except (socket.error, socket.gaierror):
-            raise exc.InvalidEndpoint()
-
-        try:
             resp = conn.getresponse()
-        except (socket.error, socket.timeout):
-            raise exc.CommunicationError()
+        except socket.gaierror as e:
+            message = "Error finding address for %(url)s: %(e)s" % locals()
+            raise exc.InvalidEndpoint(message=message)
+        except (socket.error, socket.timeout) as e:
+            message = "Error communicating with %(url)s: %(e)s" % locals()
+            raise exc.CommunicationError(message=message)
 
         body_iter = ResponseBodyIterator(resp)
 
