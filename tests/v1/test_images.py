@@ -325,9 +325,9 @@ class ImageManagerTest(unittest.TestCase):
         self.assertEqual(image.container_format, 'ovf')
         self.assertEqual(image.disk_format, 'vhd')
         self.assertEqual(image.owner, 'asdf')
-        self.assertEqual(image.size, '1024')
-        self.assertEqual(image.min_ram, '512')
-        self.assertEqual(image.min_disk, '10')
+        self.assertEqual(image.size, 1024)
+        self.assertEqual(image.min_ram, 512)
+        self.assertEqual(image.min_disk, 10)
         self.assertEqual(image.properties, {'a': 'b', 'c': 'd'})
 
     def test_create_with_data(self):
@@ -366,6 +366,9 @@ class ImageManagerTest(unittest.TestCase):
         self.assertEqual(self.api.calls, expect)
         self.assertEqual(image.id, '1')
         self.assertEqual(image.name, 'image-2')
+        self.assertEqual(image.size, 1024)
+        self.assertEqual(image.min_ram, 512)
+        self.assertEqual(image.min_disk, 10)
 
     def test_update_with_data(self):
         image_data = StringIO.StringIO('XXX')

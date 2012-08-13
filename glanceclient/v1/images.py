@@ -57,7 +57,7 @@ class ImageManager(base.Manager):
             elif key.startswith('x-image-meta-'):
                 _key = key[13:]
                 meta[_key] = value
-        return meta
+        return self._format_image_meta_for_user(meta)
 
     def _image_meta_to_headers(self, fields):
         headers = {}
@@ -67,6 +67,16 @@ class ImageManager(base.Manager):
         for key, value in fields_copy.iteritems():
             headers['x-image-meta-%s' % key] = str(value)
         return headers
+
+    @staticmethod
+    def _format_image_meta_for_user(meta):
+        for key in ['size', 'min_ram', 'min_disk']:
+            if key in meta:
+                try:
+                    meta[key] = int(meta[key])
+                except ValueError:
+                    pass
+        return meta
 
     def get(self, image_id):
         """Get the metadata for a specific image.
@@ -189,8 +199,8 @@ class ImageManager(base.Manager):
 
         resp, body_iter = self.api.raw_request(
                 'POST', '/v1/images', headers=hdrs, body=image_data)
-        body = ''.join([c for c in body_iter])
-        return Image(self, json.loads(body)['image'])
+        body = json.loads(''.join([c for c in body_iter]))
+        return Image(self, self._format_image_meta_for_user(body['image']))
 
     def update(self, image, **kwargs):
         """Update an image
@@ -230,5 +240,5 @@ class ImageManager(base.Manager):
         url = '/v1/images/%s' % base.getid(image)
         resp, body_iter = self.api.raw_request(
                 'PUT', url, headers=hdrs, body=image_data)
-        body = ''.join([c for c in body_iter])
-        return Image(self, json.loads(body)['image'])
+        body = json.loads(''.join([c for c in body_iter]))
+        return Image(self, self._format_image_meta_for_user(body['image']))
