@@ -362,6 +362,7 @@ class ImageManagerTest(unittest.TestCase):
             'min_disk': 10,
             'copy_from': 'http://example.com',
             'properties': {'a': 'b', 'c': 'd'},
+            'deleted': False,
         }
         image = self.mgr.update('1', **fields)
         expect_hdrs = {
@@ -375,6 +376,7 @@ class ImageManagerTest(unittest.TestCase):
             'x-glance-api-copy-from': 'http://example.com',
             'x-image-meta-property-a': 'b',
             'x-image-meta-property-c': 'd',
+            'x-image-meta-deleted': 'False',
         }
         expect = [('PUT', '/v1/images/1', expect_hdrs, None)]
         self.assertEqual(self.api.calls, expect)

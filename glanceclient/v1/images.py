@@ -24,7 +24,11 @@ from glanceclient.common import utils
 
 UPDATE_PARAMS = ('name', 'disk_format', 'container_format', 'min_disk',
                  'min_ram', 'owner', 'size', 'is_public', 'protected',
-                 'location', 'checksum', 'copy_from', 'properties')
+                 'location', 'checksum', 'copy_from', 'properties',
+                 #NOTE(bcwaldon: an attempt to update 'deleted' will be
+                 # ignored, but we need to support it for backwards-
+                 # compatibility with the legacy client library
+                 'deleted')
 
 CREATE_PARAMS = UPDATE_PARAMS + ('id',)
 
