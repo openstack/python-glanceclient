@@ -77,6 +77,17 @@ def do_image_show(gc, args):
     _image_show(image)
 
 
+@utils.arg('--file', metavar='<FILE>',
+           help='Local file to save downloaded image data to. '
+                'If this is not specified the image data will be '
+                'written to stdout.')
+@utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to download.')
+def do_image_download(gc, args):
+    """Download a specific image."""
+    body = gc.images.data(args.id)
+    utils.save_image(body, args.file)
+
+
 @utils.arg('--id', metavar='<IMAGE_ID>',
            help='ID of image to reserve.')
 @utils.arg('--name', metavar='<NAME>',
