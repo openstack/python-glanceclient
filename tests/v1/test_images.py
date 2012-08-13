@@ -39,6 +39,9 @@ fixtures = {
                     'min_ram': '512',
                     'min_disk': '10',
                     'properties': {'a': 'b', 'c': 'd'},
+                    'is_public': False,
+                    'protected': False,
+                    'deleted': False,
                 }},
             ),
         ),
@@ -141,6 +144,9 @@ fixtures = {
                 'x-image-meta-id': '1',
                 'x-image-meta-name': 'image-1',
                 'x-image-meta-property-arch': 'x86_64',
+                'x-image-meta-is_public': 'false',
+                'x-image-meta-protected': 'false',
+                'x-image-meta-deleted': 'false',
             },
             None),
         'GET': (
@@ -160,6 +166,8 @@ fixtures = {
                     'min_ram': '512',
                     'min_disk': '10',
                     'properties': {'a': 'b', 'c': 'd'},
+                    'is_public': False,
+                    'protected': False,
                 }},
             ),
         ),
@@ -246,6 +254,9 @@ class ImageManagerTest(unittest.TestCase):
         self.assertEqual(self.api.calls, expect)
         self.assertEqual(image.id, '1')
         self.assertEqual(image.name, 'image-1')
+        self.assertEqual(image.is_public, False)
+        self.assertEqual(image.protected, False)
+        self.assertEqual(image.deleted, False)
 
     def test_data(self):
         data = ''.join([b for b in self.mgr.data('1', do_checksum=False)])
@@ -328,6 +339,9 @@ class ImageManagerTest(unittest.TestCase):
         self.assertEqual(image.size, 1024)
         self.assertEqual(image.min_ram, 512)
         self.assertEqual(image.min_disk, 10)
+        self.assertEqual(image.is_public, False)
+        self.assertEqual(image.protected, False)
+        self.assertEqual(image.deleted, False)
         self.assertEqual(image.properties, {'a': 'b', 'c': 'd'})
 
     def test_create_with_data(self):

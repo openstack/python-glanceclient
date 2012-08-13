@@ -57,6 +57,11 @@ class ImageManager(base.Manager):
             elif key.startswith('x-image-meta-'):
                 _key = key[13:]
                 meta[_key] = value
+
+        for key in ['is_public', 'protected', 'deleted']:
+            if key in meta:
+                meta[key] = utils.string_to_bool(meta[key])
+
         return self._format_image_meta_for_user(meta)
 
     def _image_meta_to_headers(self, fields):
