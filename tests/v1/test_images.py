@@ -223,8 +223,9 @@ class ImageManagerTest(unittest.TestCase):
         self.assertEqual(images[2].id, 'c')
 
     def test_list_with_limit_less_than_page_size(self):
-        list(self.mgr.list(page_size=20, limit=10))
-        expect = [('GET', '/v1/images/detail?limit=20', {}, None)]
+        results = list(self.mgr.list(page_size=2, limit=1))
+        expect = [('GET', '/v1/images/detail?limit=2', {}, None)]
+        self.assertEqual(1, len(results))
         self.assertEqual(self.api.calls, expect)
 
     def test_list_with_limit_greater_than_page_size(self):

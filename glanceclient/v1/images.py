@@ -123,18 +123,20 @@ class ImageManager(base.Manager):
                         structure of an image object
         :rtype: list of :class:`Image`
         """
-        limit = kwargs.get('limit')
+        absolute_limit = kwargs.get('limit')
 
         def paginate(qp, seen=0):
             url = '/v1/images/detail?%s' % urllib.urlencode(qp)
             images = self._list(url, "images")
             for image in images:
                 seen += 1
+                if absolute_limit is not None and seen > absolute_limit:
+                    return
                 yield image
 
             page_size = qp.get('limit')
             if (page_size and len(images) == page_size and
-                    (limit is None or 0 < seen < limit)):
+                    (absolute_limit is None or 0 < seen < absolute_limit)):
                 qp['marker'] = image.id
                 for image in paginate(qp, seen):
                     yield image
