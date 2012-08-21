@@ -20,7 +20,7 @@ from glanceclient import exc
 @utils.arg('--page-size', metavar='<SIZE>', default=None, type=int,
            help='Number of images to request in each paginated request.')
 def do_image_list(gc, args):
-    """List images."""
+    """List images you can access."""
     kwargs = {}
     if args.page_size is not None:
         kwargs['page_size'] = args.page_size
