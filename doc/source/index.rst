@@ -36,6 +36,11 @@ Once you've configured your authentication parameters, you can run ``glance help
 Release Notes
 =============
 
+0.5.0
+-----
+* Add 'image-download' command to CLI
+* Relax dependency on warlock to anything less than v2
+
 0.4.2
 -----
 * 1037233_: Fix v1 image list where limit kwarg is less than page_size
