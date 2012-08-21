@@ -249,6 +249,7 @@ def do_delete(gc, args):
 
 @utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to describe.')
 def do_show(gc, args):
+    """DEPRECATED! Use image-show instead."""
     image = gc.images.get(args.id)
     print_image_formatted(gc, image)
     return SUCCESS

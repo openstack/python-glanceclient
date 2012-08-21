@@ -42,7 +42,7 @@ from glanceclient.v1.legacy_shell import *
 @utils.arg('--page-size', metavar='<SIZE>', default=None, type=int,
            help='Number of images to request in each paginated request.')
 def do_image_list(gc, args):
-    """List images."""
+    """List images you can access."""
     filter_keys = ['name', 'status', 'container_format', 'disk_format',
                'size_min', 'size_max']
     filter_items = [(key, getattr(args, key)) for key in filter_keys]
@@ -132,6 +132,7 @@ def do_image_download(gc, args):
            help=("Arbitrary property to associate with image. "
                  "May be used multiple times."))
 def do_image_create(gc, args):
+    """Create a new image."""
     # Filter out None values
     fields = dict(filter(lambda x: x[1] is not None, vars(args).items()))
 
@@ -202,6 +203,7 @@ def do_image_create(gc, args):
                  "not explicitly set in the update request. Otherwise, "
                  "those properties not referenced are preserved."))
 def do_image_update(gc, args):
+    """Update a specific image."""
     # Filter out None values
     fields = dict(filter(lambda x: x[1] is not None, vars(args).items()))
 
@@ -241,6 +243,7 @@ def do_image_delete(gc, args):
 @utils.arg('--tenant-id', metavar='<TENANT_ID>',
            help='Filter results by a tenant ID.')
 def do_member_list(gc, args):
+    """Describe sharing permissions by image or tenant."""
     if args.image_id and args.tenant_id:
         print 'Unable to filter members by both --image-id and --tenant-id.'
         sys.exit(1)
@@ -264,6 +267,7 @@ def do_member_list(gc, args):
 @utils.arg('--can-share', action='store_true', default=False,
            help='Allow the specified tenant to share this image.')
 def do_member_create(gc, args):
+    """Share a specific image with a tenant."""
     gc.image_members.create(args.image_id, args.tenant_id, args.can_share)
 
 
@@ -272,6 +276,7 @@ def do_member_create(gc, args):
 @utils.arg('tenant_id', metavar='<TENANT_ID>',
            help='Tenant to add as member')
 def do_member_delete(gc, args):
+    """Remove a shared image from a tenant."""
     if not options.dry_run:
         gc.image_members.delete(args.image_id, args.tenant_id)
     else:
