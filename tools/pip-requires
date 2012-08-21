@@ -1,4 +1,4 @@
 argparse
 prettytable>=0.6,<0.7
 python-keystoneclient>=0.1.2,<0.2
-warlock==0.1.0
+warlock<2
