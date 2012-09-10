@@ -20,6 +20,7 @@ legacy glance client.
 
 import argparse
 import sys
+import urlparse
 
 from glanceclient.common import utils
 
@@ -72,10 +73,12 @@ def print_image_formatted(client, image):
     :param client: The Glance client object
     :param image: The image metadata
     """
-    print "URI: http://%s:%s/v1/images/%s" % (
-                                      client.endpoint[0],
-                                      client.endpoint[1],
-                                      image.id)
+    uri_parts = urlparse.urlparse(client.endpoint)
+    if uri_parts.port:
+        hostbase = "%s:%s" % (uri_parts.hostname, uri_parts.port)
+    else:
+        hostbase = uri_parts.hostname
+    print "URI: %s://%s/v1/images/%s" % (uri_parts.scheme, hostbase, image.id)
     print "Id: %s" % image.id
     print "Public: " + (image.is_public and "Yes" or "No")
     print "Protected: " + (image.protected and "Yes" or "No")
