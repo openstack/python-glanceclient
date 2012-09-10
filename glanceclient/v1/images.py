@@ -218,15 +218,15 @@ class ImageManager(base.Manager):
 
         TODO(bcwaldon): document accepted params
         """
+        hdrs = {}
         image_data = kwargs.pop('data', None)
         if image_data is not None:
             image_size = self._get_file_size(image_data)
             if image_size != 0:
                 kwargs.setdefault('size', image_size)
+                hdrs['Content-Length'] = image_size
             else:
                 image_data = None
-
-        hdrs = {}
 
         try:
             purge_props = 'true' if kwargs.pop('purge_props') else 'false'
