@@ -79,7 +79,7 @@ class HTTPClient(object):
         try:
             return _class(*self.connection_params[1],
                           **self.connection_params[2])
-        except httplib.InvalidUrl:
+        except httplib.InvalidURL:
             raise exc.InvalidEndpoint()
 
     def log_curl_request(self, method, url, kwargs):
