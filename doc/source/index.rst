@@ -36,6 +36,16 @@ Once you've configured your authentication parameters, you can run ``glance help
 Release Notes
 =============
 
+0.5.1
+----
+* 1045824_: Always send Content-Length when updating image with image data
+* 1046607_: Handle 300 Multiple Choices nicely in the CLI
+* 1035931_: Properly display URI in legacy 'show' command
+
+.. _1045824: http://bugs.launchpad.net/python-glanceclient/+bug/1045824
+.. _1046607: http://bugs.launchpad.net/python-glanceclient/+bug/1046607
+.. _1035931: http://bugs.launchpad.net/python-glanceclient/+bug/1035931
+
 0.5.0
 -----
 * Add 'image-download' command to CLI
