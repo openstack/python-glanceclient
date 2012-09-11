@@ -15,12 +15,14 @@
 
 import httplib
 import socket
+import StringIO
 import unittest
 
 import mox
 
 from glanceclient import exc
 from glanceclient.common import http
+from tests import utils
 
 
 class TestClient(unittest.TestCase):
@@ -53,3 +55,11 @@ class TestClient(unittest.TestCase):
             self.assertTrue(endpoint in comm_err.message, fail_msg)
         finally:
             m.UnsetStubs()
+
+
+class TestResponseBodyIterator(unittest.TestCase):
+    def test_iter_default_chunk_size_64k(self):
+        resp = utils.FakeResponse({}, StringIO.StringIO('X' * 98304))
+        iterator = http.ResponseBodyIterator(resp)
+        chunks = list(iterator)
+        self.assertEqual(chunks, ['X' * 65536, 'X' * 32768])
