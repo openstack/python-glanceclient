@@ -41,10 +41,12 @@ Release Notes
 * 1045824_: Always send Content-Length when updating image with image data
 * 1046607_: Handle 300 Multiple Choices nicely in the CLI
 * 1035931_: Properly display URI in legacy 'show' command
+* 1048698_: Catch proper httplib InvalidURL exception
 
 .. _1045824: http://bugs.launchpad.net/python-glanceclient/+bug/1045824
 .. _1046607: http://bugs.launchpad.net/python-glanceclient/+bug/1046607
 .. _1035931: http://bugs.launchpad.net/python-glanceclient/+bug/1035931
+.. _1048698: http://bugs.launchpad.net/python-glanceclient/+bug/1048698
 
 0.5.0
 -----
