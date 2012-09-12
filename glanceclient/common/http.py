@@ -140,7 +140,8 @@ class HTTPClient(object):
             message = "Error finding address for %(url)s: %(e)s" % locals()
             raise exc.InvalidEndpoint(message=message)
         except (socket.error, socket.timeout) as e:
-            message = "Error communicating with %(url)s: %(e)s" % locals()
+            endpoint = self.endpoint
+            message = "Error communicating with %(endpoint)s %(e)s" % locals()
             raise exc.CommunicationError(message=message)
 
         body_iter = ResponseBodyIterator(resp)
