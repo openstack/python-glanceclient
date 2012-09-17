@@ -92,9 +92,9 @@ def do_image_download(gc, args):
            help='ID of image to reserve.')
 @utils.arg('--name', metavar='<NAME>',
            help='Name of image.')
-@utils.arg('--disk-format', metavar='<CONTAINER_FORMAT>',
+@utils.arg('--disk-format', metavar='<DISK_FORMAT>',
            help='Disk format of image.')
-@utils.arg('--container-format', metavar='<DISK_FORMAT>',
+@utils.arg('--container-format', metavar='<CONTAINER_FORMAT>',
            help='Container format of image.')
 @utils.arg('--owner', metavar='<TENANT_ID>',
            help='Tenant who should own image.')
