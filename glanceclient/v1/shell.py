@@ -15,7 +15,13 @@
 
 import argparse
 import copy
+import os
 import sys
+
+if os.name == 'nt':
+    import msvcrt
+else:
+    msvcrt = None
 
 from glanceclient.common import utils
 import glanceclient.v1.images
@@ -68,6 +74,16 @@ def _image_show(image):
         info['Property \'%s\'' % k] = v
 
     utils.print_dict(info)
+
+
+def _set_data_field(fields, args):
+    if 'location' not in fields and 'copy_from' not in fields:
+        if args.file:
+            fields['data'] = open(args.file, 'rb')
+        else:
+            if msvcrt:
+                msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
+            fields['data'] = sys.stdin
 
 
 @utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to describe.')
@@ -151,11 +167,7 @@ def do_image_create(gc, args):
     CREATE_PARAMS = glanceclient.v1.images.CREATE_PARAMS
     fields = dict(filter(lambda x: x[0] in CREATE_PARAMS, fields.items()))
 
-    if 'location' not in fields and 'copy_from' not in fields:
-        if args.file:
-            fields['data'] = open(args.file, 'r')
-        else:
-            fields['data'] = sys.stdin
+    _set_data_field(fields, args)
 
     image = gc.images.create(**fields)
     _image_show(image)
@@ -222,11 +234,7 @@ def do_image_update(gc, args):
     UPDATE_PARAMS = glanceclient.v1.images.UPDATE_PARAMS
     fields = dict(filter(lambda x: x[0] in UPDATE_PARAMS, fields.items()))
 
-    if 'location' not in fields and 'copy_from' not in fields:
-        if args.file:
-            fields['data'] = open(args.file, 'r')
-        else:
-            fields['data'] = sys.stdin
+    _set_data_field(fields, args)
 
     image = gc.images.update(image_id, purge_props=args.purge_props, **fields)
     _image_show(image)
