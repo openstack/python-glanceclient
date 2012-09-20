@@ -57,7 +57,7 @@ class HTTPClient(object):
     def get_connection_params(endpoint, **kwargs):
         parts = urlparse.urlparse(endpoint)
 
-        _args = (parts.hostname, parts.port)
+        _args = (parts.hostname, parts.port, parts.path)
         _kwargs = {'timeout': float(kwargs.get('timeout', 600))}
 
         if parts.scheme == 'https':
@@ -134,7 +134,9 @@ class HTTPClient(object):
         conn = self.get_connection()
 
         try:
-            conn.request(method, url, **kwargs)
+            conn_params = self.connection_params[1][2]
+            conn_url = os.path.normpath('%s/%s' % (conn_params, url))
+            conn.request(method, conn_url, **kwargs)
             resp = conn.getresponse()
         except socket.gaierror as e:
             message = "Error finding address for %(url)s: %(e)s" % locals()
