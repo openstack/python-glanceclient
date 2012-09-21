@@ -164,3 +164,7 @@ class NoTokenLookupException(Exception):
 class EndpointNotFound(Exception):
     """DEPRECATED"""
     pass
+
+
+class SSLConfigurationError(BaseException):
+    pass

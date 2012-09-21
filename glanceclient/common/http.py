@@ -19,13 +19,8 @@ import logging
 import os
 import socket
 import StringIO
+import struct
 import urlparse
-
-try:
-    import ssl
-except ImportError:
-    #TODO(bcwaldon): Handle this failure more gracefully
-    pass
 
 try:
     import json
@@ -37,6 +32,7 @@ if not hasattr(urlparse, 'parse_qsl'):
     import cgi
     urlparse.parse_qsl = cgi.parse_qsl
 
+import OpenSSL
 
 from glanceclient import exc
 
@@ -82,6 +78,7 @@ class HTTPClient(object):
             _kwargs['cert_file'] = kwargs.get('cert_file', None)
             _kwargs['key_file'] = kwargs.get('key_file', None)
             _kwargs['insecure'] = kwargs.get('insecure', False)
+            _kwargs['ssl_compression'] = kwargs.get('ssl_compression', True)
 
         return _kwargs
 
@@ -204,67 +201,109 @@ class HTTPClient(object):
         return self._http_request(url, method, **kwargs)
 
 
-class VerifiedHTTPSConnection(httplib.HTTPSConnection):
-    """httplib-compatibile connection using client-side SSL authentication
-
-    :see http://code.activestate.com/recipes/
-            577548-https-httplib-client-connection-with-certificate-v/
+class OpenSSLConnectionDelegator(object):
     """
+    An OpenSSL.SSL.Connection delegator.
 
+    Supplies an additional 'makefile' method which httplib requires
+    and is not present in OpenSSL.SSL.Connection.
+
+    Note: Since it is not possible to inherit from OpenSSL.SSL.Connection
+    a delegator must be used.
+    """
+    def __init__(self, *args, **kwargs):
+        self.connection = OpenSSL.SSL.Connection(*args, **kwargs)
+
+    def __getattr__(self, name):
+        return getattr(self.connection, name)
+
+    def makefile(self, *args, **kwargs):
+        return socket._fileobject(self.connection, *args, **kwargs)
+
+
+class VerifiedHTTPSConnection(httplib.HTTPSConnection):
+    """
+    Extended HTTPSConnection which uses the OpenSSL library
+    for enhanced SSL support.
+    """
     def __init__(self, host, port, key_file=None, cert_file=None,
-                 ca_file=None, timeout=None, insecure=False):
-        httplib.HTTPSConnection.__init__(self, host, port, key_file=key_file,
+                 ca_file=None, timeout=None, insecure=False,
+                 ssl_compression=True):
+        httplib.HTTPSConnection.__init__(self, host, port,
+                                         key_file=key_file,
                                          cert_file=cert_file)
         self.key_file = key_file
         self.cert_file = cert_file
-        if ca_file is not None:
-            self.ca_file = ca_file
-        else:
-            self.ca_file = self.get_system_ca_file()
         self.timeout = timeout
         self.insecure = insecure
+        self.ssl_compression = ssl_compression
+        self.ca_file = ca_file
+        self.setcontext()
+
+    @staticmethod
+    def verify_callback(connection, x509, errnum, errdepth, preverify_ok):
+        # Pass through OpenSSL's default result
+        return preverify_ok
+
+    def setcontext(self):
+        """
+        Set up the OpenSSL context.
+        """
+        self.context = OpenSSL.SSL.Context(OpenSSL.SSL.SSLv23_METHOD)
+
+        if self.ssl_compression is False:
+            self.context.set_options(0x20000)  # SSL_OP_NO_COMPRESSION
+
+        if self.insecure is not True:
+            self.context.set_verify(OpenSSL.SSL.VERIFY_PEER,
+                                    self.verify_callback)
+        else:
+            self.context.set_verify(OpenSSL.SSL.VERIFY_NONE,
+                                    self.verify_callback)
+
+        if self.cert_file:
+            try:
+                self.context.use_certificate_file(self.cert_file)
+            except Exception, e:
+                msg = 'Unable to load cert from "%s" %s' % (self.cert_file, e)
+                raise exc.SSLConfigurationError(msg)
+            if self.key_file is None:
+                # We support having key and cert in same file
+                try:
+                    self.context.use_privatekey_file(self.cert_file)
+                except Exception, e:
+                    msg = ('No key file specified and unable to load key '
+                           'from "%s" %s' % (self.cert_file, e))
+                    raise exc.SSLConfigurationError(msg)
+
+        if self.key_file:
+            try:
+                self.context.use_privatekey_file(self.key_file)
+            except Exception, e:
+                msg = 'Unable to load key from "%s" %s' % (self.key_file, e)
+                raise exc.SSLConfigurationError(msg)
+
+        if self.ca_file:
+            try:
+                self.context.load_verify_locations(self.ca_file)
+            except Exception, e:
+                msg = 'Unable to load CA from "%s"' % (self.ca_file, e)
+                raise exc.SSLConfigurationError(msg)
+        else:
+            self.context.set_default_verify_paths()
 
     def connect(self):
         """
-        Connect to a host on a given (SSL) port.
-        If ca_file is pointing somewhere, use it to check Server Certificate.
-
-        Redefined/copied and extended from httplib.py:1105 (Python 2.6.x).
-        This is needed to pass cert_reqs=ssl.CERT_REQUIRED as parameter to
-        ssl.wrap_socket(), which forces SSL to check server certificate against
-        our client certificate.
+        Connect to an SSL port using the OpenSSL library and apply
+        per-connection parameters.
         """
-        sock = socket.create_connection((self.host, self.port), self.timeout)
-
-        if self._tunnel_host:
-            self.sock = sock
-            self._tunnel()
-
-        if self.insecure is True:
-            kwargs = {'cert_reqs': ssl.CERT_NONE}
-        else:
-            kwargs = {'cert_reqs': ssl.CERT_REQUIRED, 'ca_certs': self.ca_file}
-
-        if self.cert_file:
-            kwargs['certfile'] = self.cert_file
-            if self.key_file:
-                kwargs['keyfile'] = self.key_file
-
-        self.sock = ssl.wrap_socket(sock, **kwargs)
-
-    @staticmethod
-    def get_system_ca_file():
-        """"Return path to system default CA file"""
-        # Standard CA file locations for Debian/Ubuntu, RedHat/Fedora,
-        # Suse, FreeBSD/OpenBSD
-        ca_path = ['/etc/ssl/certs/ca-certificates.crt',
-                   '/etc/pki/tls/certs/ca-bundle.crt',
-                   '/etc/ssl/ca-bundle.pem',
-                   '/etc/ssl/cert.pem']
-        for ca in ca_path:
-            if os.path.exists(ca):
-                return ca
-        return None
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        if self.timeout is not None:
+            # '0' microseconds
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO,
+                            struct.pack('LL', self.timeout, 0))
+        self.sock = OpenSSLConnectionDelegator(self.context, sock)
+        self.sock.connect((self.host, self.port))
 
 
 class ResponseBodyIterator(object):

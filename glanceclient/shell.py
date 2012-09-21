@@ -81,6 +81,11 @@ class OpenStackImagesShell(object):
             default=600,
             help='Number of seconds to wait for a response')
 
+        parser.add_argument('--no-ssl-compression',
+            dest='ssl_compression',
+            default=True, action='store_false',
+            help='Disable SSL compression when using https.')
+
         parser.add_argument('-f', '--force',
             dest='force',
             default=False, action='store_true',
@@ -395,6 +400,7 @@ class OpenStackImagesShell(object):
             'ca_file': args.ca_file,
             'cert_file': args.cert_file,
             'key_file': args.key_file,
+            'ssl_compression': args.ssl_compression
         }
 
         client = glanceclient.Client(api_version, endpoint, **kwargs)
