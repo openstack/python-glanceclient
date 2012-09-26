@@ -177,10 +177,15 @@ class ImageManager(base.Manager):
                     # Illegal seek. This means the user is trying
                     # to pipe image data to the client, e.g.
                     # echo testdata | bin/glance add blah..., or
-                    # that stdin is empty
-                    return 0
+                    # that stdin is empty, or that a file-like
+                    # object which doesn't support 'seek/tell' has
+                    # been supplied.
+                    return None
                 else:
                     raise
+        else:
+            # Cannot determine size of input image
+            return None
 
     def create(self, **kwargs):
         """Create an image
@@ -190,10 +195,8 @@ class ImageManager(base.Manager):
         image_data = kwargs.pop('data', None)
         if image_data is not None:
             image_size = self._get_file_size(image_data)
-            if image_size != 0:
+            if image_size is not None:
                 kwargs.setdefault('size', image_size)
-            else:
-                image_data = None
 
         fields = {}
         for field in kwargs:
@@ -218,16 +221,13 @@ class ImageManager(base.Manager):
 
         TODO(bcwaldon): document accepted params
         """
-        hdrs = {}
         image_data = kwargs.pop('data', None)
         if image_data is not None:
             image_size = self._get_file_size(image_data)
-            if image_size != 0:
+            if image_size is not None:
                 kwargs.setdefault('size', image_size)
-                hdrs['Content-Length'] = image_size
-            else:
-                image_data = None
 
+        hdrs = {}
         try:
             purge_props = 'true' if kwargs.pop('purge_props') else 'false'
         except KeyError:

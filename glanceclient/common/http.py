@@ -146,7 +146,19 @@ class HTTPClient(object):
 
         try:
             conn_url = os.path.normpath('%s/%s' % (self.endpoint_path, url))
-            conn.request(method, conn_url, **kwargs)
+            if kwargs['headers'].get('Transfer-Encoding') == 'chunked':
+                conn.putrequest(method, conn_url)
+                for header, value in kwargs['headers'].items():
+                    conn.putheader(header, value)
+                conn.endheaders()
+                chunk = kwargs['body'].read(CHUNKSIZE)
+                # Chunk it, baby...
+                while chunk:
+                    conn.send('%x\r\n%s\r\n' % (len(chunk), chunk))
+                    chunk = kwargs['body'].read(CHUNKSIZE)
+                conn.send('0\r\n\r\n')
+            else:
+                conn.request(method, conn_url, **kwargs)
             resp = conn.getresponse()
         except socket.gaierror as e:
             message = "Error finding address for %(url)s: %(e)s" % locals()
@@ -201,6 +213,12 @@ class HTTPClient(object):
         kwargs.setdefault('headers', {})
         kwargs['headers'].setdefault('Content-Type',
                                      'application/octet-stream')
+        if 'body' in kwargs:
+            if (hasattr(kwargs['body'], 'read')
+                and method.lower() in ('post', 'put')):
+                # We use 'Transfer-Encoding: chunked' because
+                # body size may not always be known in advance.
+                kwargs['headers']['Transfer-Encoding'] = 'chunked'
         return self._http_request(url, method, **kwargs)
 
 

@@ -81,9 +81,20 @@ def _set_data_field(fields, args):
         if args.file:
             fields['data'] = open(args.file, 'rb')
         else:
-            if msvcrt:
-                msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
-            fields['data'] = sys.stdin
+            # We distinguish between cases where image data is pipelined:
+            # (1) glance ... < /tmp/file or cat /tmp/file | glance ...
+            # and cases where no image data is provided:
+            # (2) glance ...
+            if (sys.stdin.isatty() is not True):
+                # Our input is from stdin, and we are part of
+                # a pipeline, so data may be present. (We are of
+                # type (1) above.)
+                if msvcrt:
+                    msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
+                fields['data'] = sys.stdin
+            else:
+                # We are of type (2) above, no image data supplied
+                fields['data'] = None
 
 
 @utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to describe.')
