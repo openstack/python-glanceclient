@@ -50,35 +50,46 @@ class HTTPClient(object):
 
     def __init__(self, endpoint, **kwargs):
         self.endpoint = endpoint
+        endpoint_parts = self.parse_endpoint(self.endpoint)
+        self.endpoint_scheme = endpoint_parts.scheme
+        self.endpoint_hostname = endpoint_parts.hostname
+        self.endpoint_port = endpoint_parts.port
+        self.endpoint_path = endpoint_parts.path
+
+        self.connection_class = self.get_connection_class(self.endpoint_scheme)
+        self.connection_kwargs = self.get_connection_kwargs(
+                self.endpoint_scheme, **kwargs)
+
         self.auth_token = kwargs.get('token')
-        self.connection_params = self.get_connection_params(endpoint, **kwargs)
 
     @staticmethod
-    def get_connection_params(endpoint, **kwargs):
-        parts = urlparse.urlparse(endpoint)
+    def parse_endpoint(endpoint):
+        return urlparse.urlparse(endpoint)
 
-        _args = (parts.hostname, parts.port, parts.path)
+    @staticmethod
+    def get_connection_class(scheme):
+        if scheme == 'https':
+            return VerifiedHTTPSConnection
+        else:
+            return httplib.HTTPConnection
+
+    @staticmethod
+    def get_connection_kwargs(scheme, **kwargs):
         _kwargs = {'timeout': float(kwargs.get('timeout', 600))}
 
-        if parts.scheme == 'https':
-            _class = VerifiedHTTPSConnection
+        if scheme == 'https':
             _kwargs['ca_file'] = kwargs.get('ca_file', None)
             _kwargs['cert_file'] = kwargs.get('cert_file', None)
             _kwargs['key_file'] = kwargs.get('key_file', None)
             _kwargs['insecure'] = kwargs.get('insecure', False)
-        elif parts.scheme == 'http':
-            _class = httplib.HTTPConnection
-        else:
-            msg = 'Unsupported scheme: %s' % parts.scheme
-            raise exc.InvalidEndpoint(msg)
 
-        return (_class, _args, _kwargs)
+        return _kwargs
 
     def get_connection(self):
-        _class = self.connection_params[0]
+        _class = self.connection_class
         try:
-            return _class(*self.connection_params[1],
-                          **self.connection_params[2])
+            return _class(self.endpoint_hostname, self.endpoint_port,
+                          **self.connection_kwargs)
         except httplib.InvalidURL:
             raise exc.InvalidEndpoint()
 
@@ -95,11 +106,11 @@ class HTTPClient(object):
             ('ca_file', '--cacert %s'),
         ]
         for (key, fmt) in conn_params_fmt:
-            value = self.connection_params[2].get(key)
+            value = self.connection_kwargs.get(key)
             if value:
                 curl.append(fmt % value)
 
-        if self.connection_params[2].get('insecure'):
+        if self.connection_kwargs.get('insecure'):
             curl.append('-k')
 
         if 'body' in kwargs:
@@ -134,8 +145,7 @@ class HTTPClient(object):
         conn = self.get_connection()
 
         try:
-            conn_params = self.connection_params[1][2]
-            conn_url = os.path.normpath('%s/%s' % (conn_params, url))
+            conn_url = os.path.normpath('%s/%s' % (self.endpoint_path, url))
             conn.request(method, conn_url, **kwargs)
             resp = conn.getresponse()
         except socket.gaierror as e:
