@@ -29,15 +29,21 @@ import glanceclient.v1.images
 #NOTE(bcwaldon): import deprecated cli functions
 from glanceclient.v1.legacy_shell import *
 
+CONTAINER_FORMATS = 'Acceptable formats: ami, ari, aki, bare, and ovf.'
+DISK_FORMATS = ('Acceptable formats: ami, ari, aki, vhd, vmdk, raw, '
+                'qcow2, vdi, and iso.')
+
 
 @utils.arg('--name', metavar='<NAME>',
            help='Filter images to those that have this name.')
 @utils.arg('--status', metavar='<STATUS>',
            help='Filter images to those that have this status.')
 @utils.arg('--container-format', metavar='<CONTAINER_FORMAT>',
-           help='Filter images to those that have this container format.')
+           help='Filter images to those that have this container format. '
+                + CONTAINER_FORMATS)
 @utils.arg('--disk-format', metavar='<DISK_FORMAT>',
-           help='Filter images to those that have this disk format.')
+           help='Filter images to those that have this disk format. '
+                + DISK_FORMATS)
 @utils.arg('--size-min', metavar='<SIZE>',
            help='Filter images to those with a size greater than this.')
 @utils.arg('--size-max', metavar='<SIZE>',
@@ -120,9 +126,9 @@ def do_image_download(gc, args):
 @utils.arg('--name', metavar='<NAME>',
            help='Name of image.')
 @utils.arg('--disk-format', metavar='<DISK_FORMAT>',
-           help='Disk format of image.')
+           help='Disk format of image. ' + DISK_FORMATS)
 @utils.arg('--container-format', metavar='<CONTAINER_FORMAT>',
-           help='Container format of image.')
+           help='Container format of image. ' + CONTAINER_FORMATS)
 @utils.arg('--owner', metavar='<TENANT_ID>',
            help='Tenant who should own image.')
 @utils.arg('--size', metavar='<SIZE>',
@@ -188,9 +194,9 @@ def do_image_create(gc, args):
 @utils.arg('--name', metavar='<NAME>',
            help='Name of image.')
 @utils.arg('--disk-format', metavar='<CONTAINER_FORMAT>',
-           help='Disk format of image.')
+           help='Disk format of image. ' + CONTAINER_FORMATS)
 @utils.arg('--container-format', metavar='<DISK_FORMAT>',
-           help='Container format of image.')
+           help='Container format of image. ' + DISK_FORMATS)
 @utils.arg('--owner', metavar='<TENANT_ID>',
            help='Tenant who should own image.')
 @utils.arg('--size', metavar='<SIZE>',
