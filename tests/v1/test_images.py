@@ -390,7 +390,7 @@ class ImageManagerTest(unittest.TestCase):
     def test_update_with_data(self):
         image_data = StringIO.StringIO('XXX')
         self.mgr.update('1', data=image_data)
-        expect_headers = {'x-image-meta-size': '3', 'Content-Length': 3}
+        expect_headers = {'x-image-meta-size': '3'}
         expect = [('PUT', '/v1/images/1', expect_headers, image_data)]
         self.assertEqual(self.api.calls, expect)
 
