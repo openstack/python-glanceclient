@@ -23,6 +23,7 @@ if os.name == 'nt':
 else:
     msvcrt = None
 
+from glanceclient import exc
 from glanceclient.common import utils
 import glanceclient.v1.images
 
@@ -257,10 +258,24 @@ def do_image_update(gc, args):
     _image_show(image)
 
 
-@utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to delete.')
+@utils.arg('id', metavar='<IMAGE_ID>', nargs='+',
+           help='ID of image(s) to delete.')
 def do_image_delete(gc, args):
-    """Delete a specific image."""
-    gc.images.delete(args.id)
+    """Delete specified image(s)."""
+    for image in args.id:
+        try:
+            if args.verbose:
+                print 'Requesting image delete for %s ...' % image,
+
+            gc.images.delete(image)
+
+            if args.verbose:
+                print '[Done]'
+
+        except exc.HTTPException, e:
+            if args.verbose:
+                print '[Fail]'
+            print '%s: Unable to delete image %s' % (e, image)
 
 
 @utils.arg('--image-id', metavar='<IMAGE_ID>',
