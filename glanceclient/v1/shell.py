@@ -297,14 +297,14 @@ def do_member_create(gc, args):
 
 
 @utils.arg('image_id', metavar='<IMAGE_ID>',
-           help='Image to add member to.')
+           help='Image from which to remove member')
 @utils.arg('tenant_id', metavar='<TENANT_ID>',
-           help='Tenant to add as member')
+           help='Tenant to remove as member')
 def do_member_delete(gc, args):
     """Remove a shared image from a tenant."""
-    if not options.dry_run:
+    if not args.dry_run:
         gc.image_members.delete(args.image_id, args.tenant_id)
     else:
         print "Dry run. We would have done the following:"
-        print ('Remove "%(member_id)s" from the member list of image '
-               '"%(image_id)s"' % locals())
+        print ('Remove "%s" from the member list of image '
+               '"%s"' % (args.tenant_id, args.image_id))
