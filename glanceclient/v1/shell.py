@@ -54,6 +54,8 @@ DISK_FORMATS = ('Acceptable formats: ami, ari, aki, vhd, vmdk, raw, '
             action='append', dest='properties', default=[])
 @utils.arg('--page-size', metavar='<SIZE>', default=None, type=int,
            help='Number of images to request in each paginated request.')
+@utils.arg('--human-readable', action='store_true', default=False,
+           help='Print image size in a human-friendly format.')
 def do_image_list(gc, args):
     """List images you can access."""
     filter_keys = ['name', 'status', 'container_format', 'disk_format',
@@ -71,12 +73,22 @@ def do_image_list(gc, args):
     images = gc.images.list(**kwargs)
     columns = ['ID', 'Name', 'Disk Format', 'Container Format',
                'Size', 'Status']
+
+    if args.human_readable:
+        def convert_size(image):
+            image.size = utils.make_size_human_readable(image.size)
+            return image
+
+        images = (convert_size(image) for image in images)
+
     utils.print_list(images, columns)
 
 
-def _image_show(image):
+def _image_show(image, human_readable=False):
     # Flatten image properties dict for display
     info = copy.deepcopy(image._info)
+    if human_readable:
+        info['size'] = utils.make_size_human_readable(info['size'])
     for (k, v) in info.pop('properties').iteritems():
         info['Property \'%s\'' % k] = v
 
@@ -105,10 +117,12 @@ def _set_data_field(fields, args):
 
 
 @utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to describe.')
+@utils.arg('--human-readable', action='store_true', default=False,
+           help='Print image size in a human-friendly format.')
 def do_image_show(gc, args):
     """Describe a specific image."""
     image = gc.images.get(args.id)
-    _image_show(image)
+    _image_show(image, args.human_readable)
 
 
 @utils.arg('--file', metavar='<FILE>',
@@ -165,6 +179,8 @@ def do_image_download(gc, args):
 @utils.arg('--property', metavar="<key=value>", action='append', default=[],
            help=("Arbitrary property to associate with image. "
                  "May be used multiple times."))
+@utils.arg('--human-readable', action='store_true', default=False,
+           help='Print image size in a human-friendly format.')
 def do_image_create(gc, args):
     """Create a new image."""
     # Filter out None values
@@ -188,7 +204,7 @@ def do_image_create(gc, args):
     _set_data_field(fields, args)
 
     image = gc.images.create(**fields)
-    _image_show(image)
+    _image_show(image, args.human_readable)
 
 
 @utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to modify.')
@@ -232,6 +248,8 @@ def do_image_create(gc, args):
            help=("If this flag is present, delete all image properties "
                  "not explicitly set in the update request. Otherwise, "
                  "those properties not referenced are preserved."))
+@utils.arg('--human-readable', action='store_true', default=False,
+           help='Print image size in a human-friendly format.')
 def do_image_update(gc, args):
     """Update a specific image."""
     # Filter out None values
@@ -255,7 +273,7 @@ def do_image_update(gc, args):
     _set_data_field(fields, args)
 
     image = gc.images.update(image_id, purge_props=args.purge_props, **fields)
-    _image_show(image)
+    _image_show(image, args.human_readable)
 
 
 @utils.arg('id', metavar='<IMAGE_ID>', nargs='+',

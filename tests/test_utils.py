@@ -43,3 +43,8 @@ class TestUtils(unittest.TestCase):
         fixture = 'CCC'
         checksum = 'defb99e69a9f1f6e06f15006b1f166ae'
         data = ''.join([f for f in utils.integrity_iter(fixture, checksum)])
+
+    def test_make_size_human_readable(self):
+        self.assertEqual("1024.000kB", utils.make_size_human_readable(1048576))
+        self.assertEqual("1.375GB", utils.make_size_human_readable(1476395008))
+        self.assertEqual("9.309MB", utils.make_size_human_readable(9761280))
