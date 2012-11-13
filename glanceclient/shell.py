@@ -47,6 +47,10 @@ class OpenStackImagesShell(object):
             help=argparse.SUPPRESS,
         )
 
+        parser.add_argument('--version',
+                            action='version',
+                            version=glanceclient.__version__)
+
         parser.add_argument('-d', '--debug',
             default=bool(utils.env('GLANCECLIENT_DEBUG')),
             action='store_true',

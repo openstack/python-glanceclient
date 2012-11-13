@@ -45,4 +45,5 @@ setuptools.setup(
     setup_requires=['setuptools-git>=0.4'],
     test_suite="nose.collector",
     entry_points={'console_scripts': ['glance = glanceclient.shell:main']},
+    data_files=[('glanceclient', ['glanceclient/versioninfo'])]
 )
