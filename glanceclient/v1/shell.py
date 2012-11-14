@@ -149,7 +149,8 @@ def do_image_download(gc, args):
                  ' creation. Alternatively, images can be passed to the client'
                  ' via stdin.'))
 @utils.arg('--checksum', metavar='<CHECKSUM>',
-           help='Hash of image data used Glance can use for verification.')
+           help=('Hash of image data used Glance can use for verification.'
+                 ' Provide a md5 checksum here.'))
 @utils.arg('--copy-from', metavar='<IMAGE_URL>',
            help=('Similar to \'--location\' in usage, but this indicates that'
                  ' the Glance server should immediately copy the data and'
