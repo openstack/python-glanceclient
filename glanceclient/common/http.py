@@ -16,7 +16,7 @@
 import copy
 import httplib
 import logging
-import os
+import posixpath
 import socket
 import StringIO
 import struct
@@ -142,7 +142,7 @@ class HTTPClient(object):
         conn = self.get_connection()
 
         try:
-            conn_url = os.path.normpath('%s/%s' % (self.endpoint_path, url))
+            conn_url = posixpath.normpath('%s/%s' % (self.endpoint_path, url))
             if kwargs['headers'].get('Transfer-Encoding') == 'chunked':
                 conn.putrequest(method, conn_url)
                 for header, value in kwargs['headers'].items():
