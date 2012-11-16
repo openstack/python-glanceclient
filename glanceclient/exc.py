@@ -168,3 +168,7 @@ class EndpointNotFound(Exception):
 
 class SSLConfigurationError(BaseException):
     pass
+
+
+class SSLCertificateError(BaseException):
+    pass
