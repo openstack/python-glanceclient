@@ -36,6 +36,21 @@ Once you've configured your authentication parameters, you can run ``glance help
 Release Notes
 =============
 
+0.6.0
+-----
+
+* Multiple image ID can be passed to ``glance image-delete``
+* ``glance --version`` and glanceclient.__version__ expose the current library version
+* Use ``--human-readable`` with ``image-list`` and ``image-show`` to display image sizes in human-friendly formats
+* Use OpenSSL for HTTPS connections
+* 1056220_: Always use 'Transfer-Encoding: chunked' when transferring image data
+* 1052846_: Padded endpoints enabled (e.g. glance.example.com/padding/v1)
+* 1050345_: ``glance image-create`` and ``glance image-update`` now work on Windows
+
+.. _1056220: http://bugs.launchpad.net/python-glanceclient/+bug/1056220
+.. _1052846: http://bugs.launchpad.net/python-glanceclient/+bug/1052846
+.. _1050345: http://bugs.launchpad.net/python-glanceclient/+bug/1050345
+
 0.5.1
 ----
 * 1045824_: Always send Content-Length when updating image with image data
