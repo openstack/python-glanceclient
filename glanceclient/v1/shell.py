@@ -159,9 +159,9 @@ def do_image_download(gc, args):
 # to use --is-public
 @utils.arg('--public', action='store_true', default=False,
            help=argparse.SUPPRESS)
-@utils.arg('--is-public', type=utils.string_to_bool,
+@utils.arg('--is-public', type=utils.string_to_bool, metavar='[True|False]',
            help='Make image accessible to the public.')
-@utils.arg('--is-protected', type=utils.string_to_bool,
+@utils.arg('--is-protected', type=utils.string_to_bool, metavar='[True|False]',
            help='Prevent image from being deleted.')
 @utils.arg('--property', metavar="<key=value>", action='append', default=[],
            help=("Arbitrary property to associate with image. "
@@ -222,9 +222,9 @@ def do_image_create(gc, args):
            help=('Similar to \'--location\' in usage, but this indicates that'
                  ' the Glance server should immediately copy the data and'
                  ' store it in its configured image store.'))
-@utils.arg('--is-public', type=utils.string_to_bool,
+@utils.arg('--is-public', type=utils.string_to_bool, metavar='[True|False]',
            help='Make image accessible to the public.')
-@utils.arg('--is-protected', type=utils.string_to_bool,
+@utils.arg('--is-protected', type=utils.string_to_bool, metavar='[True|False]',
            help='Prevent image from being deleted.')
 @utils.arg('--property', metavar="<key=value>", action='append', default=[],
            help=("Arbitrary property to associate with image. "
