@@ -175,8 +175,11 @@ def make_size_human_readable(size):
     base = 1024.0
 
     index = 0
-    while size > base:
+    while size >= base:
         index = index + 1
         size = size / base
 
-    return "%.3f%s" % (size, suffix[index])
+    padded = '%.1f' % size
+    stripped = padded.rstrip('0').rstrip('.')
+
+    return '%s%s' % (stripped, suffix[index])
