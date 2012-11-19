@@ -311,9 +311,16 @@ class OpenStackImagesShell(object):
 
     def _get_endpoint(self, client, **kwargs):
         """Get an endpoint using the provided keystone client."""
-        endpoint = client.service_catalog.url_for(
-                service_type=kwargs.get('service_type') or 'image',
-                endpoint_type=kwargs.get('endpoint_type') or 'publicURL')
+        endpoint_kwargs = {
+            'service_type': kwargs.get('service_type') or 'image',
+            'endpoint_type': kwargs.get('endpoint_type') or 'publicURL',
+        }
+
+        if kwargs.get('region_name'):
+            endpoint_kwargs['attr'] = 'region'
+            endpoint_kwargs['filter_value'] = kwargs.get('region_name')
+
+        endpoint = client.service_catalog.url_for(**endpoint_kwargs)
         return self._strip_version(endpoint)
 
     def _get_image_url(self, args):
@@ -389,7 +396,8 @@ class OpenStackImagesShell(object):
                 'auth_url': args.os_auth_url,
                 'service_type': args.os_service_type,
                 'endpoint_type': args.os_endpoint_type,
-                'insecure': args.insecure
+                'insecure': args.insecure,
+                'region_name': args.os_region_name,
             }
             _ksclient = self._get_ksclient(**kwargs)
             token = args.os_auth_token or _ksclient.auth_token
