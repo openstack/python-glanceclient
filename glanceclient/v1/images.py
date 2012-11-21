@@ -212,7 +212,7 @@ class ImageManager(base.Manager):
             hdrs['x-glance-api-copy-from'] = copy_from
 
         resp, body_iter = self.api.raw_request(
-                'POST', '/v1/images', headers=hdrs, body=image_data)
+            'POST', '/v1/images', headers=hdrs, body=image_data)
         body = json.loads(''.join([c for c in body_iter]))
         return Image(self, self._format_image_meta_for_user(body['image']))
 
@@ -250,6 +250,6 @@ class ImageManager(base.Manager):
 
         url = '/v1/images/%s' % base.getid(image)
         resp, body_iter = self.api.raw_request(
-                'PUT', url, headers=hdrs, body=image_data)
+            'PUT', url, headers=hdrs, body=image_data)
         body = json.loads(''.join([c for c in body_iter]))
         return Image(self, self._format_image_meta_for_user(body['image']))

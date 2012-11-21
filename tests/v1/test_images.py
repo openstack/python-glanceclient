@@ -174,7 +174,7 @@ fixtures = {
         'DELETE': ({}, None),
     },
     '/v1/images/2': {
-       'HEAD': (
+        'HEAD': (
             {
                 'x-image-meta-id': '2'
             },
@@ -188,7 +188,7 @@ fixtures = {
         ),
     },
     '/v1/images/3': {
-       'HEAD': (
+        'HEAD': (
             {
                 'x-image-meta-id': '3'
             },

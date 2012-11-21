@@ -54,7 +54,7 @@ class HTTPClient(object):
 
         self.connection_class = self.get_connection_class(self.endpoint_scheme)
         self.connection_kwargs = self.get_connection_kwargs(
-                self.endpoint_scheme, **kwargs)
+            self.endpoint_scheme, **kwargs)
 
         self.auth_token = kwargs.get('token')
 
@@ -212,7 +212,7 @@ class HTTPClient(object):
                                      'application/octet-stream')
         if 'body' in kwargs:
             if (hasattr(kwargs['body'], 'read')
-                and method.lower() in ('post', 'put')):
+                    and method.lower() in ('post', 'put')):
                 # We use 'Transfer-Encoding: chunked' because
                 # body size may not always be known in advance.
                 kwargs['headers']['Transfer-Encoding'] = 'chunked'

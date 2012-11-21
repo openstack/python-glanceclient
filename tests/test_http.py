@@ -37,10 +37,10 @@ class TestClient(unittest.TestCase):
         m = mox.Mox()
         m.StubOutWithMock(httplib.HTTPConnection, 'request')
         httplib.HTTPConnection.request(
-                mox.IgnoreArg(),
-                mox.IgnoreArg(),
-                headers=mox.IgnoreArg(),
-                ).AndRaise(socket.error())
+            mox.IgnoreArg(),
+            mox.IgnoreArg(),
+            headers=mox.IgnoreArg(),
+        ).AndRaise(socket.error())
         m.ReplayAll()
         try:
             client.json_request('GET', '/v1/images/detail?limit=20')
@@ -51,7 +51,7 @@ class TestClient(unittest.TestCase):
             self.fail('An exception should have bypassed this line.')
         except exc.CommunicationError, comm_err:
             fail_msg = ("Exception message '%s' should contain '%s'" %
-                                        (comm_err.message, endpoint))
+                       (comm_err.message, endpoint))
             self.assertTrue(endpoint in comm_err.message, fail_msg)
         finally:
             m.UnsetStubs()

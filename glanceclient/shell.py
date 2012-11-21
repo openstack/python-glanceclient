@@ -43,203 +43,210 @@ class OpenStackImagesShell(object):
 
         # Global arguments
         parser.add_argument('-h', '--help',
-            action='store_true',
-            help=argparse.SUPPRESS,
-        )
+                            action='store_true',
+                            help=argparse.SUPPRESS,
+                            )
 
         parser.add_argument('--version',
                             action='version',
                             version=glanceclient.__version__)
 
         parser.add_argument('-d', '--debug',
-            default=bool(utils.env('GLANCECLIENT_DEBUG')),
-            action='store_true',
-            help='Defaults to env[GLANCECLIENT_DEBUG]')
+                            default=bool(utils.env('GLANCECLIENT_DEBUG')),
+                            action='store_true',
+                            help='Defaults to env[GLANCECLIENT_DEBUG]')
 
         parser.add_argument('-v', '--verbose',
-            default=False, action="store_true",
-            help="Print more verbose output")
+                            default=False, action="store_true",
+                            help="Print more verbose output")
 
         parser.add_argument('-k', '--insecure',
-            default=False,
-            action='store_true',
-            help="Explicitly allow glanceclient to perform \"insecure\" "
-                 "SSL (https) requests. The server's certificate will "
-                 "not be verified against any certificate authorities. "
-                 "This option should be used with caution.")
+                            default=False,
+                            action='store_true',
+                            help='Explicitly allow glanceclient to perform'
+                            '\"insecure SSL\" (https) requests. The servers'
+                            'certificate will not be verified against any'
+                            'certificate authorities. This option should'
+                            'be used with caution.')
 
         parser.add_argument('--cert-file',
-            help='Path of certificate file to use in SSL connection. This '
-                 'file can optionally be prepended with the private key.')
+                            help='Path of certificate file to use in SSL '
+                            'connection. This file can optionally be'
+                            'prepended with the private key.')
 
         parser.add_argument('--key-file',
-            help='Path of client key to use in SSL connection. This option is '
-                 'not necessary if your key is prepended to your cert file.')
+                            help='Path of client key to use in SSL '
+                            'connection. This option is not necessary '
+                            'if your key is prepended to your cert file.')
 
         parser.add_argument('--ca-file',
-            help='Path of CA SSL certificate(s) used to verify the remote '
-                 'server\'s certificate. Without this option glance looks '
-                 'for the default system CA certificates.')
+                            help='Path of CA SSL certificate(s) used to verify'
+                            'the remote server\'s certificate. Without this '
+                            'option glance looks for the default system '
+                            'CA certificates.')
 
         parser.add_argument('--timeout',
-            default=600,
-            help='Number of seconds to wait for a response')
+                            default=600,
+                            help='Number of seconds to wait for a response')
 
         parser.add_argument('--no-ssl-compression',
-            dest='ssl_compression',
-            default=True, action='store_false',
-            help='Disable SSL compression when using https.')
+                            dest='ssl_compression',
+                            default=True, action='store_false',
+                            help='Disable SSL compression when using https.')
 
         parser.add_argument('-f', '--force',
-            dest='force',
-            default=False, action='store_true',
-            help='Prevent select actions from requesting '
-                 'user confirmation.')
+                            dest='force',
+                            default=False, action='store_true',
+                            help='Prevent select actions from requesting '
+                            'user confirmation.')
 
         #NOTE(bcwaldon): DEPRECATED
         parser.add_argument('--dry-run',
-            default=False,
-            action='store_true',
-            help='DEPRECATED! Only used for deprecated legacy commands.')
+                            default=False,
+                            action='store_true',
+                            help='DEPRECATED! Only used for deprecated '
+                            'legacy commands.')
 
         #NOTE(bcwaldon): DEPRECATED
         parser.add_argument('--ssl',
-            dest='use_ssl',
-            default=False,
-            action='store_true',
-            help='DEPRECATED! Send a fully-formed endpoint using '
-                 '--os-image-url instead.')
+                            dest='use_ssl',
+                            default=False,
+                            action='store_true',
+                            help='DEPRECATED! Send a fully-formed endpoint '
+                            'using --os-image-url instead.')
 
         #NOTE(bcwaldon): DEPRECATED
         parser.add_argument('-H', '--host',
-            metavar='ADDRESS',
-            help='DEPRECATED! Send a fully-formed endpoint using '
-                 '--os-image-url instead.')
+                            metavar='ADDRESS',
+                            help='DEPRECATED! Send a fully-formed endpoint '
+                            'using --os-image-url instead.')
 
         #NOTE(bcwaldon): DEPRECATED
         parser.add_argument('-p', '--port',
-            dest='port',
-            metavar='PORT',
-            type=int,
-            default=9292,
-            help='DEPRECATED! Send a fully-formed endpoint using '
-                 '--os-image-url instead.')
+                            dest='port',
+                            metavar='PORT',
+                            type=int,
+                            default=9292,
+                            help='DEPRECATED! Send a fully-formed endpoint '
+                            'using --os-image-url instead.')
 
         parser.add_argument('--os-username',
-            default=utils.env('OS_USERNAME'),
-            help='Defaults to env[OS_USERNAME]')
+                            default=utils.env('OS_USERNAME'),
+                            help='Defaults to env[OS_USERNAME]')
 
         parser.add_argument('--os_username',
-            help=argparse.SUPPRESS)
+                            help=argparse.SUPPRESS)
 
         #NOTE(bcwaldon): DEPRECATED
         parser.add_argument('-I',
-            dest='os_username',
-            help='DEPRECATED! Use --os-username.')
+                            dest='os_username',
+                            help='DEPRECATED! Use --os-username.')
 
         parser.add_argument('--os-password',
-            default=utils.env('OS_PASSWORD'),
-            help='Defaults to env[OS_PASSWORD]')
+                            default=utils.env('OS_PASSWORD'),
+                            help='Defaults to env[OS_PASSWORD]')
 
         parser.add_argument('--os_password',
-            help=argparse.SUPPRESS)
+                            help=argparse.SUPPRESS)
 
         #NOTE(bcwaldon): DEPRECATED
         parser.add_argument('-K',
-            dest='os_password',
-            help='DEPRECATED! Use --os-password.')
+                            dest='os_password',
+                            help='DEPRECATED! Use --os-password.')
 
         parser.add_argument('--os-tenant-id',
-            default=utils.env('OS_TENANT_ID'),
-            help='Defaults to env[OS_TENANT_ID]')
+                            default=utils.env('OS_TENANT_ID'),
+                            help='Defaults to env[OS_TENANT_ID]')
 
         parser.add_argument('--os_tenant_id',
-            help=argparse.SUPPRESS)
+                            help=argparse.SUPPRESS)
 
         parser.add_argument('--os-tenant-name',
-            default=utils.env('OS_TENANT_NAME'),
-            help='Defaults to env[OS_TENANT_NAME]')
+                            default=utils.env('OS_TENANT_NAME'),
+                            help='Defaults to env[OS_TENANT_NAME]')
 
         parser.add_argument('--os_tenant_name',
-            help=argparse.SUPPRESS)
+                            help=argparse.SUPPRESS)
 
         #NOTE(bcwaldon): DEPRECATED
         parser.add_argument('-T',
-            dest='os_tenant_name',
-            help='DEPRECATED! Use --os-tenant-name.')
+                            dest='os_tenant_name',
+                            help='DEPRECATED! Use --os-tenant-name.')
 
         parser.add_argument('--os-auth-url',
-            default=utils.env('OS_AUTH_URL'),
-            help='Defaults to env[OS_AUTH_URL]')
+                            default=utils.env('OS_AUTH_URL'),
+                            help='Defaults to env[OS_AUTH_URL]')
 
         parser.add_argument('--os_auth_url',
-            help=argparse.SUPPRESS)
+                            help=argparse.SUPPRESS)
 
         #NOTE(bcwaldon): DEPRECATED
         parser.add_argument('-N',
-            dest='os_auth_url',
-            help='DEPRECATED! Use --os-auth-url.')
+                            dest='os_auth_url',
+                            help='DEPRECATED! Use --os-auth-url.')
 
         parser.add_argument('--os-region-name',
-            default=utils.env('OS_REGION_NAME'),
-            help='Defaults to env[OS_REGION_NAME]')
+                            default=utils.env('OS_REGION_NAME'),
+                            help='Defaults to env[OS_REGION_NAME]')
 
         parser.add_argument('--os_region_name',
-            help=argparse.SUPPRESS)
+                            help=argparse.SUPPRESS)
 
         #NOTE(bcwaldon): DEPRECATED
         parser.add_argument('-R',
-            dest='os_region_name',
-            help='DEPRECATED! Use --os-region-name.')
+                            dest='os_region_name',
+                            help='DEPRECATED! Use --os-region-name.')
 
         parser.add_argument('--os-auth-token',
-            default=utils.env('OS_AUTH_TOKEN'),
-            help='Defaults to env[OS_AUTH_TOKEN]')
+                            default=utils.env('OS_AUTH_TOKEN'),
+                            help='Defaults to env[OS_AUTH_TOKEN]')
 
         parser.add_argument('--os_auth_token',
-            help=argparse.SUPPRESS)
+                            help=argparse.SUPPRESS)
 
         #NOTE(bcwaldon): DEPRECATED
         parser.add_argument('-A', '--auth_token',
-            dest='os_auth_token',
-            help='DEPRECATED! Use --os-auth-token.')
+                            dest='os_auth_token',
+                            help='DEPRECATED! Use --os-auth-token.')
 
         parser.add_argument('--os-image-url',
-            default=utils.env('OS_IMAGE_URL'),
-            help='Defaults to env[OS_IMAGE_URL]')
+                            default=utils.env('OS_IMAGE_URL'),
+                            help='Defaults to env[OS_IMAGE_URL]')
 
         parser.add_argument('--os_image_url',
-            help=argparse.SUPPRESS)
+                            help=argparse.SUPPRESS)
 
         #NOTE(bcwaldon): DEPRECATED
         parser.add_argument('-U', '--url',
-            dest='os_image_url',
-            help='DEPRECATED! Use --os-image-url.')
+                            dest='os_image_url',
+                            help='DEPRECATED! Use --os-image-url.')
 
         parser.add_argument('--os-image-api-version',
-            default=utils.env('OS_IMAGE_API_VERSION', default='1'),
-            help='Defaults to env[OS_IMAGE_API_VERSION] or 1')
+                            default=utils.env(
+                            'OS_IMAGE_API_VERSION', default='1'),
+                            help='Defaults to env[OS_IMAGE_API_VERSION] or 1')
 
         parser.add_argument('--os_image_api_version',
-            help=argparse.SUPPRESS)
+                            help=argparse.SUPPRESS)
 
         parser.add_argument('--os-service-type',
-            default=utils.env('OS_SERVICE_TYPE'),
-            help='Defaults to env[OS_SERVICE_TYPE]')
+                            default=utils.env('OS_SERVICE_TYPE'),
+                            help='Defaults to env[OS_SERVICE_TYPE]')
 
         parser.add_argument('--os_service_type',
-            help=argparse.SUPPRESS)
+                            help=argparse.SUPPRESS)
 
         parser.add_argument('--os-endpoint-type',
-            default=utils.env('OS_ENDPOINT_TYPE'),
-            help='Defaults to env[OS_ENDPOINT_TYPE]')
+                            default=utils.env('OS_ENDPOINT_TYPE'),
+                            help='Defaults to env[OS_ENDPOINT_TYPE]')
 
         parser.add_argument('--os_endpoint_type',
-            help=argparse.SUPPRESS)
+                            help=argparse.SUPPRESS)
 
         #NOTE(bcwaldon): DEPRECATED
         parser.add_argument('-S', '--os_auth_strategy',
-            help='DEPRECATED! This option is completely ignored.')
+                            help='DEPRECATED! This option is '
+                            'completely ignored.')
 
         return parser
 
@@ -264,15 +271,15 @@ class OpenStackImagesShell(object):
             arguments = getattr(callback, 'arguments', [])
 
             subparser = subparsers.add_parser(command,
-                help=help,
-                description=desc,
-                add_help=False,
-                formatter_class=HelpFormatter
-            )
+                                              help=help,
+                                              description=desc,
+                                              add_help=False,
+                                              formatter_class=HelpFormatter
+                                              )
             subparser.add_argument('-h', '--help',
-                action='help',
-                help=argparse.SUPPRESS,
-            )
+                                   action='help',
+                                   help=argparse.SUPPRESS,
+                                   )
             self.subcommands[command] = subparser
             for (args, kwargs) in arguments:
                 subparser.add_argument(*args, **kwargs)
@@ -375,19 +382,23 @@ class OpenStackImagesShell(object):
         else:
             if not args.os_username:
                 raise exc.CommandError("You must provide a username via"
-                        " either --os-username or env[OS_USERNAME]")
+                                       " either --os-username or "
+                                       "env[OS_USERNAME]")
 
             if not args.os_password:
                 raise exc.CommandError("You must provide a password via"
-                        " either --os-password or env[OS_PASSWORD]")
+                                       " either --os-password or "
+                                       "env[OS_PASSWORD]")
 
             if not (args.os_tenant_id or args.os_tenant_name):
                 raise exc.CommandError("You must provide a tenant_id via"
-                        " either --os-tenant-id or via env[OS_TENANT_ID]")
+                                       " either --os-tenant-id or "
+                                       "via env[OS_TENANT_ID]")
 
             if not args.os_auth_url:
                 raise exc.CommandError("You must provide an auth url via"
-                        " either --os-auth-url or via env[OS_AUTH_URL]")
+                                       " either --os-auth-url or "
+                                       "via env[OS_AUTH_URL]")
             kwargs = {
                 'username': args.os_username,
                 'password': args.os_password,
@@ -403,7 +414,7 @@ class OpenStackImagesShell(object):
             token = args.os_auth_token or _ksclient.auth_token
 
             endpoint = args.os_image_url or \
-                    self._get_endpoint(_ksclient, **kwargs)
+                self._get_endpoint(_ksclient, **kwargs)
 
         kwargs = {
             'token': token,

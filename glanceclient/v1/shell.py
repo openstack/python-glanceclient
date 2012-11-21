@@ -51,7 +51,7 @@ DISK_FORMATS = ('Acceptable formats: ami, ari, aki, vhd, vmdk, raw, '
            help='Filter images to those with a size less than this.')
 @utils.arg('--property-filter', metavar='<KEY=VALUE>',
            help="Filter images by a user-defined image property.",
-            action='append', dest='properties', default=[])
+           action='append', dest='properties', default=[])
 @utils.arg('--page-size', metavar='<SIZE>', default=None, type=int,
            help='Number of images to request in each paginated request.')
 @utils.arg('--human-readable', action='store_true', default=False,
@@ -59,7 +59,7 @@ DISK_FORMATS = ('Acceptable formats: ami, ari, aki, vhd, vmdk, raw, '
 def do_image_list(gc, args):
     """List images you can access."""
     filter_keys = ['name', 'status', 'container_format', 'disk_format',
-               'size_min', 'size_max']
+                   'size_min', 'size_max']
     filter_items = [(key, getattr(args, key)) for key in filter_keys]
     filters = dict([item for item in filter_items if item[1] is not None])
 
