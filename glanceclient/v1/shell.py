@@ -56,6 +56,12 @@ DISK_FORMATS = ('Acceptable formats: ami, ari, aki, vhd, vmdk, raw, '
            help='Number of images to request in each paginated request.')
 @utils.arg('--human-readable', action='store_true', default=False,
            help='Print image size in a human-friendly format.')
+@utils.arg('--sort-key', default='id',
+           choices=glanceclient.v1.images.SORT_KEY_VALUES,
+           help='Sort image list by specified field.')
+@utils.arg('--sort-dir', default='asc',
+           choices=glanceclient.v1.images.SORT_DIR_VALUES,
+           help='Sort image list in specified direction.')
 def do_image_list(gc, args):
     """List images you can access."""
     filter_keys = ['name', 'status', 'container_format', 'disk_format',
@@ -70,9 +76,11 @@ def do_image_list(gc, args):
     kwargs = {'filters': filters}
     if args.page_size is not None:
         kwargs['page_size'] = args.page_size
+
+    kwargs['sort_key'] = args.sort_key
+    kwargs['sort_dir'] = args.sort_dir
+
     images = gc.images.list(**kwargs)
-    columns = ['ID', 'Name', 'Disk Format', 'Container Format',
-               'Size', 'Status']
 
     if args.human_readable:
         def convert_size(image):
@@ -81,6 +89,8 @@ def do_image_list(gc, args):
 
         images = (convert_size(image) for image in images)
 
+    columns = ['ID', 'Name', 'Disk Format', 'Container Format',
+               'Size', 'Status']
     utils.print_list(images, columns)
 
 
