@@ -140,6 +140,8 @@ def do_image_download(gc, args):
            help='ID of image to reserve.')
 @utils.arg('--name', metavar='<NAME>',
            help='Name of image.')
+@utils.arg('--store', metavar='<STORE>',
+           help='Store to upload image to.')
 @utils.arg('--disk-format', metavar='<DISK_FORMAT>',
            help='Disk format of image. ' + DISK_FORMATS)
 @utils.arg('--container-format', metavar='<CONTAINER_FORMAT>',

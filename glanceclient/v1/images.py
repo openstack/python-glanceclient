@@ -30,7 +30,7 @@ UPDATE_PARAMS = ('name', 'disk_format', 'container_format', 'min_disk',
                  # compatibility with the legacy client library
                  'deleted')
 
-CREATE_PARAMS = UPDATE_PARAMS + ('id',)
+CREATE_PARAMS = UPDATE_PARAMS + ('id', 'store')
 
 DEFAULT_PAGE_SIZE = 20
 
