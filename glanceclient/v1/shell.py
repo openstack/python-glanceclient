@@ -56,7 +56,7 @@ DISK_FORMATS = ('Acceptable formats: ami, ari, aki, vhd, vmdk, raw, '
            help='Number of images to request in each paginated request.')
 @utils.arg('--human-readable', action='store_true', default=False,
            help='Print image size in a human-friendly format.')
-@utils.arg('--sort-key', default='id',
+@utils.arg('--sort-key', default='name',
            choices=glanceclient.v1.images.SORT_KEY_VALUES,
            help='Sort image list by specified field.')
 @utils.arg('--sort-dir', default='asc',
