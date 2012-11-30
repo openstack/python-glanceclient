@@ -34,6 +34,10 @@ CREATE_PARAMS = UPDATE_PARAMS + ('id', 'store')
 
 DEFAULT_PAGE_SIZE = 20
 
+SORT_DIR_VALUES = ('asc', 'desc')
+SORT_KEY_VALUES = ('name', 'status', 'container_format', 'disk_format',
+                   'size', 'id', 'created_at', 'updated_at')
+
 
 class Image(base.Resource):
     def __repr__(self):
@@ -145,6 +149,22 @@ class ImageManager(base.Manager):
 
         if 'marker' in kwargs:
             params['marker'] = kwargs['marker']
+
+        sort_key = kwargs.get('sort_key')
+        if sort_key is not None:
+            if sort_key in SORT_KEY_VALUES:
+                params['sort_key'] = sort_key
+            else:
+                raise ValueError('sort_key must be one of the following: %s.'
+                                 % ', '.join(SORT_KEY_VALUES))
+
+        sort_dir = kwargs.get('sort_dir')
+        if sort_dir is not None:
+            if sort_dir in SORT_DIR_VALUES:
+                params['sort_dir'] = sort_dir
+            else:
+                raise ValueError('sort_dir must be one of the following: %s.'
+                                 % ', '.join(SORT_DIR_VALUES))
 
         filters = kwargs.get('filters', {})
         properties = filters.pop('properties', {})

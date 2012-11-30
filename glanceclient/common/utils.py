@@ -54,7 +54,7 @@ def print_list(objs, fields, formatters={}):
                 row.append(data)
         pt.add_row(row)
 
-    print pt.get_string(sortby=fields[0])
+    print pt.get_string()
 
 
 def print_dict(d):

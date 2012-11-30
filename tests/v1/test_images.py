@@ -138,6 +138,41 @@ fixtures = {
             ]},
         ),
     },
+    '/v1/images/detail?sort_dir=desc&limit=20': {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': 'a',
+                    'name': 'image-1',
+                    'properties': {'arch': 'x86_64'},
+                },
+                {
+                    'id': 'b',
+                    'name': 'image-2',
+                    'properties': {'arch': 'x86_64'},
+                },
+            ]},
+        ),
+    },
+    '/v1/images/detail?sort_key=name&limit=20': {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': 'a',
+                    'name': 'image-1',
+                    'properties': {'arch': 'x86_64'},
+                },
+                {
+                    'id': 'b',
+                    'name': 'image-2',
+                    'properties': {'arch': 'x86_64'},
+                },
+            ]},
+        ),
+    },
+
     '/v1/images/1': {
         'HEAD': (
             {
@@ -246,6 +281,18 @@ class ImageManagerTest(unittest.TestCase):
     def test_list_with_property_filters(self):
         list(self.mgr.list(filters={'properties': {'ping': 'pong'}}))
         url = '/v1/images/detail?property-ping=pong&limit=20'
+        expect = [('GET', url, {}, None)]
+        self.assertEqual(self.api.calls, expect)
+
+    def test_list_with_sort_dir(self):
+        list(self.mgr.list(sort_dir='desc'))
+        url = '/v1/images/detail?sort_dir=desc&limit=20'
+        expect = [('GET', url, {}, None)]
+        self.assertEqual(self.api.calls, expect)
+
+    def test_list_with_sort_key(self):
+        list(self.mgr.list(sort_key='name'))
+        url = '/v1/images/detail?sort_key=name&limit=20'
         expect = [('GET', url, {}, None)]
         self.assertEqual(self.api.calls, expect)
 
