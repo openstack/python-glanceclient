@@ -166,10 +166,9 @@ def do_image_download(gc, args):
 @utils.arg('--min-ram', metavar='<DISK_RAM>',
            help='Minimum amount of ram needed to boot image (in megabytes).')
 @utils.arg('--location', metavar='<IMAGE_URL>',
-           help=('URL where the data for this image already resides.'
-                 ' For example, if the image data is stored in the filesystem'
-                 ' local to the glance server at \'/usr/share/image.tar.gz\','
-                 ' you would specify \'file:///usr/share/image.tar.gz\'.'))
+           help=('URL where the data for this image already resides. For '
+                 'example, if the image data is stored in swift, you could '
+                 'specify \'swift://account:key@example.com/container/obj\'.'))
 @utils.arg('--file', metavar='<FILE>',
            help=('Local file that contains disk image to be uploaded during'
                  ' creation. Alternatively, images can be passed to the client'
@@ -236,10 +235,9 @@ def do_image_create(gc, args):
 @utils.arg('--min-ram', metavar='<DISK_RAM>',
            help='Minimum amount of ram needed to boot image (in megabytes).')
 @utils.arg('--location', metavar='<IMAGE_URL>',
-           help=('URL where the data for this image already resides.'
-                 ' For example, if the image data is stored in the filesystem'
-                 ' local to the glance server at \'/usr/share/image.tar.gz\','
-                 ' you would specify \'file:///usr/share/image.tar.gz\'.'))
+           help=('URL where the data for this image already resides. For '
+                 'example, if the image data is stored in swift, you could '
+                 'specify \'swift://account:key@example.com/container/obj\'.'))
 @utils.arg('--file', metavar='<FILE>',
            help=('Local file that contains disk image to be uploaded during'
                  ' update. Alternatively, images can be passed to the client'
