@@ -79,11 +79,17 @@ class OpenStackImagesShell(object):
                             'connection. This option is not necessary '
                             'if your key is prepended to your cert file.')
 
-        parser.add_argument('--ca-file',
-                            help='Path of CA SSL certificate(s) used to verify'
+        parser.add_argument('--os-cacert',
+                            metavar='<ca-certificate-file>',
+                            dest='os_cacert',
+                            default=utils.env('OS_CACERT'),
+                            help='Path of CA TLS certificate(s) used to verify'
                             'the remote server\'s certificate. Without this '
                             'option glance looks for the default system '
                             'CA certificates.')
+        parser.add_argument('--ca-file',
+                            dest='os_cacert',
+                            help='DEPRECATED! Use --os-cacert.')
 
         parser.add_argument('--timeout',
                             default=600,
@@ -314,6 +320,7 @@ class OpenStackImagesShell(object):
                                tenant_id=kwargs.get('tenant_id'),
                                tenant_name=kwargs.get('tenant_name'),
                                auth_url=kwargs.get('auth_url'),
+                               cacert=kwargs.get('cacert'),
                                insecure=kwargs.get('insecure'))
 
     def _get_endpoint(self, client, **kwargs):
@@ -407,6 +414,7 @@ class OpenStackImagesShell(object):
                 'auth_url': args.os_auth_url,
                 'service_type': args.os_service_type,
                 'endpoint_type': args.os_endpoint_type,
+                'cacert': args.os_cacert,
                 'insecure': args.insecure,
                 'region_name': args.os_region_name,
             }
@@ -420,7 +428,7 @@ class OpenStackImagesShell(object):
             'token': token,
             'insecure': args.insecure,
             'timeout': args.timeout,
-            'ca_file': args.ca_file,
+            'cacert': args.os_cacert,
             'cert_file': args.cert_file,
             'key_file': args.key_file,
             'ssl_compression': args.ssl_compression

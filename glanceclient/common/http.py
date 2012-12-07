@@ -74,7 +74,7 @@ class HTTPClient(object):
         _kwargs = {'timeout': float(kwargs.get('timeout', 600))}
 
         if scheme == 'https':
-            _kwargs['ca_file'] = kwargs.get('ca_file', None)
+            _kwargs['cacert'] = kwargs.get('cacert', None)
             _kwargs['cert_file'] = kwargs.get('cert_file', None)
             _kwargs['key_file'] = kwargs.get('key_file', None)
             _kwargs['insecure'] = kwargs.get('insecure', False)
@@ -100,7 +100,7 @@ class HTTPClient(object):
         conn_params_fmt = [
             ('key_file', '--key %s'),
             ('cert_file', '--cert %s'),
-            ('ca_file', '--cacert %s'),
+            ('cacert', '--cacert %s'),
         ]
         for (key, fmt) in conn_params_fmt:
             value = self.connection_kwargs.get(key)
@@ -247,7 +247,7 @@ class VerifiedHTTPSConnection(httplib.HTTPSConnection):
           with native Python 3.3 code.
     """
     def __init__(self, host, port, key_file=None, cert_file=None,
-                 ca_file=None, timeout=None, insecure=False,
+                 cacert=None, timeout=None, insecure=False,
                  ssl_compression=True):
         httplib.HTTPSConnection.__init__(self, host, port,
                                          key_file=key_file,
@@ -257,7 +257,7 @@ class VerifiedHTTPSConnection(httplib.HTTPSConnection):
         self.timeout = timeout
         self.insecure = insecure
         self.ssl_compression = ssl_compression
-        self.ca_file = ca_file
+        self.cacert = cacert
         self.setcontext()
 
     @staticmethod
@@ -341,11 +341,11 @@ class VerifiedHTTPSConnection(httplib.HTTPSConnection):
                 msg = 'Unable to load key from "%s" %s' % (self.key_file, e)
                 raise exc.SSLConfigurationError(msg)
 
-        if self.ca_file:
+        if self.cacert:
             try:
-                self.context.load_verify_locations(self.ca_file)
+                self.context.load_verify_locations(self.cacert)
             except Exception, e:
-                msg = 'Unable to load CA from "%s"' % (self.ca_file, e)
+                msg = 'Unable to load CA from "%s"' % (self.cacert, e)
                 raise exc.SSLConfigurationError(msg)
         else:
             self.context.set_default_verify_paths()
