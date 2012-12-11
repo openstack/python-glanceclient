@@ -36,6 +36,21 @@ Once you've configured your authentication parameters, you can run ``glance help
 Release Notes
 =============
 
+0.7.0
+-----
+
+* Add ``--store`` option to ``image-create`` command
+* Deprecate ``--ca-file`` in favor of ``--os-cacert``
+* 1082957_: Add ``--sort-key`` and ``--sort-dir`` CLI options to ``image-list`` command
+* 1081542_: Change default ``image-list`` CLI sort to order by image name ascending
+* 1079692_: Verify SSL certification hostnames when using HTTPS
+* 1080739_: Use ``--os-region-name`` in service catalog lookup
+
+.. _1082957: http://bugs.launchpad.net/python-glanceclient/+bug/1082957
+.. _1081542: http://bugs.launchpad.net/python-glanceclient/+bug/1081542
+.. _1079692: http://bugs.launchpad.net/python-glanceclient/+bug/1079692
+.. _1080739: http://bugs.launchpad.net/python-glanceclient/+bug/1080739
+
 0.6.0
 -----
 
