@@ -14,7 +14,7 @@
 #    under the License.
 
 import errno
-import unittest
+import testtools
 
 import warlock
 
@@ -102,7 +102,7 @@ fake_schema = {'name': 'image', 'properties': {'id': {}, 'name': {}}}
 FakeModel = warlock.model_factory(fake_schema)
 
 
-class TestController(unittest.TestCase):
+class TestController(testtools.TestCase):
     def setUp(self):
         super(TestController, self).setUp()
         self.api = utils.FakeAPI(fixtures)

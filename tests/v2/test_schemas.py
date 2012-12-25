@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
+import testtools
 
 from glanceclient.v2 import schemas
 from tests import utils
@@ -43,7 +43,7 @@ fixtures = {
 }
 
 
-class TestSchemaProperty(unittest.TestCase):
+class TestSchemaProperty(testtools.TestCase):
     def test_property_minimum(self):
         prop = schemas.SchemaProperty('size')
         self.assertEqual(prop.name, 'size')
@@ -54,7 +54,7 @@ class TestSchemaProperty(unittest.TestCase):
         self.assertEqual(prop.description, 'some quantity')
 
 
-class TestSchema(unittest.TestCase):
+class TestSchema(testtools.TestCase):
     def test_schema_minimum(self):
         raw_schema = {'name': 'Country', 'properties': {}}
         schema = schemas.Schema(raw_schema)
@@ -73,7 +73,7 @@ class TestSchema(unittest.TestCase):
         self.assertEqual(schema.raw(), raw_schema)
 
 
-class TestController(unittest.TestCase):
+class TestController(testtools.TestCase):
     def setUp(self):
         super(TestController, self).setUp()
         self.api = utils.FakeAPI(fixtures)

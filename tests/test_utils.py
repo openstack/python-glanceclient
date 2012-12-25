@@ -14,12 +14,12 @@
 #    under the License.
 
 import errno
-import unittest
+import testtools
 
 from glanceclient.common import utils
 
 
-class TestUtils(unittest.TestCase):
+class TestUtils(testtools.TestCase):
 
     def test_integrity_iter_without_checksum(self):
         try:
