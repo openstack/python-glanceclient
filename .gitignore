@@ -1,4 +1,5 @@
 .coverage
+subunit.log
 .venv
 *,cover
 cover
@@ -12,6 +13,7 @@ dist
 python_glanceclient.egg-info
 ChangeLog
 run_tests.err.log
+.testrepository
 .tox
 doc/source/api
 *.egg
