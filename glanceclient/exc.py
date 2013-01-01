@@ -46,10 +46,10 @@ class HTTPException(ClientException):
     code = 'N/A'
 
     def __init__(self, details=None):
-        self.details = details
+        self.details = details or self.__class__.__name__
 
     def __str__(self):
-        return "%s (HTTP %s)" % (self.__class__.__name__, self.code)
+        return "%s (HTTP %s)" % (self.details, self.code)
 
 
 class HTTPMultipleChoices(HTTPException):
@@ -150,9 +150,13 @@ for obj_name in dir(sys.modules[__name__]):
         _code_map[obj.code] = obj
 
 
-def from_response(response):
+def from_response(response, body=None):
     """Return an instance of an HTTPException based on httplib response."""
     cls = _code_map.get(response.status, HTTPException)
+    if body:
+        details = body.replace('\n\n', '\n')
+        return cls(details=details)
+
     return cls()
 
 
