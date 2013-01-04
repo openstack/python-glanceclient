@@ -126,12 +126,13 @@ def _set_data_field(fields, args):
                 fields['data'] = None
 
 
-@utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to describe.')
+@utils.arg('image', metavar='<IMAGE>', help='Name or ID of image to describe.')
 @utils.arg('--human-readable', action='store_true', default=False,
            help='Print image size in a human-friendly format.')
 def do_image_show(gc, args):
     """Describe a specific image."""
-    image = gc.images.get(args.id)
+    image_id = utils.find_resource(gc.images, args.image).id
+    image = gc.images.get(image_id)
     _image_show(image, args.human_readable)
 
 
@@ -139,10 +140,11 @@ def do_image_show(gc, args):
            help='Local file to save downloaded image data to. '
                 'If this is not specified the image data will be '
                 'written to stdout.')
-@utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to download.')
+@utils.arg('image', metavar='<IMAGE>', help='Name or ID of image to download.')
 def do_image_download(gc, args):
     """Download a specific image."""
-    body = gc.images.data(args.id)
+    image = utils.find_resource(gc.images, args.image)
+    body = image.data()
     utils.save_image(body, args.file)
 
 
@@ -219,7 +221,7 @@ def do_image_create(gc, args):
     _image_show(image, args.human_readable)
 
 
-@utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to modify.')
+@utils.arg('image', metavar='<IMAGE>', help='Name or ID of image to modify.')
 @utils.arg('--name', metavar='<NAME>',
            help='Name of image.')
 @utils.arg('--disk-format', metavar='<CONTAINER_FORMAT>',
@@ -266,7 +268,8 @@ def do_image_update(gc, args):
     # Filter out None values
     fields = dict(filter(lambda x: x[1] is not None, vars(args).items()))
 
-    image_id = fields.pop('id')
+    image_arg = fields.pop('image')
+    image = utils.find_resource(gc.images, image_arg)
 
     if 'is_protected' in fields:
         fields['protected'] = fields.pop('is_protected')
@@ -283,18 +286,19 @@ def do_image_update(gc, args):
 
     _set_data_field(fields, args)
 
-    image = gc.images.update(image_id, purge_props=args.purge_props, **fields)
+    image = gc.images.update(image, purge_props=args.purge_props, **fields)
     _image_show(image, args.human_readable)
 
 
-@utils.arg('id', metavar='<IMAGE_ID>', nargs='+',
-           help='ID of image(s) to delete.')
+@utils.arg('images', metavar='<IMAGE>', nargs='+',
+           help='Name or ID of image(s) to delete.')
 def do_image_delete(gc, args):
     """Delete specified image(s)."""
-    for image in args.id:
+    for args_image in args.images:
+        image = utils.find_resource(gc.images, args_image)
         try:
             if args.verbose:
-                print 'Requesting image delete for %s ...' % image,
+                print 'Requesting image delete for %s ...' % args_image,
 
             gc.images.delete(image)
 
@@ -304,7 +308,7 @@ def do_image_delete(gc, args):
         except exc.HTTPException, e:
             if args.verbose:
                 print '[Fail]'
-            print '%s: Unable to delete image %s' % (e, image)
+            print '%s: Unable to delete image %s' % (e, args_image)
 
 
 @utils.arg('--image-id', metavar='<IMAGE_ID>',
@@ -329,7 +333,7 @@ def do_member_list(gc, args):
     utils.print_list(members, columns)
 
 
-@utils.arg('image_id', metavar='<IMAGE_ID>',
+@utils.arg('image', metavar='<IMAGE>',
            help='Image to add member to.')
 @utils.arg('tenant_id', metavar='<TENANT_ID>',
            help='Tenant to add as member')
@@ -337,18 +341,20 @@ def do_member_list(gc, args):
            help='Allow the specified tenant to share this image.')
 def do_member_create(gc, args):
     """Share a specific image with a tenant."""
-    gc.image_members.create(args.image_id, args.tenant_id, args.can_share)
+    image = utils.find_resource(gc.images, args.image)
+    gc.image_members.create(image, args.tenant_id, args.can_share)
 
 
-@utils.arg('image_id', metavar='<IMAGE_ID>',
+@utils.arg('image', metavar='<IMAGE>',
            help='Image from which to remove member')
 @utils.arg('tenant_id', metavar='<TENANT_ID>',
            help='Tenant to remove as member')
 def do_member_delete(gc, args):
     """Remove a shared image from a tenant."""
+    image_id = utils.find_resource(gc.images, args.image).id
     if not args.dry_run:
-        gc.image_members.delete(args.image_id, args.tenant_id)
+        gc.image_members.delete(image_id, args.tenant_id)
     else:
         print "Dry run. We would have done the following:"
         print ('Remove "%s" from the member list of image '
-               '"%s"' % (args.tenant_id, args.image_id))
+               '"%s"' % (args.tenant_id, args.image))
