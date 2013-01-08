@@ -16,7 +16,7 @@
 import errno
 import json
 import StringIO
-import unittest
+import testtools
 
 import glanceclient.v1.images
 from tests import utils
@@ -239,9 +239,10 @@ fixtures = {
 }
 
 
-class ImageManagerTest(unittest.TestCase):
+class ImageManagerTest(testtools.TestCase):
 
     def setUp(self):
+        super(ImageManagerTest, self).setUp()
         self.api = utils.FakeAPI(fixtures)
         self.mgr = glanceclient.v1.images.ImageManager(self.api)
 
@@ -448,8 +449,9 @@ class ImageManagerTest(unittest.TestCase):
         self.assertEqual(self.api.calls, expect)
 
 
-class ImageTest(unittest.TestCase):
+class ImageTest(testtools.TestCase):
     def setUp(self):
+        super(ImageTest, self).setUp()
         self.api = utils.FakeAPI(fixtures)
         self.mgr = glanceclient.v1.images.ImageManager(self.api)
 

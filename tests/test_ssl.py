@@ -14,7 +14,7 @@
 #    under the License.
 
 import os
-import unittest
+import testtools
 
 from OpenSSL import crypto
 
@@ -26,7 +26,7 @@ TEST_VAR_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                             'var'))
 
 
-class TestVerifiedHTTPSConnection(unittest.TestCase):
+class TestVerifiedHTTPSConnection(testtools.TestCase):
     def test_ssl_init_ok(self):
         """
         Test VerifiedHTTPSConnection class init

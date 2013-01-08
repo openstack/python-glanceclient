@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
+import testtools
 
 import glanceclient.v1.images
 import glanceclient.v1.image_members
@@ -52,9 +52,10 @@ fixtures = {
 }
 
 
-class ImageMemberManagerTest(unittest.TestCase):
+class ImageMemberManagerTest(testtools.TestCase):
 
     def setUp(self):
+        super(ImageMemberManagerTest, self).setUp()
         self.api = utils.FakeAPI(fixtures)
         self.mgr = glanceclient.v1.image_members.ImageMemberManager(self.api)
         self.image = glanceclient.v1.images.Image(self.api, {'id': '1'}, True)

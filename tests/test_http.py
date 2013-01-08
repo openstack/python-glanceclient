@@ -16,7 +16,7 @@
 import httplib
 import socket
 import StringIO
-import unittest
+import testtools
 
 import mox
 
@@ -25,7 +25,7 @@ from glanceclient.common import http
 from tests import utils
 
 
-class TestClient(unittest.TestCase):
+class TestClient(testtools.TestCase):
     def test_connection_refused(self):
         """
         Should receive a CommunicationError if connection refused.
@@ -57,7 +57,7 @@ class TestClient(unittest.TestCase):
             m.UnsetStubs()
 
 
-class TestResponseBodyIterator(unittest.TestCase):
+class TestResponseBodyIterator(testtools.TestCase):
     def test_iter_default_chunk_size_64k(self):
         resp = utils.FakeResponse({}, StringIO.StringIO('X' * 98304))
         iterator = http.ResponseBodyIterator(resp)

@@ -14,7 +14,7 @@
 #    under the License.
 
 import collections
-import unittest
+import testtools
 
 from glanceclient import exc
 
@@ -22,7 +22,7 @@ from glanceclient import exc
 FakeResponse = collections.namedtuple('HTTPResponse', ['status'])
 
 
-class TestHTTPExceptions(unittest.TestCase):
+class TestHTTPExceptions(testtools.TestCase):
     def test_from_response(self):
         """exc.from_response should return instance of an HTTP exception"""
         out = exc.from_response(FakeResponse(400))
