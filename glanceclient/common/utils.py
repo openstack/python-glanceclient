@@ -81,12 +81,19 @@ def find_resource(manager, name_or_id):
         pass
 
     # finally try to find entity by name
-    try:
-        return manager.find(name=name_or_id)
-    except exc.NotFound:
+    matches = list(manager.list(filters={'name': name_or_id}))
+    num_matches = len(matches)
+    if num_matches == 0:
         msg = "No %s with a name or ID of '%s' exists." % \
               (manager.resource_class.__name__.lower(), name_or_id)
         raise exc.CommandError(msg)
+    elif num_matches > 1:
+        msg = ("Multiple %s matches found for '%s', use an ID to be more"
+               " specific." % (manager.resource_class.__name__.lower(),
+                               name_or_id))
+        raise exc.CommandError(msg)
+    else:
+        return matches[0]
 
 
 def skip_authentication(f):
