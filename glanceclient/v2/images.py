@@ -75,3 +75,25 @@ class Controller(object):
     def delete(self, image_id):
         """Delete an image."""
         self.http_client.json_request('DELETE', 'v2/images/%s' % image_id)
+
+    def update(self, image_id, **kwargs):
+        """
+        Update attributes of an image.
+
+        :param image_id: ID of the image to modify.
+        :param **kwargs: Image attribute names and their new values.
+        """
+        image = self.get(image_id)
+        for (key, value) in kwargs.items():
+            setattr(image, key, value)
+
+        url = '/v2/images/%s' % image_id
+        hdrs = {'Content-Type': 'application/openstack-images-v2.0-json-patch'}
+        self.http_client.raw_request('PATCH', url,
+                                     headers=hdrs,
+                                     body=image.patch)
+
+        #NOTE(bcwaldon): calling image.patch doesn't clear the changes, so
+        # we need to fetch the image again to get a clean history. This is
+        # an obvious optimization for warlock
+        return self.get(image_id)

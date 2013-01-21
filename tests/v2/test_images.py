@@ -72,6 +72,10 @@ fixtures = {
                 'name': 'image-1',
             },
         ),
+        'PATCH': (
+            {},
+            '',
+        ),
     },
     'v2/images/87b634c1-f893-33c9-28a9-e5673c99239a': {
         'DELETE': (
@@ -102,7 +106,7 @@ fixtures = {
             },
             'CCC',
         ),
-    }
+    },
 }
 
 
@@ -180,3 +184,22 @@ class TestController(testtools.TestCase):
         body = self.controller.data('1b1c6366-dd57-11e1-af0f-02163e68b1d8')
         body = ''.join([b for b in body])
         self.assertEqual(body, 'CCC')
+
+    def test_update_without_data(self):
+        image_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
+        params = {'name': 'pong'}
+        image = self.controller.update(image_id, **params)
+        expect_hdrs = {
+            'Content-Type': 'application/openstack-images-v2.0-json-patch',
+        }
+        expect_body = '[{"path": "/name", "value": "pong", "op": "replace"}]'
+        expect = [
+            ('GET', '/v2/images/%s' % image_id, {}, None),
+            ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
+            ('GET', '/v2/images/%s' % image_id, {}, None),
+        ]
+        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(image.id, image_id)
+        #NOTE(bcwaldon): due to limitations of our fake api framework, the name
+        # will not actually change - yet in real life it will...
+        self.assertEqual(image.name, 'image-1')
