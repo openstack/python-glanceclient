@@ -246,7 +246,7 @@ class VerifiedHTTPSConnection(httplib.HTTPSConnection):
     Note: Much of this functionality can eventually be replaced
           with native Python 3.3 code.
     """
-    def __init__(self, host, port, key_file=None, cert_file=None,
+    def __init__(self, host, port=None, key_file=None, cert_file=None,
                  cacert=None, timeout=None, insecure=False,
                  ssl_compression=True):
         httplib.HTTPSConnection.__init__(self, host, port,
