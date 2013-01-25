@@ -73,6 +73,14 @@ fixtures = {
             },
         ),
     },
+    'v2/images/87b634c1-f893-33c9-28a9-e5673c99239a': {
+        'DELETE': (
+            {},
+            {
+                'id': '87b634c1-f893-33c9-28a9-e5673c99239a',
+            },
+        ),
+    },
     '/v2/images/5cc4bebc-db27-11e1-a1eb-080027cbe205/file': {
         'GET': (
             {},
@@ -128,6 +136,15 @@ class TestController(testtools.TestCase):
         image = self.controller.get('3a4560a1-e585-443e-9b39-553b46ec92d1')
         self.assertEqual(image.id, '3a4560a1-e585-443e-9b39-553b46ec92d1')
         self.assertEqual(image.name, 'image-1')
+
+    def test_delete_image(self):
+        self.controller.delete('87b634c1-f893-33c9-28a9-e5673c99239a')
+        expect = [
+            ('DELETE',
+                'v2/images/87b634c1-f893-33c9-28a9-e5673c99239a',
+                {},
+                None)]
+        self.assertEqual(self.api.calls, expect)
 
     def test_data_without_checksum(self):
         body = self.controller.data('5cc4bebc-db27-11e1-a1eb-080027cbe205',

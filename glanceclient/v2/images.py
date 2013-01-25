@@ -71,3 +71,7 @@ class Controller(object):
             return utils.integrity_iter(body, checksum)
         else:
             return body
+
+    def delete(self, image_id):
+        """Delete an image."""
+        self.http_client.json_request('DELETE', 'v2/images/%s' % image_id)
