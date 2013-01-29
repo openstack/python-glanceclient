@@ -60,3 +60,9 @@ def do_image_download(gc, args):
     """Download a specific image."""
     body = gc.images.data(args.id)
     utils.save_image(body, args.file)
+
+
+@utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to delete.')
+def do_image_delete(gc, args):
+    """Delete specified image."""
+    gc.images.delete(args.id)
