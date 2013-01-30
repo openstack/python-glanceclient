@@ -298,7 +298,8 @@ def do_image_delete(gc, args):
         image = utils.find_resource(gc.images, args_image)
         try:
             if args.verbose:
-                print 'Requesting image delete for %s ...' % args_image,
+                print 'Requesting image delete for %s ...' % \
+                      utils.ensure_str(args_image),
 
             gc.images.delete(image)
 

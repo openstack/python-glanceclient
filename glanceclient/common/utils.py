@@ -54,14 +54,14 @@ def print_list(objs, fields, formatters={}):
                 row.append(data)
         pt.add_row(row)
 
-    print pt.get_string()
+    print ensure_str(pt.get_string())
 
 
 def print_dict(d):
     pt = prettytable.PrettyTable(['Property', 'Value'], caching=False)
     pt.align = 'l'
     [pt.add_row(list(r)) for r in d.iteritems()]
-    print pt.get_string(sortby='Property')
+    print ensure_str(pt.get_string(sortby='Property'))
 
 
 def find_resource(manager, name_or_id):
@@ -75,7 +75,7 @@ def find_resource(manager, name_or_id):
 
     # now try to get entity as uuid
     try:
-        uuid.UUID(str(name_or_id))
+        uuid.UUID(ensure_str(name_or_id))
         return manager.get(name_or_id)
     except (ValueError, exc.NotFound):
         pass
@@ -137,7 +137,7 @@ def import_versioned_module(version, submodule=None):
 
 def exit(msg=''):
     if msg:
-        print >> sys.stderr, msg
+        print >> sys.stderr, ensure_str(msg)
     sys.exit(1)
 
 
@@ -190,3 +190,76 @@ def make_size_human_readable(size):
     stripped = padded.rstrip('0').rstrip('.')
 
     return '%s%s' % (stripped, suffix[index])
+
+
+def ensure_unicode(text, incoming=None, errors='strict'):
+    """
+    Decodes incoming objects using `incoming` if they're
+    not already unicode.
+
+    :param incoming: Text's current encoding
+    :param errors: Errors handling policy.
+    :returns: text or a unicode `incoming` encoded
+                representation of it.
+    """
+    if isinstance(text, unicode):
+        return text
+
+    if not incoming:
+        incoming = sys.stdin.encoding or \
+            sys.getdefaultencoding()
+
+    # Calling `str` in case text is a non str
+    # object.
+    text = str(text)
+    try:
+        return text.decode(incoming, errors)
+    except UnicodeDecodeError:
+        # Note(flaper87) If we get here, it means that
+        # sys.stdin.encoding / sys.getdefaultencoding
+        # didn't return a suitable encoding to decode
+        # text. This happens mostly when global LANG
+        # var is not set correctly and there's no
+        # default encoding. In this case, most likely
+        # python will use ASCII or ANSI encoders as
+        # default encodings but they won't be capable
+        # of decoding non-ASCII characters.
+        #
+        # Also, UTF-8 is being used since it's an ASCII
+        # extension.
+        return text.decode('utf-8', errors)
+
+
+def ensure_str(text, incoming=None,
+               encoding='utf-8', errors='strict'):
+    """
+    Encodes incoming objects using `encoding`. If
+    incoming is not specified, text is expected to
+    be encoded with current python's default encoding.
+    (`sys.getdefaultencoding`)
+
+    :param incoming: Text's current encoding
+    :param encoding: Expected encoding for text (Default UTF-8)
+    :param errors: Errors handling policy.
+    :returns: text or a bytestring `encoding` encoded
+                representation of it.
+    """
+
+    if not incoming:
+        incoming = sys.stdin.encoding or \
+            sys.getdefaultencoding()
+
+    if not isinstance(text, basestring):
+        # try to convert `text` to string
+        # This allows this method for receiving
+        # objs that can be converted to string
+        text = str(text)
+
+    if isinstance(text, unicode):
+        return text.encode(encoding, errors)
+    elif text and encoding != incoming:
+        # Decode text before encoding it with `encoding`
+        text = ensure_unicode(text, incoming, errors)
+        return text.encode(encoding, errors)
+
+    return text
