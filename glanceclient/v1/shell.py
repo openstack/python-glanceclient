@@ -224,10 +224,10 @@ def do_image_create(gc, args):
 @utils.arg('image', metavar='<IMAGE>', help='Name or ID of image to modify.')
 @utils.arg('--name', metavar='<NAME>',
            help='Name of image.')
-@utils.arg('--disk-format', metavar='<CONTAINER_FORMAT>',
-           help='Disk format of image. ' + CONTAINER_FORMATS)
-@utils.arg('--container-format', metavar='<DISK_FORMAT>',
-           help='Container format of image. ' + DISK_FORMATS)
+@utils.arg('--disk-format', metavar='<DISK_FORMAT>',
+           help='Disk format of image. ' + DISK_FORMATS)
+@utils.arg('--container-format', metavar='<CONTAINER_FORMAT>',
+           help='Container format of image. ' + CONTAINER_FORMATS)
 @utils.arg('--owner', metavar='<TENANT_ID>',
            help='Tenant who should own image.')
 @utils.arg('--size', metavar='<SIZE>',
