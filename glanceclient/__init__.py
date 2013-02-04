@@ -23,23 +23,6 @@ except ImportError:
     import warnings
     warnings.warn("Could not import glanceclient.client", ImportWarning)
 
-import os
-import inspect
+from glanceclient.openstack.common import version as common_version
 
-
-def _get_client_version():
-    """Read version from versioninfo file."""
-    mod_abspath = inspect.getabsfile(inspect.currentframe())
-    client_path = os.path.dirname(mod_abspath)
-    version_path = os.path.join(client_path, 'versioninfo')
-
-    if os.path.exists(version_path):
-        version = open(version_path).read().strip()
-    else:
-        version = "Unknown, couldn't find versioninfo file at %s"\
-                  % version_path
-
-    return version
-
-
-__version__ = _get_client_version()
+__version__ = common_version.VersionInfo('python-glanceclient')
