@@ -317,7 +317,7 @@ class VerifiedHTTPSConnection(httplib.HTTPSConnection):
                                     self.verify_callback)
         else:
             self.context.set_verify(OpenSSL.SSL.VERIFY_NONE,
-                                    self.verify_callback)
+                                    lambda *args: True)
 
         if self.cert_file:
             try:
