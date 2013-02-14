@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = glanceclient
+omit = glanceclient/openstack/*
+
+[report]
+ignore-errors = True
