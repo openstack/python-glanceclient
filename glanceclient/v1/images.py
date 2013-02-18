@@ -75,10 +75,11 @@ class ImageManager(base.Manager):
     def _image_meta_to_headers(self, fields):
         headers = {}
         fields_copy = copy.deepcopy(fields)
+        ensure_unicode = utils.ensure_unicode
         for key, value in fields_copy.pop('properties', {}).iteritems():
-            headers['x-image-meta-property-%s' % key] = str(value)
+            headers['x-image-meta-property-%s' % key] = ensure_unicode(value)
         for key, value in fields_copy.iteritems():
-            headers['x-image-meta-%s' % key] = str(value)
+            headers['x-image-meta-%s' % key] = ensure_unicode(value)
         return headers
 
     @staticmethod
@@ -134,6 +135,16 @@ class ImageManager(base.Manager):
         absolute_limit = kwargs.get('limit')
 
         def paginate(qp, seen=0):
+            # Note(flaper87) Url encoding should
+            # be moved inside http utils, at least
+            # shouldn't be here.
+            #
+            # Making sure all params are str before
+            # trying to encode them
+            for param, value in qp.iteritems():
+                if isinstance(value, basestring):
+                    qp[param] = utils.ensure_str(value)
+
             url = '/v1/images/detail?%s' % urllib.urlencode(qp)
             images = self._list(url, "images")
             for image in images:

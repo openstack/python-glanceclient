@@ -26,24 +26,34 @@ from tests import utils
 
 
 class TestClient(testtools.TestCase):
+
+    def setUp(self):
+        super(TestClient, self).setUp()
+        self.mock = mox.Mox()
+        self.mock.StubOutWithMock(httplib.HTTPConnection, 'request')
+        self.mock.StubOutWithMock(httplib.HTTPConnection, 'getresponse')
+
+        self.endpoint = 'http://example.com:9292'
+        self.client = http.HTTPClient(self.endpoint, token=u'abc123')
+
+    def tearDown(self):
+        super(TestClient, self).tearDown()
+        self.mock.UnsetStubs()
+
     def test_connection_refused(self):
         """
         Should receive a CommunicationError if connection refused.
         And the error should list the host and port that refused the
         connection
         """
-        endpoint = 'http://example.com:9292'
-        client = http.HTTPClient(endpoint, token=u'abc123')
-        m = mox.Mox()
-        m.StubOutWithMock(httplib.HTTPConnection, 'request')
         httplib.HTTPConnection.request(
             mox.IgnoreArg(),
             mox.IgnoreArg(),
             headers=mox.IgnoreArg(),
         ).AndRaise(socket.error())
-        m.ReplayAll()
+        self.mock.ReplayAll()
         try:
-            client.json_request('GET', '/v1/images/detail?limit=20')
+            self.client.json_request('GET', '/v1/images/detail?limit=20')
             #NOTE(alaski) We expect exc.CommunicationError to be raised
             # so we should never reach this point.  try/except is used here
             # rather than assertRaises() so that we can check the body of
@@ -51,10 +61,26 @@ class TestClient(testtools.TestCase):
             self.fail('An exception should have bypassed this line.')
         except exc.CommunicationError, comm_err:
             fail_msg = ("Exception message '%s' should contain '%s'" %
-                       (comm_err.message, endpoint))
-            self.assertTrue(endpoint in comm_err.message, fail_msg)
-        finally:
-            m.UnsetStubs()
+                       (comm_err.message, self.endpoint))
+            self.assertTrue(self.endpoint in comm_err.message, fail_msg)
+
+    def test_http_encoding(self):
+        httplib.HTTPConnection.request(
+            mox.IgnoreArg(),
+            mox.IgnoreArg(),
+            headers=mox.IgnoreArg())
+
+        # Lets fake the response
+        # returned by httplib
+        expected_response = 'Ok'
+        fake = utils.FakeResponse({}, StringIO.StringIO(expected_response))
+        httplib.HTTPConnection.getresponse().AndReturn(fake)
+        self.mock.ReplayAll()
+
+        headers = {"test": u'ni\xf1o'}
+        resp, body = self.client.raw_request('GET', '/v1/images/detail',
+                                                    headers=headers)
+        self.assertEqual(resp, fake)
 
 
 class TestResponseBodyIterator(testtools.TestCase):

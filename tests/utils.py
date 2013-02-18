@@ -40,13 +40,20 @@ class FakeAPI(object):
 
 
 class FakeResponse(object):
-    def __init__(self, headers, body=None):
+    def __init__(self, headers, body=None,
+                 version=1.0, status=200, reason="Ok"):
         """
         :param headers: dict representing HTTP response headers
         :param body: file-like object
+        :param version: HTTP Version
+        :param status: Response status code
+        :param reason: Status code related message.
         """
-        self.headers = headers
         self.body = body
+        self.status = status
+        self.reason = reason
+        self.version = version
+        self.headers = headers
 
     def getheaders(self):
         return copy.deepcopy(self.headers).items()

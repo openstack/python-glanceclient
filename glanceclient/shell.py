@@ -466,8 +466,7 @@ class HelpFormatter(argparse.HelpFormatter):
 
 def main():
     try:
-        OpenStackImagesShell().main(sys.argv[1:])
-
+        OpenStackImagesShell().main(map(utils.ensure_unicode, sys.argv[1:]))
     except Exception, e:
         print >> sys.stderr, e
         sys.exit(1)
