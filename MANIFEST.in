@@ -1,5 +1,4 @@
 include AUTHORS
 include ChangeLog
-include glanceclient/versioninfo
 exclude .gitignore
 exclude .gitreview

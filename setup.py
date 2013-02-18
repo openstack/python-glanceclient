@@ -9,6 +9,7 @@ from glanceclient.openstack.common import setup
 requires = setup.parse_requirements()
 dependency_links = setup.parse_dependency_links()
 tests_require = setup.parse_requirements(['tools/test-requires'])
+project = 'python-glanceclient'
 
 if sys.version_info < (2, 6):
     requires.append('simplejson')
@@ -18,8 +19,8 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setuptools.setup(
-    name="python-glanceclient",
-    version=setup.get_post_version('glanceclient'),
+    name=project,
+    version=setup.get_version(project),
     description="Client library for OpenStack Image API",
     long_description=read('README.rst'),
     url='https://github.com/openstack/python-glanceclient',
@@ -44,5 +45,4 @@ setuptools.setup(
     tests_require=tests_require,
     setup_requires=['setuptools-git>=0.4'],
     entry_points={'console_scripts': ['glance = glanceclient.shell:main']},
-    data_files=[('glanceclient', ['glanceclient/versioninfo'])]
 )
