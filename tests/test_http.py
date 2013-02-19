@@ -83,6 +83,48 @@ class TestClient(testtools.TestCase):
         self.assertEqual(resp, fake)
 
 
+class TestHostResolutionError(testtools.TestCase):
+
+    def setUp(self):
+        super(TestHostResolutionError, self).setUp()
+        self.mock = mox.Mox()
+        self.invalid_host = "example.com.incorrect_top_level_domain"
+
+    def test_incorrect_domain_error(self):
+        """
+        Make sure that using a domain which does not resolve causes an
+        exception which mentions that specific hostname as a reason for
+        failure.
+        """
+        class FailingConnectionClass(object):
+            def __init__(self, *args, **kwargs):
+                pass
+
+            def putrequest(self, *args, **kwargs):
+                raise socket.gaierror(-2, "Name or service not known")
+
+            def request(self, *args, **kwargs):
+                raise socket.gaierror(-2, "Name or service not known")
+
+        self.endpoint = 'http://%s:9292' % (self.invalid_host,)
+        self.client = http.HTTPClient(self.endpoint, token=u'abc123')
+
+        self.mock.StubOutWithMock(self.client, 'get_connection')
+        self.client.get_connection().AndReturn(FailingConnectionClass())
+        self.mock.ReplayAll()
+
+        try:
+            self.client.raw_request('GET', '/example/path')
+            self.fail("gaierror should be raised")
+        except exc.InvalidEndpoint as e:
+            self.assertTrue(self.invalid_host in str(e),
+                            "exception should contain the hostname")
+
+    def tearDown(self):
+        super(TestHostResolutionError, self).tearDown()
+        self.mock.UnsetStubs()
+
+
 class TestResponseBodyIterator(testtools.TestCase):
     def test_iter_default_chunk_size_64k(self):
         resp = utils.FakeResponse({}, StringIO.StringIO('X' * 98304))
