@@ -36,6 +36,21 @@ Once you've configured your authentication parameters, you can run ``glance help
 Release Notes
 =============
 
+0.8.0
+-----
+
+* Implement image-delete for Image API v2
+* Update warlock dependency to >= 0.7.0 and < 1
+* 1061150_: Support non-ASCII characters
+* 1102944_: The port option is configurable when using HTTPS
+* 1093380_: Support image names in place of IDs for CLI commands
+* 1094917_: Better representation of errors through CLI
+
+.. _1061150: http://bugs.launchpad.net/python-glanceclient/+bug/1061150
+.. _1102944: http://bugs.launchpad.net/python-glanceclient/+bug/1102944
+.. _1093380: http://bugs.launchpad.net/python-glanceclient/+bug/1093380
+.. _1094917: http://bugs.launchpad.net/python-glanceclient/+bug/1094917
+
 0.7.0
 -----
 
