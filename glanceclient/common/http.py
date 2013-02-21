@@ -183,7 +183,8 @@ class HTTPClient(object):
                 conn.request(method, conn_url, **kwargs)
             resp = conn.getresponse()
         except socket.gaierror as e:
-            message = "Error finding address for %(url)s: %(e)s" % locals()
+            message = "Error finding address for %s: %s" % (
+                self.endpoint_hostname, e)
             raise exc.InvalidEndpoint(message=message)
         except (socket.error, socket.timeout) as e:
             endpoint = self.endpoint
