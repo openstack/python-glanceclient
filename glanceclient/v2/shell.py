@@ -43,7 +43,7 @@ def do_explain(gc, args):
     """Describe a specific model."""
     try:
         schema = gc.schemas.get(args.model)
-    except exc.SchemaNotFound:
+    except exc.HTTPNotFound:
         utils.exit('Unable to find requested model \'%s\'' % args.model)
     else:
         formatters = {'Attribute': lambda m: m.name}
