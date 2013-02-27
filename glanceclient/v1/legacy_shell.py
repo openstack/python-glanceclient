@@ -266,8 +266,9 @@ def _get_images(gc, args):
 
     optional_kwargs = ['marker', 'sort_key', 'sort_dir']
     for kwarg in optional_kwargs:
-        if getattr(args, kwarg):
-            parameters[kwarg] = getattr(args.kwarg)
+        value = getattr(args, kwarg, None)
+        if value is not None:
+            parameters[kwarg] = value
 
     return gc.images.list(**parameters)
 
