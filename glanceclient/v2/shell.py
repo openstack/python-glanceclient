@@ -19,11 +19,22 @@ from glanceclient import exc
 
 @utils.arg('--page-size', metavar='<SIZE>', default=None, type=int,
            help='Number of images to request in each paginated request.')
+@utils.arg('--visibility', metavar='<VISIBILITY>',
+           help='The visibility of the images to display.')
+@utils.arg('--member-status', metavar='<MEMBER_STATUS>',
+           help='The status of images to display.')
+@utils.arg('--owner', metavar='<OWNER>',
+           help='Display images owned by <OWNER>.')
 def do_image_list(gc, args):
     """List images you can access."""
-    kwargs = {}
+    filter_keys = ['visibility', 'member_status', 'owner']
+    filter_items = [(key, getattr(args, key)) for key in filter_keys]
+    filters = dict([item for item in filter_items if item[1] is not None])
+
+    kwargs = {'filters': filters}
     if args.page_size is not None:
         kwargs['page_size'] = args.page_size
+
     images = gc.images.list(**kwargs)
     columns = ['ID', 'Name']
     utils.print_list(images, columns)
