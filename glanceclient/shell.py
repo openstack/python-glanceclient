@@ -63,15 +63,15 @@ class OpenStackImagesShell(object):
         parser.add_argument('-k', '--insecure',
                             default=False,
                             action='store_true',
-                            help='Explicitly allow glanceclient to perform'
-                            '\"insecure SSL\" (https) requests. The servers'
-                            'certificate will not be verified against any'
-                            'certificate authorities. This option should'
+                            help='Explicitly allow glanceclient to perform '
+                            '\"insecure SSL\" (https) requests. The server\'s '
+                            'certificate will not be verified against any '
+                            'certificate authorities. This option should '
                             'be used with caution.')
 
         parser.add_argument('--cert-file',
                             help='Path of certificate file to use in SSL '
-                            'connection. This file can optionally be'
+                            'connection. This file can optionally be '
                             'prepended with the private key.')
 
         parser.add_argument('--key-file',
@@ -83,10 +83,10 @@ class OpenStackImagesShell(object):
                             metavar='<ca-certificate-file>',
                             dest='os_cacert',
                             default=utils.env('OS_CACERT'),
-                            help='Path of CA TLS certificate(s) used to verify'
-                            'the remote server\'s certificate. Without this '
-                            'option glance looks for the default system '
-                            'CA certificates.')
+                            help='Path of CA TLS certificate(s) used to '
+                            'verify the remote server\'s certificate. '
+                            'Without this option glance looks for the '
+                            'default system CA certificates.')
         parser.add_argument('--ca-file',
                             dest='os_cacert',
                             help='DEPRECATED! Use --os-cacert.')
