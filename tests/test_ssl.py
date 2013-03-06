@@ -14,9 +14,9 @@
 #    under the License.
 
 import os
-import testtools
 
 from OpenSSL import crypto
+import testtools
 
 from glanceclient import exc
 from glanceclient.common import http
@@ -184,3 +184,48 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
 
         self.assertRaises(exc.SSLCertificateError,
                           conn.verify_callback, None, cert, 0, 0, True)
+
+    def test_ssl_broken_key_file(self):
+        """
+        Test verify exception is raised.
+        """
+        cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
+        cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
+        key_file = 'fake.key'
+        self.assertRaises(
+            exc.SSLConfigurationError,
+            http.VerifiedHTTPSConnection, '127.0.0.1',
+            0, key_file=key_file,
+            cert_file=cert_file, cacert=cacert)
+
+    def test_ssl_init_ok_with_insecure_true(self):
+        """
+        Test VerifiedHTTPSConnection class init
+        """
+        key_file = os.path.join(TEST_VAR_DIR, 'privatekey.key')
+        cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
+        cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
+        try:
+            conn = http.VerifiedHTTPSConnection(
+                '127.0.0.1', 0,
+                key_file=key_file,
+                cert_file=cert_file,
+                cacert=cacert, insecure=True)
+        except exc.SSLConfigurationError:
+            self.fail('Failed to init VerifiedHTTPSConnection.')
+
+    def test_ssl_init_ok_with_ssl_compression_false(self):
+        """
+        Test VerifiedHTTPSConnection class init
+        """
+        key_file = os.path.join(TEST_VAR_DIR, 'privatekey.key')
+        cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
+        cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
+        try:
+            conn = http.VerifiedHTTPSConnection(
+                '127.0.0.1', 0,
+                key_file=key_file,
+                cert_file=cert_file,
+                cacert=cacert, ssl_compression=False)
+        except exc.SSLConfigurationError:
+            self.fail('Failed to init VerifiedHTTPSConnection.')

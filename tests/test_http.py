@@ -16,11 +16,13 @@
 import httplib
 import socket
 import StringIO
-import testtools
+import urlparse
 
 import mox
+import testtools
 
 from glanceclient import exc
+import glanceclient
 from glanceclient.common import http
 from tests import utils
 
@@ -81,6 +83,60 @@ class TestClient(testtools.TestCase):
         resp, body = self.client.raw_request('GET', '/v1/images/detail',
                                                     headers=headers)
         self.assertEqual(resp, fake)
+
+    def test_connection_refused_raw_request(self):
+        """
+        Should receive a CommunicationError if connection refused.
+        And the error should list the host and port that refused the
+        connection
+        """
+        endpoint = 'http://example.com:9292'
+        client = http.HTTPClient(endpoint, token=u'abc123')
+        httplib.HTTPConnection.request(mox.IgnoreArg(), mox.IgnoreArg(),
+                                       headers=mox.IgnoreArg()
+                                       ).AndRaise(socket.error())
+        self.mock.ReplayAll()
+        try:
+            client.raw_request('GET', '/v1/images/detail?limit=20')
+
+            self.fail('An exception should have bypassed this line.')
+        except exc.CommunicationError, comm_err:
+            fail_msg = ("Exception message '%s' should contain '%s'" %
+                        (comm_err.message, endpoint))
+            self.assertTrue(endpoint in comm_err.message, fail_msg)
+
+    def test_parse_endpoint(self):
+        endpoint = 'http://example.com:9292'
+        test_client = http.HTTPClient(endpoint, token=u'adc123')
+        actual = test_client.parse_endpoint(endpoint)
+        expected = urlparse.ParseResult(scheme='http',
+                                        netloc='example.com:9292', path='',
+                                        params='', query='', fragment='')
+        self.assertEqual(expected, actual)
+
+    def test_get_connection_class(self):
+        endpoint = 'http://example.com:9292'
+        test_client = http.HTTPClient(endpoint, token=u'adc123')
+        actual = (test_client.get_connection_class('https'))
+        self.assertEqual(actual, http.VerifiedHTTPSConnection)
+
+    def test_get_connections_kwargs_http(self):
+        endpoint = 'http://example.com:9292'
+        test_client = http.HTTPClient(endpoint, token=u'adc123')
+        actual = test_client.get_connection_kwargs('http', insecure=True)
+        self.assertEqual({'timeout': 600.0}, actual)
+
+    def test_get_connections_kwargs_https(self):
+        endpoint = 'http://example.com:9292'
+        test_client = http.HTTPClient(endpoint, token=u'adc123')
+        actual = test_client.get_connection_kwargs('https', insecure=True)
+        expected = {'cacert': None,
+                    'cert_file': None,
+                    'insecure': True,
+                    'key_file': None,
+                    'ssl_compression': True,
+                    'timeout': 600.0}
+        self.assertEqual(expected, actual)
 
 
 class TestHostResolutionError(testtools.TestCase):
