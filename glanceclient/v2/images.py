@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import urllib
+
 from glanceclient.common import utils
 
 DEFAULT_PAGE_SIZE = 20
@@ -23,7 +25,7 @@ class Controller(object):
         self.http_client = http_client
         self.model = model
 
-    def list(self, page_size=DEFAULT_PAGE_SIZE):
+    def list(self, **kwargs):
         """Retrieve a listing of Image objects
 
         :param page_size: Number of images to request in each paginated request
@@ -41,7 +43,18 @@ class Controller(object):
                 for image in paginate(next_url):
                     yield image
 
-        url = '/v2/images?limit=%s' % page_size
+        filters = kwargs.get('filters', {})
+
+        if not kwargs.get('page_size'):
+            filters['limit'] = DEFAULT_PAGE_SIZE
+        else:
+            filters['limit'] = kwargs['page_size']
+
+        for param, value in filters.iteritems():
+            if isinstance(value, basestring):
+                filters[param] = utils.ensure_str(value)
+
+        url = '/v2/images?%s' % urllib.urlencode(filters)
 
         for image in paginate(url):
             #NOTE(bcwaldon): remove 'self' for now until we have an elegant

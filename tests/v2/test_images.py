@@ -1,4 +1,4 @@
-# Copyright 2012 OpenStack LLC.
+# Copyright 2012 OpenStack Foundation.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -21,9 +21,17 @@ import warlock
 from glanceclient.v2 import images
 from tests import utils
 
+_BOGUS_ID = '63e7f218-29de-4477-abdc-8db7c9533188'
+_EVERYTHING_ID = '802cbbb7-0379-4c38-853f-37302b5e3d29'
+_OWNED_IMAGE_ID = 'a4963502-acc7-42ba-ad60-5aa0962b7faf'
+_OWNER_ID = '6bd473f0-79ae-40ad-a927-e07ec37b642f'
+_PRIVATE_ID = 'e33560a7-3964-4de5-8339-5a24559f99ab'
+_PUBLIC_ID = '857806e7-05b6-48e0-9d40-cb0e6fb727b9'
+_SHARED_ID = '331ac905-2a38-44c5-a83d-653db8f08313'
+_STATUS_REJECTED_ID = 'f3ea56ff-d7e4-4451-998c-1e3d33539c8e'
 
 fixtures = {
-    '/v2/images?limit=20': {
+    '/v2/images?limit=%d' % images.DEFAULT_PAGE_SIZE: {
         'GET': (
             {},
             {'images': [
@@ -107,6 +115,80 @@ fixtures = {
             'CCC',
         ),
     },
+    '/v2/images?limit=%d&visibility=public' % images.DEFAULT_PAGE_SIZE: {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': _PUBLIC_ID,
+                    'harvey': 'lipshitz',
+                },
+            ]},
+        ),
+    },
+    '/v2/images?limit=%d&visibility=private' % images.DEFAULT_PAGE_SIZE: {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': _PRIVATE_ID,
+                },
+            ]},
+        ),
+    },
+    '/v2/images?limit=%d&visibility=shared' % images.DEFAULT_PAGE_SIZE: {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': _SHARED_ID,
+                },
+            ]},
+        ),
+    },
+    '/v2/images?limit=%d&member_status=rejected' % images.DEFAULT_PAGE_SIZE: {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': _STATUS_REJECTED_ID,
+                },
+            ]},
+        ),
+    },
+    '/v2/images?limit=%d&member_status=pending' % images.DEFAULT_PAGE_SIZE: {
+        'GET': (
+            {},
+            {'images': []},
+        ),
+    },
+    '/v2/images?owner=%s&limit=%d' % (_OWNER_ID, images.DEFAULT_PAGE_SIZE): {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': _OWNED_IMAGE_ID,
+                },
+            ]},
+        ),
+    },
+    '/v2/images?owner=%s&limit=%d' % (_BOGUS_ID, images.DEFAULT_PAGE_SIZE): {
+        'GET': (
+            {},
+            {'images': []},
+        ),
+    },
+    '/v2/images?owner=%s&limit=%d&member_status=pending&visibility=shared'
+    % (_BOGUS_ID, images.DEFAULT_PAGE_SIZE): {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': _EVERYTHING_ID,
+                },
+            ]},
+        ),
+    },
 }
 
 
@@ -135,6 +217,43 @@ class TestController(testtools.TestCase):
         self.assertEqual(images[0].name, 'image-1')
         self.assertEqual(images[1].id, '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810')
         self.assertEqual(images[1].name, 'image-2')
+
+    def test_list_images_visibility_public(self):
+        filters = {'filters': dict([('visibility', 'public')])}
+        images = list(self.controller.list(**filters))
+        self.assertEqual(images[0].id, _PUBLIC_ID)
+
+    def test_list_images_visibility_private(self):
+        filters = {'filters': dict([('visibility', 'private')])}
+        images = list(self.controller.list(**filters))
+        self.assertEqual(images[0].id, _PRIVATE_ID)
+
+    def test_list_images_visibility_shared(self):
+        filters = {'filters': dict([('visibility', 'shared')])}
+        images = list(self.controller.list(**filters))
+        self.assertEqual(images[0].id, _SHARED_ID)
+
+    def test_list_images_member_status_rejected(self):
+        filters = {'filters': dict([('member_status', 'rejected')])}
+        images = list(self.controller.list(**filters))
+        self.assertEqual(images[0].id, _STATUS_REJECTED_ID)
+
+    def test_list_images_for_owner(self):
+        filters = {'filters': dict([('owner', _OWNER_ID)])}
+        images = list(self.controller.list(**filters))
+        self.assertEqual(images[0].id, _OWNED_IMAGE_ID)
+
+    def test_list_images_for_bogus_owner(self):
+        filters = {'filters': dict([('owner', _BOGUS_ID)])}
+        images = list(self.controller.list(**filters))
+        self.assertEqual(images, [])
+
+    def test_list_images_for_bunch_of_filters(self):
+        filters = {'filters': dict([('owner', _BOGUS_ID),
+                                    ('visibility', 'shared'),
+                                    ('member_status', 'pending')])}
+        images = list(self.controller.list(**filters))
+        self.assertEqual(images[0].id, _EVERYTHING_ID)
 
     def test_get_image(self):
         image = self.controller.get('3a4560a1-e585-443e-9b39-553b46ec92d1')
