@@ -62,10 +62,13 @@ DISK_FORMATS = ('Acceptable formats: ami, ari, aki, vhd, vmdk, raw, '
 @utils.arg('--sort-dir', default='asc',
            choices=glanceclient.v1.images.SORT_DIR_VALUES,
            help='Sort image list in specified direction.')
+@utils.arg('--is-public', type=utils.string_to_bool, metavar='{True|False}',
+           help=('Allows the user to select a listing of public or non '
+                 'public images.'))
 def do_image_list(gc, args):
     """List images you can access."""
     filter_keys = ['name', 'status', 'container_format', 'disk_format',
-                   'size_min', 'size_max']
+                   'size_min', 'size_max', 'is_public']
     filter_items = [(key, getattr(args, key)) for key in filter_keys]
     filters = dict([item for item in filter_items if item[1] is not None])
 

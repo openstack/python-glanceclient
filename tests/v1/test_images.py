@@ -17,8 +17,11 @@ import errno
 import json
 import StringIO
 import testtools
+import urlparse
 
+import glanceclient.v1.client as client
 import glanceclient.v1.images
+import glanceclient.v1.shell as shell
 from tests import utils
 
 
@@ -523,3 +526,49 @@ class ImageTest(testtools.TestCase):
         expect += [('GET', '/v1/images/3', {}, None)]
         self.assertEqual(self.api.calls, expect)
         self.assertEqual(data, 'ZZZ')
+
+
+class ParameterFakeAPI(utils.FakeAPI):
+    image_list = {'images': [
+        {
+            'id': 'a',
+            'name': 'image-1',
+            'properties': {'arch': 'x86_64'},
+        },
+        {
+            'id': 'b',
+            'name': 'image-2',
+            'properties': {'arch': 'x86_64'},
+        },
+    ]}
+
+    def json_request(self, method, url, **kwargs):
+        self.url = url
+        return utils.FakeResponse({}), ParameterFakeAPI.image_list
+
+
+class FakeArg(object):
+    def __init__(self, arg_dict):
+        self.arg_dict = arg_dict
+
+    def __getattr__(self, name):
+        if name in self.arg_dict:
+            return self.arg_dict[name]
+        else:
+            return None
+
+
+class UrlParameterTest(testtools.TestCase):
+
+    def setUp(self):
+        super(UrlParameterTest, self).setUp()
+        self.api = ParameterFakeAPI({})
+        self.gc = client.Client("http://fakeaddress.com")
+        self.gc.images = glanceclient.v1.images.ImageManager(self.api)
+
+    def test_is_public_list(self):
+        shell.do_image_list(self.gc, FakeArg({"is_public": "True"}))
+        parts = urlparse.urlparse(self.api.url)
+        qs_dict = urlparse.parse_qs(parts.query)
+        self.assertTrue('is_public' in qs_dict)
+        self.assertTrue(qs_dict['is_public'][0].lower() == "true")
