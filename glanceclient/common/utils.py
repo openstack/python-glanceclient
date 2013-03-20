@@ -263,3 +263,14 @@ def ensure_str(text, incoming=None,
         return text.encode(encoding, errors)
 
     return text
+
+
+def getsockopt(self, *args, **kwargs):
+    """
+    A function which allows us to monkey patch eventlet's
+    GreenSocket, adding a required 'getsockopt' method.
+    TODO: (mclaren) we can remove this once the eventlet fix
+    (https://bitbucket.org/eventlet/eventlet/commits/609f230)
+    lands in mainstream packages.
+    """
+    return self.fd.getsockopt(*args, **kwargs)
