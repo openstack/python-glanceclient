@@ -440,9 +440,6 @@ class OpenStackImagesShell(object):
             args.func(client, args)
         except exc.Unauthorized:
             raise exc.CommandError("Invalid OpenStack Identity credentials.")
-        except KeyboardInterrupt:
-            LOG.warn('... terminating glance client')
-            sys.exit(1)
 
     @utils.arg('command', metavar='<subcommand>', nargs='?',
                help='Display help for <subcommand>')
@@ -470,6 +467,9 @@ class HelpFormatter(argparse.HelpFormatter):
 def main():
     try:
         OpenStackImagesShell().main(map(utils.ensure_unicode, sys.argv[1:]))
+    except KeyboardInterrupt:
+        print >> sys.stderr, '... terminating glance client'
+        sys.exit(1)
     except Exception, e:
         print >> sys.stderr, e
         sys.exit(1)
