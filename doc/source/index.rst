@@ -36,6 +36,18 @@ Once you've configured your authentication parameters, you can run ``glance help
 Release Notes
 =============
 
+0.9.0
+-----
+
+* Implement 'visibility', 'owner' and 'member_status' filters for v2 CLI and library
+* Relax prettytable dependency to v0.7.X
+* 1118799_: Implement filter on 'is_public' attribute in v1 API
+* 1157905_, 1130390_: Improve handling of SIGINT (CTRL-C)
+
+.. _1118799: http://bugs.launchpad.net/python-glanceclient/+bug/1118799
+.. _1157905: http://bugs.launchpad.net/python-glanceclient/+bug/1157905
+.. _1130390: http://bugs.launchpad.net/python-glanceclient/+bug/1130390
+
 0.8.0
 -----
 
