@@ -25,4 +25,11 @@ except ImportError:
 
 from glanceclient.openstack.common import version as common_version
 
-__version__ = common_version.VersionInfo('python-glanceclient')
+#__version__ = common_version.VersionInfo('python-glanceclient')
+
+version_info = common_version.VersionInfo('python-glanceclient')
+
+try:
+    __version__ = version_info.version_string()
+except AttributeError:
+    __version__ = None
