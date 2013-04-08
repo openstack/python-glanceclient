@@ -1,5 +1,5 @@
 
-#    Copyright 2012 OpenStack LLC
+#    Copyright 2012 OpenStack Foundation
 #    Copyright 2012-2013 Hewlett-Packard Development Company, L.P.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -35,7 +35,7 @@ class VersionInfo(object):
 
     def __str__(self):
         """Make the VersionInfo object behave like a string."""
-        return self.version_string
+        return self.version_string()
 
     def __repr__(self):
         """Include the name."""
@@ -49,11 +49,11 @@ class VersionInfo(object):
             provider = pkg_resources.get_provider(requirement)
             return provider.version
         except pkg_resources.DistributionNotFound:
-            # The most likely cause for this is running tests in a tree with
+            # The most likely cause for this is running tests in a tree
             # produced from a tarball where the package itself has not been
-            # installed into anything. Check for a PKG-INFO file.
+            # installed into anything. Revert to setup-time logic.
             from glanceclient.openstack.common import setup
-            return setup.get_version_from_pkg_info(self.package)
+            return setup.get_version(self.package)
 
     def release_string(self):
         """Return the full version of the package including suffixes indicating
