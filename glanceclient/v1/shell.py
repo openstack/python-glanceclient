@@ -113,19 +113,26 @@ def _set_data_field(fields, args):
         if args.file:
             fields['data'] = open(args.file, 'rb')
         else:
-            # We distinguish between cases where image data is pipelined:
-            # (1) glance ... < /tmp/file or cat /tmp/file | glance ...
-            # and cases where no image data is provided:
-            # (2) glance ...
-            if (sys.stdin.isatty() is not True):
-                # Our input is from stdin, and we are part of
-                # a pipeline, so data may be present. (We are of
-                # type (1) above.)
+            # distinguish cases where:
+            # (1) stdin is not valid (as in cron jobs):
+            #     glance ... <&-
+            # (2) image data is provided through standard input:
+            #     glance ... < /tmp/file or cat /tmp/file | glance ...
+            # (3) no image data provided:
+            #     glance ...
+            try:
+                os.fstat(0)
+            except OSError:
+                # (1) stdin is not valid (closed...)
+                fields['data'] = None
+                return
+            if not sys.stdin.isatty():
+                # (2) image data is provided through standard input
                 if msvcrt:
                     msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
                 fields['data'] = sys.stdin
             else:
-                # We are of type (2) above, no image data supplied
+                # (3) no image data provided
                 fields['data'] = None
 
 
