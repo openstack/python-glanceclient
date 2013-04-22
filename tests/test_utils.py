@@ -27,7 +27,7 @@ class TestUtils(testtools.TestCase):
         try:
             data = ''.join([f for f in utils.integrity_iter('A', None)])
             self.fail('integrity checked passed without checksum.')
-        except IOError, e:
+        except IOError as e:
             self.assertEqual(errno.EPIPE, e.errno)
             msg = 'was 7fc56270e7a70fa81a5935b72eacbe29 expected None'
             self.assertTrue(msg in str(e))
@@ -36,7 +36,7 @@ class TestUtils(testtools.TestCase):
         try:
             data = ''.join([f for f in utils.integrity_iter('BB', 'wrong')])
             self.fail('integrity checked passed with wrong checksum')
-        except IOError, e:
+        except IOError as e:
             self.assertEqual(errno.EPIPE, e.errno)
             msg = 'was 9d3d9048db16a7eee539e93e3618cbe7 expected wrong'
             self.assertTrue('expected wrong' in str(e))

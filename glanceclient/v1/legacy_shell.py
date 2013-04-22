@@ -50,7 +50,7 @@ def get_image_filters_from_args(args):
     """Build a dictionary of query filters based on the supplied args."""
     try:
         fields = get_image_fields_from_args(args)
-    except RuntimeError, e:
+    except RuntimeError as e:
         print e
         return FAILURE
 
@@ -108,7 +108,7 @@ def do_add(gc, args):
     """DEPRECATED! Use image-create instead."""
     try:
         fields = get_image_fields_from_args(args.fields)
-    except RuntimeError, e:
+    except RuntimeError as e:
         print e
         return FAILURE
 
@@ -182,7 +182,7 @@ def do_update(gc, args):
     """DEPRECATED! Use image-update instead."""
     try:
         fields = get_image_fields_from_args(args.fields)
-    except RuntimeError, e:
+    except RuntimeError as e:
         print e
         return FAILURE
 
@@ -333,7 +333,7 @@ def do_clear(gc, args):
             image.delete()
             if args.verbose:
                 print 'done'
-        except Exception, e:
+        except Exception as e:
             print 'Failed to delete image %s' % image.id
             print e
             return FAILURE

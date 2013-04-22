@@ -470,6 +470,6 @@ def main():
     except KeyboardInterrupt:
         print >> sys.stderr, '... terminating glance client'
         sys.exit(1)
-    except Exception, e:
+    except Exception as e:
         print >> sys.stderr, e
         sys.exit(1)

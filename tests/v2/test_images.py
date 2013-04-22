@@ -289,7 +289,7 @@ class TestController(testtools.TestCase):
         try:
             body = ''.join([b for b in body])
             self.fail('data did not raise an error.')
-        except IOError, e:
+        except IOError as e:
             self.assertEqual(errno.EPIPE, e.errno)
             msg = 'was 9d3d9048db16a7eee539e93e3618cbe7 expected wrong'
             self.assertTrue(msg in str(e))
