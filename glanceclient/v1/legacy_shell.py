@@ -122,7 +122,7 @@ def do_add(gc, args):
     }
 
     #NOTE(bcwaldon): Use certain properties only if they are explicitly set
-    optional = ['id', 'name', 'disk_format', 'container_format', 'copy_from']
+    optional = ['id', 'name', 'disk_format', 'container_format']
     for field in optional:
         if field in fields:
             image_meta[field] = fields.pop(field)
@@ -134,22 +134,15 @@ def do_add(gc, args):
             print 'Found non-settable field %s. Removing.' % field
             fields.pop(field)
 
-    def _external_source(fields, image_data):
-        source = None
-        if 'location' in fields.keys():
-            source = fields.pop('location')
-            image_meta['location'] = source
-            if 'checksum' in fields.keys():
-                image_meta['checksum'] = fields.pop('checksum')
-        elif 'copy_from' in fields.keys():
-            source = fields.pop('copy_from')
-            image_meta['copy_from'] = source
-        return source
-
     # We need either a location or image data/stream to add...
-    location = _external_source(fields, image_meta)
     image_data = None
-    if not location:
+    if 'location' in fields.keys():
+        image_meta['location'] = fields.pop('location')
+        if 'checksum' in fields.keys():
+            image_meta['checksum'] = fields.pop('checksum')
+    elif 'copy_from' in fields.keys():
+        image_meta['copy_from'] = fields.pop('copy_from')
+    else:
         # Grab the image data stream from stdin or redirect,
         # otherwise error out
         image_data = sys.stdin
