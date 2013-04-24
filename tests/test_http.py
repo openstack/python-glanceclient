@@ -61,7 +61,7 @@ class TestClient(testtools.TestCase):
             # rather than assertRaises() so that we can check the body of
             # the exception.
             self.fail('An exception should have bypassed this line.')
-        except exc.CommunicationError, comm_err:
+        except exc.CommunicationError as comm_err:
             fail_msg = ("Exception message '%s' should contain '%s'" %
                        (comm_err.message, self.endpoint))
             self.assertTrue(self.endpoint in comm_err.message, fail_msg)
@@ -100,7 +100,7 @@ class TestClient(testtools.TestCase):
             client.raw_request('GET', '/v1/images/detail?limit=20')
 
             self.fail('An exception should have bypassed this line.')
-        except exc.CommunicationError, comm_err:
+        except exc.CommunicationError as comm_err:
             fail_msg = ("Exception message '%s' should contain '%s'" %
                         (comm_err.message, endpoint))
             self.assertTrue(endpoint in comm_err.message, fail_msg)

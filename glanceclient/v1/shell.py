@@ -316,7 +316,7 @@ def do_image_delete(gc, args):
             if args.verbose:
                 print '[Done]'
 
-        except exc.HTTPException, e:
+        except exc.HTTPException as e:
             if args.verbose:
                 print '[Fail]'
             print '%s: Unable to delete image %s' % (e, args_image)

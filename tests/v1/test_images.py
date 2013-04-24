@@ -335,7 +335,7 @@ class ImageManagerTest(testtools.TestCase):
         try:
             data = ''.join([b for b in data])
             self.fail('data did not raise an error.')
-        except IOError, e:
+        except IOError as e:
             self.assertEqual(errno.EPIPE, e.errno)
             msg = 'was fd7c5c4fdaa97163ee4ba8842baa537a expected wrong'
             self.assertTrue(msg in str(e))
@@ -509,7 +509,7 @@ class ImageTest(testtools.TestCase):
         try:
             data = ''.join([b for b in image.data()])
             self.fail('data did not raise an error.')
-        except IOError, e:
+        except IOError as e:
             self.assertEqual(errno.EPIPE, e.errno)
             msg = 'was fd7c5c4fdaa97163ee4ba8842baa537a expected wrong'
             self.assertTrue(msg in str(e))
