@@ -37,6 +37,21 @@ import OpenSSL
 from glanceclient import exc
 from glanceclient.common import utils
 
+try:
+    from eventlet import patcher
+    # Handle case where we are running in a monkey patched environment
+    if patcher.is_monkey_patched('socket'):
+        from eventlet.green.httplib import HTTPSConnection
+        from eventlet.green.OpenSSL.SSL import GreenConnection as Connection
+        from eventlet.greenio import GreenSocket
+        # TODO(mclaren): A getsockopt workaround: see 'getsockopt' doc string
+        GreenSocket.getsockopt = utils.getsockopt
+    else:
+        raise ImportError
+except ImportError:
+    from httplib import HTTPSConnection
+    from OpenSSL.SSL import Connection as Connection
+
 
 LOG = logging.getLogger(__name__)
 USER_AGENT = 'python-glanceclient'
@@ -256,7 +271,7 @@ class OpenSSLConnectionDelegator(object):
     a delegator must be used.
     """
     def __init__(self, *args, **kwargs):
-        self.connection = OpenSSL.SSL.Connection(*args, **kwargs)
+        self.connection = Connection(*args, **kwargs)
 
     def __getattr__(self, name):
         return getattr(self.connection, name)
@@ -265,7 +280,7 @@ class OpenSSLConnectionDelegator(object):
         return socket._fileobject(self.connection, *args, **kwargs)
 
 
-class VerifiedHTTPSConnection(httplib.HTTPSConnection):
+class VerifiedHTTPSConnection(HTTPSConnection):
     """
     Extended HTTPSConnection which uses the OpenSSL library
     for enhanced SSL support.
@@ -275,9 +290,9 @@ class VerifiedHTTPSConnection(httplib.HTTPSConnection):
     def __init__(self, host, port=None, key_file=None, cert_file=None,
                  cacert=None, timeout=None, insecure=False,
                  ssl_compression=True):
-        httplib.HTTPSConnection.__init__(self, host, port,
-                                         key_file=key_file,
-                                         cert_file=cert_file)
+        HTTPSConnection.__init__(self, host, port,
+                                 key_file=key_file,
+                                 cert_file=cert_file)
         self.key_file = key_file
         self.cert_file = cert_file
         self.timeout = timeout
