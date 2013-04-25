@@ -126,7 +126,7 @@ class HTTPClient(object):
         if self.connection_kwargs.get('insecure'):
             curl.append('-k')
 
-        if 'body' in kwargs:
+        if kwargs.get('body') is not None:
             curl.append('-d \'%s\'' % kwargs['body'])
 
         curl.append('%s%s' % (self.endpoint, url))
