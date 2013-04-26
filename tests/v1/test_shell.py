@@ -15,11 +15,171 @@
 #    under the License.
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
+import argparse
+import json
 import os
+import tempfile
+import testtools
 
 from glanceclient import exc
 from glanceclient import shell
+
+import glanceclient.v1.client as client
+import glanceclient.v1.images
+import glanceclient.v1.shell as v1shell
+
 from tests import utils
+
+fixtures = {
+    '/v1/images/96d2c7e1-de4e-4612-8aa2-ba26610c804e': {
+        'PUT': (
+            {
+                'Location': 'http://fakeaddress.com:9292/v1/images/'
+                            '96d2c7e1-de4e-4612-8aa2-ba26610c804e',
+                'Etag': 'f8a2eeee2dc65b3d9b6e63678955bd83',
+                'X-Openstack-Request-Id':
+                        'req-b645039d-e1c7-43e5-b27b-2d18a173c42b',
+                'Date': 'Mon, 29 Apr 2013 10:24:32 GMT'
+            },
+            json.dumps({
+                'image': {
+                    'status': 'active', 'name': 'testimagerename',
+                    'deleted': False,
+                    'container_format': 'ami',
+                    'created_at': '2013-04-25T15:47:43',
+                    'disk_format': 'ami',
+                    'updated_at': '2013-04-29T10:24:32',
+                    'id': '96d2c7e1-de4e-4612-8aa2-ba26610c804e',
+                    'min_disk': 0,
+                    'protected': False,
+                    'min_ram': 0,
+                    'checksum': 'f8a2eeee2dc65b3d9b6e63678955bd83',
+                    'owner': '1310db0cce8f40b0987a5acbe139765a',
+                    'is_public': True,
+                    'deleted_at': None,
+                    'properties': {
+                        'kernel_id': '1b108400-65d8-4762-9ea4-1bf6c7be7568',
+                        'ramdisk_id': 'b759bee9-0669-4394-a05c-fa2529b1c114'
+                    },
+                    'size': 25165824
+                }
+            })
+        ),
+        'HEAD': (
+            {
+                'x-image-meta-id': '96d2c7e1-de4e-4612-8aa2-ba26610c804e',
+                'x-image-meta-status': 'active'
+            },
+            None
+        ),
+        'GET': (
+            {
+                'x-image-meta-status': 'active',
+                'x-image-meta-owner': '1310db0cce8f40b0987a5acbe139765a',
+                'x-image-meta-name': 'cirros-0.3.1-x86_64-uec',
+                'x-image-meta-container_format': 'ami',
+                'x-image-meta-created_at': '2013-04-25T15:47:43',
+                'etag': 'f8a2eeee2dc65b3d9b6e63678955bd83',
+                'location': 'http://fakeaddress.com:9292/v1/images/'
+                            '96d2c7e1-de4e-4612-8aa2-ba26610c804e',
+                'x-image-meta-min_ram': '0',
+                'x-image-meta-updated_at': '2013-04-25T15:47:43',
+                'x-image-meta-id': '96d2c7e1-de4e-4612-8aa2-ba26610c804e',
+                'x-image-meta-property-ramdisk_id':
+                        'b759bee9-0669-4394-a05c-fa2529b1c114',
+                'date': 'Mon, 29 Apr 2013 09:25:17 GMT',
+                'x-image-meta-property-kernel_id':
+                        '1b108400-65d8-4762-9ea4-1bf6c7be7568',
+                'x-openstack-request-id':
+                        'req-842735bf-77e8-44a7-bfd1-7d95c52cec7f',
+                'x-image-meta-deleted': 'False',
+                'x-image-meta-checksum': 'f8a2eeee2dc65b3d9b6e63678955bd83',
+                'x-image-meta-protected': 'False',
+                'x-image-meta-min_disk': '0',
+                'x-image-meta-size': '25165824',
+                'x-image-meta-is_public': 'True',
+                'content-type': 'text/html; charset=UTF-8',
+                'x-image-meta-disk_format': 'ami',
+            },
+            None
+        )
+    },
+    '/v1/images/44d2c7e1-de4e-4612-8aa2-ba26610c444f': {
+        'PUT': (
+            {
+                'Location': 'http://fakeaddress.com:9292/v1/images/'
+                            '44d2c7e1-de4e-4612-8aa2-ba26610c444f',
+                'Etag': 'f8a2eeee2dc65b3d9b6e63678955bd83',
+                'X-Openstack-Request-Id':
+                        'req-b645039d-e1c7-43e5-b27b-2d18a173c42b',
+                'Date': 'Mon, 29 Apr 2013 10:24:32 GMT'
+            },
+            json.dumps({
+                'image': {
+                    'status': 'queued', 'name': 'testimagerename',
+                    'deleted': False,
+                    'container_format': 'ami',
+                    'created_at': '2013-04-25T15:47:43',
+                    'disk_format': 'ami',
+                    'updated_at': '2013-04-29T10:24:32',
+                    'id': '44d2c7e1-de4e-4612-8aa2-ba26610c444f',
+                    'min_disk': 0,
+                    'protected': False,
+                    'min_ram': 0,
+                    'checksum': 'f8a2eeee2dc65b3d9b6e63678955bd83',
+                    'owner': '1310db0cce8f40b0987a5acbe139765a',
+                    'is_public': True,
+                    'deleted_at': None,
+                    'properties': {
+                        'kernel_id':
+                                '1b108400-65d8-4762-9ea4-1bf6c7be7568',
+                        'ramdisk_id':
+                                'b759bee9-0669-4394-a05c-fa2529b1c114'
+                    },
+                    'size': 25165824
+                }
+            })
+        ),
+        'HEAD': (
+            {
+                'x-image-meta-id': '44d2c7e1-de4e-4612-8aa2-ba26610c444f',
+                'x-image-meta-status': 'queued'
+            },
+            None
+        ),
+        'GET': (
+            {
+                'x-image-meta-status': 'queued',
+                'x-image-meta-owner': '1310db0cce8f40b0987a5acbe139765a',
+                'x-image-meta-name': 'cirros-0.3.1-x86_64-uec',
+                'x-image-meta-container_format': 'ami',
+                'x-image-meta-created_at': '2013-04-25T15:47:43',
+                'etag': 'f8a2eeee2dc65b3d9b6e63678955bd83',
+                'location': 'http://fakeaddress.com:9292/v1/images/'
+                            '44d2c7e1-de4e-4612-8aa2-ba26610c444f',
+                'x-image-meta-min_ram': '0',
+                'x-image-meta-updated_at': '2013-04-25T15:47:43',
+                'x-image-meta-id': '44d2c7e1-de4e-4612-8aa2-ba26610c444f',
+                'x-image-meta-property-ramdisk_id':
+                        'b759bee9-0669-4394-a05c-fa2529b1c114',
+                'date': 'Mon, 29 Apr 2013 09:25:17 GMT',
+                'x-image-meta-property-kernel_id':
+                        '1b108400-65d8-4762-9ea4-1bf6c7be7568',
+                'x-openstack-request-id':
+                        'req-842735bf-77e8-44a7-bfd1-7d95c52cec7f',
+                'x-image-meta-deleted': 'False',
+                'x-image-meta-checksum': 'f8a2eeee2dc65b3d9b6e63678955bd83',
+                'x-image-meta-protected': 'False',
+                'x-image-meta-min_disk': '0',
+                'x-image-meta-size': '25165824',
+                'x-image-meta-is_public': 'True',
+                'content-type': 'text/html; charset=UTF-8',
+                'x-image-meta-disk_format': 'ami',
+            },
+            None
+        )
+    }
+}
 
 
 class ShellInvalidEndpointTest(utils.TestCase):
@@ -134,3 +294,133 @@ class ShellInvalidEndpointTest(utils.TestCase):
             exc.InvalidEndpoint,
             self.run_command,
             'member-add  <IMAGE_ID> <TENANT_ID>')
+
+
+class ShellStdinHandlingTests(testtools.TestCase):
+
+    def _fake_update_func(self, *args, **kwargs):
+        ''' Function to replace glanceclient.images.update,
+        to determine the parameters that would be supplied with the update
+        request
+        '''
+
+        # Store passed in args
+        self.collected_args = (args, kwargs)
+
+        # Return the first arg, which is an image,
+        # as do_image_update expects this.
+        return args[0]
+
+    def setUp(self):
+        super(ShellStdinHandlingTests, self).setUp()
+        self.api = utils.FakeAPI(fixtures)
+        self.gc = client.Client("http://fakeaddress.com")
+        self.gc.images = glanceclient.v1.images.ImageManager(self.api)
+
+        # Store real stdin, so it can be restored in tearDown.
+        self.real_sys_stdin_fd = os.dup(0)
+
+        # Replace stdin with a FD that points to /dev/null.
+        dev_null = open('/dev/null')
+        self.dev_null_fd = dev_null.fileno()
+        os.dup2(dev_null.fileno(), 0)
+
+        # Replace the image update function with a fake,
+        # so that we can tell if the data field was set correctly.
+        self.real_update_func = self.gc.images.update
+        self.collected_args = []
+        self.gc.images.update = self._fake_update_func
+
+    def tearDown(self):
+        """Restore stdin and gc.images.update to their pretest states."""
+        super(ShellStdinHandlingTests, self).tearDown()
+
+        def try_close(fd):
+            try:
+                os.close(fd)
+            except OSError:
+                # Already closed
+                pass
+
+        # Restore stdin
+        os.dup2(self.real_sys_stdin_fd, 0)
+
+        # Close duplicate stdin handle
+        try_close(self.real_sys_stdin_fd)
+
+        # Close /dev/null handle
+        try_close(self.dev_null_fd)
+
+        # Restore the real image update function
+        self.gc.images.update = self.real_update_func
+
+    def _do_update(self, image='96d2c7e1-de4e-4612-8aa2-ba26610c804e'):
+        """call v1/shell's do_image_update function"""
+
+        v1shell.do_image_update(
+            self.gc, argparse.Namespace(
+                image=image,
+                name='testimagerename',
+                property={},
+                purge_props=False,
+                human_readable=False,
+                file=None
+            )
+        )
+
+    def test_image_update_closed_stdin(self):
+        """Supply glanceclient with a closed stdin, and perform an image
+        update to an active image. Glanceclient should not attempt to read
+        stdin.
+        """
+
+        # NOTE(hughsaunders) Close stdin, which is repointed to /dev/null by
+        # setUp()
+        os.close(0)
+
+        self._do_update()
+
+        self.assertTrue(
+            'data' not in self.collected_args[1]
+            or self.collected_args[1]['data'] is None
+        )
+
+    def test_image_update_empty_stdin(self):
+        """Supply glanceclient with an open but empty stdin, and perform an
+        image update to an active image. Glanceclient should not attempt to
+        read stdin.
+        """
+
+        self._do_update()
+
+        self.assertTrue(
+            'data' not in self.collected_args[1]
+            or self.collected_args[1]['data'] is None
+        )
+
+    def test_image_update_data_is_read(self):
+        """Ensure that data is read from stdin when image is in queued
+        status and data is available.
+        """
+
+        try:
+
+            # NOTE(hughsaunders) Create a tmpfile, write some data to it and
+            # set it as stdin
+            f = open(tempfile.mktemp(), 'w+')
+            f.write('Some Data')
+            f.flush()
+            f.seek(0)
+            os.dup2(f.fileno(), 0)
+
+            self._do_update('44d2c7e1-de4e-4612-8aa2-ba26610c444f')
+
+            self.assertTrue('data' in self.collected_args[1])
+            self.assertIsInstance(self.collected_args[1]['data'], file)
+
+        finally:
+            try:
+                f.close()
+                os.remove(f.name)
+            except:
+                pass

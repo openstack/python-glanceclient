@@ -121,12 +121,12 @@ def _set_data_field(fields, args):
             # (3) no image data provided:
             #     glance ...
             try:
-                os.fstat(0)
+                stat_result = os.fstat(0)
             except OSError:
                 # (1) stdin is not valid (closed...)
                 fields['data'] = None
                 return
-            if not sys.stdin.isatty():
+            if not sys.stdin.isatty() and stat_result.st_size != 0:
                 # (2) image data is provided through standard input
                 if msvcrt:
                     msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
