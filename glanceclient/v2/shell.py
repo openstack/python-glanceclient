@@ -49,6 +49,62 @@ def do_image_show(gc, args):
     utils.print_dict(image)
 
 
+@utils.arg('--image-id', metavar='<IMAGE_ID>', required=True,
+           help='Image to display members of.')
+def do_member_list(gc, args):
+    """Describe sharing permissions by image"""
+
+    members = gc.image_members.list(args.image_id)
+    columns = ['Image ID', 'Member ID', 'Status']
+    utils.print_list(members, columns)
+
+
+@utils.arg('image_id', metavar='<IMAGE_ID>',
+           help='Image from which to remove member')
+@utils.arg('member_id', metavar='<MEMBER_ID>',
+           help='Tenant to remove as member')
+def do_member_delete(gc, args):
+    """Delete image member"""
+    if not (args.image_id and args.member_id):
+        utils.exit('Unable to delete member. Specify image_id and member_id')
+    else:
+        gc.image_members.delete(args.image_id, args.member_id)
+
+
+@utils.arg('image_id', metavar='<IMAGE_ID>',
+           help='Image from which to update member')
+@utils.arg('member_id', metavar='<MEMBER_ID>',
+           help='Tenant to update')
+@utils.arg('member_status', metavar='<MEMBER_STATUS>',
+           help='Updated status of member')
+def do_member_update(gc, args):
+    """Update the status of a member for a given image."""
+    if not (args.image_id and args.member_id and args.member_status):
+        utils.exit('Unable to update member. Specify image_id, member_id and'
+                   ' member_status')
+    else:
+        member = gc.image_members.update(args.image_id, args.member_id,
+                                         args.member_status)
+        member = [member]
+        columns = ['Image ID', 'Member ID', 'Status']
+        utils.print_list(member, columns)
+
+
+@utils.arg('image_id', metavar='<IMAGE_ID>',
+           help='Image on which to create member')
+@utils.arg('member_id', metavar='<MEMBER_ID>',
+           help='Tenant to add as member')
+def do_member_create(gc, args):
+    """Create member for a given image."""
+    if not (args.image_id and args.member_id):
+        utils.exit('Unable to create member. Specify image_id and member_id')
+    else:
+        member = gc.image_members.create(args.image_id, args.member_id)
+        member = [member]
+        columns = ['Image ID', 'Member ID', 'Status']
+        utils.print_list(member, columns)
+
+
 @utils.arg('model', metavar='<MODEL>', help='Name of model to describe.')
 def do_explain(gc, args):
     """Describe a specific model."""
