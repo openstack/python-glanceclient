@@ -180,7 +180,9 @@ class HTTPClient(object):
         kwargs['headers'] = self.encode_headers(kwargs['headers'])
 
         try:
-            conn_url = posixpath.normpath('%s/%s' % (self.endpoint_path, url))
+            if self.endpoint_path:
+                url = '%s/%s' % (self.endpoint_path, url)
+            conn_url = posixpath.normpath(url)
             # Note(flaper87): Ditto, headers / url
             # encoding to make httplib happy.
             conn_url = strutils.safe_encode(conn_url)

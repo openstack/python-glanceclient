@@ -89,6 +89,27 @@ class TestClient(testtools.TestCase):
         encoded = self.client.encode_headers(headers)
         self.assertEqual(encoded["test"], "ni\xc3\xb1o")
 
+    def test_raw_request(self):
+        " Verify the path being used for HTTP requests reflects accurately. "
+
+        def check_request(method, path, **kwargs):
+            self.assertEqual(method, 'GET')
+            # NOTE(kmcdonald): See bug #1179984 for more details.
+            self.assertEqual(path, '/v1/images/detail')
+
+        httplib.HTTPConnection.request(
+            mox.IgnoreArg(),
+            mox.IgnoreArg(),
+            headers=mox.IgnoreArg()).WithSideEffects(check_request)
+
+        # fake the response returned by httplib
+        fake = utils.FakeResponse({}, StringIO.StringIO('Ok'))
+        httplib.HTTPConnection.getresponse().AndReturn(fake)
+        self.mock.ReplayAll()
+
+        resp, body = self.client.raw_request('GET', '/v1/images/detail')
+        self.assertEqual(resp, fake)
+
     def test_connection_refused_raw_request(self):
         """
         Should receive a CommunicationError if connection refused.
