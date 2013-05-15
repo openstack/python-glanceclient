@@ -58,12 +58,14 @@ class ImageManager(base.Manager):
 
     def _image_meta_from_headers(self, headers):
         meta = {'properties': {}}
+        ensure_unicode = utils.ensure_unicode
         for key, value in headers.iteritems():
+            value = ensure_unicode(value, incoming='utf-8')
             if key.startswith('x-image-meta-property-'):
-                _key = key[22:]
+                _key = ensure_unicode(key[22:], incoming='utf-8')
                 meta['properties'][_key] = value
             elif key.startswith('x-image-meta-'):
-                _key = key[13:]
+                _key = ensure_unicode(key[13:], incoming='utf-8')
                 meta[_key] = value
 
         for key in ['is_public', 'protected', 'deleted']:

@@ -311,6 +311,7 @@ class ImageManagerTest(testtools.TestCase):
         self.assertEqual(image.is_public, False)
         self.assertEqual(image.protected, False)
         self.assertEqual(image.deleted, False)
+        self.assertEqual(image.properties, {u'arch': u'x86_64'})
 
     def test_data(self):
         data = ''.join([b for b in self.mgr.data('1', do_checksum=False)])
