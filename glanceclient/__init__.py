@@ -23,11 +23,9 @@ except ImportError:
     import warnings
     warnings.warn("Could not import glanceclient.client", ImportWarning)
 
-from glanceclient.openstack.common import version as common_version
+import pbr.version
 
-#__version__ = common_version.VersionInfo('python-glanceclient')
-
-version_info = common_version.VersionInfo('python-glanceclient')
+version_info = pbr.version.VersionInfo('python-glanceclient')
 
 try:
     __version__ = version_info.version_string()
