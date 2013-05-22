@@ -27,6 +27,7 @@ from keystoneclient.v2_0 import client as ksclient
 import glanceclient
 from glanceclient import exc
 from glanceclient.common import utils
+from glanceclient.openstack.common import strutils
 
 
 class OpenStackImagesShell(object):
@@ -466,7 +467,7 @@ class HelpFormatter(argparse.HelpFormatter):
 
 def main():
     try:
-        OpenStackImagesShell().main(map(utils.ensure_unicode, sys.argv[1:]))
+        OpenStackImagesShell().main(map(strutils.safe_decode, sys.argv[1:]))
     except KeyboardInterrupt:
         print >> sys.stderr, '... terminating glance client'
         sys.exit(1)
