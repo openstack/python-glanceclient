@@ -121,12 +121,12 @@ def _set_data_field(fields, args):
             # (3) no image data provided:
             #     glance ...
             try:
-                stat_result = os.fstat(0)
+                os.fstat(0)
             except OSError:
                 # (1) stdin is not valid (closed...)
                 fields['data'] = None
                 return
-            if not sys.stdin.isatty() and stat_result.st_size != 0:
+            if not sys.stdin.isatty():
                 # (2) image data is provided through standard input
                 if msvcrt:
                     msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
@@ -294,7 +294,8 @@ def do_image_update(gc, args):
     UPDATE_PARAMS = glanceclient.v1.images.UPDATE_PARAMS
     fields = dict(filter(lambda x: x[0] in UPDATE_PARAMS, fields.items()))
 
-    _set_data_field(fields, args)
+    if image.status == 'queued':
+        _set_data_field(fields, args)
 
     image = gc.images.update(image, purge_props=args.purge_props, **fields)
     _image_show(image, args.human_readable)

@@ -18,6 +18,7 @@
 import argparse
 import json
 import os
+import subprocess
 import tempfile
 import testtools
 
@@ -385,23 +386,8 @@ class ShellStdinHandlingTests(testtools.TestCase):
             or self.collected_args[1]['data'] is None
         )
 
-    def test_image_update_empty_stdin(self):
-        """Supply glanceclient with an open but empty stdin, and perform an
-        image update to an active image. Glanceclient should not attempt to
-        read stdin.
-        """
-
-        self._do_update()
-
-        self.assertTrue(
-            'data' not in self.collected_args[1]
-            or self.collected_args[1]['data'] is None
-        )
-
-    def test_image_update_data_is_read(self):
-        """Ensure that data is read from stdin when image is in queued
-        status and data is available.
-        """
+    def test_image_update_data_is_read_from_file(self):
+        """Ensure that data is read from a file."""
 
         try:
 
@@ -417,10 +403,36 @@ class ShellStdinHandlingTests(testtools.TestCase):
 
             self.assertTrue('data' in self.collected_args[1])
             self.assertIsInstance(self.collected_args[1]['data'], file)
+            self.assertEqual(self.collected_args[1]['data'].read(),
+                             'Some Data')
 
         finally:
             try:
                 f.close()
                 os.remove(f.name)
+            except:
+                pass
+
+    def test_image_update_data_is_read_from_pipe(self):
+        """Ensure that data is read from a pipe."""
+
+        try:
+
+            # NOTE(hughsaunders): Setup a pipe, duplicate it to stdin
+            # ensure it is read.
+            process = subprocess.Popen(['/bin/echo', 'Some Data'],
+                                       stdout=subprocess.PIPE)
+            os.dup2(process.stdout.fileno(), 0)
+
+            self._do_update('44d2c7e1-de4e-4612-8aa2-ba26610c444f')
+
+            self.assertTrue('data' in self.collected_args[1])
+            self.assertIsInstance(self.collected_args[1]['data'], file)
+            self.assertEqual(self.collected_args[1]['data'].read(),
+                             'Some Data\n')
+
+        finally:
+            try:
+                process.stdout.close()
             except:
                 pass
