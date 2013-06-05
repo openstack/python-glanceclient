@@ -230,7 +230,8 @@ fixtures = {
     '/v1/images/3': {
         'HEAD': (
             {
-                'x-image-meta-id': '3'
+                'x-image-meta-id': '3',
+                'x-image-meta-name': "ni\xc3\xb1o"
             },
             None,
         ),
@@ -312,6 +313,11 @@ class ImageManagerTest(testtools.TestCase):
         self.assertEqual(image.protected, False)
         self.assertEqual(image.deleted, False)
         self.assertEqual(image.properties, {u'arch': u'x86_64'})
+
+    def test_get_encoding(self):
+        image = self.mgr.get('3')
+        expect = [('HEAD', '/v1/images/3', {}, None)]
+        self.assertEqual(image.name, u"ni\xf1o")
 
     def test_data(self):
         data = ''.join([b for b in self.mgr.data('1', do_checksum=False)])
@@ -453,6 +459,22 @@ class ImageManagerTest(testtools.TestCase):
         expect_headers = {'x-glance-registry-purge-props': 'true'}
         expect = [('PUT', '/v1/images/1', expect_headers, None)]
         self.assertEqual(self.api.calls, expect)
+
+    def test_image_meta_to_headers_encoding(self):
+        # NOTE(flaper87): This doesn't make much sense
+        # _image_meta_to_headers decodes headers that will
+        # then be encoded before sending the request. If
+        # everything works as expected, there shouldn't be
+        # any need to enforce unicode in headers at this step.
+        # Will get rid of that in a separate patch.
+        fields = {"name": "ni\xc3\xb1o"}
+        headers = self.mgr._image_meta_to_headers(fields)
+        self.assertEqual(headers["x-image-meta-name"], u"ni\xf1o")
+
+    def test_image_meta_from_headers_encoding(self):
+        fields = {"x-image-meta-name": "ni\xc3\xb1o"}
+        headers = self.mgr._image_meta_from_headers(fields)
+        self.assertEqual(headers["name"], u"ni\xf1o")
 
 
 class ImageTest(testtools.TestCase):

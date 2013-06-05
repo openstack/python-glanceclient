@@ -84,6 +84,11 @@ class TestClient(testtools.TestCase):
                                                     headers=headers)
         self.assertEqual(resp, fake)
 
+    def test_headers_encoding(self):
+        headers = {"test": u'ni\xf1o'}
+        encoded = self.client.encode_headers(headers)
+        self.assertEqual(encoded["test"], "ni\xc3\xb1o")
+
     def test_connection_refused_raw_request(self):
         """
         Should receive a CommunicationError if connection refused.

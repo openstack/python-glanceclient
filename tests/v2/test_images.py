@@ -255,6 +255,19 @@ class TestController(testtools.TestCase):
         images = list(self.controller.list(**filters))
         self.assertEqual(images[0].id, _EVERYTHING_ID)
 
+    def test_list_images_filters_encoding(self):
+        filters = {"owner": u"ni\xf1o"}
+        try:
+            list(self.controller.list(filters=filters))
+        except KeyError:
+            # NOTE(flaper87): It raises KeyError because there's
+            # no fixture supporting this query:
+            #   /v2/images?owner=ni%C3%B1o&limit=20
+            # We just want to make sure filters are correctly encoded.
+            pass
+
+        self.assertEqual(filters["owner"], "ni\xc3\xb1o")
+
     def test_get_image(self):
         image = self.controller.get('3a4560a1-e585-443e-9b39-553b46ec92d1')
         self.assertEqual(image.id, '3a4560a1-e585-443e-9b39-553b46ec92d1')
