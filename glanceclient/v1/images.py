@@ -77,11 +77,20 @@ class ImageManager(base.Manager):
     def _image_meta_to_headers(self, fields):
         headers = {}
         fields_copy = copy.deepcopy(fields)
-        ensure_unicode = utils.ensure_unicode
+
+        # NOTE(flaper87): Convert to str, headers
+        # that are not instance of basestring. All
+        # headers will be encoded later, before the
+        # request is sent.
+        def to_str(value):
+            if not isinstance(value, basestring):
+                return str(value)
+            return value
+
         for key, value in fields_copy.pop('properties', {}).iteritems():
-            headers['x-image-meta-property-%s' % key] = ensure_unicode(value)
+            headers['x-image-meta-property-%s' % key] = to_str(value)
         for key, value in fields_copy.iteritems():
-            headers['x-image-meta-%s' % key] = ensure_unicode(value)
+            headers['x-image-meta-%s' % key] = to_str(value)
         return headers
 
     @staticmethod
