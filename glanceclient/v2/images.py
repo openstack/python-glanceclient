@@ -16,6 +16,7 @@
 import urllib
 
 from glanceclient.common import utils
+from glanceclient.openstack.common import strutils
 
 DEFAULT_PAGE_SIZE = 20
 
@@ -52,7 +53,7 @@ class Controller(object):
 
         for param, value in filters.iteritems():
             if isinstance(value, basestring):
-                filters[param] = utils.ensure_str(value)
+                filters[param] = strutils.safe_encode(value)
 
         url = '/v2/images?%s' % urllib.urlencode(filters)
 

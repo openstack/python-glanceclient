@@ -36,6 +36,7 @@ import OpenSSL
 
 from glanceclient import exc
 from glanceclient.common import utils
+from glanceclient.openstack.common import strutils
 
 try:
     from eventlet import patcher
@@ -130,7 +131,7 @@ class HTTPClient(object):
             curl.append('-d \'%s\'' % kwargs['body'])
 
         curl.append('%s%s' % (self.endpoint, url))
-        LOG.debug(utils.ensure_str(' '.join(curl)))
+        LOG.debug(strutils.safe_encode(' '.join(curl)))
 
     @staticmethod
     def log_http_response(resp, body=None):
@@ -140,7 +141,7 @@ class HTTPClient(object):
         dump.append('')
         if body:
             dump.extend([body, ''])
-        LOG.debug(utils.ensure_str('\n'.join(dump)))
+        LOG.debug(strutils.safe_encode('\n'.join(dump)))
 
     @staticmethod
     def encode_headers(headers):
@@ -154,7 +155,7 @@ class HTTPClient(object):
         :returns: Dictionary with encoded headers'
                   names and values
         """
-        to_str = utils.ensure_str
+        to_str = strutils.safe_encode
         return dict([(to_str(h), to_str(v)) for h, v in headers.iteritems()])
 
     def _http_request(self, url, method, **kwargs):
@@ -182,7 +183,7 @@ class HTTPClient(object):
             conn_url = posixpath.normpath('%s/%s' % (self.endpoint_path, url))
             # Note(flaper87): Ditto, headers / url
             # encoding to make httplib happy.
-            conn_url = utils.ensure_str(conn_url)
+            conn_url = strutils.safe_encode(conn_url)
             if kwargs['headers'].get('Transfer-Encoding') == 'chunked':
                 conn.putrequest(method, conn_url)
                 for header, value in kwargs['headers'].items():

@@ -21,6 +21,7 @@ import urllib
 
 from glanceclient.common import base
 from glanceclient.common import utils
+from glanceclient.openstack.common import strutils
 
 UPDATE_PARAMS = ('name', 'disk_format', 'container_format', 'min_disk',
                  'min_ram', 'owner', 'size', 'is_public', 'protected',
@@ -58,14 +59,14 @@ class ImageManager(base.Manager):
 
     def _image_meta_from_headers(self, headers):
         meta = {'properties': {}}
-        ensure_unicode = utils.ensure_unicode
+        safe_decode = strutils.safe_decode
         for key, value in headers.iteritems():
-            value = ensure_unicode(value, incoming='utf-8')
+            value = safe_decode(value, incoming='utf-8')
             if key.startswith('x-image-meta-property-'):
-                _key = ensure_unicode(key[22:], incoming='utf-8')
+                _key = safe_decode(key[22:], incoming='utf-8')
                 meta['properties'][_key] = value
             elif key.startswith('x-image-meta-'):
-                _key = ensure_unicode(key[13:], incoming='utf-8')
+                _key = safe_decode(key[13:], incoming='utf-8')
                 meta[_key] = value
 
         for key in ['is_public', 'protected', 'deleted']:
@@ -154,7 +155,7 @@ class ImageManager(base.Manager):
             # trying to encode them
             for param, value in qp.iteritems():
                 if isinstance(value, basestring):
-                    qp[param] = utils.ensure_str(value)
+                    qp[param] = strutils.safe_encode(value)
 
             url = '/v1/images/detail?%s' % urllib.urlencode(qp)
             images = self._list(url, "images")

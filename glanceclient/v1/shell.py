@@ -25,6 +25,7 @@ else:
 
 from glanceclient import exc
 from glanceclient.common import utils
+from glanceclient.openstack.common import strutils
 import glanceclient.v1.images
 
 #NOTE(bcwaldon): import deprecated cli functions
@@ -309,7 +310,7 @@ def do_image_delete(gc, args):
         try:
             if args.verbose:
                 print 'Requesting image delete for %s ...' % \
-                      utils.ensure_str(args_image),
+                      strutils.safe_encode(args_image),
 
             gc.images.delete(image)
 
