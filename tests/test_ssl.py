@@ -66,7 +66,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
             conn = http.VerifiedHTTPSConnection('127.0.0.1', 0,
                                                 key_file=key_file,
                                                 cacert=cacert)
-        except:
+        except Exception:
             self.fail('Failed to init VerifiedHTTPSConnection.')
 
     def test_ssl_init_bad_key(self):
@@ -126,7 +126,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         try:
             conn = http.VerifiedHTTPSConnection('0.0.0.0', 0)
             conn.verify_callback(None, cert, 0, 0, True)
-        except:
+        except Exception:
             self.fail('Unexpected exception.')
 
     def test_ssl_cert_subject_alt_name(self):
@@ -141,13 +141,13 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         try:
             conn = http.VerifiedHTTPSConnection('alt1.example.com', 0)
             conn.verify_callback(None, cert, 0, 0, True)
-        except:
+        except Exception:
             self.fail('Unexpected exception.')
 
         try:
             conn = http.VerifiedHTTPSConnection('alt2.example.com', 0)
             conn.verify_callback(None, cert, 0, 0, True)
-        except:
+        except Exception:
             self.fail('Unexpected exception.')
 
     def test_ssl_cert_mismatch(self):
@@ -161,7 +161,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         self.assertEqual(cert.get_subject().commonName, '0.0.0.0')
         try:
             conn = http.VerifiedHTTPSConnection('mismatch.example.com', 0)
-        except:
+        except Exception:
             self.fail('Failed to init VerifiedHTTPSConnection.')
 
         self.assertRaises(exc.SSLCertificateError,
@@ -179,7 +179,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
                          'openstack.example.com')
         try:
             conn = http.VerifiedHTTPSConnection('openstack.example.com', 0)
-        except:
+        except Exception:
             self.fail('Failed to init VerifiedHTTPSConnection.')
 
         self.assertRaises(exc.SSLCertificateError,

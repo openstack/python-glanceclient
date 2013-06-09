@@ -16,9 +16,7 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
 import argparse
-import cStringIO
 import os
-import sys
 
 from glanceclient import exc
 from glanceclient import shell as openstack_shell

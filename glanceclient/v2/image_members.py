@@ -13,8 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from glanceclient.common import utils
-
 
 class Controller(object):
     def __init__(self, http_client, model):

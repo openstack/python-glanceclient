@@ -145,8 +145,7 @@ class HTTPClient(object):
 
     @staticmethod
     def encode_headers(headers):
-        """
-        Encodes headers.
+        """Encodes headers.
 
         Note: This should be used right before
         sending anything out.
@@ -159,7 +158,7 @@ class HTTPClient(object):
         return dict([(to_str(h), to_str(v)) for h, v in headers.iteritems()])
 
     def _http_request(self, url, method, **kwargs):
-        """ Send an http request with the specified characteristics.
+        """Send an http request with the specified characteristics.
 
         Wrapper around httplib.HTTP(S)Connection.request to handle tasks such
         as setting headers and error handling.

@@ -4,13 +4,13 @@ function usage {
   echo "Usage: $0 [OPTION]..."
   echo "Run python-glanceclient's test suite(s)"
   echo ""
-  echo "  -p, --pep8               Just run pep8"
+  echo "  -p, --pep8               Just run flake8"
   echo "  -h, --help               Print this usage message"
   echo ""
   echo "This script is deprecated and currently retained for compatibility."
   echo 'You can run the full test suite for multiple environments by running "tox".'
   echo 'You can run tests for only python 2.7 by running "tox -e py27", or run only'
-  echo 'the pep8 tests with "tox -e pep8".'
+  echo 'the flake8 tests with "tox -e pep8".'
   exit
 }
 

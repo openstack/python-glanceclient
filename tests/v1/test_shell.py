@@ -300,7 +300,7 @@ class ShellInvalidEndpointTest(utils.TestCase):
 class ShellStdinHandlingTests(testtools.TestCase):
 
     def _fake_update_func(self, *args, **kwargs):
-        ''' Function to replace glanceclient.images.update,
+        '''Function to replace glanceclient.images.update,
         to determine the parameters that would be supplied with the update
         request
         '''
@@ -356,7 +356,7 @@ class ShellStdinHandlingTests(testtools.TestCase):
         self.gc.images.update = self.real_update_func
 
     def _do_update(self, image='96d2c7e1-de4e-4612-8aa2-ba26610c804e'):
-        """call v1/shell's do_image_update function"""
+        """call v1/shell's do_image_update function."""
 
         v1shell.do_image_update(
             self.gc, argparse.Namespace(
@@ -410,7 +410,7 @@ class ShellStdinHandlingTests(testtools.TestCase):
             try:
                 f.close()
                 os.remove(f.name)
-            except:
+            except Exception:
                 pass
 
     def test_image_update_data_is_read_from_pipe(self):
@@ -434,5 +434,5 @@ class ShellStdinHandlingTests(testtools.TestCase):
         finally:
             try:
                 process.stdout.close()
-            except:
+            except OSError:
                 pass

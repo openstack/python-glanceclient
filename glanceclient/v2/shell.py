@@ -52,7 +52,7 @@ def do_image_show(gc, args):
 @utils.arg('--image-id', metavar='<IMAGE_ID>', required=True,
            help='Image to display members of.')
 def do_member_list(gc, args):
-    """Describe sharing permissions by image"""
+    """Describe sharing permissions by image."""
 
     members = gc.image_members.list(args.image_id)
     columns = ['Image ID', 'Member ID', 'Status']

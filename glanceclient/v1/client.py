@@ -29,7 +29,7 @@ class Client(http.HTTPClient):
     """
 
     def __init__(self, *args, **kwargs):
-        """ Initialize a new client for the Images v1 API. """
+        """Initialize a new client for the Images v1 API."""
         super(Client, self).__init__(*args, **kwargs)
         self.images = images.ImageManager(self)
         self.image_members = image_members.ImageMemberManager(self)

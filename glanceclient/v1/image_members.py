@@ -44,16 +44,16 @@ class ImageMemberManager(base.Manager):
         if image and member:
             try:
                 out.append(self.get(image, member))
-            #TODO: narrow this down to 404
-            except:
+            #TODO(bcwaldon): narrow this down to 404
+            except Exception:
                 pass
         elif image:
             out.extend(self._list_by_image(image))
         elif member:
             out.extend(self._list_by_member(member))
         else:
-            #TODO: figure out what is appropriate to do here as we are
-            # unable to provide the requested response
+            #TODO(bcwaldon): figure out what is appropriate to do here as we
+            # are unable to provide the requested response
             pass
         return out
 
@@ -81,7 +81,7 @@ class ImageMemberManager(base.Manager):
         self._delete("/v1/images/%s/members/%s" % (image_id, member_id))
 
     def create(self, image, member_id, can_share=False):
-        """Create an image"""
+        """Creates an image."""
         url = '/v1/images/%s/members/%s' % (base.getid(image), member_id)
         body = {'member': {'can_share': can_share}}
         self._update(url, body=body)

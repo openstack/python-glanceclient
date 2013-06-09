@@ -296,7 +296,7 @@ class OpenStackImagesShell(object):
     # Compatibility check to remove API version as the trailing component
     # in a service endpoint; also removes a trailing '/'
     def _strip_version(self, endpoint):
-        """Strip a version from the last component of an endpoint if present"""
+        """Strip version from the last component of endpoint if present."""
 
         # Get rid of trailing '/' if present
         if endpoint.endswith('/'):
