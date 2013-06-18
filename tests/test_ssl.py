@@ -125,7 +125,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         self.assertEqual(cert.get_subject().commonName, '0.0.0.0')
         try:
             conn = http.VerifiedHTTPSConnection('0.0.0.0', 0)
-            conn.verify_callback(None, cert, 0, 0, True)
+            conn.verify_callback(None, cert, 0, 0, 1)
         except Exception:
             self.fail('Unexpected exception.')
 
@@ -140,13 +140,13 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         self.assertEqual(cert.get_subject().commonName, '0.0.0.0')
         try:
             conn = http.VerifiedHTTPSConnection('alt1.example.com', 0)
-            conn.verify_callback(None, cert, 0, 0, True)
+            conn.verify_callback(None, cert, 0, 0, 1)
         except Exception:
             self.fail('Unexpected exception.')
 
         try:
             conn = http.VerifiedHTTPSConnection('alt2.example.com', 0)
-            conn.verify_callback(None, cert, 0, 0, True)
+            conn.verify_callback(None, cert, 0, 0, 1)
         except Exception:
             self.fail('Unexpected exception.')
 
@@ -165,7 +165,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
             self.fail('Failed to init VerifiedHTTPSConnection.')
 
         self.assertRaises(exc.SSLCertificateError,
-                          conn.verify_callback, None, cert, 0, 0, True)
+                          conn.verify_callback, None, cert, 0, 0, 1)
 
     def test_ssl_expired_cert(self):
         """
@@ -183,7 +183,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
             self.fail('Failed to init VerifiedHTTPSConnection.')
 
         self.assertRaises(exc.SSLCertificateError,
-                          conn.verify_callback, None, cert, 0, 0, True)
+                          conn.verify_callback, None, cert, 0, 0, 1)
 
     def test_ssl_broken_key_file(self):
         """
