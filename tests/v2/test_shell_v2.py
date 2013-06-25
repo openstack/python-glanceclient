@@ -24,6 +24,12 @@ from glanceclient.v2 import shell as test_shell
 
 
 class LegacyShellV1Test(testtools.TestCase):
+    def _mock_glance_client(self):
+        my_mocked_gc = mock.Mock()
+        my_mocked_gc.schemas.return_value = 'test'
+        my_mocked_gc.get.return_value = {}
+        return my_mocked_gc
+
     def test_do_image_list(self):
         gc = client.Client('1', 'http://no.where')
 
@@ -51,9 +57,7 @@ class LegacyShellV1Test(testtools.TestCase):
             actual = test_shell.do_image_show(gc, Fake())
 
     def test_do_explain(self):
-        my_mocked_gc = mock.Mock()
-        my_mocked_gc.schemas.return_value = 'test'
-        my_mocked_gc.get.return_value = {}
+        my_mocked_gc = self._mock_glance_client()
 
         class Fake():
             def __init__(self):
@@ -84,3 +88,54 @@ class LegacyShellV1Test(testtools.TestCase):
         with mock.patch.object(gc.images, 'delete') as mocked_delete:
             mocked_delete.return_value = 0
             test_shell.do_image_delete(gc, Fake())
+
+    def test_image_tag_update(self):
+        class Fake():
+            image_id = 'IMG-01'
+            tag_value = 'tag01'
+
+        gc = self._mock_glance_client()
+
+        with mock.patch.object(gc.image_tags, 'update') as mocked_update:
+            gc.images.get = mock.Mock(return_value={})
+            mocked_update.return_value = None
+            test_shell.do_image_tag_update(gc, Fake())
+            mocked_update.assert_called_once_with('IMG-01', 'tag01')
+
+    def test_image_tag_update_with_few_arguments(self):
+        class Fake():
+            image_id = None
+            tag_value = 'tag01'
+
+        gc = self._mock_glance_client()
+
+        with mock.patch.object(utils, 'exit') as mocked_utils_exit:
+            err_msg = 'Unable to update tag. Specify image_id and tag_value'
+            mocked_utils_exit.return_value = '%s' % err_msg
+            test_shell.do_image_tag_update(gc, Fake())
+            mocked_utils_exit.assert_called_once_with(err_msg)
+
+    def test_image_tag_delete(self):
+        class Fake():
+            image_id = 'IMG-01'
+            tag_value = 'tag01'
+
+        gc = self._mock_glance_client()
+
+        with mock.patch.object(gc.image_tags, 'delete') as mocked_delete:
+            mocked_delete.return_value = None
+            test_shell.do_image_tag_delete(gc, Fake())
+            mocked_delete.assert_called_once_with('IMG-01', 'tag01')
+
+    def test_image_tag_delete_with_few_arguments(self):
+        class Fake():
+            image_id = 'IMG-01'
+            tag_value = None
+
+        gc = self._mock_glance_client()
+
+        with mock.patch.object(utils, 'exit') as mocked_utils_exit:
+            err_msg = 'Unable to delete tag. Specify image_id and tag_value'
+            mocked_utils_exit.return_value = '%s' % err_msg
+            test_shell.do_image_tag_delete(gc, Fake())
+            mocked_utils_exit.assert_called_once_with(err_msg)

@@ -18,6 +18,7 @@ import warlock
 from glanceclient.common import http
 from glanceclient.v2 import images
 from glanceclient.v2 import image_members
+from glanceclient.v2 import image_tags
 from glanceclient.v2 import schemas
 
 
@@ -34,8 +35,10 @@ class Client(object):
     def __init__(self, *args, **kwargs):
         self.http_client = http.HTTPClient(*args, **kwargs)
         self.schemas = schemas.Controller(self.http_client)
+        image_model = self._get_image_model()
         self.images = images.Controller(self.http_client,
-                                        self._get_image_model())
+                                        image_model)
+        self.image_tags = image_tags.Controller(self.http_client, image_model)
         self.image_members = image_members.Controller(self.http_client,
                                                       self._get_member_model())
 
