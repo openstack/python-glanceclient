@@ -27,7 +27,7 @@ class LegacyShellV1Test(testtools.TestCase):
     def test_print_image_formatted(self):
 
         class FakeClient():
-            endpoint = 'http://no.where'
+            endpoint = 'http://is.invalid'
 
         class FakeImage():
             id = 1
@@ -62,7 +62,7 @@ class LegacyShellV1Test(testtools.TestCase):
             updated_at = '04.03.2013'
             deleted_at = '04.03.2013'
 
-        gc = client.Client('1', 'http://no.where:8080')
+        gc = client.Client('1', 'http://is.invalid:8080')
         test_shell.print_image_formatted(gc, FakeImage())
 
     def test_get_image_fields_from_args(self):
@@ -87,7 +87,7 @@ class LegacyShellV1Test(testtools.TestCase):
 
     def test_do_add_error(self):
         class FakeClient():
-            endpoint = 'http://no.where'
+            endpoint = 'http://is.invalid'
 
         class args:
             fields = 'name'
@@ -96,7 +96,7 @@ class LegacyShellV1Test(testtools.TestCase):
         self.assertEqual(1, actual)
 
     def test_do_add(self):
-        gc = client.Client('1', 'http://no.where')
+        gc = client.Client('1', 'http://is.invalid')
 
         class FakeImage():
             fields = ['name=test',
@@ -114,7 +114,7 @@ class LegacyShellV1Test(testtools.TestCase):
         self.assertEqual(0, actual)
 
     def test_do_add_with_image_meta(self):
-        gc = client.Client('1', 'http://no.where')
+        gc = client.Client('1', 'http://is.invalid')
 
         class FakeImage():
             fields = ['name=test',
@@ -136,7 +136,7 @@ class LegacyShellV1Test(testtools.TestCase):
         self.assertEqual(0, actual)
 
     def test_do_add_without_dry_run(self):
-        gc = client.Client('1', 'http://no.where')
+        gc = client.Client('1', 'http://is.invalid')
 
         class FakeImage():
             fields = ['name=test',
@@ -237,7 +237,7 @@ class LegacyShellV1Test(testtools.TestCase):
 
     def test_do_update_error(self):
         class FakeClient():
-            endpoint = 'http://no.where'
+            endpoint = 'http://is.invalid'
 
         class Image():
             fields = ['id', 'is_public', 'name']
@@ -254,7 +254,7 @@ class LegacyShellV1Test(testtools.TestCase):
             id = 'test'
 
         args = Image()
-        gc = client.Client('1', 'http://no.where')
+        gc = client.Client('1', 'http://is.invalid')
         self.assertRaises(
             exc.InvalidEndpoint, test_shell.do_update, gc, args)
 
@@ -269,7 +269,7 @@ class LegacyShellV1Test(testtools.TestCase):
             id = 'test'
 
         args = Image()
-        gc = client.Client('1', 'http://no.where')
+        gc = client.Client('1', 'http://is.invalid')
         actual = test_shell.do_update(gc, args)
         self.assertEqual(0, actual)
 
@@ -294,7 +294,7 @@ class LegacyShellV1Test(testtools.TestCase):
             created_at = '12.09.2013'
 
         args = Image()
-        gc = client.Client('1', 'http://no.where')
+        gc = client.Client('1', 'http://is.invalid')
         with mock.patch.object(gc.images, 'update') as mocked_update:
             mocked_update.return_value = Image()
             actual = test_shell.do_update(gc, args)
@@ -351,7 +351,7 @@ class LegacyShellV1Test(testtools.TestCase):
             owner = 'test'
             updated_at = '04.03.2013'
 
-        gc = client.Client('1', 'http://no.where')
+        gc = client.Client('1', 'http://is.invalid')
         with mock.patch.object(gc.images, 'get') as mocked_get:
             mocked_get.return_value = Image()
             actual = test_shell.do_show(gc, Image())
@@ -372,7 +372,7 @@ class LegacyShellV1Test(testtools.TestCase):
             size = 1024
 
         args = Image()
-        gc = client.Client('1', 'http://no.where')
+        gc = client.Client('1', 'http://is.invalid')
         with mock.patch.object(gc.images, 'list') as mocked_list:
             mocked_list.return_value = [Image(), Image()]
             actual = test_shell.do_index(gc, args)
@@ -392,7 +392,7 @@ class LegacyShellV1Test(testtools.TestCase):
             size = 1024
 
         args = Image()
-        gc = client.Client('1', 'http://no.where')
+        gc = client.Client('1', 'http://is.invalid')
         with mock.patch.object(test_shell, '_get_images') as mocked_get:
             mocked_get.return_value = False
             actual = test_shell.do_index(gc, args)
@@ -420,7 +420,7 @@ class LegacyShellV1Test(testtools.TestCase):
             created_at = '12.12.12'
 
         args = Image()
-        gc = client.Client('1', 'http://no.where')
+        gc = client.Client('1', 'http://is.invalid')
         with mock.patch.object(gc.images, 'list') as mocked_list:
             mocked_list.return_value = [Image(), Image()]
             actual = test_shell.do_details(gc, args)
@@ -498,7 +498,7 @@ class LegacyShellV1Test(testtools.TestCase):
             def __init__(self):
                 self.member_id = 'test'
 
-        gc = client.Client('1', 'http://no.where')
+        gc = client.Client('1', 'http://is.invalid')
         with mock.patch.object(gc.image_members, 'list') as mocked_list:
             mocked_list.return_value = []
             actual = test_shell.do_member_images(gc, FakeImage1())
@@ -529,7 +529,7 @@ class LegacyShellV1Test(testtools.TestCase):
                 self.image_id = 'fake_id'
                 self.member_id = 'test'
 
-        gc = client.Client('1', 'http://no.where')
+        gc = client.Client('1', 'http://is.invalid')
         actual = test_shell.do_members_replace(gc, Fake())
 
     def test_do_members_replace_dry_run_false(self):
@@ -540,7 +540,7 @@ class LegacyShellV1Test(testtools.TestCase):
                 self.image_id = 'fake_id'
                 self.member_id = 'test'
 
-        gc = client.Client('1', 'http://no.where')
+        gc = client.Client('1', 'http://is.invalid')
 
         with mock.patch.object(gc.image_members, 'list') as mocked_list:
             mocked_list.return_value = []

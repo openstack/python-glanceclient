@@ -199,7 +199,7 @@ class ShellInvalidEndpointTest(utils.TestCase):
             'OS_AUTH_TOKEN': 'pass',
             'OS_IMAGE_API_VERSION': '1',
             'OS_REGION_NAME': 'test',
-            'OS_IMAGE_URL': 'http://no.where'}
+            'OS_IMAGE_URL': 'http://is.invalid'}
 
         self.shell = shell.OpenStackImagesShell()
 

@@ -31,7 +31,7 @@ class LegacyShellV1Test(testtools.TestCase):
         return my_mocked_gc
 
     def test_do_image_list(self):
-        gc = client.Client('1', 'http://no.where')
+        gc = client.Client('1', 'http://is.invalid')
 
         class Fake():
             def __init__(self):
@@ -45,7 +45,7 @@ class LegacyShellV1Test(testtools.TestCase):
             actual = test_shell.do_image_list(gc, Fake())
 
     def test_do_image_show(self):
-        gc = client.Client('1', 'http://no.where')
+        gc = client.Client('1', 'http://is.invalid')
 
         class Fake():
             def __init__(self):
@@ -74,7 +74,7 @@ class LegacyShellV1Test(testtools.TestCase):
             id = 'pass'
             file = 'test'
 
-        gc = client.Client('1', 'http://no.where')
+        gc = client.Client('1', 'http://is.invalid')
         with mock.patch.object(gc.images, 'data') as mocked_data:
             mocked_data.return_value = 'test_passed'
             test_shell.do_image_download(gc, Fake())
@@ -84,7 +84,7 @@ class LegacyShellV1Test(testtools.TestCase):
             id = 'pass'
             file = 'test'
 
-        gc = client.Client('1', 'http://no.where')
+        gc = client.Client('1', 'http://is.invalid')
         with mock.patch.object(gc.images, 'delete') as mocked_delete:
             mocked_delete.return_value = 0
             test_shell.do_image_delete(gc, Fake())
