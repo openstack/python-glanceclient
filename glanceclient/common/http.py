@@ -14,6 +14,8 @@
 #    under the License.
 
 import copy
+import errno
+import hashlib
 import httplib
 import logging
 import posixpath
@@ -435,17 +437,55 @@ class VerifiedHTTPSConnection(HTTPSConnection):
 
 
 class ResponseBodyIterator(object):
-    """A class that acts as an iterator over an HTTP response."""
+    """
+    A class that acts as an iterator over an HTTP response.
+
+    This class will also check response body integrity when iterating over
+    the instance and if a checksum was supplied using `set_checksum` method,
+    else by default the class will not do any integrity check.
+    """
 
     def __init__(self, resp):
-        self.resp = resp
+        self._resp = resp
+        self._checksum = None
+        self._size = int(resp.getheader('content-length', 0))
+        self._end_reached = False
+
+    def set_checksum(self, checksum):
+        """
+        Set checksum to check against when iterating over this instance.
+
+        :raise: AttributeError if iterator is already consumed.
+        """
+        if self._end_reached:
+            raise AttributeError("Can't set checksum for an already consumed"
+                                 " iterator")
+        self._checksum = checksum
+
+    def __len__(self):
+        return int(self._size)
 
     def __iter__(self):
+        md5sum = hashlib.md5()
         while True:
-            yield self.next()
+            try:
+                chunk = self.next()
+            except StopIteration:
+                self._end_reached = True
+                # NOTE(mouad): Check image integrity when the end of response
+                # body is reached.
+                md5sum = md5sum.hexdigest()
+                if self._checksum is not None and md5sum != self._checksum:
+                    raise IOError(errno.EPIPE,
+                                  'Corrupted image. Checksum was %s '
+                                  'expected %s' % (md5sum, self._checksum))
+                raise
+            else:
+                yield chunk
+                md5sum.update(chunk)
 
     def next(self):
-        chunk = self.resp.read(CHUNKSIZE)
+        chunk = self._resp.read(CHUNKSIZE)
         if chunk:
             return chunk
         else:

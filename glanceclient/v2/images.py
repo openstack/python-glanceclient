@@ -84,9 +84,8 @@ class Controller(object):
         resp, body = self.http_client.raw_request('GET', url)
         checksum = resp.getheader('content-md5', None)
         if do_checksum and checksum is not None:
-            return utils.integrity_iter(body, checksum)
-        else:
-            return body
+            body.set_checksum(checksum)
+        return body
 
     def upload(self, image_id, image_data):
         """
@@ -114,7 +113,7 @@ class Controller(object):
             try:
                 setattr(image, key, value)
             except warlock.InvalidOperation, e:
-                raise TypeError(unicode(message))
+                raise TypeError(utils.exception_to_str(e))
 
         resp, body = self.http_client.json_request('POST', url, body=image)
         #NOTE(esheffield): remove 'self' for now until we have an elegant

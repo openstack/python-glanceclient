@@ -365,7 +365,8 @@ class ShellStdinHandlingTests(testtools.TestCase):
                 property={},
                 purge_props=False,
                 human_readable=False,
-                file=None
+                file=None,
+                progress=False
             )
         )
 

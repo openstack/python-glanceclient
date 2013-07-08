@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import errno
 import httplib
 import socket
 import StringIO
@@ -241,8 +242,42 @@ class TestHostResolutionError(testtools.TestCase):
 
 
 class TestResponseBodyIterator(testtools.TestCase):
+
     def test_iter_default_chunk_size_64k(self):
         resp = utils.FakeResponse({}, StringIO.StringIO('X' * 98304))
         iterator = http.ResponseBodyIterator(resp)
         chunks = list(iterator)
         self.assertEqual(chunks, ['X' * 65536, 'X' * 32768])
+
+    def test_integrity_check_with_correct_checksum(self):
+        resp = utils.FakeResponse({}, StringIO.StringIO('CCC'))
+        body = http.ResponseBodyIterator(resp)
+        body.set_checksum('defb99e69a9f1f6e06f15006b1f166ae')
+        list(body)
+
+    def test_integrity_check_with_wrong_checksum(self):
+        resp = utils.FakeResponse({}, StringIO.StringIO('BB'))
+        body = http.ResponseBodyIterator(resp)
+        body.set_checksum('wrong')
+        try:
+            list(body)
+            self.fail('integrity checked passed with wrong checksum')
+        except IOError as e:
+            self.assertEqual(errno.EPIPE, e.errno)
+
+    def test_set_checksum_in_consumed_iterator(self):
+        resp = utils.FakeResponse({}, StringIO.StringIO('CCC'))
+        body = http.ResponseBodyIterator(resp)
+        list(body)
+        # Setting checksum for an already consumed iterator should raise an
+        # AttributeError.
+        self.assertRaises(
+            AttributeError, body.set_checksum,
+            'defb99e69a9f1f6e06f15006b1f166ae')
+
+    def test_body_size(self):
+        size = 1000000007
+        resp = utils.FakeResponse(
+            {'content-length': str(size)}, StringIO.StringIO('BB'))
+        body = http.ResponseBodyIterator(resp)
+        self.assertEqual(len(body), size)

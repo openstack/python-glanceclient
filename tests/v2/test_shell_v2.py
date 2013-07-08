@@ -15,11 +15,16 @@
 #    under the License.
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
+import StringIO
+
 import mock
 import testtools
 
+from glanceclient.common import http
+from glanceclient.common import progressbar
 from glanceclient.common import utils
 from glanceclient.v2 import shell as test_shell
+from tests import utils as test_utils
 
 
 class ShellV2Test(testtools.TestCase):
@@ -109,15 +114,32 @@ class ShellV2Test(testtools.TestCase):
             self.gc.schemas.get.assert_called_once_with('test')
 
     def test_image_download(self):
-        args = self._make_args({'id': 'pass', 'file': 'test'})
+        args = self._make_args(
+            {'id': 'pass', 'file': 'test', 'progress': False})
 
         with mock.patch.object(self.gc.images, 'data') as mocked_data:
-            mocked_data.return_value = 'test_passed'
-
+            resp = test_utils.FakeResponse({}, StringIO.StringIO('CCC'))
+            ret = mocked_data.return_value = http.ResponseBodyIterator(resp)
             test_shell.do_image_download(self.gc, args)
 
             mocked_data.assert_called_once_with('pass')
-            utils.save_image.assert_called_once_with('test_passed', 'test')
+            utils.save_image.assert_called_once_with(ret, 'test')
+
+    def test_image_download_with_progressbar(self):
+        args = self._make_args(
+            {'id': 'pass', 'file': 'test', 'progress': True})
+
+        with mock.patch.object(self.gc.images, 'data') as mocked_data:
+            resp = test_utils.FakeResponse({}, StringIO.StringIO('CCC'))
+            mocked_data.return_value = http.ResponseBodyIterator(resp)
+            test_shell.do_image_download(self.gc, args)
+
+            mocked_data.assert_called_once_with('pass')
+            utils.save_image.assert_called_once_with(mock.ANY, 'test')
+            self.assertIsInstance(
+                utils.save_image.call_args[0][0],
+                progressbar.VerboseIteratorWrapper
+            )
 
     def test_do_image_delete(self):
         args = self._make_args({'id': 'pass', 'file': 'test'})

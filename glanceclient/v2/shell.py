@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from glanceclient.common import progressbar
 from glanceclient.common import utils
 from glanceclient import exc
 
@@ -125,9 +126,13 @@ def do_explain(gc, args):
                 'If this is not specified the image data will be '
                 'written to stdout.')
 @utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to download.')
+@utils.arg('--progress', action='store_true', default=False,
+           help='Show download progress bar.')
 def do_image_download(gc, args):
     """Download a specific image."""
     body = gc.images.data(args.id)
+    if args.progress:
+        body = progressbar.VerboseIteratorWrapper(body, len(body))
     utils.save_image(body, args.file)
 
 

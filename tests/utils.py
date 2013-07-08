@@ -33,8 +33,9 @@ class FakeAPI(object):
 
     def raw_request(self, *args, **kwargs):
         fixture = self._request(*args, **kwargs)
-        body_iter = http.ResponseBodyIterator(StringIO.StringIO(fixture[1]))
-        return FakeResponse(fixture[0]), body_iter
+        resp = FakeResponse(fixture[0], StringIO.StringIO(fixture[1]))
+        body_iter = http.ResponseBodyIterator(resp)
+        return resp, body_iter
 
     def json_request(self, *args, **kwargs):
         fixture = self._request(*args, **kwargs)
@@ -95,3 +96,17 @@ class TestResponse(requests.Response):
     @property
     def text(self):
         return self._text
+
+
+class FakeTTYStdout(StringIO.StringIO):
+    """A Fake stdout that try to emulate a TTY device as much as possible."""
+
+    def isatty(self):
+        return True
+
+    def write(self, data):
+        # When a CR (carriage return) is found reset file.
+        if data.startswith('\r'):
+            self.seek(0)
+            data = data[1:]
+        return StringIO.StringIO.write(self, data)

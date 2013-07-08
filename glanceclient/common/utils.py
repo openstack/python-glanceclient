@@ -14,7 +14,6 @@
 #    under the License.
 
 import errno
-import hashlib
 import os
 import sys
 import uuid
@@ -161,23 +160,6 @@ def save_image(data, path):
             image.close()
 
 
-def integrity_iter(iter, checksum):
-    """
-    Check image data integrity.
-
-    :raises: IOError
-    """
-    md5sum = hashlib.md5()
-    for chunk in iter:
-        yield chunk
-        md5sum.update(chunk)
-    md5sum = md5sum.hexdigest()
-    if md5sum != checksum:
-        raise IOError(errno.EPIPE,
-                      'Corrupt image download. Checksum was %s expected %s' %
-                      (md5sum, checksum))
-
-
 def make_size_human_readable(size):
     suffix = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB']
     base = 1024.0
@@ -214,3 +196,31 @@ def exception_to_str(exc):
             error = ("Caught '%(exception)s' exception." %
                      {"exception": exc.__class__.__name__})
     return strutils.safe_encode(error, errors='ignore')
+
+
+def get_file_size(file_obj):
+    """
+    Analyze file-like object and attempt to determine its size.
+
+    :param file_obj: file-like object.
+    :retval The file's size or None if it cannot be determined.
+    """
+    if hasattr(file_obj, 'seek') and hasattr(file_obj, 'tell'):
+        try:
+            curr = file_obj.tell()
+            file_obj.seek(0, os.SEEK_END)
+            size = file_obj.tell()
+            file_obj.seek(curr)
+            return size
+        except IOError, e:
+            if e.errno == errno.ESPIPE:
+                # Illegal seek. This means the file object
+                # is a pipe (e.g the user is trying
+                # to pipe image data to the client,
+                # echo testdata | bin/glance add blah...), or
+                # that file object is empty, or that a file-like
+                # object which doesn't support 'seek/tell' has
+                # been supplied.
+                return
+            else:
+                raise

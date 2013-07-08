@@ -25,6 +25,7 @@ else:
 
 from glanceclient import exc
 from glanceclient.common import utils
+from glanceclient.common import progressbar
 from glanceclient.openstack.common import strutils
 import glanceclient.v1.images
 
@@ -165,10 +166,14 @@ def do_image_show(gc, args):
                 'If this is not specified the image data will be '
                 'written to stdout.')
 @utils.arg('image', metavar='<IMAGE>', help='Name or ID of image to download.')
+@utils.arg('--progress', action='store_true', default=False,
+           help='Show download progress bar.')
 def do_image_download(gc, args):
     """Download a specific image."""
     image = utils.find_resource(gc.images, args.image)
     body = image.data()
+    if args.progress:
+        body = progressbar.VerboseIteratorWrapper(body, len(body))
     utils.save_image(body, args.file)
 
 
@@ -219,6 +224,8 @@ def do_image_download(gc, args):
                  "May be used multiple times."))
 @utils.arg('--human-readable', action='store_true', default=False,
            help='Print image size in a human-friendly format.')
+@utils.arg('--progress', action='store_true', default=False,
+           help='Show upload progress bar.')
 def do_image_create(gc, args):
     """Create a new image."""
     # Filter out None values
@@ -240,6 +247,12 @@ def do_image_create(gc, args):
     fields = dict(filter(lambda x: x[0] in CREATE_PARAMS, fields.items()))
 
     _set_data_field(fields, args)
+
+    if args.progress:
+        filesize = utils.get_file_size(fields['data'])
+        fields['data'] = progressbar.VerboseFileWrapper(
+            fields['data'], filesize
+        )
 
     image = gc.images.create(**fields)
     _image_show(image, args.human_readable)
@@ -287,6 +300,8 @@ def do_image_create(gc, args):
                  "those properties not referenced are preserved."))
 @utils.arg('--human-readable', action='store_true', default=False,
            help='Print image size in a human-friendly format.')
+@utils.arg('--progress', action='store_true', default=False,
+           help='Show upload progress bar.')
 def do_image_update(gc, args):
     """Update a specific image."""
     # Filter out None values
@@ -310,6 +325,12 @@ def do_image_update(gc, args):
 
     if image.status == 'queued':
         _set_data_field(fields, args)
+
+        if args.progress:
+            filesize = utils.get_file_size(fields['data'])
+            fields['data'] = progressbar.VerboseFileWrapper(
+                fields['data'], filesize
+            )
 
     image = gc.images.update(image, purge_props=args.purge_props, **fields)
     _image_show(image, args.human_readable)

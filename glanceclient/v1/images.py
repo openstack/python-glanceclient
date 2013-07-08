@@ -14,9 +14,7 @@
 #    under the License.
 
 import copy
-import errno
 import json
-import os
 import urllib
 
 from glanceclient.common import base
@@ -129,9 +127,8 @@ class ImageManager(base.Manager):
                                           % urllib.quote(image_id))
         checksum = resp.getheader('x-image-meta-checksum', None)
         if do_checksum and checksum is not None:
-            return utils.integrity_iter(body, checksum)
-        else:
-            return body
+            body.set_checksum(checksum)
+        return body
 
     def list(self, **kwargs):
         """Get a list of images.
@@ -228,35 +225,6 @@ class ImageManager(base.Manager):
         """Delete an image."""
         self._delete("/v1/images/%s" % base.getid(image))
 
-    def _get_file_size(self, obj):
-        """Analyze file-like object and attempt to determine its size.
-
-        :param obj: file-like object, typically redirected from stdin.
-        :retval The file's size or None if it cannot be determined.
-        """
-        # For large images, we need to supply the size of the
-        # image file. See LP Bugs #827660 and #845788.
-        if hasattr(obj, 'seek') and hasattr(obj, 'tell'):
-            try:
-                obj.seek(0, os.SEEK_END)
-                obj_size = obj.tell()
-                obj.seek(0)
-                return obj_size
-            except IOError as e:
-                if e.errno == errno.ESPIPE:
-                    # Illegal seek. This means the user is trying
-                    # to pipe image data to the client, e.g.
-                    # echo testdata | bin/glance add blah..., or
-                    # that stdin is empty, or that a file-like
-                    # object which doesn't support 'seek/tell' has
-                    # been supplied.
-                    return None
-                else:
-                    raise
-        else:
-            # Cannot determine size of input image
-            return None
-
     def create(self, **kwargs):
         """Create an image
 
@@ -264,7 +232,7 @@ class ImageManager(base.Manager):
         """
         image_data = kwargs.pop('data', None)
         if image_data is not None:
-            image_size = self._get_file_size(image_data)
+            image_size = utils.get_file_size(image_data)
             if image_size is not None:
                 kwargs.setdefault('size', image_size)
 
@@ -293,7 +261,7 @@ class ImageManager(base.Manager):
         """
         image_data = kwargs.pop('data', None)
         if image_data is not None:
-            image_size = self._get_file_size(image_data)
+            image_size = utils.get_file_size(image_data)
             if image_size is not None:
                 kwargs.setdefault('size', image_size)
 
