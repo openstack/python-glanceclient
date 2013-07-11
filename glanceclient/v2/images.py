@@ -18,7 +18,7 @@ import urllib
 from glanceclient.common import utils
 from glanceclient.openstack.common import strutils
 
-DEFAULT_PAGE_SIZE = 20
+DEFAULT_PAGE_SIZE = 100
 
 
 class Controller(object):

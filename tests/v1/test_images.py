@@ -20,10 +20,10 @@ import sys
 import testtools
 import urlparse
 
-import glanceclient.v1.client as client
-import glanceclient.v1.images
-import glanceclient.v1.shell as shell
-import glanceclient.v1.legacy_shell as legacy_shell
+from glanceclient.v1 import client
+from glanceclient.v1 import images
+from glanceclient.v1 import legacy_shell
+from glanceclient.v1 import shell
 from tests import utils
 
 
@@ -51,7 +51,7 @@ fixtures = {
             ),
         ),
     },
-    '/v1/images/detail?limit=20': {
+    '/v1/images/detail?limit=%d' % images.DEFAULT_PAGE_SIZE: {
         'GET': (
             {},
             {'images': [
@@ -68,7 +68,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?marker=a&limit=20': {
+    '/v1/images/detail?marker=a&limit=%d' % images.DEFAULT_PAGE_SIZE: {
         'GET': (
             {},
             {'images': [
@@ -80,6 +80,30 @@ fixtures = {
                 {
                     'id': 'c',
                     'name': 'image-2',
+                    'properties': {'arch': 'x86_64'},
+                },
+            ]},
+        ),
+    },
+    '/v1/images/detail?limit=1': {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': 'a',
+                    'name': 'image-0',
+                    'properties': {'arch': 'x86_64'},
+                },
+            ]},
+        ),
+    },
+    '/v1/images/detail?marker=a&limit=1': {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': 'b',
+                    'name': 'image-1',
                     'properties': {'arch': 'x86_64'},
                 },
             ]},
@@ -114,7 +138,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?limit=20&name=foo': {
+    '/v1/images/detail?limit=%d&name=foo' % images.DEFAULT_PAGE_SIZE: {
         'GET': (
             {},
             {'images': [
@@ -131,7 +155,8 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?property-ping=pong&limit=20': {
+    '/v1/images/detail?property-ping=pong&limit=%d' % images.DEFAULT_PAGE_SIZE:
+    {
         'GET': (
             {},
             {'images': [
@@ -143,7 +168,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?sort_dir=desc&limit=20': {
+    '/v1/images/detail?sort_dir=desc&limit=%d' % images.DEFAULT_PAGE_SIZE: {
         'GET': (
             {},
             {'images': [
@@ -160,7 +185,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?sort_key=name&limit=20': {
+    '/v1/images/detail?sort_key=name&limit=%d' % images.DEFAULT_PAGE_SIZE: {
         'GET': (
             {},
             {'images': [
@@ -250,7 +275,7 @@ class ImageManagerTest(testtools.TestCase):
     def setUp(self):
         super(ImageManagerTest, self).setUp()
         self.api = utils.FakeAPI(fixtures)
-        self.mgr = glanceclient.v1.images.ImageManager(self.api)
+        self.mgr = images.ImageManager(self.api)
 
     def test_paginated_list(self):
         images = list(self.mgr.list(page_size=2))
@@ -271,35 +296,46 @@ class ImageManagerTest(testtools.TestCase):
         self.assertEqual(self.api.calls, expect)
 
     def test_list_with_limit_greater_than_page_size(self):
-        list(self.mgr.list(page_size=20, limit=30))
-        expect = [('GET', '/v1/images/detail?limit=20', {}, None)]
+        images = list(self.mgr.list(page_size=1, limit=2))
+        expect = [
+            ('GET', '/v1/images/detail?limit=1', {}, None),
+            ('GET', '/v1/images/detail?marker=a&limit=1', {}, None),
+        ]
+        self.assertEqual(len(images), 2)
+        self.assertEqual(images[0].id, 'a')
+        self.assertEqual(images[1].id, 'b')
         self.assertEqual(self.api.calls, expect)
 
     def test_list_with_marker(self):
         list(self.mgr.list(marker='a'))
-        expect = [('GET', '/v1/images/detail?marker=a&limit=20', {}, None)]
+        url = '/v1/images/detail?marker=a&limit=%d' % images.DEFAULT_PAGE_SIZE
+        expect = [('GET', url, {}, None)]
         self.assertEqual(self.api.calls, expect)
 
     def test_list_with_filter(self):
         list(self.mgr.list(filters={'name': "foo"}))
-        expect = [('GET', '/v1/images/detail?limit=20&name=foo', {}, None)]
+        url = '/v1/images/detail?limit=%d&name=foo' % images.DEFAULT_PAGE_SIZE
+        expect = [('GET', url, {}, None)]
         self.assertEqual(self.api.calls, expect)
 
     def test_list_with_property_filters(self):
         list(self.mgr.list(filters={'properties': {'ping': 'pong'}}))
-        url = '/v1/images/detail?property-ping=pong&limit=20'
+        url = '/v1/images/detail?property-ping=pong&limit=%d' % \
+              images.DEFAULT_PAGE_SIZE
         expect = [('GET', url, {}, None)]
         self.assertEqual(self.api.calls, expect)
 
     def test_list_with_sort_dir(self):
         list(self.mgr.list(sort_dir='desc'))
-        url = '/v1/images/detail?sort_dir=desc&limit=20'
+        url = '/v1/images/detail?sort_dir=desc&limit=%d' % \
+              images.DEFAULT_PAGE_SIZE
         expect = [('GET', url, {}, None)]
         self.assertEqual(self.api.calls, expect)
 
     def test_list_with_sort_key(self):
         list(self.mgr.list(sort_key='name'))
-        url = '/v1/images/detail?sort_key=name&limit=20'
+        url = '/v1/images/detail?sort_key=name&limit=%d' % \
+              images.DEFAULT_PAGE_SIZE
         expect = [('GET', url, {}, None)]
         self.assertEqual(self.api.calls, expect)
 
@@ -470,7 +506,7 @@ class ImageTest(testtools.TestCase):
     def setUp(self):
         super(ImageTest, self).setUp()
         self.api = utils.FakeAPI(fixtures)
-        self.mgr = glanceclient.v1.images.ImageManager(self.api)
+        self.mgr = images.ImageManager(self.api)
 
     def test_delete(self):
         image = self.mgr.get('1')
@@ -579,7 +615,7 @@ class UrlParameterTest(testtools.TestCase):
         super(UrlParameterTest, self).setUp()
         self.api = ParameterFakeAPI({})
         self.gc = client.Client("http://fakeaddress.com")
-        self.gc.images = glanceclient.v1.images.ImageManager(self.api)
+        self.gc.images = images.ImageManager(self.api)
 
     def test_is_public_list(self):
         shell.do_image_list(self.gc, FakeArg({"is_public": "True"}))
