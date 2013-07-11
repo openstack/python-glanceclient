@@ -93,3 +93,18 @@ class TestUtils(testtools.TestCase):
 | Key      | Value |
 +----------+-------+
 ''')
+
+    def test_exception_to_str(self):
+        class FakeException(Exception):
+            def __str__(self):
+                raise UnicodeError()
+
+        ret = utils.exception_to_str(Exception('error message'))
+        self.assertEqual(ret, 'error message')
+
+        ret = utils.exception_to_str(Exception('\xa5 error message'))
+        self.assertEqual(ret, ' error message')
+
+        ret = utils.exception_to_str(FakeException('\xa5 error message'))
+        self.assertEqual(ret, "Caught '%(exception)s' exception." %
+                         {'exception': 'FakeException'})

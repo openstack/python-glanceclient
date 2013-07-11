@@ -472,5 +472,5 @@ def main():
         print >> sys.stderr, '... terminating glance client'
         sys.exit(1)
     except Exception as e:
-        print >> sys.stderr, e
+        print >> sys.stderr, utils.exception_to_str(e)
         sys.exit(1)

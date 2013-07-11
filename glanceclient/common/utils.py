@@ -202,3 +202,15 @@ def getsockopt(self, *args, **kwargs):
     lands in mainstream packages.
     """
     return self.fd.getsockopt(*args, **kwargs)
+
+
+def exception_to_str(exc):
+    try:
+        error = unicode(exc)
+    except UnicodeError:
+        try:
+            error = str(exc)
+        except UnicodeError:
+            error = ("Caught '%(exception)s' exception." %
+                     {"exception": exc.__class__.__name__})
+    return strutils.safe_encode(error, errors='ignore')
