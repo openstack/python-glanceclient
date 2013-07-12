@@ -42,6 +42,39 @@ class TestClient(testtools.TestCase):
         super(TestClient, self).tearDown()
         self.mock.UnsetStubs()
 
+    def test_identity_headers_and_token(self):
+        identity_headers = {
+            'X-Auth-Token': 'auth_token',
+            'X-User-Id': 'user',
+            'X-Tenant-Id': 'tenant',
+            'X-Roles': 'roles',
+            'X-Identity-Status': 'Confirmed',
+            'X-Service-Catalog': 'service_catalog',
+        }
+        #with token
+        kwargs = {'token': u'fake-token',
+                  'identity_headers': identity_headers}
+        http_client_object = http.HTTPClient(self.endpoint, **kwargs)
+        self.assertEquals(http_client_object.auth_token, 'auth_token')
+        self.assertTrue(http_client_object.identity_headers.
+                        get('X-Auth-Token') is None)
+
+    def test_identity_headers_and_no_token_in_header(self):
+        identity_headers = {
+            'X-User-Id': 'user',
+            'X-Tenant-Id': 'tenant',
+            'X-Roles': 'roles',
+            'X-Identity-Status': 'Confirmed',
+            'X-Service-Catalog': 'service_catalog',
+        }
+        #without X-Auth-Token in identity headers
+        kwargs = {'token': u'fake-token',
+                  'identity_headers': identity_headers}
+        http_client_object = http.HTTPClient(self.endpoint, **kwargs)
+        self.assertEquals(http_client_object.auth_token, u'fake-token')
+        self.assertTrue(http_client_object.identity_headers.
+                        get('X-Auth-Token') is None)
+
     def test_connection_refused(self):
         """
         Should receive a CommunicationError if connection refused.
