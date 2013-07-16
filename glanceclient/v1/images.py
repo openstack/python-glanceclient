@@ -219,6 +219,8 @@ class ImageManager(base.Manager):
         if kwargs.get('owner') is not None:
             params['owner'] = kwargs['owner']
             params['is_public'] = None
+        if 'is_public' in kwargs:
+            params['is_public'] = kwargs['is_public']
 
         return paginate(params)
 
