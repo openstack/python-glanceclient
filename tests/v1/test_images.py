@@ -68,6 +68,90 @@ fixtures = {
             ]},
         ),
     },
+    '/v1/images/detail?is_public=None&limit=20': {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': 'a',
+                    'owner': 'A',
+                    'name': 'image-1',
+                    'properties': {'arch': 'x86_64'},
+                },
+                {
+                    'id': 'b',
+                    'owner': 'B',
+                    'name': 'image-2',
+                    'properties': {'arch': 'x86_64'},
+                },
+                {
+                    'id': 'c',
+                    'name': 'image-3',
+                    'properties': {'arch': 'x86_64'},
+                },
+            ]},
+        ),
+    },
+    '/v1/images/detail?is_public=None&limit=5': {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': 'a',
+                    'owner': 'A',
+                    'name': 'image-1',
+                    'properties': {'arch': 'x86_64'},
+                },
+                {
+                    'id': 'b',
+                    'owner': 'B',
+                    'name': 'image-2',
+                    'properties': {'arch': 'x86_64'},
+                },
+                {
+                    'id': 'b2',
+                    'owner': 'B',
+                    'name': 'image-3',
+                    'properties': {'arch': 'x86_64'},
+                },
+                {
+                    'id': 'c',
+                    'name': 'image-3',
+                    'properties': {'arch': 'x86_64'},
+                },
+            ]},
+        ),
+    },
+    '/v1/images/detail?limit=5': {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': 'a',
+                    'owner': 'A',
+                    'name': 'image-1',
+                    'properties': {'arch': 'x86_64'},
+                },
+                {
+                    'id': 'b',
+                    'owner': 'B',
+                    'name': 'image-2',
+                    'properties': {'arch': 'x86_64'},
+                },
+                {
+                    'id': 'b2',
+                    'owner': 'B',
+                    'name': 'image-3',
+                    'properties': {'arch': 'x86_64'},
+                },
+                {
+                    'id': 'c',
+                    'name': 'image-3',
+                    'properties': {'arch': 'x86_64'},
+                },
+            ]},
+        ),
+    },
     '/v1/images/detail?marker=a&limit=%d' % images.DEFAULT_PAGE_SIZE: {
         'GET': (
             {},
@@ -500,6 +584,44 @@ class ImageManagerTest(testtools.TestCase):
         fields = {"x-image-meta-name": "ni\xc3\xb1o"}
         headers = self.mgr._image_meta_from_headers(fields)
         self.assertEqual(headers["name"], u"ni\xf1o")
+
+    def test_image_list_with_owner(self):
+        images = self.mgr.list(owner='A', page_size=20)
+        image_list = list(images)
+        self.assertEqual(image_list[0].owner, 'A')
+        self.assertEqual(image_list[0].id, 'a')
+        self.assertEqual(len(image_list), 1)
+
+    def test_image_list_with_notfound_owner(self):
+        images = self.mgr.list(owner='X', page_size=20)
+        self.assertEqual(len(list(images)), 0)
+
+    def test_image_list_with_empty_string_owner(self):
+        images = self.mgr.list(owner='', page_size=20)
+        image_list = list(images)
+        self.assertRaises(AttributeError, lambda: image_list[0].owner)
+        self.assertEqual(image_list[0].id, 'c')
+        self.assertEqual(len(image_list), 1)
+
+    def test_image_list_with_unspecified_owner(self):
+        images = self.mgr.list(owner=None, page_size=5)
+        image_list = list(images)
+        self.assertEqual(image_list[0].owner, 'A')
+        self.assertEqual(image_list[0].id, 'a')
+        self.assertEqual(image_list[1].owner, 'B')
+        self.assertEqual(image_list[1].id, 'b')
+        self.assertEqual(image_list[2].owner, 'B')
+        self.assertEqual(image_list[2].id, 'b2')
+        self.assertRaises(AttributeError, lambda: image_list[3].owner)
+        self.assertEqual(image_list[3].id, 'c')
+        self.assertEqual(len(image_list), 4)
+
+    def test_image_list_with_owner_and_limit(self):
+        images = self.mgr.list(owner='B', page_size=5, limit=1)
+        image_list = list(images)
+        self.assertEqual(image_list[0].owner, 'B')
+        self.assertEqual(image_list[0].id, 'b')
+        self.assertEqual(len(image_list), 1)
 
 
 class ImageTest(testtools.TestCase):
