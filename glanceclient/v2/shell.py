@@ -25,9 +25,11 @@ from glanceclient import exc
            help='The status of images to display.')
 @utils.arg('--owner', metavar='<OWNER>',
            help='Display images owned by <OWNER>.')
+@utils.arg('--checksum', metavar='<CHECKSUM>',
+           help='Display images matching the checksum')
 def do_image_list(gc, args):
     """List images you can access."""
-    filter_keys = ['visibility', 'member_status', 'owner']
+    filter_keys = ['visibility', 'member_status', 'owner', 'checksum']
     filter_items = [(key, getattr(args, key)) for key in filter_keys]
     filters = dict([item for item in filter_items if item[1] is not None])
 

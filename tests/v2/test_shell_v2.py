@@ -39,6 +39,7 @@ class LegacyShellV1Test(testtools.TestCase):
                 self.visibility = True
                 self.member_status = 'Fake'
                 self.owner = 'test'
+                self.checksum = 'fake_checksum'
 
         with mock.patch.object(gc.images, 'list') as mocked_list:
             mocked_list.return_value = {}
