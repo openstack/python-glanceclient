@@ -73,7 +73,12 @@ class HTTPClient(object):
         self.connection_kwargs = self.get_connection_kwargs(
             self.endpoint_scheme, **kwargs)
 
+        self.identity_headers = kwargs.get('identity_headers')
         self.auth_token = kwargs.get('token')
+        if self.identity_headers:
+            if self.identity_headers.get('X-Auth-Token'):
+                self.auth_token = self.identity_headers.get('X-Auth-Token')
+                del self.identity_headers['X-Auth-Token']
 
     @staticmethod
     def parse_endpoint(endpoint):
@@ -168,6 +173,10 @@ class HTTPClient(object):
         kwargs['headers'].setdefault('User-Agent', USER_AGENT)
         if self.auth_token:
             kwargs['headers'].setdefault('X-Auth-Token', self.auth_token)
+
+        if self.identity_headers:
+            for k, v in self.identity_headers.iteritems():
+                kwargs['headers'].setdefault(k, v)
 
         self.log_curl_request(method, url, kwargs)
         conn = self.get_connection()
