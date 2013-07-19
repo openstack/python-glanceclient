@@ -113,7 +113,7 @@ class ImageManager(base.Manager):
 
         image_id = base.getid(image)
         resp, body = self.api.raw_request('HEAD', '/v1/images/%s'
-                                          % urllib.quote(image_id))
+                                          % urllib.quote(str(image_id)))
         meta = self._image_meta_from_headers(dict(resp.getheaders()))
         return Image(self, meta)
 
@@ -126,7 +126,7 @@ class ImageManager(base.Manager):
         """
         image_id = base.getid(image)
         resp, body = self.api.raw_request('GET', '/v1/images/%s'
-                                          % urllib.quote(image_id))
+                                          % urllib.quote(str(image_id)))
         checksum = resp.getheader('x-image-meta-checksum', None)
         if do_checksum and checksum is not None:
             return utils.integrity_iter(body, checksum)
