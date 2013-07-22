@@ -343,11 +343,13 @@ class VerifiedHTTPSConnection(HTTPSConnection):
 
     def verify_callback(self, connection, x509, errnum,
                         depth, preverify_ok):
+        # NOTE(leaman): preverify_ok may be a non-boolean type
+        preverify_ok = bool(preverify_ok)
         if x509.has_expired():
             msg = "SSL Certificate expired on '%s'" % x509.get_notAfter()
             raise exc.SSLCertificateError(msg)
 
-        if depth == 0 and preverify_ok is True:
+        if depth == 0 and preverify_ok:
             # We verify that the host matches against the last
             # certificate in the chain
             return self.host_matches_cert(self.host, x509)
