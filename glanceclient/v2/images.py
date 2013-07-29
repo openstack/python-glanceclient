@@ -147,7 +147,7 @@ class Controller(object):
                 delattr(image, key)
 
         url = '/v2/images/%s' % image_id
-        hdrs = {'Content-Type': 'application/openstack-images-v2.0-json-patch'}
+        hdrs = {'Content-Type': 'application/openstack-images-v2.1-json-patch'}
         self.http_client.raw_request('PATCH', url,
                                      headers=hdrs,
                                      body=image.patch)
