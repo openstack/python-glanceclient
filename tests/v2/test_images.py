@@ -88,6 +88,15 @@ fixtures = {
             '',
         ),
     },
+    '/v2/images': {
+        'POST': (
+            {},
+            {
+                'id': '3a4560a1-e585-443e-9b39-553b46ec92d1',
+                'name': 'image-1',
+            },
+        ),
+    },
     'v2/images/87b634c1-f893-33c9-28a9-e5673c99239a': {
         'DELETE': (
             {},
@@ -326,6 +335,14 @@ class TestController(testtools.TestCase):
 
     def test_get_image(self):
         image = self.controller.get('3a4560a1-e585-443e-9b39-553b46ec92d1')
+        self.assertEqual(image.id, '3a4560a1-e585-443e-9b39-553b46ec92d1')
+        self.assertEqual(image.name, 'image-1')
+
+    def test_create_image(self):
+        properties = {
+            'name': 'image-1'
+        }
+        image = self.controller.create(**properties)
         self.assertEqual(image.id, '3a4560a1-e585-443e-9b39-553b46ec92d1')
         self.assertEqual(image.name, 'image-1')
 

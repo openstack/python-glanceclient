@@ -15,6 +15,8 @@
 
 import urllib
 
+import warlock
+
 from glanceclient.common import utils
 from glanceclient.openstack.common import strutils
 
@@ -89,6 +91,23 @@ class Controller(object):
     def delete(self, image_id):
         """Delete an image."""
         self.http_client.json_request('DELETE', 'v2/images/%s' % image_id)
+
+    def create(self, **kwargs):
+        """Create an image."""
+        url = '/v2/images'
+
+        image = self.model()
+        for (key, value) in kwargs.items():
+            try:
+                setattr(image, key, value)
+            except warlock.InvalidOperation, e:
+                raise TypeError(unicode(message))
+
+        resp, body = self.http_client.json_request('POST', url, body=image)
+        #NOTE(esheffield): remove 'self' for now until we have an elegant
+        # way to pass it into the model constructor without conflict
+        body.pop('self', None)
+        return self.model(**body)
 
     def update(self, image_id, **kwargs):
         """
