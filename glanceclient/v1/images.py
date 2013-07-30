@@ -142,24 +142,42 @@ class ImageManager(base.Manager):
                        list than that represented by this image id
         :param filters: dict of direct comparison filters that mimics the
                         structure of an image object
+        :param owner: If provided, only images with this owner (tenant id)
+                      will be listed. An empty string ('') matches ownerless
+                      images.
         :rtype: list of :class:`Image`
         """
         absolute_limit = kwargs.get('limit')
 
         def paginate(qp, seen=0):
-            # Note(flaper87) Url encoding should
-            # be moved inside http utils, at least
-            # shouldn't be here.
-            #
-            # Making sure all params are str before
-            # trying to encode them
+            def filter_owner(owner, image):
+                # If client side owner 'filter' is specified
+                # only return images that match 'owner'.
+                if owner is None:
+                    # Do not filter based on owner
+                    return False
+                if (not hasattr(image, 'owner')) or image.owner is None:
+                    # ownerless image
+                    return not (owner == '')
+                else:
+                    return not (image.owner == owner)
+
+            owner = qp.pop('owner', None)
             for param, value in qp.iteritems():
                 if isinstance(value, basestring):
+                    # Note(flaper87) Url encoding should
+                    # be moved inside http utils, at least
+                    # shouldn't be here.
+                    #
+                    # Making sure all params are str before
+                    # trying to encode them
                     qp[param] = strutils.safe_encode(value)
 
             url = '/v1/images/detail?%s' % urllib.urlencode(qp)
             images = self._list(url, "images")
             for image in images:
+                if filter_owner(owner, image):
+                    continue
                 seen += 1
                 if absolute_limit is not None and seen > absolute_limit:
                     return
@@ -198,6 +216,9 @@ class ImageManager(base.Manager):
         for key, value in properties.items():
             params['property-%s' % key] = value
         params.update(filters)
+        if kwargs.get('owner') is not None:
+            params['owner'] = kwargs['owner']
+            params['is_public'] = None
 
         return paginate(params)
 
