@@ -3,8 +3,11 @@
 
 import os
 import sys
+import pbr.version
 
-project = 'python-glanceclient'
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),
+                '..', '..')))
+
 
 # -- General configuration ----------------------------------------------------
 
@@ -26,7 +29,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-copyright = u'OpenStack LLC'
+project = 'python-glanceclient'
+copyright = u'OpenStack Foundation'
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 add_function_parentheses = True
@@ -38,6 +42,13 @@ add_module_names = True
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
+# Grouping the document tree for man pages.
+# List of tuples 'sourcefile', 'target', u'title', u'Authors name', 'manual'
+
+man_pages = [
+    ('man/glance', 'glance', u'Client for OpenStack Images API',
+     [u'OpenStack Foundation'], 1),
+]
 # -- Options for HTML output --------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
@@ -56,7 +67,7 @@ latex_documents = [
         'index',
         '%s.tex' % project,
         u'%s Documentation' % project,
-        u'OpenStack LLC',
+        u'OpenStack Foundation',
         'manual'
     ),
 ]

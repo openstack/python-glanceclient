@@ -32,6 +32,7 @@ The command line tool will attempt to reauthenticate using your provided credent
 
 Once you've configured your authentication parameters, you can run ``glance help`` to see a complete listing of available commands.
 
+See also :doc:`/man/glance`.
 
 Release Notes
 =============
@@ -94,7 +95,7 @@ Release Notes
 .. _1050345: http://bugs.launchpad.net/python-glanceclient/+bug/1050345
 
 0.5.1
-----
+-----
 * 1045824_: Always send Content-Length when updating image with image data
 * 1046607_: Handle 300 Multiple Choices nicely in the CLI
 * 1035931_: Properly display URI in legacy 'show' command
