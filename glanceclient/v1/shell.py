@@ -73,6 +73,9 @@ DISK_FORMATS = ('Acceptable formats: ami, ari, aki, vhd, vmdk, raw, '
                 'to list images with no owner. Note: This option overrides '
                 'the --is-public argument if present. Note: the v2 API '
                 'supports more efficient server-side owner based filtering.')
+@utils.arg('--all-tenants', action='store_true', default=False,
+           help=('Allows the admin user to list all images '
+                 'irrespective of the image\'s owner or is_public value.'))
 def do_image_list(gc, args):
     """List images you can access."""
     filter_keys = ['name', 'status', 'container_format', 'disk_format',
@@ -91,6 +94,8 @@ def do_image_list(gc, args):
     kwargs['sort_key'] = args.sort_key
     kwargs['sort_dir'] = args.sort_dir
     kwargs['owner'] = args.owner
+    if args.all_tenants is True:
+        kwargs['is_public'] = None
 
     images = gc.images.list(**kwargs)
 

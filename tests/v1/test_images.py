@@ -75,17 +75,20 @@ fixtures = {
                 {
                     'id': 'a',
                     'owner': 'A',
+                    'is_public': 'True',
                     'name': 'image-1',
                     'properties': {'arch': 'x86_64'},
                 },
                 {
                     'id': 'b',
                     'owner': 'B',
+                    'is_public': 'False',
                     'name': 'image-2',
                     'properties': {'arch': 'x86_64'},
                 },
                 {
                     'id': 'c',
+                    'is_public': 'False',
                     'name': 'image-3',
                     'properties': {'arch': 'x86_64'},
                 },
@@ -129,12 +132,14 @@ fixtures = {
                 {
                     'id': 'a',
                     'owner': 'A',
+                    'is_public': 'False',
                     'name': 'image-1',
                     'properties': {'arch': 'x86_64'},
                 },
                 {
                     'id': 'b',
-                    'owner': 'B',
+                    'owner': 'A',
+                    'is_public': 'False',
                     'name': 'image-2',
                     'properties': {'arch': 'x86_64'},
                 },
@@ -146,6 +151,7 @@ fixtures = {
                 },
                 {
                     'id': 'c',
+                    'is_public': 'True',
                     'name': 'image-3',
                     'properties': {'arch': 'x86_64'},
                 },
@@ -608,7 +614,7 @@ class ImageManagerTest(testtools.TestCase):
         image_list = list(images)
         self.assertEqual(image_list[0].owner, 'A')
         self.assertEqual(image_list[0].id, 'a')
-        self.assertEqual(image_list[1].owner, 'B')
+        self.assertEqual(image_list[1].owner, 'A')
         self.assertEqual(image_list[1].id, 'b')
         self.assertEqual(image_list[2].owner, 'B')
         self.assertEqual(image_list[2].id, 'b2')
@@ -622,6 +628,19 @@ class ImageManagerTest(testtools.TestCase):
         self.assertEqual(image_list[0].owner, 'B')
         self.assertEqual(image_list[0].id, 'b')
         self.assertEqual(len(image_list), 1)
+
+    def test_image_list_all_tenants(self):
+        images = self.mgr.list(is_public=None, page_size=5)
+        image_list = list(images)
+        self.assertEqual(image_list[0].owner, 'A')
+        self.assertEqual(image_list[0].id, 'a')
+        self.assertEqual(image_list[1].owner, 'B')
+        self.assertEqual(image_list[1].id, 'b')
+        self.assertEqual(image_list[2].owner, 'B')
+        self.assertEqual(image_list[2].id, 'b2')
+        self.assertRaises(AttributeError, lambda: image_list[3].owner)
+        self.assertEqual(image_list[3].id, 'c')
+        self.assertEqual(len(image_list), 4)
 
 
 class ImageTest(testtools.TestCase):
