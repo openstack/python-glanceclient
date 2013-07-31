@@ -105,6 +105,12 @@ fixtures = {
             },
         ),
     },
+    '/v2/images/606b0e88-7c5a-4d54-b5bb-046105d4de6f/file': {
+        'PUT': (
+            {},
+            '',
+        ),
+    },
     '/v2/images/5cc4bebc-db27-11e1-a1eb-080027cbe205/file': {
         'GET': (
             {},
@@ -353,6 +359,15 @@ class TestController(testtools.TestCase):
                 'v2/images/87b634c1-f893-33c9-28a9-e5673c99239a',
                 {},
                 None)]
+        self.assertEqual(self.api.calls, expect)
+
+    def test_data_upload(self):
+        image_data = 'CCC'
+        image_id = '606b0e88-7c5a-4d54-b5bb-046105d4de6f'
+        self.controller.upload(image_id, image_data)
+        expect = [('PUT', '/v2/images/%s/file' % image_id,
+                  {'Content-Type': 'application/octet-stream'},
+                  image_data)]
         self.assertEqual(self.api.calls, expect)
 
     def test_data_without_checksum(self):

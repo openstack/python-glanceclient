@@ -88,6 +88,19 @@ class Controller(object):
         else:
             return body
 
+    def upload(self, image_id, image_data):
+        """
+        Upload the data for an image.
+
+        :param image_id: ID of the image to upload data for.
+        :param image_data: File-like object supplying the data to upload.
+        """
+        url = '/v2/images/%s/file' % image_id
+        hdrs = {'Content-Type': 'application/octet-stream'}
+        self.http_client.raw_request('PUT', url,
+                                     headers=hdrs,
+                                     body=image_data)
+
     def delete(self, image_id):
         """Delete an image."""
         self.http_client.json_request('DELETE', 'v2/images/%s' % image_id)
