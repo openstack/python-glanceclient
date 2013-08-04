@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from __future__ import print_function
+
 import errno
 import os
 import sys
@@ -54,14 +56,14 @@ def print_list(objs, fields, formatters={}):
                 row.append(data)
         pt.add_row(row)
 
-    print strutils.safe_encode(pt.get_string())
+    print(strutils.safe_encode(pt.get_string()))
 
 
 def print_dict(d):
     pt = prettytable.PrettyTable(['Property', 'Value'], caching=False)
     pt.align = 'l'
     [pt.add_row(list(r)) for r in d.iteritems()]
-    print strutils.safe_encode(pt.get_string(sortby='Property'))
+    print(strutils.safe_encode(pt.get_string(sortby='Property')))
 
 
 def find_resource(manager, name_or_id):
@@ -137,7 +139,7 @@ def import_versioned_module(version, submodule=None):
 
 def exit(msg=''):
     if msg:
-        print >> sys.stderr, strutils.safe_encode(msg)
+        print(strutils.safe_encode(msg), file=sys.stderr)
     sys.exit(1)
 
 

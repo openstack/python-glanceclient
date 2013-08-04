@@ -17,6 +17,8 @@
 Command-line interface to the OpenStack Images API.
 """
 
+from __future__ import print_function
+
 import argparse
 import logging
 import re
@@ -469,8 +471,8 @@ def main():
     try:
         OpenStackImagesShell().main(map(strutils.safe_decode, sys.argv[1:]))
     except KeyboardInterrupt:
-        print >> sys.stderr, '... terminating glance client'
+        print('... terminating glance client', file=sys.stderr)
         sys.exit(1)
     except Exception as e:
-        print >> sys.stderr, utils.exception_to_str(e)
+        print(utils.exception_to_str(e), file=sys.stderr)
         sys.exit(1)

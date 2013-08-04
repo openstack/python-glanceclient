@@ -18,6 +18,8 @@ DEPRECATED functions that implement the same command line interface as the
 legacy glance client.
 """
 
+from __future__ import print_function
+
 import argparse
 import sys
 import urlparse
@@ -51,7 +53,7 @@ def get_image_filters_from_args(args):
     try:
         fields = get_image_fields_from_args(args)
     except RuntimeError as e:
-        print e
+        print(e)
         return FAILURE
 
     SUPPORTED_FILTERS = ['name', 'disk_format', 'container_format', 'status',
@@ -78,27 +80,27 @@ def print_image_formatted(client, image):
         hostbase = "%s:%s" % (uri_parts.hostname, uri_parts.port)
     else:
         hostbase = uri_parts.hostname
-    print "URI: %s://%s/v1/images/%s" % (uri_parts.scheme, hostbase, image.id)
-    print "Id: %s" % image.id
-    print "Public: " + (image.is_public and "Yes" or "No")
-    print "Protected: " + (image.protected and "Yes" or "No")
-    print "Name: %s" % getattr(image, 'name', '')
-    print "Status: %s" % image.status
-    print "Size: %d" % int(image.size)
-    print "Disk format: %s" % getattr(image, 'disk_format', '')
-    print "Container format: %s" % getattr(image, 'container_format', '')
-    print "Minimum Ram Required (MB): %s" % image.min_ram
-    print "Minimum Disk Required (GB): %s" % image.min_disk
+    print("URI: %s://%s/v1/images/%s" % (uri_parts.scheme, hostbase, image.id))
+    print("Id: %s" % image.id)
+    print("Public: " + (image.is_public and "Yes" or "No"))
+    print("Protected: " + (image.protected and "Yes" or "No"))
+    print("Name: %s" % getattr(image, 'name', ''))
+    print("Status: %s" % image.status)
+    print("Size: %d" % int(image.size))
+    print("Disk format: %s" % getattr(image, 'disk_format', ''))
+    print("Container format: %s" % getattr(image, 'container_format', ''))
+    print("Minimum Ram Required (MB): %s" % image.min_ram)
+    print("Minimum Disk Required (GB): %s" % image.min_disk)
     if hasattr(image, 'owner'):
-        print "Owner: %s" % image.owner
+        print("Owner: %s" % image.owner)
     if len(image.properties) > 0:
         for k, v in image.properties.items():
-            print "Property '%s': %s" % (k, v)
-    print "Created at: %s" % image.created_at
+            print("Property '%s': %s" % (k, v))
+    print("Created at: %s" % image.created_at)
     if hasattr(image, 'deleted_at'):
-        print "Deleted at: %s" % image.deleted_at
+        print("Deleted at: %s" % image.deleted_at)
     if hasattr(image, 'updated_at'):
-        print "Updated at: %s" % image.updated_at
+        print("Updated at: %s" % image.updated_at)
 
 
 @utils.arg('--silent-upload', action="store_true",
@@ -109,7 +111,7 @@ def do_add(gc, args):
     try:
         fields = get_image_fields_from_args(args.fields)
     except RuntimeError as e:
-        print e
+        print(e)
         return FAILURE
 
     image_meta = {
@@ -131,7 +133,7 @@ def do_add(gc, args):
     unsupported_fields = ['status', 'size']
     for field in unsupported_fields:
         if field in fields.keys():
-            print 'Found non-settable field %s. Removing.' % field
+            print('Found non-settable field %s. Removing.' % field)
             fields.pop(field)
 
     # We need either a location or image data/stream to add...
@@ -158,19 +160,19 @@ def do_add(gc, args):
 
     if not args.dry_run:
         image = gc.images.create(**image_meta)
-        print "Added new image with ID: %s" % image.id
+        print("Added new image with ID: %s" % image.id)
         if args.verbose:
-            print "Returned the following metadata for the new image:"
+            print("Returned the following metadata for the new image:")
             for k, v in sorted(image.to_dict().items()):
-                print " %(k)30s => %(v)s" % locals()
+                print(" %(k)30s => %(v)s" % {'k': k, 'v': v})
     else:
-        print "Dry run. We would have done the following:"
+        print("Dry run. We would have done the following:")
 
         def _dump(dict):
             for k, v in sorted(dict.items()):
-                print " %(k)30s => %(v)s" % locals()
+                print(" %(k)30s => %(v)s" % {'k': k, 'v': v})
 
-        print "Add new image with metadata:"
+        print("Add new image with metadata:")
         _dump(image_meta)
 
     return SUCCESS
@@ -183,7 +185,7 @@ def do_update(gc, args):
     try:
         fields = get_image_fields_from_args(args.fields)
     except RuntimeError as e:
-        print e
+        print(e)
         return FAILURE
 
     image_meta = {}
@@ -193,7 +195,7 @@ def do_update(gc, args):
                             'updated_at', 'size', 'status']
     for field in nonmodifiable_fields:
         if field in fields.keys():
-            print 'Found non-modifiable field %s. Removing.' % field
+            print('Found non-modifiable field %s. Removing.' % field)
             fields.pop(field)
 
     base_image_fields = ['disk_format', 'container_format', 'name',
@@ -215,18 +217,18 @@ def do_update(gc, args):
 
     if not args.dry_run:
         image = gc.images.update(args.id, **image_meta)
-        print "Updated image %s" % args.id
+        print("Updated image %s" % args.id)
 
         if args.verbose:
-            print "Updated image metadata for image %s:" % args.id
+            print("Updated image metadata for image %s:" % args.id)
             print_image_formatted(gc, image)
     else:
         def _dump(dict):
             for k, v in sorted(dict.items()):
-                print " %(k)30s => %(v)s" % locals()
+                print(" %(k)30s => %(v)s" % {'k': k, 'v': v})
 
-        print "Dry run. We would have done the following:"
-        print "Update existing image with metadata:"
+        print("Dry run. We would have done the following:")
+        print("Update existing image with metadata:")
         _dump(image_meta)
 
     return SUCCESS
@@ -237,7 +239,7 @@ def do_delete(gc, args):
     """DEPRECATED! Use image-delete instead."""
     if not (args.force or
             user_confirm("Delete image %s?" % args.id, default=False)):
-        print 'Not deleting image %s' % args.id
+        print('Not deleting image %s' % args.id)
         return FAILURE
 
     gc.images.get(args.id).delete()
@@ -289,14 +291,14 @@ def do_index(gc, args):
     pretty_table.add_column(20, label="Container Format")
     pretty_table.add_column(14, label="Size", just="r")
 
-    print pretty_table.make_header()
+    print(pretty_table.make_header())
 
     for image in images:
-        print pretty_table.make_row(image.id,
+        print(pretty_table.make_row(image.id,
                                     image.name,
                                     image.disk_format,
                                     image.container_format,
-                                    image.size)
+                                    image.size))
 
 
 @utils.arg('--limit', dest="limit", metavar="LIMIT", default=10,
@@ -313,29 +315,30 @@ def do_details(gc, args):
     images = _get_images(gc, args)
     for i, image in enumerate(images):
         if i == 0:
-            print "=" * 80
+            print("=" * 80)
         print_image_formatted(gc, image)
-        print "=" * 80
+        print("=" * 80)
 
 
 def do_clear(gc, args):
     """DEPRECATED!"""
     if not (args.force or
             user_confirm("Delete all images?", default=False)):
-        print 'Not deleting any images'
+        print('Not deleting any images')
         return FAILURE
 
     images = gc.images.list()
     for image in images:
         if args.verbose:
-            print 'Deleting image %s "%s" ...' % (image.id, image.name),
+            print('Deleting image %s "%s" ...' % (image.id, image.name),
+                  end=' ')
         try:
             image.delete()
             if args.verbose:
-                print 'done'
+                print('done')
         except Exception as e:
-            print 'Failed to delete image %s' % image.id
-            print e
+            print('Failed to delete image %s' % image.id)
+            print(e)
             return FAILURE
     return SUCCESS
 
@@ -351,11 +354,11 @@ def do_image_members(gc, args):
         if memb.can_share:
             can_share = ' *'
             sharers += 1
-        print "%s%s" % (memb.member_id, can_share)
+        print("%s%s" % (memb.member_id, can_share))
 
     # Emit a footnote
     if sharers > 0:
-        print "\n(*: Can share image)"
+        print("\n(*: Can share image)")
 
 
 @utils.arg('--can-share', default=False, action="store_true",
@@ -367,7 +370,7 @@ def do_member_images(gc, args):
     members = gc.image_members.list(member=args.member_id)
 
     if not len(members):
-        print "No images shared with member %s" % args.member_id
+        print("No images shared with member %s" % args.member_id)
         return SUCCESS
 
     sharers = 0
@@ -377,11 +380,11 @@ def do_member_images(gc, args):
         if memb.can_share:
             can_share = ' *'
             sharers += 1
-        print "%s%s" % (memb.image_id, can_share)
+        print("%s%s" % (memb.image_id, can_share))
 
     # Emit a footnote
     if sharers > 0:
-        print "\n(*: Can share image)"
+        print("\n(*: Can share image)")
 
 
 @utils.arg('--can-share', default=False, action="store_true",
@@ -396,11 +399,11 @@ def do_members_replace(gc, args):
             gc.image_members.delete(args.image_id, member.member_id)
         gc.image_members.create(args.image_id, args.member_id, args.can_share)
     else:
-        print "Dry run. We would have done the following:"
-        print ('Replace members of image %s with "%s"'
-               % (args.image_id, args.member_id))
+        print("Dry run. We would have done the following:")
+        print('Replace members of image %s with "%s"'
+              % (args.image_id, args.member_id))
         if args.can_share:
-            print "New member would have been able to further share image."
+            print("New member would have been able to further share image.")
 
 
 @utils.arg('--can-share', default=False, action="store_true",
@@ -413,11 +416,11 @@ def do_member_add(gc, args):
     if not args.dry_run:
         gc.image_members.create(args.image_id, args.member_id, args.can_share)
     else:
-        print "Dry run. We would have done the following:"
-        print ('Add "%s" to membership of image %s' %
-               (args.member_id, args.image_id))
+        print("Dry run. We would have done the following:")
+        print('Add "%s" to membership of image %s' %
+              (args.member_id, args.image_id))
         if args.can_share:
-            print "New member would have been able to further share image."
+            print("New member would have been able to further share image.")
 
 
 def user_confirm(prompt, default=False):
