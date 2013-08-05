@@ -112,7 +112,7 @@ class Controller(object):
         for (key, value) in kwargs.items():
             try:
                 setattr(image, key, value)
-            except warlock.InvalidOperation, e:
+            except warlock.InvalidOperation as e:
                 raise TypeError(utils.exception_to_str(e))
 
         resp, body = self.http_client.json_request('POST', url, body=image)
