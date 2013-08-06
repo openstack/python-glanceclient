@@ -17,7 +17,6 @@ import urllib
 
 import warlock
 
-from glanceclient.common import utils
 from glanceclient.openstack.common import strutils
 
 DEFAULT_PAGE_SIZE = 20
@@ -113,7 +112,7 @@ class Controller(object):
             try:
                 setattr(image, key, value)
             except warlock.InvalidOperation as e:
-                raise TypeError(utils.exception_to_str(e))
+                raise TypeError(unicode(e))
 
         resp, body = self.http_client.json_request('POST', url, body=image)
         #NOTE(esheffield): remove 'self' for now until we have an elegant
@@ -121,16 +120,31 @@ class Controller(object):
         body.pop('self', None)
         return self.model(**body)
 
-    def update(self, image_id, **kwargs):
+    def update(self, image_id, remove_props=None, **kwargs):
         """
         Update attributes of an image.
 
         :param image_id: ID of the image to modify.
+        :param remove_props: List of property names to remove
         :param **kwargs: Image attribute names and their new values.
         """
         image = self.get(image_id)
         for (key, value) in kwargs.items():
-            setattr(image, key, value)
+            try:
+                setattr(image, key, value)
+            except warlock.InvalidOperation as e:
+                raise TypeError(unicode(e))
+
+        if remove_props is not None:
+            cur_props = image.keys()
+            new_props = kwargs.keys()
+            #NOTE(esheffield): Only remove props that currently exist on the
+            # image and are NOT in the properties being updated / added
+            props_to_remove = set(cur_props).intersection(
+                set(remove_props).difference(new_props))
+
+            for key in props_to_remove:
+                delattr(image, key)
 
         url = '/v2/images/%s' % image_id
         hdrs = {'Content-Type': 'application/openstack-images-v2.0-json-patch'}

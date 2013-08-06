@@ -88,6 +88,21 @@ fixtures = {
             '',
         ),
     },
+    '/v2/images/e7e59ff6-fa2e-4075-87d3-1a1398a07dc3': {
+        'GET': (
+            {},
+            {
+                'id': 'e7e59ff6-fa2e-4075-87d3-1a1398a07dc3',
+                'name': 'image-3',
+                'barney': 'rubble',
+                'george': 'jetson',
+            },
+        ),
+        'PATCH': (
+            {},
+            '',
+        ),
+    },
     '/v2/images': {
         'POST': (
             {},
@@ -242,7 +257,11 @@ fixtures = {
 }
 
 
-fake_schema = {'name': 'image', 'properties': {'id': {}, 'name': {}}}
+fake_schema = {
+    'name': 'image',
+    'properties': {'id': {}, 'name': {}},
+    'additionalProperties': {'type': 'string'}
+}
 FakeModel = warlock.model_factory(fake_schema)
 
 
@@ -352,6 +371,14 @@ class TestController(testtools.TestCase):
         self.assertEqual(image.id, '3a4560a1-e585-443e-9b39-553b46ec92d1')
         self.assertEqual(image.name, 'image-1')
 
+    def test_create_bad_additionalProperty_type(self):
+        properties = {
+            'name': 'image-1',
+            'bad_prop': True,
+        }
+        with testtools.ExpectedException(TypeError):
+            self.controller.create(**properties)
+
     def test_delete_image(self):
         self.controller.delete('87b634c1-f893-33c9-28a9-e5673c99239a')
         expect = [
@@ -405,7 +432,7 @@ class TestController(testtools.TestCase):
         body = ''.join([b for b in body])
         self.assertEqual(body, 'CCC')
 
-    def test_update_without_data(self):
+    def test_update_replace_prop(self):
         image_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
         params = {'name': 'pong'}
         image = self.controller.update(image_id, **params)
@@ -423,3 +450,90 @@ class TestController(testtools.TestCase):
         #NOTE(bcwaldon): due to limitations of our fake api framework, the name
         # will not actually change - yet in real life it will...
         self.assertEqual(image.name, 'image-1')
+
+    def test_update_add_prop(self):
+        image_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
+        params = {'finn': 'human'}
+        image = self.controller.update(image_id, **params)
+        expect_hdrs = {
+            'Content-Type': 'application/openstack-images-v2.0-json-patch',
+        }
+        expect_body = '[{"path": "/finn", "value": "human", "op": "add"}]'
+        expect = [
+            ('GET', '/v2/images/%s' % image_id, {}, None),
+            ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
+            ('GET', '/v2/images/%s' % image_id, {}, None),
+        ]
+        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(image.id, image_id)
+        #NOTE(bcwaldon): due to limitations of our fake api framework, the name
+        # will not actually change - yet in real life it will...
+        self.assertEqual(image.name, 'image-1')
+
+    def test_update_remove_prop(self):
+        image_id = 'e7e59ff6-fa2e-4075-87d3-1a1398a07dc3'
+        remove_props = ['barney']
+        image = self.controller.update(image_id, remove_props)
+        expect_hdrs = {
+            'Content-Type': 'application/openstack-images-v2.0-json-patch',
+        }
+        expect_body = '[{"path": "/barney", "op": "remove"}]'
+        expect = [
+            ('GET', '/v2/images/%s' % image_id, {}, None),
+            ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
+            ('GET', '/v2/images/%s' % image_id, {}, None),
+        ]
+        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(image.id, image_id)
+        #NOTE(bcwaldon): due to limitations of our fake api framework, the name
+        # will not actually change - yet in real life it will...
+        self.assertEqual(image.name, 'image-3')
+
+    def test_update_replace_remove_same_prop(self):
+        image_id = 'e7e59ff6-fa2e-4075-87d3-1a1398a07dc3'
+        # Updating a property takes precedence over removing a property
+        params = {'barney': 'miller'}
+        remove_props = ['barney']
+        image = self.controller.update(image_id, remove_props, **params)
+        expect_hdrs = {
+            'Content-Type': 'application/openstack-images-v2.0-json-patch',
+        }
+        expect_body = '[{"path": "/barney", "value": "miller", ' \
+                      '"op": "replace"}]'
+        expect = [
+            ('GET', '/v2/images/%s' % image_id, {}, None),
+            ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
+            ('GET', '/v2/images/%s' % image_id, {}, None),
+        ]
+        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(image.id, image_id)
+        #NOTE(bcwaldon): due to limitations of our fake api framework, the name
+        # will not actually change - yet in real life it will...
+        self.assertEqual(image.name, 'image-3')
+
+    def test_update_add_remove_same_prop(self):
+        image_id = 'e7e59ff6-fa2e-4075-87d3-1a1398a07dc3'
+        # Adding a property takes precedence over removing a property
+        params = {'finn': 'human'}
+        remove_props = ['finn']
+        image = self.controller.update(image_id, remove_props, **params)
+        expect_hdrs = {
+            'Content-Type': 'application/openstack-images-v2.0-json-patch',
+        }
+        expect_body = '[{"path": "/finn", "value": "human", "op": "add"}]'
+        expect = [
+            ('GET', '/v2/images/%s' % image_id, {}, None),
+            ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
+            ('GET', '/v2/images/%s' % image_id, {}, None),
+        ]
+        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(image.id, image_id)
+        #NOTE(bcwaldon): due to limitations of our fake api framework, the name
+        # will not actually change - yet in real life it will...
+        self.assertEqual(image.name, 'image-3')
+
+    def test_update_bad_additionalProperty_type(self):
+        image_id = 'e7e59ff6-fa2e-4075-87d3-1a1398a07dc3'
+        params = {'name': 'pong', 'bad_prop': False}
+        with testtools.ExpectedException(TypeError):
+            self.controller.update(image_id, **params)
