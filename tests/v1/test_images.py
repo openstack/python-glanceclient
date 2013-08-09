@@ -437,6 +437,17 @@ class ImageManagerTest(testtools.TestCase):
         self.assertEqual(image.deleted, False)
         self.assertEqual(image.properties, {u'arch': u'x86_64'})
 
+    def test_get_int(self):
+        image = self.mgr.get(1)
+        expect = [('HEAD', '/v1/images/1', {}, None)]
+        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(image.id, '1')
+        self.assertEqual(image.name, 'image-1')
+        self.assertEqual(image.is_public, False)
+        self.assertEqual(image.protected, False)
+        self.assertEqual(image.deleted, False)
+        self.assertEqual(image.properties, {u'arch': u'x86_64'})
+
     def test_get_encoding(self):
         image = self.mgr.get('3')
         expect = [('HEAD', '/v1/images/3', {}, None)]
