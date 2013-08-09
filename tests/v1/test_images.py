@@ -51,7 +51,7 @@ fixtures = {
             ),
         ),
     },
-    '/v1/images/detail?limit=%d' % images.DEFAULT_PAGE_SIZE: {
+    '/v1/images/detail?limit=20': {
         'GET': (
             {},
             {'images': [
@@ -158,7 +158,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?marker=a&limit=%d' % images.DEFAULT_PAGE_SIZE: {
+    '/v1/images/detail?marker=a&limit=20': {
         'GET': (
             {},
             {'images': [
@@ -228,7 +228,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?limit=%d&name=foo' % images.DEFAULT_PAGE_SIZE: {
+    '/v1/images/detail?limit=20&name=foo': {
         'GET': (
             {},
             {'images': [
@@ -245,7 +245,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?property-ping=pong&limit=%d' % images.DEFAULT_PAGE_SIZE:
+    '/v1/images/detail?property-ping=pong&limit=20':
     {
         'GET': (
             {},
@@ -258,7 +258,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?sort_dir=desc&limit=%d' % images.DEFAULT_PAGE_SIZE: {
+    '/v1/images/detail?sort_dir=desc&limit=20': {
         'GET': (
             {},
             {'images': [
@@ -275,7 +275,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?sort_key=name&limit=%d' % images.DEFAULT_PAGE_SIZE: {
+    '/v1/images/detail?sort_key=name&limit=20': {
         'GET': (
             {},
             {'images': [
@@ -398,34 +398,31 @@ class ImageManagerTest(testtools.TestCase):
 
     def test_list_with_marker(self):
         list(self.mgr.list(marker='a'))
-        url = '/v1/images/detail?marker=a&limit=%d' % images.DEFAULT_PAGE_SIZE
+        url = '/v1/images/detail?marker=a&limit=20'
         expect = [('GET', url, {}, None)]
         self.assertEqual(self.api.calls, expect)
 
     def test_list_with_filter(self):
         list(self.mgr.list(filters={'name': "foo"}))
-        url = '/v1/images/detail?limit=%d&name=foo' % images.DEFAULT_PAGE_SIZE
+        url = '/v1/images/detail?limit=20&name=foo'
         expect = [('GET', url, {}, None)]
         self.assertEqual(self.api.calls, expect)
 
     def test_list_with_property_filters(self):
         list(self.mgr.list(filters={'properties': {'ping': 'pong'}}))
-        url = '/v1/images/detail?property-ping=pong&limit=%d' % \
-              images.DEFAULT_PAGE_SIZE
+        url = '/v1/images/detail?property-ping=pong&limit=20'
         expect = [('GET', url, {}, None)]
         self.assertEqual(self.api.calls, expect)
 
     def test_list_with_sort_dir(self):
         list(self.mgr.list(sort_dir='desc'))
-        url = '/v1/images/detail?sort_dir=desc&limit=%d' % \
-              images.DEFAULT_PAGE_SIZE
+        url = '/v1/images/detail?sort_dir=desc&limit=20'
         expect = [('GET', url, {}, None)]
         self.assertEqual(self.api.calls, expect)
 
     def test_list_with_sort_key(self):
         list(self.mgr.list(sort_key='name'))
-        url = '/v1/images/detail?sort_key=name&limit=%d' % \
-              images.DEFAULT_PAGE_SIZE
+        url = '/v1/images/detail?sort_key=name&limit=20'
         expect = [('GET', url, {}, None)]
         self.assertEqual(self.api.calls, expect)
 

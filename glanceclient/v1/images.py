@@ -31,7 +31,7 @@ UPDATE_PARAMS = ('name', 'disk_format', 'container_format', 'min_disk',
 
 CREATE_PARAMS = UPDATE_PARAMS + ('id', 'store')
 
-DEFAULT_PAGE_SIZE = 100
+DEFAULT_PAGE_SIZE = 20
 
 SORT_DIR_VALUES = ('asc', 'desc')
 SORT_KEY_VALUES = ('name', 'status', 'container_format', 'disk_format',
