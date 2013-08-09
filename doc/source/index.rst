@@ -37,6 +37,25 @@ See also :doc:`/man/glance`.
 Release Notes
 =============
 
+0.10.0
+------
+
+* 1192229_: Security Update! Fix SSL certificate CNAME checking to handle ip addresses correctly
+* Add an optional progress bar for image downloads
+* Additional v2 api functionality, including image creation and uploads
+* Allow v1 admin clients to list all users' images, and to list the images of specific tenants.
+* Add a --checksum option to the v2 CLI for selecting images by checksum
+* Added support for image creation and uploads to the v2 library
+* Added support for updating and deleting v2 image tags to the v2 library and CLI
+* Added support for managing image memberships to the v2 library and CLI
+* Added a cli man page.
+* 1184566_: Fix support for unix pipes when uploading images in the v1 CLI
+* 1157864_: Fix an issue where glanceclient would fail with eventlet.
+
+.. _1192229: http://bugs.launchpad.net/python-glanceclient/+bug/1192229
+.. _1184566: http://bugs.launchpad.net/python-glanceclient/+bug/1184566
+.. _1157864: http://bugs.launchpad.net/python-glanceclient/+bug/1157864
+
 0.9.0
 -----
 
