@@ -24,6 +24,9 @@ from tests import utils
 _CHKSUM = '93264c3edf5972c9f1cb309543d38a5c'
 _CHKSUM1 = '54264c3edf5972c9f1cb309453d38a46'
 
+_TAG1 = 'power'
+_TAG2 = '64bit'
+
 _BOGUS_ID = '63e7f218-29de-4477-abdc-8db7c9533188'
 _EVERYTHING_ID = '802cbbb7-0379-4c38-853f-37302b5e3d29'
 _OWNED_IMAGE_ID = 'a4963502-acc7-42ba-ad60-5aa0962b7faf'
@@ -254,6 +257,51 @@ fixtures = {
             {'images': []},
         ),
     },
+    '/v2/images?limit=%d&tag=%s' % (images.DEFAULT_PAGE_SIZE, _TAG1): {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': '3a4560a1-e585-443e-9b39-553b46ec92d1',
+                    'name': 'image-1',
+                }
+            ]},
+        ),
+    },
+    '/v2/images?limit=%d&tag=%s' % (images.DEFAULT_PAGE_SIZE, _TAG2): {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': '2a4560b2-e585-443e-9b39-553b46ec92d1',
+                    'name': 'image-1',
+                },
+                {
+                    'id': '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810',
+                    'name': 'image-2',
+                },
+            ]},
+        ),
+    },
+    '/v2/images?limit=%d&tag=%s&tag=%s' % (images.DEFAULT_PAGE_SIZE,
+                                           _TAG1, _TAG2):
+    {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': '2a4560b2-e585-443e-9b39-553b46ec92d1',
+                    'name': 'image-1',
+                }
+            ]},
+        ),
+    },
+    '/v2/images?limit=%d&tag=fake' % images.DEFAULT_PAGE_SIZE: {
+        'GET': (
+            {},
+            {'images': []},
+        ),
+    },
 }
 
 
@@ -357,6 +405,35 @@ class TestController(testtools.TestCase):
             pass
 
         self.assertEqual(filters["owner"], "ni\xc3\xb1o")
+
+    def test_list_images_for_tag_single_image(self):
+        img_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
+        filters = {'filters': dict([('tag', [_TAG1])])}
+        images = list(self.controller.list(**filters))
+        self.assertEquals(1, len(images))
+        self.assertEqual(images[0].id, '%s' % img_id)
+        pass
+
+    def test_list_images_for_tag_multiple_images(self):
+        img_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
+        img_id2 = '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810'
+        filters = {'filters': dict([('tag', [_TAG2])])}
+        images = list(self.controller.list(**filters))
+        self.assertEquals(2, len(images))
+        self.assertEqual(images[0].id, '%s' % img_id1)
+        self.assertEqual(images[1].id, '%s' % img_id2)
+
+    def test_list_images_for_multi_tags(self):
+        img_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
+        filters = {'filters': dict([('tag', [_TAG1, _TAG2])])}
+        images = list(self.controller.list(**filters))
+        self.assertEquals(1, len(images))
+        self.assertEqual(images[0].id, '%s' % img_id1)
+
+    def test_list_images_for_non_existent_tag(self):
+        filters = {'filters': dict([('tag', ['fake'])])}
+        images = list(self.controller.list(**filters))
+        self.assertEquals(0, len(images))
 
     def test_get_image(self):
         image = self.controller.get('3a4560a1-e585-443e-9b39-553b46ec92d1')

@@ -52,11 +52,21 @@ class Controller(object):
         else:
             filters['limit'] = kwargs['page_size']
 
+        tags = filters.pop('tag', [])
+        tags_url_params = []
+
+        for tag in tags:
+            if isinstance(tag, basestring):
+                tags_url_params.append({'tag': strutils.safe_encode(tag)})
+
         for param, value in filters.iteritems():
             if isinstance(value, basestring):
                 filters[param] = strutils.safe_encode(value)
 
         url = '/v2/images?%s' % urllib.urlencode(filters)
+
+        for param in tags_url_params:
+            url = '%s&%s' % (url, urllib.urlencode(param))
 
         for image in paginate(url):
             #NOTE(bcwaldon): remove 'self' for now until we have an elegant

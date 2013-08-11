@@ -70,6 +70,7 @@ class ShellV2Test(testtools.TestCase):
             'member_status': 'Fake',
             'owner': 'test',
             'checksum': 'fake_checksum',
+            'tag': 'fake tag'
         }
         args = self._make_args(input)
         with mock.patch.object(self.gc.images, 'list') as mocked_list:
@@ -82,6 +83,7 @@ class ShellV2Test(testtools.TestCase):
                 'member_status': 'Fake',
                 'visibility': True,
                 'checksum': 'fake_checksum',
+                'tag': 'fake tag'
             }
             mocked_list.assert_called_once_with(page_size=18,
                                                 filters=exp_img_filters)
