@@ -212,7 +212,7 @@ def get_file_size(file_obj):
             size = file_obj.tell()
             file_obj.seek(curr)
             return size
-        except IOError, e:
+        except IOError as e:
             if e.errno == errno.ESPIPE:
                 # Illegal seek. This means the file object
                 # is a pipe (e.g the user is trying
