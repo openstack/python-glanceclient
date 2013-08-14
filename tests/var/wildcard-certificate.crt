@@ -1,0 +1,61 @@
+#Certificate:
+#    Data:
+#        Version: 1 (0x0)
+#        Serial Number: 13493453254446411258 (0xbb42603e589dedfa)
+#    Signature Algorithm: sha1WithRSAEncryption
+#        Issuer: C=US, ST=CA, L=State1, O=Openstack Test Org, OU=Openstack Test Unit, CN=*.pong.example.com/emailAddress=admin@example.com
+#        Validity
+#            Not Before: Aug 21 17:29:18 2013 GMT
+#            Not After : Jul 28 17:29:18 2113 GMT
+#        Subject: C=US, ST=CA, L=State1, O=Openstack Test Org, OU=Openstack Test Unit, CN=*.pong.example.com/emailAddress=admin@example.com
+#        Subject Public Key Info:
+#            Public Key Algorithm: rsaEncryption
+#                Public-Key: (4096 bit)
+#                Modulus:
+#                    00:d4:bb:3a:c4:a0:06:54:31:23:5d:b0:78:5a:be:
+#                    45:44:ae:a1:89:86:11:d8:ca:a8:33:b0:4f:f3:e1:
+#                    46:1e:85:a3:2a:9c:a4:e0:c2:14:34:4f:91:df:dc:
+#                    .
+#                    .
+#                    .
+#                Exponent: 65537 (0x10001)
+#    Signature Algorithm: sha1WithRSAEncryption
+#         9f:cc:08:5d:19:ee:54:31:a3:57:d7:3c:89:89:c0:69:41:dd:
+#         46:f8:73:68:ec:46:b9:fa:f5:df:f6:d9:58:35:d8:53:94:88:
+#         bd:36:a6:23:9e:0c:0d:89:62:35:91:49:b6:14:f4:43:69:3c:
+#         .
+#         .
+#         .
+-----BEGIN CERTIFICATE-----
+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
+-----END CERTIFICATE-----
