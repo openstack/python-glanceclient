@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import argparse
 import copy
 import os
 import sys
@@ -211,10 +210,6 @@ def do_image_download(gc, args):
            help=('Similar to \'--location\' in usage, but this indicates that'
                  ' the Glance server should immediately copy the data and'
                  ' store it in its configured image store.'))
-#NOTE(bcwaldon): This will be removed once devstack is updated
-# to use --is-public
-@utils.arg('--public', action='store_true', default=False,
-           help=argparse.SUPPRESS)
 @utils.arg('--is-public', type=utils.string_to_bool, metavar='[True|False]',
            help='Make image accessible to the public.')
 @utils.arg('--is-protected', type=utils.string_to_bool, metavar='[True|False]',
@@ -231,7 +226,7 @@ def do_image_create(gc, args):
     # Filter out None values
     fields = dict(filter(lambda x: x[1] is not None, vars(args).items()))
 
-    fields['is_public'] = fields.get('is_public') or fields.pop('public')
+    fields['is_public'] = fields.get('is_public')
 
     if 'is_protected' in fields:
         fields['protected'] = fields.pop('is_protected')
