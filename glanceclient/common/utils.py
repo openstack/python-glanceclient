@@ -18,6 +18,11 @@ import os
 import sys
 import uuid
 
+if os.name == 'nt':
+    import msvcrt
+else:
+    msvcrt = None
+
 import prettytable
 
 from glanceclient import exc
@@ -32,6 +37,61 @@ def arg(*args, **kwargs):
         # to the options list positional options will appear to be backwards.
         func.__dict__.setdefault('arguments', []).insert(0, (args, kwargs))
         return func
+    return _decorator
+
+
+def schema_args(schema_getter, omit=[]):
+    typemap = {
+        'string': str,
+        'integer': int,
+        'boolean': string_to_bool,
+        'array': list
+    }
+
+    def _decorator(func):
+        schema = schema_getter()
+        if schema is None:
+            param = '<unavailable>'
+            kwargs = {
+                'help': ("Please run with connection parameters set to "
+                         "retrieve the schema for generating help for this "
+                         "command")
+            }
+            func.__dict__.setdefault('arguments', []).insert(0, ((param, ),
+                                                                 kwargs))
+        else:
+            properties = schema.get('properties', {})
+            for name, property in properties.iteritems():
+                if name in omit:
+                    continue
+                param = '--' + name.replace('_', '-')
+                kwargs = {}
+
+                type_str = property.get('type', 'string')
+                if type_str == 'array':
+                    items = property.get('items')
+                    kwargs['type'] = typemap.get(items.get('type'))
+                    kwargs['nargs'] = '+'
+                else:
+                    kwargs['type'] = typemap.get(type_str)
+
+                if type_str == 'boolean':
+                    kwargs['metavar'] = '[True|False]'
+                else:
+                    kwargs['metavar'] = '<%s>' % name.upper()
+
+                description = property.get('description', "")
+                if 'enum' in property:
+                    if len(description):
+                        description += " "
+                    description += ("Valid values: " +
+                                    ', '.join(property.get('enum')))
+                kwargs['help'] = description
+
+                func.__dict__.setdefault('arguments',
+                                         []).insert(0, ((param, ), kwargs))
+        return func
+
     return _decorator
 
 
@@ -224,3 +284,29 @@ def get_file_size(file_obj):
                 return
             else:
                 raise
+
+
+def get_data_file(args):
+    if args.file:
+        return open(args.file, 'rb')
+    else:
+        # distinguish cases where:
+        # (1) stdin is not valid (as in cron jobs):
+        #     glance ... <&-
+        # (2) image data is provided through standard input:
+        #     glance ... < /tmp/file or cat /tmp/file | glance ...
+        # (3) no image data provided:
+        #     glance ...
+        try:
+            os.fstat(0)
+        except OSError:
+            # (1) stdin is not valid (closed...)
+            return None
+        if not sys.stdin.isatty():
+            # (2) image data is provided through standard input
+            if msvcrt:
+                msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
+            return sys.stdin
+        else:
+            # (3) no image data provided
+            return None

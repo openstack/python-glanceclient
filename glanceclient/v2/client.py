@@ -44,8 +44,8 @@ class Client(object):
 
     def _get_image_model(self):
         schema = self.schemas.get('image')
-        return warlock.model_factory(schema.raw())
+        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
 
     def _get_member_model(self):
         schema = self.schemas.get('member')
-        return warlock.model_factory(schema.raw())
+        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)

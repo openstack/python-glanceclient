@@ -18,7 +18,10 @@ Command-line interface to the OpenStack Images API.
 """
 
 import argparse
+import json
 import logging
+import os
+from os.path import expanduser
 import re
 import sys
 
@@ -62,6 +65,13 @@ class OpenStackImagesShell(object):
                             default=False, action="store_true",
                             help="Print more verbose output")
 
+        parser.add_argument('--get-schema',
+                            default=False, action="store_true",
+                            dest='get_schema',
+                            help='Force retrieving the schema used to generate'
+                                 ' portions of the help text rather than using'
+                                 ' a cached copy. Ignored with api version 1')
+
         parser.add_argument('-k', '--insecure',
                             default=False,
                             action='store_true',
@@ -89,6 +99,7 @@ class OpenStackImagesShell(object):
                             'verify the remote server\'s certificate. '
                             'Without this option glance looks for the '
                             'default system CA certificates.')
+
         parser.add_argument('--ca-file',
                             dest='os_cacert',
                             help='DEPRECATED! Use --os-cacert.')
@@ -356,37 +367,12 @@ class OpenStackImagesShell(object):
         else:
             return None
 
-    def main(self, argv):
-        # Parse args once to find version
-        parser = self.get_base_parser()
-        (options, args) = parser.parse_known_args(argv)
-
-        # build available subcommands based on version
-        api_version = options.os_image_api_version
-        subcommand_parser = self.get_subcommand_parser(api_version)
-        self.parser = subcommand_parser
-
-        # Handle top-level --help/-h before attempting to parse
-        # a command off the command line
-        if options.help or not argv:
-            self.do_help(options)
-            return 0
-
-        # Parse args again and call whatever callback was selected
-        args = subcommand_parser.parse_args(argv)
-
-        # Short-circuit and deal with help command right away.
-        if args.func == self.do_help:
-            self.do_help(args)
-            return 0
-
-        LOG = logging.getLogger('glanceclient')
-        LOG.addHandler(logging.StreamHandler())
-        LOG.setLevel(logging.DEBUG if args.debug else logging.INFO)
-
+    def _get_endpoint_and_token(self, args, force_auth=False):
         image_url = self._get_image_url(args)
-        auth_reqd = (utils.is_authentication_required(args.func) and
-                     not (args.os_auth_token and image_url))
+        auth_token = args.os_auth_token
+
+        auth_reqd = force_auth or (utils.is_authentication_required(args.func)
+                                   and not (auth_token and image_url))
 
         if not auth_reqd:
             endpoint = image_url
@@ -426,8 +412,14 @@ class OpenStackImagesShell(object):
             _ksclient = self._get_ksclient(**kwargs)
             token = args.os_auth_token or _ksclient.auth_token
 
-            endpoint = args.os_image_url or \
-                self._get_endpoint(_ksclient, **kwargs)
+            endpoint = args.os_image_url or self._get_endpoint(_ksclient,
+                                                               **kwargs)
+
+        return endpoint, token
+
+    def _get_versioned_client(self, api_version, args, force_auth=False):
+        endpoint, token = self._get_endpoint_and_token(args,
+                                                       force_auth=force_auth)
 
         kwargs = {
             'token': token,
@@ -438,8 +430,63 @@ class OpenStackImagesShell(object):
             'key_file': args.key_file,
             'ssl_compression': args.ssl_compression
         }
-
         client = glanceclient.Client(api_version, endpoint, **kwargs)
+        return client
+
+    def _cache_schema(self, options, home_dir='~/.glanceclient'):
+        homedir = expanduser(home_dir)
+        if not os.path.exists(homedir):
+            os.makedirs(homedir)
+
+        schema_file_path = homedir + os.sep + "image_schema.json"
+
+        if (not os.path.exists(schema_file_path)) or options.get_schema:
+            try:
+                client = self._get_versioned_client('2', options,
+                                                    force_auth=True)
+                schema = client.schemas.get("image")
+
+                with file(schema_file_path, 'w') as f:
+                    f.write(json.dumps(schema.raw()))
+            except Exception as e:
+                #NOTE(esheffield) do nothing here, we'll get a message later
+                #if the schema is missing
+                pass
+
+    def main(self, argv):
+        # Parse args once to find version
+        parser = self.get_base_parser()
+        (options, args) = parser.parse_known_args(argv)
+
+        # build available subcommands based on version
+        api_version = options.os_image_api_version
+
+        if api_version == '2':
+            self._cache_schema(options)
+
+        subcommand_parser = self.get_subcommand_parser(api_version)
+        self.parser = subcommand_parser
+
+        # Handle top-level --help/-h before attempting to parse
+        # a command off the command line
+        if options.help or not argv:
+            self.do_help(options)
+            return 0
+
+        # Parse args again and call whatever callback was selected
+        args = subcommand_parser.parse_args(argv)
+
+        # Short-circuit and deal with help command right away.
+        if args.func == self.do_help:
+            self.do_help(args)
+            return 0
+
+        LOG = logging.getLogger('glanceclient')
+        LOG.addHandler(logging.StreamHandler())
+        LOG.setLevel(logging.DEBUG if args.debug else logging.INFO)
+
+        client = self._get_versioned_client(api_version, args,
+                                            force_auth=False)
 
         try:
             args.func(client, args)

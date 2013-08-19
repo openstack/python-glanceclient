@@ -16,6 +16,78 @@
 from glanceclient.common import progressbar
 from glanceclient.common import utils
 from glanceclient import exc
+import json
+import os
+from os.path import expanduser
+
+IMAGE_SCHEMA = None
+
+
+def get_image_schema():
+    global IMAGE_SCHEMA
+    if IMAGE_SCHEMA is None:
+        schema_path = expanduser("~/.glanceclient/image_schema.json")
+        if os.path.exists(schema_path) and os.path.isfile(schema_path):
+            with file(schema_path, "r") as f:
+                schema_raw = f.read()
+                IMAGE_SCHEMA = json.loads(schema_raw)
+    return IMAGE_SCHEMA
+
+
+@utils.schema_args(get_image_schema)
+@utils.arg('--property', metavar="<key=value>", action='append',
+           default=[], help=('Arbitrary property to associate with image.'
+                             ' May be used multiple times.'))
+def do_image_create(gc, args):
+    """Create a new image."""
+    schema = gc.schemas.get("image")
+    _args = [(x[0].replace('-', '_'), x[1]) for x in vars(args).items()]
+    fields = dict(filter(lambda x: x[1] is not None and
+                         (x[0] == 'property' or
+                          schema.is_core_property(x[0])),
+                         _args))
+
+    raw_properties = fields.pop('property', [])
+    for datum in raw_properties:
+        key, value = datum.split('=', 1)
+        fields[key] = value
+
+    image = gc.images.create(**fields)
+    ignore = ['self', 'access', 'file', 'schema']
+    image = dict([item for item in image.iteritems()
+                  if item[0] not in ignore])
+    utils.print_dict(image)
+
+
+@utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to update.')
+@utils.schema_args(get_image_schema, omit=['id'])
+@utils.arg('--property', metavar="<key=value>", action='append',
+           default=[], help=('Arbitrary property to associate with image.'
+                             ' May be used multiple times.'))
+@utils.arg('--remove-property', metavar="key", action='append', default=[],
+           help="Name of arbitrary property to remove from the image")
+def do_image_update(gc, args):
+    """Update an existing image."""
+    schema = gc.schemas.get("image")
+    _args = [(x[0].replace('-', '_'), x[1]) for x in vars(args).items()]
+    fields = dict(filter(lambda x: x[1] is not None and
+                         (x[0] in ['property', 'remove_property'] or
+                          schema.is_core_property(x[0])),
+                         _args))
+
+    raw_properties = fields.pop('property', [])
+    for datum in raw_properties:
+        key, value = datum.split('=', 1)
+        fields[key] = value
+
+    remove_properties = fields.pop('remove_property', None)
+
+    image_id = fields.pop('id')
+    image = gc.images.update(image_id, remove_properties, **fields)
+    ignore = ['self', 'access', 'file', 'schema']
+    image = dict([item for item in image.iteritems()
+                  if item[0] not in ignore])
+    utils.print_dict(image)
 
 
 @utils.arg('--page-size', metavar='<SIZE>', default=None, type=int,
@@ -136,6 +208,18 @@ def do_image_download(gc, args):
     if args.progress:
         body = progressbar.VerboseIteratorWrapper(body, len(body))
     utils.save_image(body, args.file)
+
+
+@utils.arg('--file', metavar='<FILE>',
+           help=('Local file that contains disk image to be uploaded'
+                 ' during creation. Alternatively, images can be passed'
+                 ' to the client via stdin.'))
+@utils.arg('id', metavar='<IMAGE_ID>',
+           help='ID of image to upload data to.')
+def do_image_upload(gc, args):
+    """Upload data for a specific image."""
+    image_data = utils.get_data_file(args)
+    gc.images.upload(args.id, image_data)
 
 
 @utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to delete.')

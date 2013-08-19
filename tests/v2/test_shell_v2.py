@@ -102,6 +102,111 @@ class ShellV2Test(testtools.TestCase):
             mocked_list.assert_called_once_with('pass')
             utils.print_dict.assert_called_once_with({'id': 'pass'})
 
+    def test_do_image_create_no_user_props(self):
+        args = self._make_args({'name': 'IMG-01', 'disk_format': 'vhd',
+                                'container_format': 'bare'})
+        with mock.patch.object(self.gc.images, 'create') as mocked_create:
+            ignore_fields = ['self', 'access', 'file', 'schema']
+            expect_image = dict([(field, field) for field in ignore_fields])
+            expect_image['id'] = 'pass'
+            expect_image['name'] = 'IMG-01'
+            expect_image['disk_format'] = 'vhd'
+            expect_image['container_format'] = 'bare'
+            mocked_create.return_value = expect_image
+
+            test_shell.do_image_create(self.gc, args)
+
+            mocked_create.assert_called_once_with(name='IMG-01',
+                                                  disk_format='vhd',
+                                                  container_format='bare')
+            utils.print_dict.assert_called_once_with({
+                'id': 'pass', 'name': 'IMG-01', 'disk_format': 'vhd',
+                'container_format': 'bare'})
+
+    def test_do_image_create_with_user_props(self):
+        args = self._make_args({'name': 'IMG-01',
+                                'property': ['myprop=myval']})
+        with mock.patch.object(self.gc.images, 'create') as mocked_create:
+            ignore_fields = ['self', 'access', 'file', 'schema']
+            expect_image = dict([(field, field) for field in ignore_fields])
+            expect_image['id'] = 'pass'
+            expect_image['name'] = 'IMG-01'
+            expect_image['myprop'] = 'myval'
+            mocked_create.return_value = expect_image
+
+            test_shell.do_image_create(self.gc, args)
+
+            mocked_create.assert_called_once_with(name='IMG-01',
+                                                  myprop='myval')
+            utils.print_dict.assert_called_once_with({
+                'id': 'pass', 'name': 'IMG-01', 'myprop': 'myval'})
+
+    def test_do_image_update_no_user_props(self):
+        args = self._make_args({'id': 'pass', 'name': 'IMG-01',
+                                'disk_format': 'vhd',
+                                'container_format': 'bare'})
+        with mock.patch.object(self.gc.images, 'update') as mocked_update:
+            ignore_fields = ['self', 'access', 'file', 'schema']
+            expect_image = dict([(field, field) for field in ignore_fields])
+            expect_image['id'] = 'pass'
+            expect_image['name'] = 'IMG-01'
+            expect_image['disk_format'] = 'vhd'
+            expect_image['container_format'] = 'bare'
+            mocked_update.return_value = expect_image
+
+            test_shell.do_image_update(self.gc, args)
+
+            mocked_update.assert_called_once_with('pass',
+                                                  None,
+                                                  name='IMG-01',
+                                                  disk_format='vhd',
+                                                  container_format='bare')
+            utils.print_dict.assert_called_once_with({
+                'id': 'pass', 'name': 'IMG-01', 'disk_format': 'vhd',
+                'container_format': 'bare'})
+
+    def test_do_image_update_with_user_props(self):
+        args = self._make_args({'id': 'pass', 'name': 'IMG-01',
+                                'property': ['myprop=myval']})
+        with mock.patch.object(self.gc.images, 'update') as mocked_update:
+            ignore_fields = ['self', 'access', 'file', 'schema']
+            expect_image = dict([(field, field) for field in ignore_fields])
+            expect_image['id'] = 'pass'
+            expect_image['name'] = 'IMG-01'
+            expect_image['myprop'] = 'myval'
+            mocked_update.return_value = expect_image
+
+            test_shell.do_image_update(self.gc, args)
+
+            mocked_update.assert_called_once_with('pass',
+                                                  None,
+                                                  name='IMG-01',
+                                                  myprop='myval')
+            utils.print_dict.assert_called_once_with({
+                'id': 'pass', 'name': 'IMG-01', 'myprop': 'myval'})
+
+    def test_do_image_update_with_remove_props(self):
+        args = self._make_args({'id': 'pass', 'name': 'IMG-01',
+                                'disk_format': 'vhd',
+                                'remove-property': ['container_format']})
+        with mock.patch.object(self.gc.images, 'update') as mocked_update:
+            ignore_fields = ['self', 'access', 'file', 'schema']
+            expect_image = dict([(field, field) for field in ignore_fields])
+            expect_image['id'] = 'pass'
+            expect_image['name'] = 'IMG-01'
+            expect_image['disk_format'] = 'vhd'
+
+            mocked_update.return_value = expect_image
+
+            test_shell.do_image_update(self.gc, args)
+
+            mocked_update.assert_called_once_with('pass',
+                                                  ['container_format'],
+                                                  name='IMG-01',
+                                                  disk_format='vhd')
+            utils.print_dict.assert_called_once_with({
+                'id': 'pass', 'name': 'IMG-01', 'disk_format': 'vhd'})
+
     def test_do_explain(self):
         input = {
             'page_size': 18,
@@ -114,6 +219,15 @@ class ShellV2Test(testtools.TestCase):
             test_shell.do_explain(self.gc, args)
 
             self.gc.schemas.get.assert_called_once_with('test')
+
+    def test_image_upload(self):
+        args = self._make_args({'id': 'IMG-01', 'file': 'test'})
+
+        with mock.patch.object(self.gc.images, 'upload') as mocked_upload:
+            utils.get_data_file = mock.Mock(return_value='testfile')
+            mocked_upload.return_value = None
+            test_shell.do_image_upload(self.gc, args)
+            mocked_upload.assert_called_once_with('IMG-01', 'testfile')
 
     def test_image_download(self):
         args = self._make_args(

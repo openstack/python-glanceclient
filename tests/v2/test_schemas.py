@@ -14,6 +14,7 @@
 #    under the License.
 
 import testtools
+import warlock
 
 from glanceclient.v2 import schemas
 from tests import utils
@@ -41,6 +42,15 @@ fixtures = {
         ),
     },
 }
+
+
+_SCHEMA = schemas.Schema({
+    'name': 'image',
+    'properties': {
+        'name': {'type': 'string'},
+        'color': {'type': 'string'},
+    },
+})
 
 
 class TestSchemaProperty(testtools.TestCase):
@@ -83,3 +93,73 @@ class TestController(testtools.TestCase):
         schema = self.controller.get('image')
         self.assertEqual(schema.name, 'image')
         self.assertEqual([p.name for p in schema.properties], ['name'])
+
+
+class TestSchemaBasedModel(testtools.TestCase):
+    def setUp(self):
+        super(TestSchemaBasedModel, self).setUp()
+        self.model = warlock.model_factory(_SCHEMA.raw(),
+                                           schemas.SchemaBasedModel)
+
+    def test_patch_should_replace_missing_core_properties(self):
+        obj = {
+            'name': 'fred'
+        }
+
+        original = self.model(obj)
+        original['color'] = 'red'
+
+        patch = original.patch
+        expected = '[{"path": "/color", "value": "red", "op": "replace"}]'
+        self.assertEqual(patch, expected)
+
+    def test_patch_should_add_extra_properties(self):
+        obj = {
+            'name': 'fred',
+        }
+
+        original = self.model(obj)
+        original['weight'] = '10'
+
+        patch = original.patch
+        expected = '[{"path": "/weight", "value": "10", "op": "add"}]'
+        self.assertEqual(patch, expected)
+
+    def test_patch_should_replace_extra_properties(self):
+        obj = {
+            'name': 'fred',
+            'weight': '10'
+        }
+
+        original = self.model(obj)
+        original['weight'] = '22'
+
+        patch = original.patch
+        expected = '[{"path": "/weight", "value": "22", "op": "replace"}]'
+        self.assertEqual(patch, expected)
+
+    def test_patch_should_remove_extra_properties(self):
+        obj = {
+            'name': 'fred',
+            'weight': '10'
+        }
+
+        original = self.model(obj)
+        del original['weight']
+
+        patch = original.patch
+        expected = '[{"path": "/weight", "op": "remove"}]'
+        self.assertEqual(patch, expected)
+
+    def test_patch_should_remove_core_properties(self):
+        obj = {
+            'name': 'fred',
+            'color': 'red'
+        }
+
+        original = self.model(obj)
+        del original['color']
+
+        patch = original.patch
+        expected = '[{"path": "/color", "op": "remove"}]'
+        self.assertEqual(patch, expected)

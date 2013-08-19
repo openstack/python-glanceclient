@@ -17,9 +17,17 @@
 
 import argparse
 import os
+import tempfile
+
+import mock
 
 from glanceclient import exc
 from glanceclient import shell as openstack_shell
+
+#NOTE (esheffield) Used for the schema caching tests
+from glanceclient.v2 import schemas as schemas
+import json
+
 from tests import utils
 
 DEFAULT_IMAGE_URL = 'http://127.0.0.1:5000/'
@@ -91,3 +99,102 @@ class ShellTest(utils.TestCase):
         test_shell = openstack_shell.OpenStackImagesShell()
         targeted_image_url = test_shell._get_image_url(fake_args)
         self.assertEqual(expected_image_url, targeted_image_url)
+
+
+class ShellCacheSchemaTest(utils.TestCase):
+    def setUp(self):
+        super(ShellCacheSchemaTest, self).setUp()
+        self.shell = openstack_shell.OpenStackImagesShell()
+        self._mock_client_setup()
+
+    def _mock_client_setup(self):
+        self.schema_dict = {
+            'name': 'image',
+            'properties': {
+                'name': {'type': 'string', 'description': 'Name of image'},
+            },
+        }
+
+        self.client = mock.Mock()
+        self.client.schemas.get.return_value = schemas.Schema(self.schema_dict)
+
+    def _make_args(self, args):
+        class Args():
+            def __init__(self, entries):
+                self.__dict__.update(entries)
+
+        return Args(args)
+
+    def _write_file(self, path, text):
+        with file(path, 'w') as f:
+            f.write(text)
+
+    def _read_file(self, path):
+        with file(path, 'r') as f:
+            text = f.read()
+
+        return text
+
+    def test_cache_schema_gets_when_not_exists(self):
+        cache_dir = tempfile.gettempdir()
+
+        cache_file = cache_dir + '/image_schema.json'
+
+        if os.path.exists(cache_file):
+            os.remove(cache_file)
+
+        options = {
+            'get_schema': False
+        }
+
+        with mock.patch.object(self.shell, '_get_versioned_client')\
+                as mocked_get_client:
+            mocked_get_client.return_value = self.client
+            self.shell._cache_schema(self._make_args(options),
+                                     home_dir=cache_dir)
+
+        self.assertTrue(os.path.exists(cache_file))
+
+    def test_cache_schema_gets_when_forced(self):
+        cache_dir = tempfile.gettempdir()
+
+        cache_file = cache_dir + '/image_schema.json'
+
+        dummy_schema = 'my dummy schema'
+        self._write_file(cache_file, dummy_schema)
+
+        options = {
+            'get_schema': True
+        }
+
+        with mock.patch.object(self.shell, '_get_versioned_client') \
+                as mocked_get_client:
+            mocked_get_client.return_value = self.client
+            self.shell._cache_schema(self._make_args(options),
+                                     home_dir=cache_dir)
+
+        self.assertTrue(os.path.exists(cache_file))
+        text = self._read_file(cache_file)
+        self.assertEquals(text, json.dumps(self.schema_dict))
+
+    def test_cache_schema_leaves_when_present_not_forced(self):
+        cache_dir = tempfile.gettempdir()
+
+        cache_file = cache_dir + '/image_schema.json'
+
+        dummy_schema = 'my dummy schema'
+        self._write_file(cache_file, dummy_schema)
+
+        options = {
+            'get_schema': False
+        }
+
+        with mock.patch.object(self.shell, '_get_versioned_client') \
+                as mocked_get_client:
+            mocked_get_client.return_value = self.client
+            self.shell._cache_schema(self._make_args(options),
+                                     home_dir=cache_dir)
+
+        self.assertTrue(os.path.exists(cache_file))
+        text = self._read_file(cache_file)
+        self.assertEquals(text, dummy_schema)

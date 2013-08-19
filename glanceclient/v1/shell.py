@@ -15,13 +15,7 @@
 
 import argparse
 import copy
-import os
 import sys
-
-if os.name == 'nt':
-    import msvcrt
-else:
-    msvcrt = None
 
 from glanceclient import exc
 from glanceclient.common import utils
@@ -125,30 +119,7 @@ def _image_show(image, human_readable=False):
 
 def _set_data_field(fields, args):
     if 'location' not in fields and 'copy_from' not in fields:
-        if args.file:
-            fields['data'] = open(args.file, 'rb')
-        else:
-            # distinguish cases where:
-            # (1) stdin is not valid (as in cron jobs):
-            #     glance ... <&-
-            # (2) image data is provided through standard input:
-            #     glance ... < /tmp/file or cat /tmp/file | glance ...
-            # (3) no image data provided:
-            #     glance ...
-            try:
-                os.fstat(0)
-            except OSError:
-                # (1) stdin is not valid (closed...)
-                fields['data'] = None
-                return
-            if not sys.stdin.isatty():
-                # (2) image data is provided through standard input
-                if msvcrt:
-                    msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
-                fields['data'] = sys.stdin
-            else:
-                # (3) no image data provided
-                fields['data'] = None
+        fields['data'] = utils.get_data_file(args)
 
 
 @utils.arg('image', metavar='<IMAGE>', help='Name or ID of image to describe.')

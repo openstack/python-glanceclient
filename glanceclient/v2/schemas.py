@@ -14,6 +14,31 @@
 #    under the License.
 
 import copy
+import jsonpatch
+import warlock.model as warlock
+
+
+class SchemaBasedModel(warlock.Model):
+    """Glance specific subclass of the warlock Model
+
+    This implementation alters the function of the patch property
+    to take into account the schema's core properties. With this version
+    undefined properties which are core will generated 'replace'
+    operations rather than 'add' since this is what the Glance API
+    expects.
+    """
+
+    @warlock.Model.patch.getter
+    def patch(self):
+        """Return a jsonpatch object representing the delta."""
+        original = copy.deepcopy(self.__dict__['__original__'])
+        new = dict(self)
+        if self.__dict__['schema']:
+            for prop in self.schema['properties']:
+                if prop not in original and prop in new:
+                    original[prop] = None
+
+        return jsonpatch.make_patch(original, dict(self)).to_string()
 
 
 class SchemaProperty(object):
@@ -39,6 +64,12 @@ class Schema(object):
         self.name = raw_schema['name']
         raw_properties = raw_schema['properties']
         self.properties = translate_schema_properties(raw_properties)
+
+    def is_core_property(self, property_name):
+        for prop in self.properties:
+            if property_name == prop.name:
+                return True
+        return False
 
     def raw(self):
         return copy.deepcopy(self._raw_schema)
