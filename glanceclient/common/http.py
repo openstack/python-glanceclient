@@ -18,7 +18,6 @@ import errno
 import hashlib
 import httplib
 import logging
-import posixpath
 import socket
 import StringIO
 import struct
@@ -191,8 +190,8 @@ class HTTPClient(object):
 
         try:
             if self.endpoint_path:
-                url = '%s/%s' % (self.endpoint_path, url)
-            conn_url = posixpath.normpath(url)
+                url = urlparse.urljoin(self.endpoint_path, url)
+            conn_url = urlparse.urlsplit(url).geturl()
             # Note(flaper87): Ditto, headers / url
             # encoding to make httplib happy.
             conn_url = strutils.safe_encode(conn_url)
