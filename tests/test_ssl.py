@@ -129,6 +129,21 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         except Exception:
             self.fail('Unexpected exception.')
 
+    def test_ssl_cert_cname_wildcard(self):
+        """
+        Test certificate: wildcard CN match
+        """
+        cert_file = os.path.join(TEST_VAR_DIR, 'wildcard-certificate.crt')
+        cert = crypto.load_certificate(crypto.FILETYPE_PEM,
+                                       file(cert_file).read())
+        # The expected cert should have CN=*.pong.example.com
+        self.assertEqual(cert.get_subject().commonName, '*.pong.example.com')
+        try:
+            conn = http.VerifiedHTTPSConnection('ping.pong.example.com', 0)
+            conn.verify_callback(None, cert, 0, 0, 1)
+        except Exception:
+            self.fail('Unexpected exception.')
+
     def test_ssl_cert_subject_alt_name(self):
         """
         Test certificate: SAN match
