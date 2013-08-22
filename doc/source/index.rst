@@ -37,6 +37,18 @@ See also :doc:`/man/glance`.
 Release Notes
 =============
 
+0.11.0
+------
+
+* 1212463_: Allow single-wildcard SSL common name matching
+* 1208618_: Support absolute redirects for endpoint urls
+* 1190606_: Properly handle integer-like image ids
+* Support removing properties from images in the v2 library
+
+.. _1212463: http://bugs.launchpad.net/python-glanceclient/+bug/1212463
+.. _1208618: http://bugs.launchpad.net/python-glanceclient/+bug/1208618
+.. _1190606: http://bugs.launchpad.net/python-glanceclient/+bug/1190606
+
 0.10.0
 ------
 
