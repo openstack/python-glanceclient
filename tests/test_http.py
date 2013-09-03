@@ -16,14 +16,17 @@
 import errno
 import socket
 
+import mock
 from mox3 import mox
 import six
 from six.moves import http_client
 from six.moves.urllib import parse
+import tempfile
 import testtools
 
 import glanceclient
 from glanceclient.common import http
+from glanceclient.common import utils as client_utils
 from glanceclient import exc
 from tests import utils
 
@@ -195,6 +198,86 @@ class TestClient(testtools.TestCase):
 
         resp, body = client.raw_request('GET', '/v1/images/detail')
         self.assertEqual(resp, fake)
+
+    def test_raw_request_no_content_length(self):
+        with tempfile.NamedTemporaryFile() as test_file:
+            test_file.write('abcd')
+            test_file.seek(0)
+            data_length = 4
+            self.assertEqual(client_utils.get_file_size(test_file),
+                             data_length)
+
+            exp_resp = {'body': test_file}
+            exp_resp['headers'] = {'Content-Length': str(data_length),
+                                   'Content-Type': 'application/octet-stream'}
+
+            def mock_request(url, method, **kwargs):
+                return kwargs
+
+            rq_kwargs = {'body': test_file, 'content_length': None}
+
+            with mock.patch.object(self.client, '_http_request') as mock_rq:
+                mock_rq.side_effect = mock_request
+                resp = self.client.raw_request('PUT', '/v1/images/detail',
+                                               **rq_kwargs)
+
+                rq_kwargs.pop('content_length')
+                headers = {'Content-Length': str(data_length),
+                           'Content-Type': 'application/octet-stream'}
+                rq_kwargs['headers'] = headers
+
+                mock_rq.assert_called_once_with('/v1/images/detail', 'PUT',
+                                                **rq_kwargs)
+
+            self.assertEqual(exp_resp, resp)
+
+    def test_raw_request_w_content_length(self):
+        with tempfile.NamedTemporaryFile() as test_file:
+            test_file.write('abcd')
+            test_file.seek(0)
+            data_length = 4
+            self.assertEqual(client_utils.get_file_size(test_file),
+                             data_length)
+
+            exp_resp = {'body': test_file}
+            # NOTE: we expect the actual file size to be overridden by the
+            # supplied content length.
+            exp_resp['headers'] = {'Content-Length': '4',
+                                   'Content-Type': 'application/octet-stream'}
+
+            def mock_request(url, method, **kwargs):
+                return kwargs
+
+            rq_kwargs = {'body': test_file, 'content_length': data_length}
+
+            with mock.patch.object(self.client, '_http_request') as mock_rq:
+                mock_rq.side_effect = mock_request
+                resp = self.client.raw_request('PUT', '/v1/images/detail',
+                                               **rq_kwargs)
+
+                rq_kwargs.pop('content_length')
+                headers = {'Content-Length': str(data_length),
+                           'Content-Type': 'application/octet-stream'}
+                rq_kwargs['headers'] = headers
+
+                mock_rq.assert_called_once_with('/v1/images/detail', 'PUT',
+                                                **rq_kwargs)
+
+            self.assertEqual(exp_resp, resp)
+
+    def test_raw_request_w_bad_content_length(self):
+        with tempfile.NamedTemporaryFile() as test_file:
+            test_file.write('abcd')
+            test_file.seek(0)
+            self.assertEqual(client_utils.get_file_size(test_file), 4)
+
+            def mock_request(url, method, **kwargs):
+                return kwargs
+
+            with mock.patch.object(self.client, '_http_request', mock_request):
+                self.assertRaises(AttributeError, self.client.raw_request,
+                                  'PUT', '/v1/images/detail', body=test_file,
+                                  content_length=32)
 
     def test_connection_refused_raw_request(self):
         """

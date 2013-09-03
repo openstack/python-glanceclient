@@ -280,12 +280,36 @@ class HTTPClient(object):
         kwargs.setdefault('headers', {})
         kwargs['headers'].setdefault('Content-Type',
                                      'application/octet-stream')
-        if 'body' in kwargs:
-            if (hasattr(kwargs['body'], 'read')
-                    and method.lower() in ('post', 'put')):
+
+        if 'content_length' in kwargs:
+            content_length = kwargs.pop('content_length')
+        else:
+            content_length = None
+
+        if (('body' in kwargs) and (hasattr(kwargs['body'], 'read') and
+                                    method.lower() in ('post', 'put'))):
+
+            # NOTE(dosaboy): only use chunked transfer if not setting a
+            # content length since setting it will implicitly disable
+            # chunking.
+
+            file_content_length = utils.get_file_size(kwargs['body'])
+            if content_length is None:
+                content_length = file_content_length
+            elif (file_content_length and
+                  (content_length != file_content_length)):
+                errmsg = ("supplied content-length (%s) does not match "
+                          "length of supplied data (%s)" %
+                          (content_length, file_content_length))
+                raise AttributeError(errmsg)
+
+            if content_length is None:
                 # We use 'Transfer-Encoding: chunked' because
                 # body size may not always be known in advance.
                 kwargs['headers']['Transfer-Encoding'] = 'chunked'
+            else:
+                kwargs['headers']['Content-Length'] = str(content_length)
+
         return self._http_request(url, method, **kwargs)
 
 

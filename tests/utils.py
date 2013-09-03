@@ -26,8 +26,11 @@ class FakeAPI(object):
         self.fixtures = fixtures
         self.calls = []
 
-    def _request(self, method, url, headers=None, body=None):
+    def _request(self, method, url, headers=None, body=None,
+                 content_length=None):
         call = (method, url, headers or {}, body)
+        if content_length is not None:
+            call = tuple(list(call) + [content_length])
         self.calls.append(call)
         return self.fixtures[url][method]
 

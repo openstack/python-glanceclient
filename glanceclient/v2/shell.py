@@ -218,12 +218,17 @@ def do_image_download(gc, args):
            help=('Local file that contains disk image to be uploaded'
                  ' during creation. Alternatively, images can be passed'
                  ' to the client via stdin.'))
+@utils.arg('--size', metavar='<IMAGE_SIZE>', type=int,
+           help='Size in bytes of image to be uploaded. Default is to get '
+                'size from provided data object but this is supported in case '
+                'where size cannot be inferred.',
+           default=None)
 @utils.arg('id', metavar='<IMAGE_ID>',
            help='ID of image to upload data to.')
 def do_image_upload(gc, args):
     """Upload data for a specific image."""
     image_data = utils.get_data_file(args)
-    gc.images.upload(args.id, image_data)
+    gc.images.upload(args.id, image_data, args.size)
 
 
 @utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to delete.')

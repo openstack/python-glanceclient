@@ -97,18 +97,20 @@ class Controller(object):
             body.set_checksum(checksum)
         return body
 
-    def upload(self, image_id, image_data):
+    def upload(self, image_id, image_data, image_size=None):
         """
         Upload the data for an image.
 
         :param image_id: ID of the image to upload data for.
         :param image_data: File-like object supplying the data to upload.
+        :param image_size: Total size in bytes of image to be uploaded.
         """
         url = '/v2/images/%s/file' % image_id
         hdrs = {'Content-Type': 'application/octet-stream'}
         self.http_client.raw_request('PUT', url,
                                      headers=hdrs,
-                                     body=image_data)
+                                     body=image_data,
+                                     content_length=image_size)
 
     def delete(self, image_id):
         """Delete an image."""
