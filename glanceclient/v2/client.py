@@ -21,6 +21,7 @@ from glanceclient.v2 import image_tags
 from glanceclient.v2 import images
 from glanceclient.v2 import metadefs
 from glanceclient.v2 import schemas
+from glanceclient.v2 import tasks
 
 
 class Client(object):
@@ -43,6 +44,8 @@ class Client(object):
                                                 self.schemas)
         self.image_members = image_members.Controller(self.http_client,
                                                       self.schemas)
+
+        self.tasks = tasks.Controller(self.http_client, self.schemas)
 
         self.metadefs_resource_type = (
             metadefs.ResourceTypeController(self.http_client, self.schemas))

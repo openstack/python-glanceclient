@@ -16,6 +16,7 @@
 from glanceclient.common import progressbar
 from glanceclient.common import utils
 from glanceclient import exc
+from glanceclient.v2 import tasks
 import json
 import os
 from os.path import expanduser
@@ -689,3 +690,67 @@ def do_md_object_list(gc, args):
         }
     }
     utils.print_list(objects, columns, field_settings=column_settings)
+
+
+@utils.arg('--sort-key', default='status',
+           choices=tasks.SORT_KEY_VALUES,
+           help='Sort task list by specified field.')
+@utils.arg('--sort-dir', default='desc',
+           choices=tasks.SORT_DIR_VALUES,
+           help='Sort task list in specified direction.')
+@utils.arg('--page-size', metavar='<SIZE>', default=None, type=int,
+           help='Number of tasks to request in each paginated request.')
+@utils.arg('--type', metavar='<TYPE>',
+           help='Filter tasks to those that have this type.')
+@utils.arg('--status', metavar='<STATUS>',
+           help='Filter tasks to those that have this status.')
+def do_task_list(gc, args):
+    """List tasks you can access."""
+    filter_keys = ['type', 'status']
+    filter_items = [(key, getattr(args, key)) for key in filter_keys]
+    filters = dict([item for item in filter_items if item[1] is not None])
+
+    kwargs = {'filters': filters}
+    if args.page_size is not None:
+        kwargs['page_size'] = args.page_size
+
+    kwargs['sort_key'] = args.sort_key
+    kwargs['sort_dir'] = args.sort_dir
+
+    tasks = gc.tasks.list(**kwargs)
+
+    columns = ['ID', 'Type', 'Status', 'Owner']
+    utils.print_list(tasks, columns)
+
+
+@utils.arg('id', metavar='<TASK_ID>', help='ID of task to describe.')
+def do_task_show(gc, args):
+    """Describe a specific task."""
+    task = gc.tasks.get(args.id)
+    ignore = ['self', 'schema']
+    task = dict([item for item in task.iteritems() if item[0] not in ignore])
+    utils.print_dict(task)
+
+
+@utils.arg('--type', metavar='<TYPE>',
+           help='Type of Task. Please refer to Glance schema or documentation'
+           ' to see which tasks are supported.')
+@utils.arg('--input', metavar='<STRING>', default='{}',
+           help='Parameters of the task to be launched')
+def do_task_create(gc, args):
+    """Create a new task."""
+    if not (args.type and args.input):
+        utils.exit('Unable to create task. Specify task type and input.')
+    else:
+        try:
+            input = json.loads(args.input)
+        except ValueError:
+            utils.exit('Failed to parse the "input" parameter. Must be a '
+                       'valid JSON object.')
+
+        task_values = {'type': args.type, 'input': input}
+        task = gc.tasks.create(**task_values)
+        ignore = ['self', 'schema']
+        task = dict([item for item in task.iteritems()
+                     if item[0] not in ignore])
+        utils.print_dict(task)
