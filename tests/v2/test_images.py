@@ -514,7 +514,7 @@ class TestController(testtools.TestCase):
         params = {'name': 'pong'}
         image = self.controller.update(image_id, **params)
         expect_hdrs = {
-            'Content-Type': 'application/openstack-images-v2.0-json-patch',
+            'Content-Type': 'application/openstack-images-v2.1-json-patch',
         }
         expect_body = '[{"path": "/name", "value": "pong", "op": "replace"}]'
         expect = [
@@ -533,7 +533,7 @@ class TestController(testtools.TestCase):
         params = {'finn': 'human'}
         image = self.controller.update(image_id, **params)
         expect_hdrs = {
-            'Content-Type': 'application/openstack-images-v2.0-json-patch',
+            'Content-Type': 'application/openstack-images-v2.1-json-patch',
         }
         expect_body = '[{"path": "/finn", "value": "human", "op": "add"}]'
         expect = [
@@ -552,7 +552,7 @@ class TestController(testtools.TestCase):
         remove_props = ['barney']
         image = self.controller.update(image_id, remove_props)
         expect_hdrs = {
-            'Content-Type': 'application/openstack-images-v2.0-json-patch',
+            'Content-Type': 'application/openstack-images-v2.1-json-patch',
         }
         expect_body = '[{"path": "/barney", "op": "remove"}]'
         expect = [
@@ -573,7 +573,7 @@ class TestController(testtools.TestCase):
         remove_props = ['barney']
         image = self.controller.update(image_id, remove_props, **params)
         expect_hdrs = {
-            'Content-Type': 'application/openstack-images-v2.0-json-patch',
+            'Content-Type': 'application/openstack-images-v2.1-json-patch',
         }
         expect_body = '[{"path": "/barney", "value": "miller", ' \
                       '"op": "replace"}]'
@@ -595,7 +595,7 @@ class TestController(testtools.TestCase):
         remove_props = ['finn']
         image = self.controller.update(image_id, remove_props, **params)
         expect_hdrs = {
-            'Content-Type': 'application/openstack-images-v2.0-json-patch',
+            'Content-Type': 'application/openstack-images-v2.1-json-patch',
         }
         expect_body = '[{"path": "/finn", "value": "human", "op": "add"}]'
         expect = [
