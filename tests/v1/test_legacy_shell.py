@@ -1,4 +1,4 @@
-# Copyright 2013 OpenStack LLC.
+# Copyright 2013 OpenStack Foundation
 # Copyright (C) 2013 Yahoo! Inc.
 # All Rights Reserved.
 #
