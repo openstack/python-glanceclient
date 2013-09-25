@@ -23,6 +23,7 @@ import re
 import sys
 
 from keystoneclient.v2_0 import client as ksclient
+import netaddr
 
 import glanceclient
 from glanceclient import exc
@@ -347,6 +348,9 @@ class OpenStackImagesShell(object):
         if args.os_image_url:
             return args.os_image_url
         elif args.host:
+            # Check if it is legal ipv6 address, if so, need wrap it with '[]'
+            if netaddr.valid_ipv6(args.host):
+                args.host = '[%s]' % args.host
             scheme = 'https' if args.use_ssl else 'http'
             return '%s://%s:%s/' % (scheme, args.host, args.port)
         else:
