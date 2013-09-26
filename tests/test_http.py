@@ -100,6 +100,30 @@ class TestClient(testtools.TestCase):
                        (comm_err.message, self.endpoint))
             self.assertTrue(self.endpoint in comm_err.message, fail_msg)
 
+    def test_request_redirected(self):
+        resp = utils.FakeResponse({'location': 'http://www.example.com'},
+                                  status=302, body=StringIO.StringIO())
+        httplib.HTTPConnection.request(
+            mox.IgnoreArg(),
+            mox.IgnoreArg(),
+            headers=mox.IgnoreArg(),
+        )
+        httplib.HTTPConnection.getresponse().AndReturn(resp)
+
+        # The second request should be to the redirected location
+        expected_response = 'Ok'
+        resp2 = utils.FakeResponse({}, StringIO.StringIO(expected_response))
+        httplib.HTTPConnection.request(
+            'GET',
+            'http://www.example.com',
+            headers=mox.IgnoreArg(),
+        )
+        httplib.HTTPConnection.getresponse().AndReturn(resp2)
+
+        self.mock.ReplayAll()
+
+        self.client.json_request('GET', '/v1/images/detail')
+
     def test_http_encoding(self):
         httplib.HTTPConnection.request(
             mox.IgnoreArg(),

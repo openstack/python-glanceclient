@@ -233,7 +233,8 @@ class HTTPClient(object):
             raise exc.from_response(resp, body_str)
         elif resp.status in (301, 302, 305):
             # Redirected. Reissue the request to the new location.
-            return self._http_request(resp['location'], method, **kwargs)
+            return self._http_request(resp.getheader('location', None), method,
+                                      **kwargs)
         elif resp.status == 300:
             raise exc.from_response(resp)
 
