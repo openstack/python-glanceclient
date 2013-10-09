@@ -87,7 +87,9 @@ class ShellTest(utils.TestCase):
             conflict_handler='error',
             add_help=False,
             formatter_class=openstack_shell.HelpFormatter,)
-        self.assertTrue(expected, actual_parser)
+        # NOTE(guochbo): Can't compare ArgumentParser instances directly
+        # Convert ArgumentPaser to string first.
+        self.assertEqual(str(expected), str(actual_parser))
 
     def test_get_image_url_by_ipv6Addr_host(self):
         fake_args = lambda: None
