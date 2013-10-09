@@ -248,7 +248,7 @@ class HTTPClient(object):
 
         resp, body_iter = self._http_request(url, method, **kwargs)
 
-        if 'application/json' in resp.getheader('content-type', None):
+        if 'application/json' in resp.getheader('content-type', ''):
             body = ''.join([chunk for chunk in body_iter])
             try:
                 body = json.loads(body)
