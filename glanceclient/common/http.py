@@ -18,6 +18,7 @@ import errno
 import hashlib
 import httplib
 import logging
+import posixpath
 import socket
 import StringIO
 import struct
@@ -190,7 +191,20 @@ class HTTPClient(object):
 
         try:
             if self.endpoint_path:
-                url = urlparse.urljoin(self.endpoint_path, url)
+                # NOTE(yuyangbj): this method _http_request could either be
+                # called by API layer, or be called recursively with
+                # redirection. For example, url would be '/v1/images/detail'
+                # from API layer, but url would be 'https://example.com:92/
+                # v1/images/detail'  from recursion.
+                # See bug #1230032 and bug #1208618.
+                if url is not None:
+                    all_parts = urlparse.urlparse(url)
+                    if not (all_parts.scheme and all_parts.netloc):
+                        norm_parse = posixpath.normpath
+                        url = norm_parse('/'.join([self.endpoint_path, url]))
+                else:
+                    url = self.endpoint_path
+
             conn_url = urlparse.urlsplit(url).geturl()
             # Note(flaper87): Ditto, headers / url
             # encoding to make httplib happy.

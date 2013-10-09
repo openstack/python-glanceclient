@@ -168,6 +168,34 @@ class TestClient(testtools.TestCase):
         resp, body = self.client.raw_request('GET', '/v1/images/detail')
         self.assertEqual(resp, fake)
 
+    def test_customized_path_raw_request(self):
+        """
+        Verify the customized path being used for HTTP requests
+        reflects accurately
+        """
+
+        def check_request(method, path, **kwargs):
+            self.assertEqual(method, 'GET')
+            self.assertEqual(path, '/customized-path/v1/images/detail')
+
+        # NOTE(yuyangbj): see bug 1230032 to get more info
+        endpoint = 'http://example.com:9292/customized-path'
+        client = http.HTTPClient(endpoint, token=u'abc123')
+        self.assertEqual(client.endpoint_path, '/customized-path')
+
+        httplib.HTTPConnection.request(
+            mox.IgnoreArg(),
+            mox.IgnoreArg(),
+            headers=mox.IgnoreArg()).WithSideEffects(check_request)
+
+        # fake the response returned by httplib
+        fake = utils.FakeResponse({}, StringIO.StringIO('Ok'))
+        httplib.HTTPConnection.getresponse().AndReturn(fake)
+        self.mock.ReplayAll()
+
+        resp, body = client.raw_request('GET', '/v1/images/detail')
+        self.assertEqual(resp, fake)
+
     def test_connection_refused_raw_request(self):
         """
         Should receive a CommunicationError if connection refused.
