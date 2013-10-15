@@ -14,7 +14,6 @@
 #    under the License.
 
 import errno
-import httplib
 import socket
 import StringIO
 import urlparse
@@ -25,6 +24,7 @@ import testtools
 from glanceclient import exc
 import glanceclient
 from glanceclient.common import http
+from six.moves import http_client
 from tests import utils
 
 
@@ -33,8 +33,8 @@ class TestClient(testtools.TestCase):
     def setUp(self):
         super(TestClient, self).setUp()
         self.mock = mox.Mox()
-        self.mock.StubOutWithMock(httplib.HTTPConnection, 'request')
-        self.mock.StubOutWithMock(httplib.HTTPConnection, 'getresponse')
+        self.mock.StubOutWithMock(http_client.HTTPConnection, 'request')
+        self.mock.StubOutWithMock(http_client.HTTPConnection, 'getresponse')
 
         self.endpoint = 'http://example.com:9292'
         self.client = http.HTTPClient(self.endpoint, token=u'abc123')
@@ -82,7 +82,7 @@ class TestClient(testtools.TestCase):
         And the error should list the host and port that refused the
         connection
         """
-        httplib.HTTPConnection.request(
+        http_client.HTTPConnection.request(
             mox.IgnoreArg(),
             mox.IgnoreArg(),
             headers=mox.IgnoreArg(),
@@ -103,29 +103,29 @@ class TestClient(testtools.TestCase):
     def test_request_redirected(self):
         resp = utils.FakeResponse({'location': 'http://www.example.com'},
                                   status=302, body=StringIO.StringIO())
-        httplib.HTTPConnection.request(
+        http_client.HTTPConnection.request(
             mox.IgnoreArg(),
             mox.IgnoreArg(),
             headers=mox.IgnoreArg(),
         )
-        httplib.HTTPConnection.getresponse().AndReturn(resp)
+        http_client.HTTPConnection.getresponse().AndReturn(resp)
 
         # The second request should be to the redirected location
         expected_response = 'Ok'
         resp2 = utils.FakeResponse({}, StringIO.StringIO(expected_response))
-        httplib.HTTPConnection.request(
+        http_client.HTTPConnection.request(
             'GET',
             'http://www.example.com',
             headers=mox.IgnoreArg(),
         )
-        httplib.HTTPConnection.getresponse().AndReturn(resp2)
+        http_client.HTTPConnection.getresponse().AndReturn(resp2)
 
         self.mock.ReplayAll()
 
         self.client.json_request('GET', '/v1/images/detail')
 
     def test_http_encoding(self):
-        httplib.HTTPConnection.request(
+        http_client.HTTPConnection.request(
             mox.IgnoreArg(),
             mox.IgnoreArg(),
             headers=mox.IgnoreArg())
@@ -134,7 +134,7 @@ class TestClient(testtools.TestCase):
         # returned by httplib
         expected_response = 'Ok'
         fake = utils.FakeResponse({}, StringIO.StringIO(expected_response))
-        httplib.HTTPConnection.getresponse().AndReturn(fake)
+        http_client.HTTPConnection.getresponse().AndReturn(fake)
         self.mock.ReplayAll()
 
         headers = {"test": u'ni\xf1o'}
@@ -155,14 +155,14 @@ class TestClient(testtools.TestCase):
             # NOTE(kmcdonald): See bug #1179984 for more details.
             self.assertEqual(path, '/v1/images/detail')
 
-        httplib.HTTPConnection.request(
+        http_client.HTTPConnection.request(
             mox.IgnoreArg(),
             mox.IgnoreArg(),
             headers=mox.IgnoreArg()).WithSideEffects(check_request)
 
         # fake the response returned by httplib
         fake = utils.FakeResponse({}, StringIO.StringIO('Ok'))
-        httplib.HTTPConnection.getresponse().AndReturn(fake)
+        http_client.HTTPConnection.getresponse().AndReturn(fake)
         self.mock.ReplayAll()
 
         resp, body = self.client.raw_request('GET', '/v1/images/detail')
@@ -183,14 +183,14 @@ class TestClient(testtools.TestCase):
         client = http.HTTPClient(endpoint, token=u'abc123')
         self.assertEqual(client.endpoint_path, '/customized-path')
 
-        httplib.HTTPConnection.request(
+        http_client.HTTPConnection.request(
             mox.IgnoreArg(),
             mox.IgnoreArg(),
             headers=mox.IgnoreArg()).WithSideEffects(check_request)
 
         # fake the response returned by httplib
         fake = utils.FakeResponse({}, StringIO.StringIO('Ok'))
-        httplib.HTTPConnection.getresponse().AndReturn(fake)
+        http_client.HTTPConnection.getresponse().AndReturn(fake)
         self.mock.ReplayAll()
 
         resp, body = client.raw_request('GET', '/v1/images/detail')
@@ -204,9 +204,9 @@ class TestClient(testtools.TestCase):
         """
         endpoint = 'http://example.com:9292'
         client = http.HTTPClient(endpoint, token=u'abc123')
-        httplib.HTTPConnection.request(mox.IgnoreArg(), mox.IgnoreArg(),
-                                       headers=mox.IgnoreArg()
-                                       ).AndRaise(socket.error())
+        http_client.HTTPConnection.request(mox.IgnoreArg(), mox.IgnoreArg(),
+                                           headers=mox.IgnoreArg()
+                                           ).AndRaise(socket.error())
         self.mock.ReplayAll()
         try:
             client.raw_request('GET', '/v1/images/detail?limit=20')

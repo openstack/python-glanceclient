@@ -16,13 +16,14 @@
 import copy
 import errno
 import hashlib
-import httplib
 import logging
 import posixpath
 import socket
 import StringIO
 import struct
 import urlparse
+
+from six.moves import http_client
 
 try:
     import json
@@ -52,7 +53,7 @@ try:
     else:
         raise ImportError
 except ImportError:
-    from httplib import HTTPSConnection
+    HTTPSConnection = http_client.HTTPSConnection
     from OpenSSL.SSL import Connection as Connection
 
 
@@ -91,7 +92,7 @@ class HTTPClient(object):
         if scheme == 'https':
             return VerifiedHTTPSConnection
         else:
-            return httplib.HTTPConnection
+            return http_client.HTTPConnection
 
     @staticmethod
     def get_connection_kwargs(scheme, **kwargs):
@@ -111,7 +112,7 @@ class HTTPClient(object):
         try:
             return _class(self.endpoint_hostname, self.endpoint_port,
                           **self.connection_kwargs)
-        except httplib.InvalidURL:
+        except http_client.InvalidURL:
             raise exc.InvalidEndpoint()
 
     def log_curl_request(self, method, url, kwargs):
