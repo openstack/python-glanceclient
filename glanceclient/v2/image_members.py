@@ -27,8 +27,8 @@ class Controller(object):
 
     def delete(self, image_id, member_id):
         self.http_client.json_request('DELETE',
-                                      '/v2/images/%s/members/%s' % (image_id,
-                                      member_id))
+                                      '/v2/images/%s/members/%s' %
+                                      (image_id, member_id))
 
     def update(self, image_id, member_id, member_status):
         url = '/v2/images/%s/members/%s' % (image_id, member_id)

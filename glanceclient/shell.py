@@ -241,8 +241,8 @@ class OpenStackImagesShell(object):
                             help='DEPRECATED! Use --os-image-url.')
 
         parser.add_argument('--os-image-api-version',
-                            default=utils.env(
-                            'OS_IMAGE_API_VERSION', default='1'),
+                            default=utils.env('OS_IMAGE_API_VERSION',
+                                              default='1'),
                             help='Defaults to env[OS_IMAGE_API_VERSION] or 1')
 
         parser.add_argument('--os_image_api_version',
