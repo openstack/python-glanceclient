@@ -24,7 +24,6 @@ import json
 import logging
 import os
 from os.path import expanduser
-import re
 import sys
 
 from keystoneclient.v2_0 import client as ksclient
@@ -306,21 +305,6 @@ class OpenStackImagesShell(object):
                 subparser.add_argument(*args, **kwargs)
             subparser.set_defaults(func=callback)
 
-    # TODO(dtroyer): move this into the common client support?
-    # Compatibility check to remove API version as the trailing component
-    # in a service endpoint; also removes a trailing '/'
-    def _strip_version(self, endpoint):
-        """Strip version from the last component of endpoint if present."""
-
-        # Get rid of trailing '/' if present
-        if endpoint.endswith('/'):
-            endpoint = endpoint[:-1]
-        url_bits = endpoint.split('/')
-        # regex to match 'v1' or 'v2.0' etc
-        if re.match('v\d+\.?\d*', url_bits[-1]):
-            endpoint = '/'.join(url_bits[:-1])
-        return endpoint
-
     def _get_ksclient(self, **kwargs):
         """Get an endpoint and auth token from Keystone.
 
@@ -349,8 +333,7 @@ class OpenStackImagesShell(object):
             endpoint_kwargs['attr'] = 'region'
             endpoint_kwargs['filter_value'] = kwargs.get('region_name')
 
-        endpoint = client.service_catalog.url_for(**endpoint_kwargs)
-        return self._strip_version(endpoint)
+        return client.service_catalog.url_for(**endpoint_kwargs)
 
     def _get_image_url(self, args):
         """Translate the available url-related options into a single string.
