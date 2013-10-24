@@ -177,7 +177,7 @@ class ShellCacheSchemaTest(utils.TestCase):
 
         self.assertTrue(os.path.exists(cache_file))
         text = self._read_file(cache_file)
-        self.assertEquals(text, json.dumps(self.schema_dict))
+        self.assertEqual(text, json.dumps(self.schema_dict))
 
     def test_cache_schema_leaves_when_present_not_forced(self):
         cache_dir = tempfile.gettempdir()
@@ -199,4 +199,4 @@ class ShellCacheSchemaTest(utils.TestCase):
 
         self.assertTrue(os.path.exists(cache_file))
         text = self._read_file(cache_file)
-        self.assertEquals(text, dummy_schema)
+        self.assertEqual(text, dummy_schema)

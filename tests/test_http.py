@@ -56,7 +56,7 @@ class TestClient(testtools.TestCase):
         kwargs = {'token': u'fake-token',
                   'identity_headers': identity_headers}
         http_client_object = http.HTTPClient(self.endpoint, **kwargs)
-        self.assertEquals(http_client_object.auth_token, 'auth_token')
+        self.assertEqual(http_client_object.auth_token, 'auth_token')
         self.assertTrue(http_client_object.identity_headers.
                         get('X-Auth-Token') is None)
 
@@ -72,7 +72,7 @@ class TestClient(testtools.TestCase):
         kwargs = {'token': u'fake-token',
                   'identity_headers': identity_headers}
         http_client_object = http.HTTPClient(self.endpoint, **kwargs)
-        self.assertEquals(http_client_object.auth_token, u'fake-token')
+        self.assertEqual(http_client_object.auth_token, u'fake-token')
         self.assertTrue(http_client_object.identity_headers.
                         get('X-Auth-Token') is None)
 
