@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from __future__ import print_function
+
 import argparse
 import copy
 import sys
@@ -315,18 +317,18 @@ def do_image_delete(gc, args):
         image = utils.find_resource(gc.images, args_image)
         try:
             if args.verbose:
-                print 'Requesting image delete for %s ...' % \
-                      strutils.safe_encode(args_image),
+                print('Requesting image delete for %s ...' %
+                      strutils.safe_encode(args_image), end=' ')
 
             gc.images.delete(image)
 
             if args.verbose:
-                print '[Done]'
+                print('[Done]')
 
         except exc.HTTPException as e:
             if args.verbose:
-                print '[Fail]'
-            print '%s: Unable to delete image %s' % (e, args_image)
+                print('[Fail]')
+            print('%s: Unable to delete image %s' % (e, args_image))
 
 
 @utils.arg('--image-id', metavar='<IMAGE_ID>',
@@ -336,14 +338,14 @@ def do_image_delete(gc, args):
 def do_member_list(gc, args):
     """Describe sharing permissions by image or tenant."""
     if args.image_id and args.tenant_id:
-        print 'Unable to filter members by both --image-id and --tenant-id.'
+        print('Unable to filter members by both --image-id and --tenant-id.')
         sys.exit(1)
     elif args.image_id:
         kwargs = {'image': args.image_id}
     elif args.tenant_id:
         kwargs = {'member': args.tenant_id}
     else:
-        print 'Unable to list all members. Specify --image-id or --tenant-id'
+        print('Unable to list all members. Specify --image-id or --tenant-id')
         sys.exit(1)
 
     members = gc.image_members.list(**kwargs)
@@ -373,6 +375,6 @@ def do_member_delete(gc, args):
     if not args.dry_run:
         gc.image_members.delete(image_id, args.tenant_id)
     else:
-        print "Dry run. We would have done the following:"
-        print ('Remove "%s" from the member list of image '
-               '"%s"' % (args.tenant_id, args.image))
+        print("Dry run. We would have done the following:")
+        print('Remove "%s" from the member list of image '
+              '"%s"' % (args.tenant_id, args.image))
