@@ -364,7 +364,7 @@ class TestController(testtools.TestCase):
         fake_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
         filters = {'filters': dict([('checksum', _CHKSUM)])}
         images = list(self.controller.list(**filters))
-        self.assertEquals(1, len(images))
+        self.assertEqual(1, len(images))
         self.assertEqual(images[0].id, '%s' % fake_id)
 
     def test_list_images_for_checksum_multiple_images(self):
@@ -372,14 +372,14 @@ class TestController(testtools.TestCase):
         fake_id2 = '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810'
         filters = {'filters': dict([('checksum', _CHKSUM1)])}
         images = list(self.controller.list(**filters))
-        self.assertEquals(2, len(images))
+        self.assertEqual(2, len(images))
         self.assertEqual(images[0].id, '%s' % fake_id1)
         self.assertEqual(images[1].id, '%s' % fake_id2)
 
     def test_list_images_for_wrong_checksum(self):
         filters = {'filters': dict([('checksum', 'wrong')])}
         images = list(self.controller.list(**filters))
-        self.assertEquals(0, len(images))
+        self.assertEqual(0, len(images))
 
     def test_list_images_for_bogus_owner(self):
         filters = {'filters': dict([('owner', _BOGUS_ID)])}
@@ -410,7 +410,7 @@ class TestController(testtools.TestCase):
         img_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
         filters = {'filters': dict([('tag', [_TAG1])])}
         images = list(self.controller.list(**filters))
-        self.assertEquals(1, len(images))
+        self.assertEqual(1, len(images))
         self.assertEqual(images[0].id, '%s' % img_id)
         pass
 
@@ -419,7 +419,7 @@ class TestController(testtools.TestCase):
         img_id2 = '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810'
         filters = {'filters': dict([('tag', [_TAG2])])}
         images = list(self.controller.list(**filters))
-        self.assertEquals(2, len(images))
+        self.assertEqual(2, len(images))
         self.assertEqual(images[0].id, '%s' % img_id1)
         self.assertEqual(images[1].id, '%s' % img_id2)
 
@@ -427,13 +427,13 @@ class TestController(testtools.TestCase):
         img_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
         filters = {'filters': dict([('tag', [_TAG1, _TAG2])])}
         images = list(self.controller.list(**filters))
-        self.assertEquals(1, len(images))
+        self.assertEqual(1, len(images))
         self.assertEqual(images[0].id, '%s' % img_id1)
 
     def test_list_images_for_non_existent_tag(self):
         filters = {'filters': dict([('tag', ['fake'])])}
         images = list(self.controller.list(**filters))
-        self.assertEquals(0, len(images))
+        self.assertEqual(0, len(images))
 
     def test_get_image(self):
         image = self.controller.get('3a4560a1-e585-443e-9b39-553b46ec92d1')
