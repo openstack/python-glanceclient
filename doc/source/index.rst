@@ -37,6 +37,18 @@ See also :doc:`/man/glance`.
 Release Notes
 =============
 
+0.12.0
+------
+
+* Add command line support for V2 image create, update, and upload
+* Enable querying for images by tag
+* 1230032_, 1231524_: Fix several issues with handling redirects
+* 1206095_: Use openstack-images-v2.1-json-patch for update method
+
+.. _1230032: http://bugs.launchpad.net/python-glanceclient/+bug/1230032
+.. _1231524: http://bugs.launchpad.net/python-glanceclient/+bug/1231524
+.. _1206095: http://bugs.launchpad.net/python-glanceclient/+bug/1206095
+
 0.11.0
 ------
 
