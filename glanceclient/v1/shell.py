@@ -108,7 +108,7 @@ def do_image_list(gc, args):
     utils.print_list(images, columns)
 
 
-def _image_show(image, human_readable=False):
+def _image_show(image, human_readable=False, max_column_width=80):
     # Flatten image properties dict for display
     info = copy.deepcopy(image._info)
     if human_readable:
@@ -116,7 +116,7 @@ def _image_show(image, human_readable=False):
     for (k, v) in info.pop('properties').iteritems():
         info['Property \'%s\'' % k] = v
 
-    utils.print_dict(info)
+    utils.print_dict(info, max_column_width=max_column_width)
 
 
 def _set_data_field(fields, args):
@@ -127,11 +127,14 @@ def _set_data_field(fields, args):
 @utils.arg('image', metavar='<IMAGE>', help='Name or ID of image to describe.')
 @utils.arg('--human-readable', action='store_true', default=False,
            help='Print image size in a human-friendly format.')
+@utils.arg('--max-column-width', metavar='<integer>', default=80,
+           help='The max column width of the printed table.')
 def do_image_show(gc, args):
     """Describe a specific image."""
     image_id = utils.find_resource(gc.images, args.image).id
     image = gc.images.get(image_id)
-    _image_show(image, args.human_readable)
+    _image_show(image, args.human_readable,
+                max_column_width=int(args.max_column_width))
 
 
 @utils.arg('--file', metavar='<FILE>',

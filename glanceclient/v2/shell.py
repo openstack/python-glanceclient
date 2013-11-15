@@ -118,12 +118,14 @@ def do_image_list(gc, args):
 
 
 @utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to describe.')
+@utils.arg('--max-column-width', metavar='<integer>', default=80,
+           help='The max column width of the printed table.')
 def do_image_show(gc, args):
     """Describe a specific image."""
     image = gc.images.get(args.id)
     ignore = ['self', 'access', 'file', 'schema']
     image = dict([item for item in image.iteritems() if item[0] not in ignore])
-    utils.print_dict(image)
+    utils.print_dict(image, max_column_width=int(args.max_column_width))
 
 
 @utils.arg('--image-id', metavar='<IMAGE_ID>', required=True,

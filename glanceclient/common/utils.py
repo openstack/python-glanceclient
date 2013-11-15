@@ -119,9 +119,10 @@ def print_list(objs, fields, formatters={}):
     print(strutils.safe_encode(pt.get_string()))
 
 
-def print_dict(d):
+def print_dict(d, max_column_width=80):
     pt = prettytable.PrettyTable(['Property', 'Value'], caching=False)
     pt.align = 'l'
+    pt.max_width = max_column_width
     [pt.add_row(list(r)) for r in d.iteritems()]
     print(strutils.safe_encode(pt.get_string(sortby='Property')))
 

@@ -68,7 +68,11 @@ class TestUtils(testtools.TestCase):
             utils.print_list(images, columns)
 
             sys.stdout = output_dict = StringIO.StringIO()
-            utils.print_dict({'K': 'k', 'Key': 'Value'})
+            utils.print_dict({'K': 'k', 'Key': 'veeeeeeeeeeeeeeeeeeeeeeee'
+                              'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+                              'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+                              'eeeeeeeeeeeery long value'},
+                             max_column_width=60)
 
         finally:
             sys.stdout = saved_stdout
@@ -84,12 +88,14 @@ class TestUtils(testtools.TestCase):
 ''')
 
         self.assertEqual(output_dict.getvalue(), '''\
-+----------+-------+
-| Property | Value |
-+----------+-------+
-| K        | k     |
-| Key      | Value |
-+----------+-------+
++----------+--------------------------------------------------------------+
+| Property | Value                                                        |
++----------+--------------------------------------------------------------+
+| K        | k                                                            |
+| Key      | veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |
+|          | eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |
+|          | ery long value                                               |
++----------+--------------------------------------------------------------+
 ''')
 
     def test_exception_to_str(self):

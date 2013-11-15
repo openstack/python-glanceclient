@@ -90,7 +90,8 @@ class ShellV2Test(testtools.TestCase):
             utils.print_list.assert_called_once_with({}, ['ID', 'Name'])
 
     def test_do_image_show(self):
-        args = self._make_args({'id': 'pass', 'page_size': 18})
+        args = self._make_args({'id': 'pass', 'page_size': 18,
+                                'max_column_width': 120})
         with mock.patch.object(self.gc.images, 'get') as mocked_list:
             ignore_fields = ['self', 'access', 'file', 'schema']
             expect_image = dict([(field, field) for field in ignore_fields])
@@ -100,7 +101,8 @@ class ShellV2Test(testtools.TestCase):
             test_shell.do_image_show(self.gc, args)
 
             mocked_list.assert_called_once_with('pass')
-            utils.print_dict.assert_called_once_with({'id': 'pass'})
+            utils.print_dict.assert_called_once_with({'id': 'pass'},
+                                                     max_column_width=120)
 
     def test_do_image_create_no_user_props(self):
         args = self._make_args({'name': 'IMG-01', 'disk_format': 'vhd',
