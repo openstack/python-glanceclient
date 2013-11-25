@@ -27,7 +27,7 @@ UPDATE_PARAMS = ('name', 'disk_format', 'container_format', 'min_disk',
                  #NOTE(bcwaldon: an attempt to update 'deleted' will be
                  # ignored, but we need to support it for backwards-
                  # compatibility with the legacy client library
-                 'deleted')
+                 'deleted', 'status')
 
 CREATE_PARAMS = UPDATE_PARAMS + ('id', 'store')
 
