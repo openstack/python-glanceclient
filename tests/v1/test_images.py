@@ -323,6 +323,7 @@ fixtures = {
                     'properties': {'a': 'b', 'c': 'd'},
                     'is_public': False,
                     'protected': False,
+                    'status': 'queued',
                 }},
             ),
         ),
@@ -558,8 +559,11 @@ class ImageManagerTest(testtools.TestCase):
             'copy_from': 'http://example.com',
             'properties': {'a': 'b', 'c': 'd'},
             'deleted': False,
+            'status': 'queued',
         }
         image = self.mgr.update('1', **fields)
+        #import ipdb
+        #ipdb.set_trace()
         expect_hdrs = {
             'x-image-meta-name': 'image-2',
             'x-image-meta-container_format': 'ovf',
@@ -572,6 +576,7 @@ class ImageManagerTest(testtools.TestCase):
             'x-image-meta-property-a': 'b',
             'x-image-meta-property-c': 'd',
             'x-image-meta-deleted': 'False',
+            'x-image-meta-status': 'queued',
         }
         expect = [('PUT', '/v1/images/1', expect_hdrs, None)]
         self.assertEqual(self.api.calls, expect)
@@ -580,6 +585,7 @@ class ImageManagerTest(testtools.TestCase):
         self.assertEqual(image.size, 1024)
         self.assertEqual(image.min_ram, 512)
         self.assertEqual(image.min_disk, 10)
+        self.assertEqual(image.status, 'queued')
 
     def test_update_with_data(self):
         image_data = StringIO.StringIO('XXX')
