@@ -356,7 +356,7 @@ class VerifiedHTTPSConnection(HTTPSConnection):
 
         # Also try Subject Alternative Names for a match
         san_list = None
-        for i in xrange(x509.get_extension_count()):
+        for i in range(x509.get_extension_count()):
             ext = x509.get_extension(i)
             if ext.get_short_name() == 'subjectAltName':
                 san_list = str(ext)
