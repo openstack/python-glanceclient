@@ -27,7 +27,9 @@ class LegacyShellV1Test(testtools.TestCase):
     def test_print_image_formatted(self):
 
         class FakeClient():
-            endpoint = 'http://is.invalid'
+            class FakeHTTPClient():
+                endpoint = 'http://is.invalid'
+            http_client = FakeHTTPClient()
 
         class FakeImage():
             id = 1
