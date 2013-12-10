@@ -1,0 +1,54 @@
+#Certificate:
+#    Data:
+#        Version: 3 (0x2)
+#        Serial Number: 11990626514780340979 (0xa66743493fdcc2f3)
+#    Signature Algorithm: sha1WithRSAEncryption
+#        Issuer: C=US, ST=CA, L=State1, O=Openstack Test Org, OU=Openstack Test Unit, CN=0.0.0.0
+#        Validity
+#            Not Before: Dec 10 15:31:22 2013 GMT
+#            Not After : Nov 16 15:31:22 2113 GMT
+#        Subject: C=US, ST=CA, L=State1, O=Openstack Test Org, OU=Openstack Test Unit, CN=0.0.0.0
+#        Subject Public Key Info:
+#            Public Key Algorithm: rsaEncryption
+#                Public-Key: (2048 bit)
+#                Modulus:
+#                    00:ca:6b:07:73:53:24:45:74:05:a5:2a:27:bd:3e:
+#                    .
+#                    .
+#                    .
+#                Exponent: 65537 (0x10001)
+#        X509v3 extensions:
+#            X509v3 Key Usage:
+#                Key Encipherment, Data Encipherment
+#            X509v3 Extended Key Usage:
+#                TLS Web Server Authentication
+#            X509v3 Subject Alternative Name:
+#                DNS:foo.example.net, DNS:*.example.com
+#    Signature Algorithm: sha1WithRSAEncryption
+#         7e:41:69:da:f4:3c:06:d6:83:c6:f2:db:df:37:f1:ac:fa:f5:
+#         .
+#         .
+#         .
+-----BEGIN CERTIFICATE-----
+MIIDxDCCAqygAwIBAgIJAKZnQ0k/3MLzMA0GCSqGSIb3DQEBBQUAMHgxCzAJBgNV
+BAYTAlVTMQswCQYDVQQIEwJDQTEPMA0GA1UEBxMGU3RhdGUxMRswGQYDVQQKExJP
+cGVuc3RhY2sgVGVzdCBPcmcxHDAaBgNVBAsTE09wZW5zdGFjayBUZXN0IFVuaXQx
+EDAOBgNVBAMTBzAuMC4wLjAwIBcNMTMxMjEwMTUzMTIyWhgPMjExMzExMTYxNTMx
+MjJaMHgxCzAJBgNVBAYTAlVTMQswCQYDVQQIEwJDQTEPMA0GA1UEBxMGU3RhdGUx
+MRswGQYDVQQKExJPcGVuc3RhY2sgVGVzdCBPcmcxHDAaBgNVBAsTE09wZW5zdGFj
+ayBUZXN0IFVuaXQxEDAOBgNVBAMTBzAuMC4wLjAwggEiMA0GCSqGSIb3DQEBAQUA
+A4IBDwAwggEKAoIBAQDKawdzUyRFdAWlKie9Pn10j7frffN+z1gEMluK2CtDEwv9
+kbD4uS/Kz4dujfTx03mdyNfiMVlOM+YJm/qeLLSdJyFyvZ9Y3WmJ+vT2RGlMMhLd
+/wEnMRrTYLL39pwI6z+gyw+4D78Pyv/OXy02IA6WtVEefYSx1vmVngb3pL+iBzhO
+8CZXNI6lqrFhh+Hr4iMkYMtY1vTnwezAL6p64E/ZAFNPYCEJlacESTLQ4VZYniHc
+QTgnE1czlI1vxlIk1KDXAzUGeeopZecRih9qlTxtOpklqEciQEE+sHtPcvyvdRE9
+Bdyx5rNSALLIcXs0ViJE1RPlw3fjdBoDIOygqvX1AgMBAAGjTzBNMAsGA1UdDwQE
+AwIEMDATBgNVHSUEDDAKBggrBgEFBQcDATApBgNVHREEIjAggg9mb28uZXhhbXBs
+ZS5uZXSCDSouZXhhbXBsZS5jb20wDQYJKoZIhvcNAQEFBQADggEBAH5Badr0PAbW
+g8by29838az69Raul5IkpZQ5V3O1NaNNWxvmF1q8zFFqqGK5ktXJAwGiwnYEBb30
+Zfrr+eFIEERzBthSJkWlP8NG+2ooMyg50femp+asAvW+KYYefJW8KaXTsznMsAFy
+z1agcWVYVZ4H9PwunEYn/rM1krLEe4Cagsw5nmf8VqZg+hHtw930q8cRzgDsZdfA
+jVK6dWdmzmLCUTL1GKCeNriDw1jIeFvNufC+Q3orH7xBx4VL+NV5ORWdNY/B8q1b
+mFHdzbuZX6v39+2ww6aZqG2orfxUocc/5Ox6fXqenKPI3moeHS6Ktesq7sEQSJ6H
+QZFsTuT/124=
+-----END CERTIFICATE-----
