@@ -14,8 +14,8 @@
 #    under the License.
 
 from glanceclient.common import http
-from glanceclient.v1 import images
 from glanceclient.v1 import image_members
+from glanceclient.v1 import images
 
 
 class Client(http.HTTPClient):

@@ -19,9 +19,9 @@ import argparse
 import copy
 import sys
 
-from glanceclient import exc
-from glanceclient.common import utils
 from glanceclient.common import progressbar
+from glanceclient.common import utils
+from glanceclient import exc
 from glanceclient.openstack.common import strutils
 import glanceclient.v1.images
 

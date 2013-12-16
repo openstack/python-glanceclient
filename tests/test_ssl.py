@@ -18,8 +18,8 @@ import os
 from OpenSSL import crypto
 import testtools
 
-from glanceclient import exc
 from glanceclient.common import http
+from glanceclient import exc
 
 
 TEST_VAR_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),

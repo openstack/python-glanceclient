@@ -31,8 +31,8 @@ from keystoneclient.v2_0 import client as ksclient
 import netaddr
 
 import glanceclient
-from glanceclient import exc
 from glanceclient.common import utils
+from glanceclient import exc
 from glanceclient.openstack.common import strutils
 
 
