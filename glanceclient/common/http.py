@@ -343,16 +343,21 @@ class VerifiedHTTPSConnection(HTTPSConnection):
         connecting to, ie that the certificate's Common Name
         or a Subject Alternative Name matches 'host'.
         """
+        def check_match(name):
+            # Directly match the name
+            if name == host:
+                return True
+
+            # Support single wildcard matching
+            if name.startswith('*.') and host.find('.') > 0:
+                if name[2:] == host.split('.', 1)[1]:
+                    return True
+
         common_name = x509.get_subject().commonName
 
         # First see if we can match the CN
-        if common_name == host:
+        if check_match(common_name):
             return True
-
-        # Support single wildcard matching
-        if common_name.startswith('*.') and host.find('.') > 0:
-            if common_name[2:] == host.split('.', 1)[1]:
-                return True
 
         # Also try Subject Alternative Names for a match
         san_list = None
@@ -361,8 +366,9 @@ class VerifiedHTTPSConnection(HTTPSConnection):
             if ext.get_short_name() == 'subjectAltName':
                 san_list = str(ext)
                 for san in ''.join(san_list.split()).split(','):
-                    if san == "DNS:%s" % host:
-                        return True
+                    if san.startswith('DNS:'):
+                        if check_match(san.split(':', 1)[1]):
+                            return True
 
         # Server certificate does not match host
         msg = ('Host "%s" does not match x509 certificate contents: '

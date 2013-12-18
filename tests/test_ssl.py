@@ -165,6 +165,34 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         except Exception:
             self.fail('Unexpected exception.')
 
+    def test_ssl_cert_subject_alt_name_wildcard(self):
+        """
+        Test certificate: wildcard SAN match
+        """
+        cert_file = os.path.join(TEST_VAR_DIR, 'wildcard-san-certificate.crt')
+        cert = crypto.load_certificate(crypto.FILETYPE_PEM,
+                                       file(cert_file).read())
+        # The expected cert should have CN=0.0.0.0
+        self.assertEqual(cert.get_subject().commonName, '0.0.0.0')
+        try:
+            conn = http.VerifiedHTTPSConnection('alt1.example.com', 0)
+            conn.verify_callback(None, cert, 0, 0, 1)
+        except Exception:
+            self.fail('Unexpected exception.')
+
+        try:
+            conn = http.VerifiedHTTPSConnection('alt2.example.com', 0)
+            conn.verify_callback(None, cert, 0, 0, 1)
+        except Exception:
+            self.fail('Unexpected exception.')
+
+        try:
+            conn = http.VerifiedHTTPSConnection('alt3.example.net', 0)
+            conn.verify_callback(None, cert, 0, 0, 1)
+            self.fail('Failed to raise assertion.')
+        except exc.SSLCertificateError:
+            pass
+
     def test_ssl_cert_mismatch(self):
         """
         Test certificate: bogus host
