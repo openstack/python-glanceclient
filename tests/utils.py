@@ -110,3 +110,10 @@ class FakeTTYStdout(StringIO.StringIO):
             self.seek(0)
             data = data[1:]
         return StringIO.StringIO.write(self, data)
+
+
+class FakeNoTTYStdout(FakeTTYStdout):
+    """A Fake stdout that is not a TTY device."""
+
+    def isatty(self):
+        return False

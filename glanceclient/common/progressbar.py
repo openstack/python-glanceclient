@@ -58,8 +58,10 @@ class VerboseFileWrapper(_ProgressBarBase):
         if data:
             self._display_progress_bar(len(data))
         else:
-            # Break to a new line from the progress bar for incoming output.
-            sys.stdout.write('\n')
+            if self._show_progress:
+                # Break to a new line from the progress bar for incoming
+                # output.
+                sys.stdout.write('\n')
         return data
 
 
@@ -82,6 +84,8 @@ class VerboseIteratorWrapper(_ProgressBarBase):
             self._display_progress_bar(len(data))
             return data
         except StopIteration:
-            # Break to a new line from the progress bar for incoming output.
-            sys.stdout.write('\n')
+            if self._show_progress:
+                # Break to a new line from the progress bar for incoming
+                # output.
+                sys.stdout.write('\n')
             raise
