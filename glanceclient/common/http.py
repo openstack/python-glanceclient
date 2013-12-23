@@ -37,8 +37,8 @@ if not hasattr(urlparse, 'parse_qsl'):
 
 import OpenSSL
 
-from glanceclient import exc
 from glanceclient.common import utils
+from glanceclient import exc
 from glanceclient.openstack.common import strutils
 
 try:

@@ -16,9 +16,9 @@
 import warlock
 
 from glanceclient.common import http
-from glanceclient.v2 import images
 from glanceclient.v2 import image_members
 from glanceclient.v2 import image_tags
+from glanceclient.v2 import images
 from glanceclient.v2 import schemas
 
 

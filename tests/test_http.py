@@ -21,9 +21,9 @@ import urlparse
 import mox
 import testtools
 
-from glanceclient import exc
 import glanceclient
 from glanceclient.common import http
+from glanceclient import exc
 from six.moves import http_client
 from tests import utils
 
