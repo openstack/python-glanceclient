@@ -293,6 +293,23 @@ class TestHostResolutionError(testtools.TestCase):
         self.mock.UnsetStubs()
 
 
+class TestVerifiedHTTPSConnection(testtools.TestCase):
+    """Test fixture for glanceclient.common.http.VerifiedHTTPSConnection."""
+
+    def test_setcontext_unable_to_load_cacert(self):
+        """Add this UT case with Bug#1265730."""
+        self.assertRaises(exc.SSLConfigurationError,
+                          http.VerifiedHTTPSConnection,
+                          "127.0.0.1",
+                          None,
+                          None,
+                          None,
+                          "gx_cacert",
+                          None,
+                          False,
+                          True)
+
+
 class TestResponseBodyIterator(testtools.TestCase):
 
     def test_iter_default_chunk_size_64k(self):
