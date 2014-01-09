@@ -15,6 +15,7 @@
 
 import copy
 import json
+import six
 import urllib
 
 from glanceclient.common import base
@@ -58,7 +59,7 @@ class ImageManager(base.Manager):
     def _image_meta_from_headers(self, headers):
         meta = {'properties': {}}
         safe_decode = strutils.safe_decode
-        for key, value in headers.iteritems():
+        for key, value in six.iteritems(headers):
             value = safe_decode(value, incoming='utf-8')
             if key.startswith('x-image-meta-property-'):
                 _key = safe_decode(key[22:], incoming='utf-8')
@@ -86,9 +87,9 @@ class ImageManager(base.Manager):
                 return str(value)
             return value
 
-        for key, value in fields_copy.pop('properties', {}).iteritems():
+        for key, value in six.iteritems(fields_copy.pop('properties', {})):
             headers['x-image-meta-property-%s' % key] = to_str(value)
-        for key, value in fields_copy.iteritems():
+        for key, value in six.iteritems(fields_copy):
             headers['x-image-meta-%s' % key] = to_str(value)
         return headers
 
@@ -160,7 +161,7 @@ class ImageManager(base.Manager):
                     return not (image.owner == owner)
 
             owner = qp.pop('owner', None)
-            for param, value in qp.iteritems():
+            for param, value in six.iteritems(qp):
                 if isinstance(value, basestring):
                     # Note(flaper87) Url encoding should
                     # be moved inside http utils, at least
