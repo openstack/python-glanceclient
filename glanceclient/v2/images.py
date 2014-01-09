@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import six
 import urllib
 
 import warlock
@@ -59,7 +60,7 @@ class Controller(object):
             if isinstance(tag, basestring):
                 tags_url_params.append({'tag': strutils.safe_encode(tag)})
 
-        for param, value in filters.iteritems():
+        for param, value in six.iteritems(filters):
             if isinstance(value, basestring):
                 filters[param] = strutils.safe_encode(value)
 
