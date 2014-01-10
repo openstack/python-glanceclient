@@ -19,10 +19,10 @@ import hashlib
 import logging
 import posixpath
 import socket
-import StringIO
 import struct
 import urlparse
 
+import six
 from six.moves import http_client
 
 try:
@@ -240,7 +240,7 @@ class HTTPClient(object):
         if resp.getheader('content-type', None) != 'application/octet-stream':
             body_str = ''.join([chunk for chunk in body_iter])
             self.log_http_response(resp, body_str)
-            body_iter = StringIO.StringIO(body_str)
+            body_iter = six.StringIO(body_str)
         else:
             self.log_http_response(resp)
 
