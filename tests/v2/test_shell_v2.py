@@ -15,9 +15,8 @@
 #    under the License.
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-import StringIO
-
 import mock
+import six
 import testtools
 
 from glanceclient.common import http
@@ -236,7 +235,7 @@ class ShellV2Test(testtools.TestCase):
             {'id': 'pass', 'file': 'test', 'progress': False})
 
         with mock.patch.object(self.gc.images, 'data') as mocked_data:
-            resp = test_utils.FakeResponse({}, StringIO.StringIO('CCC'))
+            resp = test_utils.FakeResponse({}, six.StringIO('CCC'))
             ret = mocked_data.return_value = http.ResponseBodyIterator(resp)
             test_shell.do_image_download(self.gc, args)
 
@@ -248,7 +247,7 @@ class ShellV2Test(testtools.TestCase):
             {'id': 'pass', 'file': 'test', 'progress': True})
 
         with mock.patch.object(self.gc.images, 'data') as mocked_data:
-            resp = test_utils.FakeResponse({}, StringIO.StringIO('CCC'))
+            resp = test_utils.FakeResponse({}, six.StringIO('CCC'))
             mocked_data.return_value = http.ResponseBodyIterator(resp)
             test_shell.do_image_download(self.gc, args)
 

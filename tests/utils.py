@@ -15,7 +15,7 @@
 
 import copy
 import requests
-import StringIO
+import six
 import testtools
 
 from glanceclient.common import http
@@ -33,7 +33,7 @@ class FakeAPI(object):
 
     def raw_request(self, *args, **kwargs):
         fixture = self._request(*args, **kwargs)
-        resp = FakeResponse(fixture[0], StringIO.StringIO(fixture[1]))
+        resp = FakeResponse(fixture[0], six.StringIO(fixture[1]))
         body_iter = http.ResponseBodyIterator(resp)
         return resp, body_iter
 
@@ -98,7 +98,7 @@ class TestResponse(requests.Response):
         return self._text
 
 
-class FakeTTYStdout(StringIO.StringIO):
+class FakeTTYStdout(six.StringIO):
     """A Fake stdout that try to emulate a TTY device as much as possible."""
 
     def isatty(self):
@@ -109,7 +109,7 @@ class FakeTTYStdout(StringIO.StringIO):
         if data.startswith('\r'):
             self.seek(0)
             data = data[1:]
-        return StringIO.StringIO.write(self, data)
+        return six.StringIO.write(self, data)
 
 
 class FakeNoTTYStdout(FakeTTYStdout):

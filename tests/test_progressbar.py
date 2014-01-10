@@ -13,9 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import StringIO
 import sys
 
+import six
 import testtools
 
 from glanceclient.common import progressbar
@@ -42,7 +42,7 @@ class TestProgressBarWrapper(testtools.TestCase):
 
     def test_iter_file_display_progress_bar(self):
         size = 98304
-        file_obj = StringIO.StringIO('X' * size)
+        file_obj = six.StringIO('X' * size)
         saved_stdout = sys.stdout
         try:
             sys.stdout = output = test_utils.FakeTTYStdout()
@@ -60,7 +60,7 @@ class TestProgressBarWrapper(testtools.TestCase):
 
     def test_iter_file_no_tty(self):
         size = 98304
-        file_obj = StringIO.StringIO('X' * size)
+        file_obj = six.StringIO('X' * size)
         saved_stdout = sys.stdout
         try:
             sys.stdout = output = test_utils.FakeNoTTYStdout()

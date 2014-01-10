@@ -15,10 +15,11 @@
 
 import errno
 import json
-import StringIO
 import sys
 import testtools
 import urlparse
+
+import six
 
 from glanceclient.v1 import client
 from glanceclient.v1 import images
@@ -540,7 +541,7 @@ class ImageManagerTest(testtools.TestCase):
         self.assertEqual(image.properties, {'a': 'b', 'c': 'd'})
 
     def test_create_with_data(self):
-        image_data = StringIO.StringIO('XXX')
+        image_data = six.StringIO('XXX')
         self.mgr.create(data=image_data)
         expect_headers = {'x-image-meta-size': '3'}
         expect = [('POST', '/v1/images', expect_headers, image_data)]
@@ -582,7 +583,7 @@ class ImageManagerTest(testtools.TestCase):
         self.assertEqual(image.min_disk, 10)
 
     def test_update_with_data(self):
-        image_data = StringIO.StringIO('XXX')
+        image_data = six.StringIO('XXX')
         self.mgr.update('1', data=image_data)
         expect_headers = {'x-image-meta-size': '3'}
         expect = [('PUT', '/v1/images/1', expect_headers, image_data)]
