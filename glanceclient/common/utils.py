@@ -20,6 +20,8 @@ import os
 import sys
 import uuid
 
+import six
+
 if os.name == 'nt':
     import msvcrt
 else:
@@ -63,7 +65,7 @@ def schema_args(schema_getter, omit=[]):
                                                                  kwargs))
         else:
             properties = schema.get('properties', {})
-            for name, property in properties.iteritems():
+            for name, property in six.iteritems(properties):
                 if name in omit:
                     continue
                 param = '--' + name.replace('_', '-')
@@ -123,7 +125,7 @@ def print_dict(d, max_column_width=80):
     pt = prettytable.PrettyTable(['Property', 'Value'], caching=False)
     pt.align = 'l'
     pt.max_width = max_column_width
-    [pt.add_row(list(r)) for r in d.iteritems()]
+    [pt.add_row(list(r)) for r in six.iteritems(d)]
     print(strutils.safe_encode(pt.get_string(sortby='Property')))
 
 

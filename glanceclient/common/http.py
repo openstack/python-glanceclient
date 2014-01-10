@@ -162,8 +162,8 @@ class HTTPClient(object):
         :returns: Dictionary with encoded headers'
                   names and values
         """
-        to_str = strutils.safe_encode
-        return dict([(to_str(h), to_str(v)) for h, v in headers.iteritems()])
+        return dict((strutils.safe_encode(h), strutils.safe_encode(v))
+                    for h, v in six.iteritems(headers))
 
     def _http_request(self, url, method, **kwargs):
         """Send an http request with the specified characteristics.
@@ -178,7 +178,7 @@ class HTTPClient(object):
             kwargs['headers'].setdefault('X-Auth-Token', self.auth_token)
 
         if self.identity_headers:
-            for k, v in self.identity_headers.iteritems():
+            for k, v in six.iteritems(self.identity_headers):
                 kwargs['headers'].setdefault(k, v)
 
         self.log_curl_request(method, url, kwargs)

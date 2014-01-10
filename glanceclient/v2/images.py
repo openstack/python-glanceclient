@@ -57,11 +57,11 @@ class Controller(object):
         tags_url_params = []
 
         for tag in tags:
-            if isinstance(tag, basestring):
+            if isinstance(tag, six.string_types):
                 tags_url_params.append({'tag': strutils.safe_encode(tag)})
 
         for param, value in six.iteritems(filters):
-            if isinstance(value, basestring):
+            if isinstance(value, six.string_types):
                 filters[param] = strutils.safe_encode(value)
 
         url = '/v2/images?%s' % urllib.urlencode(filters)

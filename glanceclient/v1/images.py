@@ -83,7 +83,7 @@ class ImageManager(base.Manager):
         # headers will be encoded later, before the
         # request is sent.
         def to_str(value):
-            if not isinstance(value, basestring):
+            if not isinstance(value, six.string_types):
                 return str(value)
             return value
 
@@ -162,7 +162,7 @@ class ImageManager(base.Manager):
 
             owner = qp.pop('owner', None)
             for param, value in six.iteritems(qp):
-                if isinstance(value, basestring):
+                if isinstance(value, six.string_types):
                     # Note(flaper87) Url encoding should
                     # be moved inside http utils, at least
                     # shouldn't be here.
