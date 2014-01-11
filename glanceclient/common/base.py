@@ -19,6 +19,7 @@ Base utilities to build API operation managers and objects on top of.
 
 import copy
 
+from glanceclient.openstack.common.apiclient import base
 
 # Python 2.4 compat
 try:
@@ -68,64 +69,15 @@ class Manager(object):
             return self.resource_class(self, body[response_key])
 
 
-class Resource(object):
+class Resource(base.Resource):
     """
     A resource represents a particular instance of an object (tenant, user,
     etc). This is pretty much just a bag for attributes.
-
-    :param manager: Manager object
-    :param info: dictionary representing resource attributes
-    :param loaded: prevent lazy-loading if set to True
     """
-    def __init__(self, manager, info, loaded=False):
-        self.manager = manager
-        self._info = info
-        self._add_details(info)
-        self._loaded = loaded
-
-    def _add_details(self, info):
-        for (k, v) in info.iteritems():
-            setattr(self, k, v)
-
-    def __getattr__(self, k):
-        if k not in self.__dict__:
-            #NOTE(bcwaldon): disallow lazy-loading if already loaded once
-            if not self.is_loaded():
-                self.get()
-                return self.__getattr__(k)
-
-            raise AttributeError(k)
-        else:
-            return self.__dict__[k]
-
-    def __repr__(self):
-        reprkeys = sorted(k for k in self.__dict__.keys() if k[0] != '_' and
-                          k != 'manager')
-        info = ", ".join("%s=%s" % (k, getattr(self, k)) for k in reprkeys)
-        return "<%s %s>" % (self.__class__.__name__, info)
-
-    def get(self):
-        # set_loaded() first ... so if we have to bail, we know we tried.
-        self.set_loaded(True)
-        if not hasattr(self.manager, 'get'):
-            return
-
-        new = self.manager.get(self.id)
-        if new:
-            self._add_details(new._info)
-
-    def __eq__(self, other):
-        if not isinstance(other, self.__class__):
-            return False
-        if hasattr(self, 'id') and hasattr(other, 'id'):
-            return self.id == other.id
-        return self._info == other._info
-
-    def is_loaded(self):
-        return self._loaded
-
-    def set_loaded(self, val):
-        self._loaded = val
 
     def to_dict(self):
+        # Note(akurilin): There is a patch in Oslo, that adds to_dict() method
+        # to common Resource - I1db6c12a1f798de7f7fafd0c34fb0ef523610153.
+        # When Oslo code comes, we will be in able to remove this method
+        # and class at all.
         return copy.deepcopy(self._info)
