@@ -19,6 +19,7 @@ from glanceclient import exc
 import json
 import os
 from os.path import expanduser
+import six
 
 IMAGE_SCHEMA = None
 
@@ -54,7 +55,7 @@ def do_image_create(gc, args):
 
     image = gc.images.create(**fields)
     ignore = ['self', 'access', 'file', 'schema']
-    image = dict([item for item in image.iteritems()
+    image = dict([item for item in six.iteritems(image)
                   if item[0] not in ignore])
     utils.print_dict(image)
 
@@ -85,7 +86,7 @@ def do_image_update(gc, args):
     image_id = fields.pop('id')
     image = gc.images.update(image_id, remove_properties, **fields)
     ignore = ['self', 'access', 'file', 'schema']
-    image = dict([item for item in image.iteritems()
+    image = dict([item for item in six.iteritems(image)
                   if item[0] not in ignore])
     utils.print_dict(image)
 
@@ -124,7 +125,8 @@ def do_image_show(gc, args):
     """Describe a specific image."""
     image = gc.images.get(args.id)
     ignore = ['self', 'access', 'file', 'schema']
-    image = dict([item for item in image.iteritems() if item[0] not in ignore])
+    image = dict([item for item in six.iteritems(image) if item[0] not in
+                  ignore])
     utils.print_dict(image, max_column_width=int(args.max_column_width))
 
 
