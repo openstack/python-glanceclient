@@ -13,9 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import StringIO
 import sys
 
+import six
 import testtools
 
 from glanceclient.common import utils
@@ -32,7 +32,7 @@ class TestUtils(testtools.TestCase):
 
     def test_get_new_file_size(self):
         size = 98304
-        file_obj = StringIO.StringIO('X' * size)
+        file_obj = six.StringIO('X' * size)
         try:
             self.assertEqual(utils.get_file_size(file_obj), size)
             # Check that get_file_size didn't change original file position.
@@ -42,7 +42,7 @@ class TestUtils(testtools.TestCase):
 
     def test_get_consumed_file_size(self):
         size, consumed = 98304, 304
-        file_obj = StringIO.StringIO('X' * size)
+        file_obj = six.StringIO('X' * size)
         file_obj.seek(consumed)
         try:
             self.assertEqual(utils.get_file_size(file_obj), size)
@@ -64,10 +64,10 @@ class TestUtils(testtools.TestCase):
 
         saved_stdout = sys.stdout
         try:
-            sys.stdout = output_list = StringIO.StringIO()
+            sys.stdout = output_list = six.StringIO()
             utils.print_list(images, columns)
 
-            sys.stdout = output_dict = StringIO.StringIO()
+            sys.stdout = output_dict = six.StringIO()
             utils.print_dict({'K': 'k', 'Key': 'veeeeeeeeeeeeeeeeeeeeeeee'
                               'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
                               'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'

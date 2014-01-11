@@ -15,10 +15,10 @@
 
 import errno
 import socket
-import StringIO
 import urlparse
 
 import mox
+import six
 import testtools
 
 import glanceclient
@@ -102,7 +102,7 @@ class TestClient(testtools.TestCase):
 
     def test_request_redirected(self):
         resp = utils.FakeResponse({'location': 'http://www.example.com'},
-                                  status=302, body=StringIO.StringIO())
+                                  status=302, body=six.StringIO())
         http_client.HTTPConnection.request(
             mox.IgnoreArg(),
             mox.IgnoreArg(),
@@ -112,7 +112,7 @@ class TestClient(testtools.TestCase):
 
         # The second request should be to the redirected location
         expected_response = 'Ok'
-        resp2 = utils.FakeResponse({}, StringIO.StringIO(expected_response))
+        resp2 = utils.FakeResponse({}, six.StringIO(expected_response))
         http_client.HTTPConnection.request(
             'GET',
             'http://www.example.com',
@@ -133,7 +133,7 @@ class TestClient(testtools.TestCase):
         # Lets fake the response
         # returned by httplib
         expected_response = 'Ok'
-        fake = utils.FakeResponse({}, StringIO.StringIO(expected_response))
+        fake = utils.FakeResponse({}, six.StringIO(expected_response))
         http_client.HTTPConnection.getresponse().AndReturn(fake)
         self.mock.ReplayAll()
 
@@ -161,7 +161,7 @@ class TestClient(testtools.TestCase):
             headers=mox.IgnoreArg()).WithSideEffects(check_request)
 
         # fake the response returned by httplib
-        fake = utils.FakeResponse({}, StringIO.StringIO('Ok'))
+        fake = utils.FakeResponse({}, six.StringIO('Ok'))
         http_client.HTTPConnection.getresponse().AndReturn(fake)
         self.mock.ReplayAll()
 
@@ -189,7 +189,7 @@ class TestClient(testtools.TestCase):
             headers=mox.IgnoreArg()).WithSideEffects(check_request)
 
         # fake the response returned by httplib
-        fake = utils.FakeResponse({}, StringIO.StringIO('Ok'))
+        fake = utils.FakeResponse({}, six.StringIO('Ok'))
         http_client.HTTPConnection.getresponse().AndReturn(fake)
         self.mock.ReplayAll()
 
@@ -313,19 +313,19 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
 class TestResponseBodyIterator(testtools.TestCase):
 
     def test_iter_default_chunk_size_64k(self):
-        resp = utils.FakeResponse({}, StringIO.StringIO('X' * 98304))
+        resp = utils.FakeResponse({}, six.StringIO('X' * 98304))
         iterator = http.ResponseBodyIterator(resp)
         chunks = list(iterator)
         self.assertEqual(chunks, ['X' * 65536, 'X' * 32768])
 
     def test_integrity_check_with_correct_checksum(self):
-        resp = utils.FakeResponse({}, StringIO.StringIO('CCC'))
+        resp = utils.FakeResponse({}, six.StringIO('CCC'))
         body = http.ResponseBodyIterator(resp)
         body.set_checksum('defb99e69a9f1f6e06f15006b1f166ae')
         list(body)
 
     def test_integrity_check_with_wrong_checksum(self):
-        resp = utils.FakeResponse({}, StringIO.StringIO('BB'))
+        resp = utils.FakeResponse({}, six.StringIO('BB'))
         body = http.ResponseBodyIterator(resp)
         body.set_checksum('wrong')
         try:
@@ -335,7 +335,7 @@ class TestResponseBodyIterator(testtools.TestCase):
             self.assertEqual(errno.EPIPE, e.errno)
 
     def test_set_checksum_in_consumed_iterator(self):
-        resp = utils.FakeResponse({}, StringIO.StringIO('CCC'))
+        resp = utils.FakeResponse({}, six.StringIO('CCC'))
         body = http.ResponseBodyIterator(resp)
         list(body)
         # Setting checksum for an already consumed iterator should raise an
@@ -347,6 +347,6 @@ class TestResponseBodyIterator(testtools.TestCase):
     def test_body_size(self):
         size = 1000000007
         resp = utils.FakeResponse(
-            {'content-length': str(size)}, StringIO.StringIO('BB'))
+            {'content-length': str(size)}, six.StringIO('BB'))
         body = http.ResponseBodyIterator(resp)
         self.assertEqual(len(body), size)
