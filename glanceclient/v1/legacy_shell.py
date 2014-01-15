@@ -22,7 +22,8 @@ from __future__ import print_function
 
 import argparse
 import sys
-import urlparse
+
+from six.moves.urllib import parse
 
 from glanceclient.common import utils
 
@@ -75,7 +76,7 @@ def print_image_formatted(client, image):
     :param client: The Glance client object
     :param image: The image metadata
     """
-    uri_parts = urlparse.urlparse(client.http_client.endpoint)
+    uri_parts = parse.urlparse(client.http_client.endpoint)
     if uri_parts.port:
         hostbase = "%s:%s" % (uri_parts.hostname, uri_parts.port)
     else:

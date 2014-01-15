@@ -17,9 +17,9 @@ import errno
 import json
 import sys
 import testtools
-import urlparse
 
 import six
+from six.moves.urllib import parse
 
 from glanceclient.v1 import client
 from glanceclient.v1 import images
@@ -769,8 +769,8 @@ class UrlParameterTest(testtools.TestCase):
 
     def test_is_public_list(self):
         shell.do_image_list(self.gc, FakeArg({"is_public": "True"}))
-        parts = urlparse.urlparse(self.api.url)
-        qs_dict = urlparse.parse_qs(parts.query)
+        parts = parse.urlparse(self.api.url)
+        qs_dict = parse.parse_qs(parts.query)
         self.assertTrue('is_public' in qs_dict)
         self.assertTrue(qs_dict['is_public'][0].lower() == "true")
 

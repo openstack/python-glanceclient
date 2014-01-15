@@ -15,8 +15,9 @@
 
 import copy
 import json
+
 import six
-import urllib
+from six.moves.urllib import parse
 
 from glanceclient.common import base
 from glanceclient.common import utils
@@ -112,7 +113,7 @@ class ImageManager(base.Manager):
 
         image_id = base.getid(image)
         resp, body = self.api.raw_request('HEAD', '/v1/images/%s'
-                                          % urllib.quote(str(image_id)))
+                                          % parse.quote(str(image_id)))
         meta = self._image_meta_from_headers(dict(resp.getheaders()))
         return Image(self, meta)
 
@@ -125,7 +126,7 @@ class ImageManager(base.Manager):
         """
         image_id = base.getid(image)
         resp, body = self.api.raw_request('GET', '/v1/images/%s'
-                                          % urllib.quote(str(image_id)))
+                                          % parse.quote(str(image_id)))
         checksum = resp.getheader('x-image-meta-checksum', None)
         if do_checksum and checksum is not None:
             body.set_checksum(checksum)
@@ -171,7 +172,7 @@ class ImageManager(base.Manager):
                     # trying to encode them
                     qp[param] = strutils.safe_encode(value)
 
-            url = '/v1/images/detail?%s' % urllib.urlencode(qp)
+            url = '/v1/images/detail?%s' % parse.urlencode(qp)
             images = self._list(url, "images")
             for image in images:
                 if filter_owner(owner, image):
