@@ -17,7 +17,7 @@ import errno
 import socket
 import urlparse
 
-import mox
+from mox3 import mox
 import six
 import testtools
 
