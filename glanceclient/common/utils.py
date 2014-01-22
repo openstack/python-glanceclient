@@ -48,7 +48,7 @@ def schema_args(schema_getter, omit=[]):
     typemap = {
         'string': str,
         'integer': int,
-        'boolean': string_to_bool,
+        'boolean': strutils.bool_from_string,
         'array': list
     }
 
@@ -174,10 +174,6 @@ def is_authentication_required(f):
     skip the authentication step.
     """
     return getattr(f, 'require_authentication', True)
-
-
-def string_to_bool(arg):
-    return arg.strip().lower() in ('t', 'true', 'yes', '1')
 
 
 def env(*vars, **kwargs):
