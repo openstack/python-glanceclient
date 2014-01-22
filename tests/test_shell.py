@@ -16,7 +16,6 @@
 
 import argparse
 import os
-import tempfile
 
 import mock
 
@@ -105,8 +104,15 @@ class ShellTest(utils.TestCase):
 class ShellCacheSchemaTest(utils.TestCase):
     def setUp(self):
         super(ShellCacheSchemaTest, self).setUp()
-        self.shell = openstack_shell.OpenStackImagesShell()
         self._mock_client_setup()
+        self._mock_shell_setup()
+        os.path.exists = mock.MagicMock()
+        self.cache_dir = '/dir_for_cached_schema'
+        self.cache_file = self.cache_dir + '/image_schema.json'
+
+    def tearDown(self):
+        super(ShellCacheSchemaTest, self).tearDown()
+        os.path.exists.reset_mock()
 
     def _mock_client_setup(self):
         self.schema_dict = {
@@ -119,6 +125,11 @@ class ShellCacheSchemaTest(utils.TestCase):
         self.client = mock.Mock()
         self.client.schemas.get.return_value = schemas.Schema(self.schema_dict)
 
+    def _mock_shell_setup(self):
+        mocked_get_client = mock.MagicMock(return_value=self.client)
+        self.shell = openstack_shell.OpenStackImagesShell()
+        self.shell._get_versioned_client = mocked_get_client
+
     def _make_args(self, args):
         class Args():
             def __init__(self, entries):
@@ -126,76 +137,52 @@ class ShellCacheSchemaTest(utils.TestCase):
 
         return Args(args)
 
-    def _write_file(self, path, text):
-        with file(path, 'w') as f:
-            f.write(text)
-
-    def _read_file(self, path):
-        with file(path, 'r') as f:
-            text = f.read()
-
-        return text
-
+    @mock.patch('__builtin__.file', new=mock.mock_open(), create=True)
     def test_cache_schema_gets_when_not_exists(self):
-        cache_dir = tempfile.gettempdir()
-
-        cache_file = cache_dir + '/image_schema.json'
-
-        if os.path.exists(cache_file):
-            os.remove(cache_file)
+        mocked_path_exists_result_lst = [True, False]
+        os.path.exists.side_effect = \
+            lambda *args: mocked_path_exists_result_lst.pop(0)
 
         options = {
             'get_schema': False
         }
 
-        with mock.patch.object(self.shell, '_get_versioned_client')\
-                as mocked_get_client:
-            mocked_get_client.return_value = self.client
-            self.shell._cache_schema(self._make_args(options),
-                                     home_dir=cache_dir)
+        self.shell._cache_schema(self._make_args(options),
+                                 home_dir=self.cache_dir)
 
-        self.assertTrue(os.path.exists(cache_file))
+        self.assertEqual(4, file.mock_calls.__len__())
+        self.assertEqual(mock.call(self.cache_file, 'w'), file.mock_calls[0])
+        self.assertEqual(mock.call().write(json.dumps(self.schema_dict)),
+                         file.mock_calls[2])
 
+    @mock.patch('__builtin__.file', new=mock.mock_open(), create=True)
     def test_cache_schema_gets_when_forced(self):
-        cache_dir = tempfile.gettempdir()
-
-        cache_file = cache_dir + '/image_schema.json'
-
-        dummy_schema = 'my dummy schema'
-        self._write_file(cache_file, dummy_schema)
+        os.path.exists.return_value = True
 
         options = {
             'get_schema': True
         }
 
-        with mock.patch.object(self.shell, '_get_versioned_client') \
-                as mocked_get_client:
-            mocked_get_client.return_value = self.client
-            self.shell._cache_schema(self._make_args(options),
-                                     home_dir=cache_dir)
+        self.shell._cache_schema(self._make_args(options),
+                                 home_dir=self.cache_dir)
 
-        self.assertTrue(os.path.exists(cache_file))
-        text = self._read_file(cache_file)
-        self.assertEqual(text, json.dumps(self.schema_dict))
+        self.assertEqual(4, file.mock_calls.__len__())
+        self.assertEqual(mock.call(self.cache_file, 'w'), file.mock_calls[0])
+        self.assertEqual(mock.call().write(json.dumps(self.schema_dict)),
+                         file.mock_calls[2])
 
+    @mock.patch('__builtin__.file', new=mock.mock_open(), create=True)
     def test_cache_schema_leaves_when_present_not_forced(self):
-        cache_dir = tempfile.gettempdir()
-
-        cache_file = cache_dir + '/image_schema.json'
-
-        dummy_schema = 'my dummy schema'
-        self._write_file(cache_file, dummy_schema)
+        os.path.exists.return_value = True
 
         options = {
             'get_schema': False
         }
 
-        with mock.patch.object(self.shell, '_get_versioned_client') \
-                as mocked_get_client:
-            mocked_get_client.return_value = self.client
-            self.shell._cache_schema(self._make_args(options),
-                                     home_dir=cache_dir)
+        self.shell._cache_schema(self._make_args(options),
+                                 home_dir=self.cache_dir)
 
-        self.assertTrue(os.path.exists(cache_file))
-        text = self._read_file(cache_file)
-        self.assertEqual(text, dummy_schema)
+        os.path.exists.assert_any_call(self.cache_dir)
+        os.path.exists.assert_any_call(self.cache_file)
+        self.assertEqual(2, os.path.exists.call_count)
+        self.assertEqual(0, file.mock_calls.__len__())
