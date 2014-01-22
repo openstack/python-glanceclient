@@ -20,10 +20,10 @@ import logging
 import posixpath
 import socket
 import struct
-import urlparse
 
 import six
 from six.moves import http_client
+from six.moves.urllib import parse
 
 try:
     import json
@@ -31,9 +31,9 @@ except ImportError:
     import simplejson as json
 
 # Python 2.5 compat fix
-if not hasattr(urlparse, 'parse_qsl'):
+if not hasattr(parse, 'parse_qsl'):
     import cgi
-    urlparse.parse_qsl = cgi.parse_qsl
+    parse.parse_qsl = cgi.parse_qsl
 
 import OpenSSL
 
@@ -85,7 +85,7 @@ class HTTPClient(object):
 
     @staticmethod
     def parse_endpoint(endpoint):
-        return urlparse.urlparse(endpoint)
+        return parse.urlparse(endpoint)
 
     @staticmethod
     def get_connection_class(scheme):
@@ -199,14 +199,14 @@ class HTTPClient(object):
                 # v1/images/detail'  from recursion.
                 # See bug #1230032 and bug #1208618.
                 if url is not None:
-                    all_parts = urlparse.urlparse(url)
+                    all_parts = parse.urlparse(url)
                     if not (all_parts.scheme and all_parts.netloc):
                         norm_parse = posixpath.normpath
                         url = norm_parse('/'.join([self.endpoint_path, url]))
                 else:
                     url = self.endpoint_path
 
-            conn_url = urlparse.urlsplit(url).geturl()
+            conn_url = parse.urlsplit(url).geturl()
             # Note(flaper87): Ditto, headers / url
             # encoding to make httplib happy.
             conn_url = strutils.safe_encode(conn_url)

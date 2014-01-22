@@ -14,7 +14,7 @@
 #    under the License.
 
 import six
-import urllib
+from six.moves.urllib import parse
 
 import warlock
 
@@ -64,10 +64,10 @@ class Controller(object):
             if isinstance(value, six.string_types):
                 filters[param] = strutils.safe_encode(value)
 
-        url = '/v2/images?%s' % urllib.urlencode(filters)
+        url = '/v2/images?%s' % parse.urlencode(filters)
 
         for param in tags_url_params:
-            url = '%s&%s' % (url, urllib.urlencode(param))
+            url = '%s&%s' % (url, parse.urlencode(param))
 
         for image in paginate(url):
             #NOTE(bcwaldon): remove 'self' for now until we have an elegant

@@ -15,16 +15,16 @@
 
 import errno
 import socket
-import urlparse
 
 from mox3 import mox
 import six
+from six.moves import http_client
+from six.moves.urllib import parse
 import testtools
 
 import glanceclient
 from glanceclient.common import http
 from glanceclient import exc
-from six.moves import http_client
 from tests import utils
 
 
@@ -221,9 +221,9 @@ class TestClient(testtools.TestCase):
         endpoint = 'http://example.com:9292'
         test_client = http.HTTPClient(endpoint, token=u'adc123')
         actual = test_client.parse_endpoint(endpoint)
-        expected = urlparse.ParseResult(scheme='http',
-                                        netloc='example.com:9292', path='',
-                                        params='', query='', fragment='')
+        expected = parse.ParseResult(scheme='http',
+                                     netloc='example.com:9292', path='',
+                                     params='', query='', fragment='')
         self.assertEqual(expected, actual)
 
     def test_get_connection_class(self):
