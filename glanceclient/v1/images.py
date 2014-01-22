@@ -99,7 +99,7 @@ class ImageManager(base.Manager):
         for key in ['size', 'min_ram', 'min_disk']:
             if key in meta:
                 try:
-                    meta[key] = int(meta[key])
+                    meta[key] = int(meta[key]) if meta[key] else 0
                 except ValueError:
                     pass
         return meta

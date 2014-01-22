@@ -358,6 +358,32 @@ fixtures = {
             'ZZZ',
         ),
     },
+    '/v1/images/v2_created_img': {
+        'PUT': (
+            {},
+            json.dumps({
+                "image": {
+                    "status": "queued",
+                    "deleted": False,
+                    "container_format": "bare",
+                    "min_ram": 0,
+                    "updated_at": "2013-12-20T01:51:45",
+                    "owner": "foo",
+                    "min_disk": 0,
+                    "is_public": False,
+                    "deleted_at": None,
+                    "id": "v2_created_img",
+                    "size": None,
+                    "name": "bar",
+                    "checksum": None,
+                    "created_at": "2013-12-20T01:50:38",
+                    "disk_format": "qcow2",
+                    "properties": {},
+                    "protected": False
+                }
+            })
+        ),
+    },
 }
 
 
@@ -650,6 +676,26 @@ class ImageManagerTest(testtools.TestCase):
         self.assertRaises(AttributeError, lambda: image_list[3].owner)
         self.assertEqual(image_list[3].id, 'c')
         self.assertEqual(len(image_list), 4)
+
+    def test_update_v2_created_image_using_v1(self):
+        fields_to_update = {
+            'name': 'bar',
+            'container_format': 'bare',
+            'disk_format': 'qcow2',
+        }
+        image = self.mgr.update('v2_created_img', **fields_to_update)
+        expect_hdrs = {
+            'x-image-meta-name': 'bar',
+            'x-image-meta-container_format': 'bare',
+            'x-image-meta-disk_format': 'qcow2',
+        }
+        expect = [('PUT', '/v1/images/v2_created_img', expect_hdrs, None)]
+        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(image.id, 'v2_created_img')
+        self.assertEqual(image.name, 'bar')
+        self.assertEqual(image.size, 0)
+        self.assertEqual(image.container_format, 'bare')
+        self.assertEqual(image.disk_format, 'qcow2')
 
 
 class ImageTest(testtools.TestCase):
