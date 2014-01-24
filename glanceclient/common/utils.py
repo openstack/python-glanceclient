@@ -17,6 +17,7 @@ from __future__ import print_function
 
 import errno
 import os
+import re
 import sys
 import uuid
 
@@ -315,3 +316,15 @@ def get_data_file(args):
         else:
             # (3) no image data provided
             return None
+
+
+def strip_version(endpoint):
+    """Strip version from the last component of endpoint if present."""
+    # Get rid of trailing '/' if present
+    if endpoint.endswith('/'):
+        endpoint = endpoint[:-1]
+    url_bits = endpoint.split('/')
+    # regex to match 'v1' or 'v2.0' etc
+    if re.match('v\d+\.?\d*', url_bits[-1]):
+        endpoint = '/'.join(url_bits[:-1])
+    return endpoint

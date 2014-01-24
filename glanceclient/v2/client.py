@@ -16,6 +16,7 @@
 import warlock
 
 from glanceclient.common import http
+from glanceclient.common import utils
 from glanceclient.v2 import image_members
 from glanceclient.v2 import image_tags
 from glanceclient.v2 import images
@@ -32,8 +33,9 @@ class Client(object):
                             http requests. (optional)
     """
 
-    def __init__(self, *args, **kwargs):
-        self.http_client = http.HTTPClient(*args, **kwargs)
+    def __init__(self, endpoint, *args, **kwargs):
+        self.http_client = http.HTTPClient(utils.strip_version(endpoint),
+                                           *args, **kwargs)
         self.schemas = schemas.Controller(self.http_client)
         image_model = self._get_image_model()
         self.images = images.Controller(self.http_client,

@@ -14,6 +14,7 @@
 #    under the License.
 
 from glanceclient.common import http
+from glanceclient.common import utils
 from glanceclient.v1 import image_members
 from glanceclient.v1 import images
 
@@ -28,8 +29,9 @@ class Client(object):
                             http requests. (optional)
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, endpoint, *args, **kwargs):
         """Initialize a new client for the Images v1 API."""
-        self.http_client = http.HTTPClient(*args, **kwargs)
+        self.http_client = http.HTTPClient(utils.strip_version(endpoint),
+                                           *args, **kwargs)
         self.images = images.ImageManager(self.http_client)
         self.image_members = image_members.ImageMemberManager(self.http_client)
