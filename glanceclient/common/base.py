@@ -57,10 +57,12 @@ class Manager(object):
             obj_class = self.resource_class
 
         data = body[response_key]
-        return [obj_class(self, res, loaded=True) for res in data if res]
+        return ([obj_class(self, res, loaded=True) for res in data if res],
+                resp)
 
     def _delete(self, url):
-        self.api.raw_request('DELETE', url)
+        resp = self.api.raw_request('DELETE', url)
+        return resp[0]
 
     def _update(self, url, body, response_key=None):
         resp, body = self.api.json_request('PUT', url, body=body)
