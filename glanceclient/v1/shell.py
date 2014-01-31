@@ -61,7 +61,8 @@ DISK_FORMATS = ('Acceptable formats: ami, ari, aki, vhd, vmdk, raw, '
 @utils.arg('--sort-dir', default='asc',
            choices=glanceclient.v1.images.SORT_DIR_VALUES,
            help='Sort image list in specified direction.')
-@utils.arg('--is-public', type=utils.string_to_bool, metavar='{True,False}',
+@utils.arg('--is-public',
+           type=strutils.bool_from_string, metavar='{True,False}',
            help=('Allows the user to select a listing of public or non '
                  'public images.'))
 @utils.arg('--owner', default=None, metavar='<TENANT_ID>',
@@ -192,9 +193,11 @@ def do_image_download(gc, args):
 # to use --is-public
 @utils.arg('--public', action='store_true', default=False,
            help=argparse.SUPPRESS)
-@utils.arg('--is-public', type=utils.string_to_bool, metavar='{True,False}',
+@utils.arg('--is-public',
+           type=strutils.bool_from_string, metavar='{True,False}',
            help='Make image accessible to the public.')
-@utils.arg('--is-protected', type=utils.string_to_bool, metavar='{True,False}',
+@utils.arg('--is-protected',
+           type=strutils.bool_from_string, metavar='{True,False}',
            help='Prevent image from being deleted.')
 @utils.arg('--property', metavar="<key=value>", action='append', default=[],
            help=("Arbitrary property to associate with image. "
@@ -264,9 +267,11 @@ def do_image_create(gc, args):
            help=('Similar to \'--location\' in usage, but this indicates that'
                  ' the Glance server should immediately copy the data and'
                  ' store it in its configured image store.'))
-@utils.arg('--is-public', type=utils.string_to_bool, metavar='{True,False}',
+@utils.arg('--is-public',
+           type=strutils.bool_from_string, metavar='{True,False}',
            help='Make image accessible to the public.')
-@utils.arg('--is-protected', type=utils.string_to_bool, metavar='{True,False}',
+@utils.arg('--is-protected',
+           type=strutils.bool_from_string, metavar='{True,False}',
            help='Prevent image from being deleted.')
 @utils.arg('--property', metavar="<key=value>", action='append', default=[],
            help=("Arbitrary property to associate with image. "

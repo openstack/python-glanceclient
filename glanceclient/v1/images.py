@@ -71,7 +71,7 @@ class ImageManager(base.Manager):
 
         for key in ['is_public', 'protected', 'deleted']:
             if key in meta:
-                meta[key] = utils.string_to_bool(meta[key])
+                meta[key] = strutils.bool_from_string(meta[key])
 
         return self._format_image_meta_for_user(meta)
 

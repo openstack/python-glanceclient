@@ -26,6 +26,7 @@ import sys
 from six.moves.urllib import parse
 
 from glanceclient.common import utils
+from glanceclient.openstack.common import strutils
 
 
 SUCCESS = 0
@@ -116,9 +117,9 @@ def do_add(gc, args):
         return FAILURE
 
     image_meta = {
-        'is_public': utils.string_to_bool(
+        'is_public': strutils.bool_from_string(
             fields.pop('is_public', 'False')),
-        'protected': utils.string_to_bool(
+        'protected': strutils.bool_from_string(
             fields.pop('protected', 'False')),
         'min_disk': fields.pop('min_disk', 0),
         'min_ram': fields.pop('min_ram', 0),
@@ -209,9 +210,11 @@ def do_update(gc, args):
 
     # Have to handle "boolean" values specially...
     if 'is_public' in fields:
-        image_meta['is_public'] = utils.string_to_bool(fields.pop('is_public'))
+        image_meta['is_public'] = strutils.\
+            bool_from_string(fields.pop('is_public'))
     if 'protected' in fields:
-        image_meta['protected'] = utils.string_to_bool(fields.pop('protected'))
+        image_meta['protected'] = strutils.\
+            bool_from_string(fields.pop('protected'))
 
     # Add custom attributes, which are all the arguments remaining
     image_meta['properties'] = fields
