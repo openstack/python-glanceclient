@@ -44,7 +44,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
 
     def test_ssl_init_cert_no_key(self):
         """
-        Test VerifiedHTTPSConnection: absense of SSL key file.
+        Test VerifiedHTTPSConnection: absence of SSL key file.
         """
         cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
         cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
@@ -58,7 +58,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
 
     def test_ssl_init_key_no_cert(self):
         """
-        Test VerifiedHTTPSConnection: absense of SSL cert file.
+        Test VerifiedHTTPSConnection: absence of SSL cert file.
         """
         key_file = os.path.join(TEST_VAR_DIR, 'privatekey.key')
         cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
