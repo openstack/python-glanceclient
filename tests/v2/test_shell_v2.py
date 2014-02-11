@@ -14,6 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import json
 import mock
 import six
 import testtools
@@ -53,7 +54,7 @@ class ShellV2Test(testtools.TestCase):
         utils.print_dict = mock.Mock()
         utils.save_image = mock.Mock()
 
-    def _test_with_few_arguments(self, func, func_args, err_msg):
+    def assert_exits_with_msg(self, func, func_args, err_msg):
         with mock.patch.object(utils, 'exit') as mocked_utils_exit:
             mocked_utils_exit.return_value = '%s' % err_msg
 
@@ -207,6 +208,59 @@ class ShellV2Test(testtools.TestCase):
             utils.print_dict.assert_called_once_with({
                 'id': 'pass', 'name': 'IMG-01', 'disk_format': 'vhd'})
 
+    def test_do_location_add_update_with_invalid_json_metadata(self):
+        args = self._make_args({'id': 'pass',
+                                'url': 'http://foo/bar',
+                                'metadata': '{1, 2, 3}'})
+        self.assert_exits_with_msg(test_shell.do_location_add,
+                                   args,
+                                   'Metadata is not a valid JSON object.')
+        self.assert_exits_with_msg(test_shell.do_location_update,
+                                   args,
+                                   'Metadata is not a valid JSON object.')
+
+    def test_do_location_add(self):
+        gc = self.gc
+        loc = {'url': 'http://foo.com/', 'metadata': {'foo': 'bar'}}
+        args = self._make_args({'id': 'pass',
+                                'url': loc['url'],
+                                'metadata': json.dumps(loc['metadata'])})
+        with mock.patch.object(gc.images, 'add_location') as mocked_addloc:
+            expect_image = {'id': 'pass', 'locations': [loc]}
+            mocked_addloc.return_value = expect_image
+
+            test_shell.do_location_add(self.gc, args)
+            mocked_addloc.assert_called_once_with('pass',
+                                                  loc['url'],
+                                                  loc['metadata'])
+            utils.print_dict.assert_called_once_with(expect_image)
+
+    def test_do_location_delete(self):
+        gc = self.gc
+        loc_set = set(['http://foo/bar', 'http://spam/ham'])
+        args = self._make_args({'id': 'pass', 'url': loc_set})
+
+        with mock.patch.object(gc.images, 'delete_locations') as mocked_rmloc:
+            expect_image = {'id': 'pass', 'locations': []}
+            test_shell.do_location_delete(self.gc, args)
+            mocked_rmloc.assert_called_once_with('pass', loc_set)
+
+    def test_do_location_update(self):
+        gc = self.gc
+        loc = {'url': 'http://foo.com/', 'metadata': {'foo': 'bar'}}
+        args = self._make_args({'id': 'pass',
+                                'url': loc['url'],
+                                'metadata': json.dumps(loc['metadata'])})
+        with mock.patch.object(gc.images, 'update_location') as mocked_modloc:
+            expect_image = {'id': 'pass', 'locations': [loc]}
+            mocked_modloc.return_value = expect_image
+
+            test_shell.do_location_update(self.gc, args)
+            mocked_modloc.assert_called_once_with('pass',
+                                                  loc['url'],
+                                                  loc['metadata'])
+            utils.print_dict.assert_called_once_with(expect_image)
+
     def test_do_explain(self):
         input = {
             'page_size': 18,
@@ -292,9 +346,9 @@ class ShellV2Test(testtools.TestCase):
         args = self._make_args({'image_id': None, 'member_id': 'MEM-01'})
         msg = 'Unable to create member. Specify image_id and member_id'
 
-        self._test_with_few_arguments(func=test_shell.do_member_create,
-                                      func_args=args,
-                                      err_msg=msg)
+        self.assert_exits_with_msg(func=test_shell.do_member_create,
+                                   func_args=args,
+                                   err_msg=msg)
 
     def test_do_member_update(self):
         input = {
@@ -322,9 +376,9 @@ class ShellV2Test(testtools.TestCase):
         msg = 'Unable to update member. Specify image_id, member_id' \
               ' and member_status'
 
-        self._test_with_few_arguments(func=test_shell.do_member_update,
-                                      func_args=args,
-                                      err_msg=msg)
+        self.assert_exits_with_msg(func=test_shell.do_member_update,
+                                   func_args=args,
+                                   err_msg=msg)
 
     def test_do_member_delete(self):
         args = self._make_args({'image_id': 'IMG-01', 'member_id': 'MEM-01'})
@@ -337,9 +391,9 @@ class ShellV2Test(testtools.TestCase):
         args = self._make_args({'image_id': None, 'member_id': 'MEM-01'})
         msg = 'Unable to delete member. Specify image_id and member_id'
 
-        self._test_with_few_arguments(func=test_shell.do_member_delete,
-                                      func_args=args,
-                                      err_msg=msg)
+        self.assert_exits_with_msg(func=test_shell.do_member_delete,
+                                   func_args=args,
+                                   err_msg=msg)
 
     def test_image_tag_update(self):
         args = self._make_args({'image_id': 'IMG-01', 'tag_value': 'tag01'})
@@ -355,9 +409,9 @@ class ShellV2Test(testtools.TestCase):
         args = self._make_args({'image_id': None, 'tag_value': 'tag01'})
         msg = 'Unable to update tag. Specify image_id and tag_value'
 
-        self._test_with_few_arguments(func=test_shell.do_image_tag_update,
-                                      func_args=args,
-                                      err_msg=msg)
+        self.assert_exits_with_msg(func=test_shell.do_image_tag_update,
+                                   func_args=args,
+                                   err_msg=msg)
 
     def test_image_tag_delete(self):
         args = self._make_args({'image_id': 'IMG-01', 'tag_value': 'tag01'})
@@ -372,6 +426,6 @@ class ShellV2Test(testtools.TestCase):
         args = self._make_args({'image_id': 'IMG-01', 'tag_value': None})
         msg = 'Unable to delete tag. Specify image_id and tag_value'
 
-        self._test_with_few_arguments(func=test_shell.do_image_tag_delete,
-                                      func_args=args,
-                                      err_msg=msg)
+        self.assert_exits_with_msg(func=test_shell.do_image_tag_delete,
+                                   func_args=args,
+                                   err_msg=msg)

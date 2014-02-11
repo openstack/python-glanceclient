@@ -14,11 +14,13 @@
 #    under the License.
 
 import errno
+import json
 import testtools
 
 import six
 import warlock
 
+from glanceclient import exc
 from glanceclient.v2 import images
 from tests import utils
 
@@ -303,12 +305,43 @@ fixtures = {
             {'images': []},
         ),
     },
+    '/v2/images/a2b83adc-888e-11e3-8872-78acc0b951d8': {
+        'GET': (
+            {},
+            {
+                'id': 'a2b83adc-888e-11e3-8872-78acc0b951d8',
+                'name': 'image-location-tests',
+                'locations': [{u'url': u'http://foo.com/',
+                               u'metadata': {u'foo': u'foometa'}},
+                              {u'url': u'http://bar.com/',
+                               u'metadata': {u'bar': u'barmeta'}}],
+            },
+        ),
+        'PATCH': (
+            {},
+            '',
+        )
+    },
 }
 
 
 fake_schema = {
     'name': 'image',
-    'properties': {'id': {}, 'name': {}},
+    'properties': {
+        'id': {},
+        'name': {},
+        'locations': {
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'properties': {
+                    'metadata': {'type': 'object'},
+                    'url': {'type': 'string'},
+                },
+                'required': ['url', 'metadata'],
+            },
+        },
+    },
     'additionalProperties': {'type': 'string'}
 }
 FakeModel = warlock.model_factory(fake_schema)
@@ -626,3 +659,105 @@ class TestController(testtools.TestCase):
         params = {'name': 'pong', 'bad_prop': False}
         with testtools.ExpectedException(TypeError):
             self.controller.update(image_id, **params)
+
+    def test_location_ops_when_server_disabled_location_ops(self):
+        # Location operations should not be allowed if server has not
+        # enabled location related operations
+        image_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
+        estr = 'The administrator has disabled API access to image locations'
+        url = 'http://bar.com/'
+        meta = {'bar': 'barmeta'}
+
+        e = self.assertRaises(exc.HTTPBadRequest,
+                              self.controller.add_location,
+                              image_id, url, meta)
+        self.assertTrue(estr in str(e))
+
+        e = self.assertRaises(exc.HTTPBadRequest,
+                              self.controller.delete_locations,
+                              image_id, set([url]))
+        self.assertTrue(estr in str(e))
+
+        e = self.assertRaises(exc.HTTPBadRequest,
+                              self.controller.update_location,
+                              image_id, url, meta)
+        self.assertTrue(estr in str(e))
+
+    def _empty_get(self, image_id):
+        return ('GET', '/v2/images/%s' % image_id, {}, None)
+
+    def _patch_req(self, image_id, patch_body):
+        c_type = 'application/openstack-images-v2.1-json-patch'
+        return ('PATCH',
+                '/v2/images/%s' % image_id,
+                {'Content-Type': c_type},
+                json.dumps(patch_body))
+
+    def test_add_location(self):
+        image_id = 'a2b83adc-888e-11e3-8872-78acc0b951d8'
+        new_loc = {'url': 'http://spam.com/', 'metadata': {'spam': 'ham'}}
+        add_patch = {'path': '/locations/-', 'value': new_loc, 'op': 'add'}
+        image = self.controller.add_location(image_id, **new_loc)
+        self.assertEqual(self.api.calls, [
+            self._empty_get(image_id),
+            self._patch_req(image_id, [add_patch]),
+            self._empty_get(image_id)
+        ])
+
+    def test_add_duplicate_location(self):
+        image_id = 'a2b83adc-888e-11e3-8872-78acc0b951d8'
+        new_loc = {'url': 'http://foo.com/', 'metadata': {'foo': 'newfoo'}}
+        err_str = 'A location entry at %s already exists' % new_loc['url']
+
+        err = self.assertRaises(exc.HTTPConflict,
+                                self.controller.add_location,
+                                image_id, **new_loc)
+        self.assertIn(err_str, str(err))
+
+    def test_remove_location(self):
+        image_id = 'a2b83adc-888e-11e3-8872-78acc0b951d8'
+        url_set = set(['http://foo.com/', 'http://bar.com/'])
+        del_patches = [{'path': '/locations/1', 'op': 'remove'},
+                       {'path': '/locations/0', 'op': 'remove'}]
+        image = self.controller.delete_locations(image_id, url_set)
+        self.assertEqual(self.api.calls, [
+            self._empty_get(image_id),
+            self._patch_req(image_id, del_patches)
+        ])
+
+    def test_remove_missing_location(self):
+        image_id = 'a2b83adc-888e-11e3-8872-78acc0b951d8'
+        url_set = set(['http://spam.ham/'])
+        err_str = 'Unknown URL(s): %s' % list(url_set)
+
+        err = self.assertRaises(exc.HTTPNotFound,
+                                self.controller.delete_locations,
+                                image_id, url_set)
+        self.assertTrue(err_str in str(err))
+
+    def test_update_location(self):
+        image_id = 'a2b83adc-888e-11e3-8872-78acc0b951d8'
+        new_loc = {'url': 'http://foo.com/', 'metadata': {'spam': 'ham'}}
+        fixture_idx = '/v2/images/%s' % (image_id)
+        orig_locations = fixtures[fixture_idx]['GET'][1]['locations']
+        loc_map = dict([(l['url'], l) for l in orig_locations])
+        loc_map[new_loc['url']] = new_loc
+        mod_patch = [{'path': '/locations', 'op': 'replace',
+                      'value': []},
+                     {'path': '/locations', 'op': 'replace',
+                      'value': list(loc_map.values())}]
+        image = self.controller.update_location(image_id, **new_loc)
+        self.assertEqual(self.api.calls, [
+            self._empty_get(image_id),
+            self._patch_req(image_id, mod_patch),
+            self._empty_get(image_id)
+        ])
+
+    def test_update_missing_location(self):
+        image_id = 'a2b83adc-888e-11e3-8872-78acc0b951d8'
+        new_loc = {'url': 'http://spam.com/', 'metadata': {'spam': 'ham'}}
+        err_str = 'Unknown URL: %s' % new_loc['url']
+        err = self.assertRaises(exc.HTTPNotFound,
+                                self.controller.update_location,
+                                image_id, **new_loc)
+        self.assertTrue(err_str in str(err))
