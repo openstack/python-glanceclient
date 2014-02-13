@@ -29,7 +29,7 @@ def get_image_schema():
     if IMAGE_SCHEMA is None:
         schema_path = expanduser("~/.glanceclient/image_schema.json")
         if os.path.exists(schema_path) and os.path.isfile(schema_path):
-            with file(schema_path, "r") as f:
+            with open(schema_path, "r") as f:
                 schema_raw = f.read()
                 IMAGE_SCHEMA = json.loads(schema_raw)
     return IMAGE_SCHEMA

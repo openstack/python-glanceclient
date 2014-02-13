@@ -137,7 +137,7 @@ class ShellCacheSchemaTest(utils.TestCase):
 
         return Args(args)
 
-    @mock.patch('__builtin__.file', new=mock.mock_open(), create=True)
+    @mock.patch('__builtin__.open', new=mock.mock_open(), create=True)
     def test_cache_schema_gets_when_not_exists(self):
         mocked_path_exists_result_lst = [True, False]
         os.path.exists.side_effect = \
@@ -150,12 +150,12 @@ class ShellCacheSchemaTest(utils.TestCase):
         self.shell._cache_schema(self._make_args(options),
                                  home_dir=self.cache_dir)
 
-        self.assertEqual(4, file.mock_calls.__len__())
-        self.assertEqual(mock.call(self.cache_file, 'w'), file.mock_calls[0])
+        self.assertEqual(4, open.mock_calls.__len__())
+        self.assertEqual(mock.call(self.cache_file, 'w'), open.mock_calls[0])
         self.assertEqual(mock.call().write(json.dumps(self.schema_dict)),
-                         file.mock_calls[2])
+                         open.mock_calls[2])
 
-    @mock.patch('__builtin__.file', new=mock.mock_open(), create=True)
+    @mock.patch('__builtin__.open', new=mock.mock_open(), create=True)
     def test_cache_schema_gets_when_forced(self):
         os.path.exists.return_value = True
 
@@ -166,12 +166,12 @@ class ShellCacheSchemaTest(utils.TestCase):
         self.shell._cache_schema(self._make_args(options),
                                  home_dir=self.cache_dir)
 
-        self.assertEqual(4, file.mock_calls.__len__())
-        self.assertEqual(mock.call(self.cache_file, 'w'), file.mock_calls[0])
+        self.assertEqual(4, open.mock_calls.__len__())
+        self.assertEqual(mock.call(self.cache_file, 'w'), open.mock_calls[0])
         self.assertEqual(mock.call().write(json.dumps(self.schema_dict)),
-                         file.mock_calls[2])
+                         open.mock_calls[2])
 
-    @mock.patch('__builtin__.file', new=mock.mock_open(), create=True)
+    @mock.patch('__builtin__.open', new=mock.mock_open(), create=True)
     def test_cache_schema_leaves_when_present_not_forced(self):
         os.path.exists.return_value = True
 
@@ -185,4 +185,4 @@ class ShellCacheSchemaTest(utils.TestCase):
         os.path.exists.assert_any_call(self.cache_dir)
         os.path.exists.assert_any_call(self.cache_file)
         self.assertEqual(2, os.path.exists.call_count)
-        self.assertEqual(0, file.mock_calls.__len__())
+        self.assertEqual(0, open.mock_calls.__len__())
