@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from jsonpatch import JsonPatch
 import testtools
 import warlock
 
@@ -51,6 +52,11 @@ _SCHEMA = schemas.Schema({
         'color': {'type': 'string'},
     },
 })
+
+
+def compare_json_patches(a, b):
+    """Return 0 if a and b describe the same JSON patch."""
+    return JsonPatch.from_string(a) == JsonPatch.from_string(b)
 
 
 class TestSchemaProperty(testtools.TestCase):
@@ -111,7 +117,7 @@ class TestSchemaBasedModel(testtools.TestCase):
 
         patch = original.patch
         expected = '[{"path": "/color", "value": "red", "op": "replace"}]'
-        self.assertEqual(patch, expected)
+        self.assertTrue(compare_json_patches(patch, expected))
 
     def test_patch_should_add_extra_properties(self):
         obj = {
@@ -123,7 +129,7 @@ class TestSchemaBasedModel(testtools.TestCase):
 
         patch = original.patch
         expected = '[{"path": "/weight", "value": "10", "op": "add"}]'
-        self.assertEqual(patch, expected)
+        self.assertTrue(compare_json_patches(patch, expected))
 
     def test_patch_should_replace_extra_properties(self):
         obj = {
@@ -136,7 +142,7 @@ class TestSchemaBasedModel(testtools.TestCase):
 
         patch = original.patch
         expected = '[{"path": "/weight", "value": "22", "op": "replace"}]'
-        self.assertEqual(patch, expected)
+        self.assertTrue(compare_json_patches(patch, expected))
 
     def test_patch_should_remove_extra_properties(self):
         obj = {
@@ -149,7 +155,7 @@ class TestSchemaBasedModel(testtools.TestCase):
 
         patch = original.patch
         expected = '[{"path": "/weight", "op": "remove"}]'
-        self.assertEqual(patch, expected)
+        self.assertTrue(compare_json_patches(patch, expected))
 
     def test_patch_should_remove_core_properties(self):
         obj = {
@@ -162,4 +168,4 @@ class TestSchemaBasedModel(testtools.TestCase):
 
         patch = original.patch
         expected = '[{"path": "/color", "op": "remove"}]'
-        self.assertEqual(patch, expected)
+        self.assertTrue(compare_json_patches(patch, expected))
