@@ -201,7 +201,7 @@ class TestClient(testtools.TestCase):
 
     def test_raw_request_no_content_length(self):
         with tempfile.NamedTemporaryFile() as test_file:
-            test_file.write('abcd')
+            test_file.write(b'abcd')
             test_file.seek(0)
             data_length = 4
             self.assertEqual(client_utils.get_file_size(test_file),
@@ -233,7 +233,7 @@ class TestClient(testtools.TestCase):
 
     def test_raw_request_w_content_length(self):
         with tempfile.NamedTemporaryFile() as test_file:
-            test_file.write('abcd')
+            test_file.write(b'abcd')
             test_file.seek(0)
             data_length = 4
             self.assertEqual(client_utils.get_file_size(test_file),
@@ -267,7 +267,7 @@ class TestClient(testtools.TestCase):
 
     def test_raw_request_w_bad_content_length(self):
         with tempfile.NamedTemporaryFile() as test_file:
-            test_file.write('abcd')
+            test_file.write(b'abcd')
             test_file.seek(0)
             self.assertEqual(client_utils.get_file_size(test_file), 4)
 
