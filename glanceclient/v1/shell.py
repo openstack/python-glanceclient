@@ -375,9 +375,9 @@ def do_member_create(gc, args):
 
 
 @utils.arg('image', metavar='<IMAGE>',
-           help='Image from which to remove member')
+           help='Image from which to remove member.')
 @utils.arg('tenant_id', metavar='<TENANT_ID>',
-           help='Tenant to remove as member')
+           help='Tenant to remove as member.')
 def do_member_delete(gc, args):
     """Remove a shared image from a tenant."""
     image_id = utils.find_resource(gc.images, args.image).id
