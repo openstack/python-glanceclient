@@ -322,50 +322,50 @@ class TestController(testtools.TestCase):
     def test_list_images(self):
         #NOTE(bcwaldon): cast to list since the controller returns a generator
         images = list(self.controller.list())
-        self.assertEqual(images[0].id, '3a4560a1-e585-443e-9b39-553b46ec92d1')
-        self.assertEqual(images[0].name, 'image-1')
-        self.assertEqual(images[1].id, '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810')
-        self.assertEqual(images[1].name, 'image-2')
+        self.assertEqual('3a4560a1-e585-443e-9b39-553b46ec92d1', images[0].id)
+        self.assertEqual('image-1', images[0].name)
+        self.assertEqual('6f99bf80-2ee6-47cf-acfe-1f1fabb7e810', images[1].id)
+        self.assertEqual('image-2', images[1].name)
 
     def test_list_images_paginated(self):
         #NOTE(bcwaldon): cast to list since the controller returns a generator
         images = list(self.controller.list(page_size=1))
-        self.assertEqual(images[0].id, '3a4560a1-e585-443e-9b39-553b46ec92d1')
-        self.assertEqual(images[0].name, 'image-1')
-        self.assertEqual(images[1].id, '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810')
-        self.assertEqual(images[1].name, 'image-2')
+        self.assertEqual('3a4560a1-e585-443e-9b39-553b46ec92d1', images[0].id)
+        self.assertEqual('image-1', images[0].name)
+        self.assertEqual('6f99bf80-2ee6-47cf-acfe-1f1fabb7e810', images[1].id)
+        self.assertEqual('image-2', images[1].name)
 
     def test_list_images_visibility_public(self):
         filters = {'filters': dict([('visibility', 'public')])}
         images = list(self.controller.list(**filters))
-        self.assertEqual(images[0].id, _PUBLIC_ID)
+        self.assertEqual(_PUBLIC_ID, images[0].id)
 
     def test_list_images_visibility_private(self):
         filters = {'filters': dict([('visibility', 'private')])}
         images = list(self.controller.list(**filters))
-        self.assertEqual(images[0].id, _PRIVATE_ID)
+        self.assertEqual(_PRIVATE_ID, images[0].id)
 
     def test_list_images_visibility_shared(self):
         filters = {'filters': dict([('visibility', 'shared')])}
         images = list(self.controller.list(**filters))
-        self.assertEqual(images[0].id, _SHARED_ID)
+        self.assertEqual(_SHARED_ID, images[0].id)
 
     def test_list_images_member_status_rejected(self):
         filters = {'filters': dict([('member_status', 'rejected')])}
         images = list(self.controller.list(**filters))
-        self.assertEqual(images[0].id, _STATUS_REJECTED_ID)
+        self.assertEqual(_STATUS_REJECTED_ID, images[0].id)
 
     def test_list_images_for_owner(self):
         filters = {'filters': dict([('owner', _OWNER_ID)])}
         images = list(self.controller.list(**filters))
-        self.assertEqual(images[0].id, _OWNED_IMAGE_ID)
+        self.assertEqual(_OWNED_IMAGE_ID, images[0].id)
 
     def test_list_images_for_checksum_single_image(self):
         fake_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
         filters = {'filters': dict([('checksum', _CHKSUM)])}
         images = list(self.controller.list(**filters))
         self.assertEqual(1, len(images))
-        self.assertEqual(images[0].id, '%s' % fake_id)
+        self.assertEqual('%s' % fake_id, images[0].id)
 
     def test_list_images_for_checksum_multiple_images(self):
         fake_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
@@ -373,8 +373,8 @@ class TestController(testtools.TestCase):
         filters = {'filters': dict([('checksum', _CHKSUM1)])}
         images = list(self.controller.list(**filters))
         self.assertEqual(2, len(images))
-        self.assertEqual(images[0].id, '%s' % fake_id1)
-        self.assertEqual(images[1].id, '%s' % fake_id2)
+        self.assertEqual('%s' % fake_id1, images[0].id)
+        self.assertEqual('%s' % fake_id2, images[1].id)
 
     def test_list_images_for_wrong_checksum(self):
         filters = {'filters': dict([('checksum', 'wrong')])}
@@ -384,14 +384,14 @@ class TestController(testtools.TestCase):
     def test_list_images_for_bogus_owner(self):
         filters = {'filters': dict([('owner', _BOGUS_ID)])}
         images = list(self.controller.list(**filters))
-        self.assertEqual(images, [])
+        self.assertEqual([], images)
 
     def test_list_images_for_bunch_of_filters(self):
         filters = {'filters': dict([('owner', _BOGUS_ID),
                                     ('visibility', 'shared'),
                                     ('member_status', 'pending')])}
         images = list(self.controller.list(**filters))
-        self.assertEqual(images[0].id, _EVERYTHING_ID)
+        self.assertEqual(_EVERYTHING_ID, images[0].id)
 
     def test_list_images_filters_encoding(self):
         filters = {"owner": u"ni\xf1o"}
@@ -404,14 +404,14 @@ class TestController(testtools.TestCase):
             # We just want to make sure filters are correctly encoded.
             pass
 
-        self.assertEqual(filters["owner"], "ni\xc3\xb1o")
+        self.assertEqual("ni\xc3\xb1o", filters["owner"])
 
     def test_list_images_for_tag_single_image(self):
         img_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
         filters = {'filters': dict([('tag', [_TAG1])])}
         images = list(self.controller.list(**filters))
         self.assertEqual(1, len(images))
-        self.assertEqual(images[0].id, '%s' % img_id)
+        self.assertEqual('%s' % img_id, images[0].id)
         pass
 
     def test_list_images_for_tag_multiple_images(self):
@@ -420,15 +420,15 @@ class TestController(testtools.TestCase):
         filters = {'filters': dict([('tag', [_TAG2])])}
         images = list(self.controller.list(**filters))
         self.assertEqual(2, len(images))
-        self.assertEqual(images[0].id, '%s' % img_id1)
-        self.assertEqual(images[1].id, '%s' % img_id2)
+        self.assertEqual('%s' % img_id1, images[0].id)
+        self.assertEqual('%s' % img_id2, images[1].id)
 
     def test_list_images_for_multi_tags(self):
         img_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
         filters = {'filters': dict([('tag', [_TAG1, _TAG2])])}
         images = list(self.controller.list(**filters))
         self.assertEqual(1, len(images))
-        self.assertEqual(images[0].id, '%s' % img_id1)
+        self.assertEqual('%s' % img_id1, images[0].id)
 
     def test_list_images_for_non_existent_tag(self):
         filters = {'filters': dict([('tag', ['fake'])])}
@@ -437,16 +437,16 @@ class TestController(testtools.TestCase):
 
     def test_get_image(self):
         image = self.controller.get('3a4560a1-e585-443e-9b39-553b46ec92d1')
-        self.assertEqual(image.id, '3a4560a1-e585-443e-9b39-553b46ec92d1')
-        self.assertEqual(image.name, 'image-1')
+        self.assertEqual('3a4560a1-e585-443e-9b39-553b46ec92d1', image.id)
+        self.assertEqual('image-1', image.name)
 
     def test_create_image(self):
         properties = {
             'name': 'image-1'
         }
         image = self.controller.create(**properties)
-        self.assertEqual(image.id, '3a4560a1-e585-443e-9b39-553b46ec92d1')
-        self.assertEqual(image.name, 'image-1')
+        self.assertEqual('3a4560a1-e585-443e-9b39-553b46ec92d1', image.id)
+        self.assertEqual('image-1', image.name)
 
     def test_create_bad_additionalProperty_type(self):
         properties = {
@@ -463,7 +463,7 @@ class TestController(testtools.TestCase):
                 'v2/images/87b634c1-f893-33c9-28a9-e5673c99239a',
                 {},
                 None)]
-        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(expect, self.api.calls)
 
     def test_data_upload(self):
         image_data = 'CCC'
@@ -472,7 +472,7 @@ class TestController(testtools.TestCase):
         expect = [('PUT', '/v2/images/%s/file' % image_id,
                   {'Content-Type': 'application/octet-stream'},
                   image_data)]
-        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(expect, self.api.calls)
 
     def test_data_upload_w_size(self):
         image_data = 'CCC'
@@ -481,23 +481,23 @@ class TestController(testtools.TestCase):
         expect = [('PUT', '/v2/images/%s/file' % image_id,
                   {'Content-Type': 'application/octet-stream'},
                   image_data, 3)]
-        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(expect, self.api.calls)
 
     def test_data_without_checksum(self):
         body = self.controller.data('5cc4bebc-db27-11e1-a1eb-080027cbe205',
                                     do_checksum=False)
         body = ''.join([b for b in body])
-        self.assertEqual(body, 'A')
+        self.assertEqual('A', body)
 
         body = self.controller.data('5cc4bebc-db27-11e1-a1eb-080027cbe205')
         body = ''.join([b for b in body])
-        self.assertEqual(body, 'A')
+        self.assertEqual('A', body)
 
     def test_data_with_wrong_checksum(self):
         body = self.controller.data('66fb18d6-db27-11e1-a1eb-080027cbe205',
                                     do_checksum=False)
         body = ''.join([b for b in body])
-        self.assertEqual(body, 'BB')
+        self.assertEqual('BB', body)
 
         body = self.controller.data('66fb18d6-db27-11e1-a1eb-080027cbe205')
         try:
@@ -512,11 +512,11 @@ class TestController(testtools.TestCase):
         body = self.controller.data('1b1c6366-dd57-11e1-af0f-02163e68b1d8',
                                     do_checksum=False)
         body = ''.join([b for b in body])
-        self.assertEqual(body, 'CCC')
+        self.assertEqual('CCC', body)
 
         body = self.controller.data('1b1c6366-dd57-11e1-af0f-02163e68b1d8')
         body = ''.join([b for b in body])
-        self.assertEqual(body, 'CCC')
+        self.assertEqual('CCC', body)
 
     def test_update_replace_prop(self):
         image_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
@@ -531,11 +531,11 @@ class TestController(testtools.TestCase):
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
             ('GET', '/v2/images/%s' % image_id, {}, None),
         ]
-        self.assertEqual(self.api.calls, expect)
-        self.assertEqual(image.id, image_id)
+        self.assertEqual(expect, self.api.calls)
+        self.assertEqual(image_id, image.id)
         #NOTE(bcwaldon): due to limitations of our fake api framework, the name
         # will not actually change - yet in real life it will...
-        self.assertEqual(image.name, 'image-1')
+        self.assertEqual('image-1', image.name)
 
     def test_update_add_prop(self):
         image_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
@@ -550,11 +550,11 @@ class TestController(testtools.TestCase):
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
             ('GET', '/v2/images/%s' % image_id, {}, None),
         ]
-        self.assertEqual(self.api.calls, expect)
-        self.assertEqual(image.id, image_id)
+        self.assertEqual(expect, self.api.calls)
+        self.assertEqual(image_id, image.id)
         #NOTE(bcwaldon): due to limitations of our fake api framework, the name
         # will not actually change - yet in real life it will...
-        self.assertEqual(image.name, 'image-1')
+        self.assertEqual('image-1', image.name)
 
     def test_update_remove_prop(self):
         image_id = 'e7e59ff6-fa2e-4075-87d3-1a1398a07dc3'
@@ -569,11 +569,11 @@ class TestController(testtools.TestCase):
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
             ('GET', '/v2/images/%s' % image_id, {}, None),
         ]
-        self.assertEqual(self.api.calls, expect)
-        self.assertEqual(image.id, image_id)
+        self.assertEqual(expect, self.api.calls)
+        self.assertEqual(image_id, image.id)
         #NOTE(bcwaldon): due to limitations of our fake api framework, the name
         # will not actually change - yet in real life it will...
-        self.assertEqual(image.name, 'image-3')
+        self.assertEqual('image-3', image.name)
 
     def test_update_replace_remove_same_prop(self):
         image_id = 'e7e59ff6-fa2e-4075-87d3-1a1398a07dc3'
@@ -591,11 +591,11 @@ class TestController(testtools.TestCase):
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
             ('GET', '/v2/images/%s' % image_id, {}, None),
         ]
-        self.assertEqual(self.api.calls, expect)
-        self.assertEqual(image.id, image_id)
+        self.assertEqual(expect, self.api.calls)
+        self.assertEqual(image_id, image.id)
         #NOTE(bcwaldon): due to limitations of our fake api framework, the name
         # will not actually change - yet in real life it will...
-        self.assertEqual(image.name, 'image-3')
+        self.assertEqual('image-3', image.name)
 
     def test_update_add_remove_same_prop(self):
         image_id = 'e7e59ff6-fa2e-4075-87d3-1a1398a07dc3'
@@ -612,11 +612,11 @@ class TestController(testtools.TestCase):
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
             ('GET', '/v2/images/%s' % image_id, {}, None),
         ]
-        self.assertEqual(self.api.calls, expect)
-        self.assertEqual(image.id, image_id)
+        self.assertEqual(expect, self.api.calls)
+        self.assertEqual(image_id, image.id)
         #NOTE(bcwaldon): due to limitations of our fake api framework, the name
         # will not actually change - yet in real life it will...
-        self.assertEqual(image.name, 'image-3')
+        self.assertEqual('image-3', image.name)
 
     def test_update_bad_additionalProperty_type(self):
         image_id = 'e7e59ff6-fa2e-4075-87d3-1a1398a07dc3'
