@@ -122,7 +122,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         cert = crypto.load_certificate(crypto.FILETYPE_PEM,
                                        file(cert_file).read())
         # The expected cert should have CN=0.0.0.0
-        self.assertEqual(cert.get_subject().commonName, '0.0.0.0')
+        self.assertEqual('0.0.0.0', cert.get_subject().commonName)
         try:
             conn = http.VerifiedHTTPSConnection('0.0.0.0', 0)
             conn.verify_callback(None, cert, 0, 0, 1)
@@ -137,7 +137,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         cert = crypto.load_certificate(crypto.FILETYPE_PEM,
                                        file(cert_file).read())
         # The expected cert should have CN=*.pong.example.com
-        self.assertEqual(cert.get_subject().commonName, '*.pong.example.com')
+        self.assertEqual('*.pong.example.com', cert.get_subject().commonName)
         try:
             conn = http.VerifiedHTTPSConnection('ping.pong.example.com', 0)
             conn.verify_callback(None, cert, 0, 0, 1)
@@ -152,7 +152,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         cert = crypto.load_certificate(crypto.FILETYPE_PEM,
                                        file(cert_file).read())
         # The expected cert should have CN=0.0.0.0
-        self.assertEqual(cert.get_subject().commonName, '0.0.0.0')
+        self.assertEqual('0.0.0.0', cert.get_subject().commonName)
         try:
             conn = http.VerifiedHTTPSConnection('alt1.example.com', 0)
             conn.verify_callback(None, cert, 0, 0, 1)
@@ -173,7 +173,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         cert = crypto.load_certificate(crypto.FILETYPE_PEM,
                                        file(cert_file).read())
         # The expected cert should have CN=0.0.0.0
-        self.assertEqual(cert.get_subject().commonName, '0.0.0.0')
+        self.assertEqual('0.0.0.0', cert.get_subject().commonName)
         try:
             conn = http.VerifiedHTTPSConnection('alt1.example.com', 0)
             conn.verify_callback(None, cert, 0, 0, 1)
@@ -201,7 +201,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         cert = crypto.load_certificate(crypto.FILETYPE_PEM,
                                        file(cert_file).read())
         # The expected cert should have CN=0.0.0.0
-        self.assertEqual(cert.get_subject().commonName, '0.0.0.0')
+        self.assertEqual('0.0.0.0', cert.get_subject().commonName)
         try:
             conn = http.VerifiedHTTPSConnection('mismatch.example.com', 0)
         except Exception:
@@ -218,8 +218,8 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         cert = crypto.load_certificate(crypto.FILETYPE_PEM,
                                        file(cert_file).read())
         # The expected expired cert has CN=openstack.example.com
-        self.assertEqual(cert.get_subject().commonName,
-                         'openstack.example.com')
+        self.assertEqual('openstack.example.com',
+                         cert.get_subject().commonName)
         try:
             conn = http.VerifiedHTTPSConnection('openstack.example.com', 0)
         except Exception:

@@ -59,7 +59,7 @@ class TestClient(testtools.TestCase):
         kwargs = {'token': u'fake-token',
                   'identity_headers': identity_headers}
         http_client_object = http.HTTPClient(self.endpoint, **kwargs)
-        self.assertEqual(http_client_object.auth_token, 'auth_token')
+        self.assertEqual('auth_token', http_client_object.auth_token)
         self.assertTrue(http_client_object.identity_headers.
                         get('X-Auth-Token') is None)
 
@@ -75,7 +75,7 @@ class TestClient(testtools.TestCase):
         kwargs = {'token': u'fake-token',
                   'identity_headers': identity_headers}
         http_client_object = http.HTTPClient(self.endpoint, **kwargs)
-        self.assertEqual(http_client_object.auth_token, u'fake-token')
+        self.assertEqual(u'fake-token', http_client_object.auth_token)
         self.assertTrue(http_client_object.identity_headers.
                         get('X-Auth-Token') is None)
 
@@ -143,20 +143,20 @@ class TestClient(testtools.TestCase):
         headers = {"test": u'ni\xf1o'}
         resp, body = self.client.raw_request('GET', '/v1/images/detail',
                                                     headers=headers)
-        self.assertEqual(resp, fake)
+        self.assertEqual(fake, resp)
 
     def test_headers_encoding(self):
         headers = {"test": u'ni\xf1o'}
         encoded = self.client.encode_headers(headers)
-        self.assertEqual(encoded["test"], "ni\xc3\xb1o")
+        self.assertEqual("ni\xc3\xb1o", encoded["test"])
 
     def test_raw_request(self):
         " Verify the path being used for HTTP requests reflects accurately. "
 
         def check_request(method, path, **kwargs):
-            self.assertEqual(method, 'GET')
+            self.assertEqual('GET', method)
             # NOTE(kmcdonald): See bug #1179984 for more details.
-            self.assertEqual(path, '/v1/images/detail')
+            self.assertEqual('/v1/images/detail', path)
 
         http_client.HTTPConnection.request(
             mox.IgnoreArg(),
@@ -169,7 +169,7 @@ class TestClient(testtools.TestCase):
         self.mock.ReplayAll()
 
         resp, body = self.client.raw_request('GET', '/v1/images/detail')
-        self.assertEqual(resp, fake)
+        self.assertEqual(fake, resp)
 
     def test_customized_path_raw_request(self):
         """
@@ -178,13 +178,13 @@ class TestClient(testtools.TestCase):
         """
 
         def check_request(method, path, **kwargs):
-            self.assertEqual(method, 'GET')
-            self.assertEqual(path, '/customized-path/v1/images/detail')
+            self.assertEqual('GET', method)
+            self.assertEqual('/customized-path/v1/images/detail', path)
 
         # NOTE(yuyangbj): see bug 1230032 to get more info
         endpoint = 'http://example.com:9292/customized-path'
         client = http.HTTPClient(endpoint, token=u'abc123')
-        self.assertEqual(client.endpoint_path, '/customized-path')
+        self.assertEqual('/customized-path', client.endpoint_path)
 
         http_client.HTTPConnection.request(
             mox.IgnoreArg(),
@@ -197,15 +197,15 @@ class TestClient(testtools.TestCase):
         self.mock.ReplayAll()
 
         resp, body = client.raw_request('GET', '/v1/images/detail')
-        self.assertEqual(resp, fake)
+        self.assertEqual(fake, resp)
 
     def test_raw_request_no_content_length(self):
         with tempfile.NamedTemporaryFile() as test_file:
             test_file.write(b'abcd')
             test_file.seek(0)
             data_length = 4
-            self.assertEqual(client_utils.get_file_size(test_file),
-                             data_length)
+            self.assertEqual(data_length,
+                             client_utils.get_file_size(test_file))
 
             exp_resp = {'body': test_file}
             exp_resp['headers'] = {'Content-Length': str(data_length),
@@ -236,8 +236,8 @@ class TestClient(testtools.TestCase):
             test_file.write(b'abcd')
             test_file.seek(0)
             data_length = 4
-            self.assertEqual(client_utils.get_file_size(test_file),
-                             data_length)
+            self.assertEqual(data_length,
+                             client_utils.get_file_size(test_file))
 
             exp_resp = {'body': test_file}
             # NOTE: we expect the actual file size to be overridden by the
@@ -269,7 +269,7 @@ class TestClient(testtools.TestCase):
         with tempfile.NamedTemporaryFile() as test_file:
             test_file.write(b'abcd')
             test_file.seek(0)
-            self.assertEqual(client_utils.get_file_size(test_file), 4)
+            self.assertEqual(4, client_utils.get_file_size(test_file))
 
             def mock_request(url, method, **kwargs):
                 return kwargs
@@ -313,7 +313,7 @@ class TestClient(testtools.TestCase):
         endpoint = 'http://example.com:9292'
         test_client = http.HTTPClient(endpoint, token=u'adc123')
         actual = (test_client.get_connection_class('https'))
-        self.assertEqual(actual, http.VerifiedHTTPSConnection)
+        self.assertEqual(http.VerifiedHTTPSConnection, actual)
 
     def test_get_connections_kwargs_http(self):
         endpoint = 'http://example.com:9292'
@@ -399,7 +399,7 @@ class TestResponseBodyIterator(testtools.TestCase):
         resp = utils.FakeResponse({}, six.StringIO('X' * 98304))
         iterator = http.ResponseBodyIterator(resp)
         chunks = list(iterator)
-        self.assertEqual(chunks, ['X' * 65536, 'X' * 32768])
+        self.assertEqual(['X' * 65536, 'X' * 32768], chunks)
 
     def test_integrity_check_with_correct_checksum(self):
         resp = utils.FakeResponse({}, six.StringIO('CCC'))
@@ -432,4 +432,4 @@ class TestResponseBodyIterator(testtools.TestCase):
         resp = utils.FakeResponse(
             {'content-length': str(size)}, six.StringIO('BB'))
         body = http.ResponseBodyIterator(resp)
-        self.assertEqual(len(body), size)
+        self.assertEqual(size, len(body))
