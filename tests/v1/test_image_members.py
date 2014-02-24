@@ -63,37 +63,37 @@ class ImageMemberManagerTest(testtools.TestCase):
     def test_list_by_image(self):
         members = self.mgr.list(image=self.image)
         expect = [('GET', '/v1/images/1/members', {}, None)]
-        self.assertEqual(self.api.calls, expect)
-        self.assertEqual(len(members), 1)
-        self.assertEqual(members[0].member_id, '1')
-        self.assertEqual(members[0].image_id, '1')
-        self.assertEqual(members[0].can_share, False)
+        self.assertEqual(expect, self.api.calls)
+        self.assertEqual(1, len(members))
+        self.assertEqual('1', members[0].member_id)
+        self.assertEqual('1', members[0].image_id)
+        self.assertEqual(False, members[0].can_share)
 
     def test_list_by_member(self):
         resource_class = glanceclient.v1.image_members.ImageMember
         member = resource_class(self.api, {'member_id': '1'}, True)
         self.mgr.list(member=member)
         expect = [('GET', '/v1/shared-images/1', {}, None)]
-        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(expect, self.api.calls)
 
     def test_get(self):
         member = self.mgr.get(self.image, '1')
         expect = [('GET', '/v1/images/1/members/1', {}, None)]
-        self.assertEqual(self.api.calls, expect)
-        self.assertEqual(member.member_id, '1')
-        self.assertEqual(member.image_id, '1')
-        self.assertEqual(member.can_share, False)
+        self.assertEqual(expect, self.api.calls)
+        self.assertEqual('1', member.member_id)
+        self.assertEqual('1', member.image_id)
+        self.assertEqual(False, member.can_share)
 
     def test_delete(self):
         self.mgr.delete('1', '1')
         expect = [('DELETE', '/v1/images/1/members/1', {}, None)]
-        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(expect, self.api.calls)
 
     def test_create(self):
         self.mgr.create(self.image, '1', can_share=True)
         expect_body = {'member': {'can_share': True}}
         expect = [('PUT', '/v1/images/1/members/1', {}, expect_body)]
-        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(expect, self.api.calls)
 
     def test_replace(self):
         body = [
@@ -102,7 +102,7 @@ class ImageMemberManagerTest(testtools.TestCase):
         ]
         self.mgr.replace(self.image, body)
         expect = [('PUT', '/v1/images/1/members', {}, {'memberships': body})]
-        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(expect, self.api.calls)
 
     def test_replace_objects(self):
         body = [
@@ -119,4 +119,4 @@ class ImageMemberManagerTest(testtools.TestCase):
             ],
         }
         expect = [('PUT', '/v1/images/1/members', {}, expect_body)]
-        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(expect, self.api.calls)

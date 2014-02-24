@@ -410,8 +410,8 @@ class ShellStdinHandlingTests(testtools.TestCase):
 
             self.assertTrue('data' in self.collected_args[1])
             self.assertIsInstance(self.collected_args[1]['data'], file_type)
-            self.assertEqual(self.collected_args[1]['data'].read(),
-                             'Some Data')
+            self.assertEqual('Some Data',
+                             self.collected_args[1]['data'].read())
 
         finally:
             try:
@@ -435,8 +435,8 @@ class ShellStdinHandlingTests(testtools.TestCase):
 
             self.assertTrue('data' in self.collected_args[1])
             self.assertIsInstance(self.collected_args[1]['data'], file_type)
-            self.assertEqual(self.collected_args[1]['data'].read(),
-                             'Some Data\n')
+            self.assertEqual('Some Data\n',
+                             self.collected_args[1]['data'].read())
 
         finally:
             try:
