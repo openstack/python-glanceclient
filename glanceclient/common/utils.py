@@ -250,7 +250,7 @@ def getsockopt(self, *args, **kwargs):
 
 def exception_to_str(exc):
     try:
-        error = unicode(exc)
+        error = six.text_type(exc)
     except UnicodeError:
         try:
             error = str(exc)
