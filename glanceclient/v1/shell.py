@@ -228,7 +228,8 @@ def do_image_create(gc, args):
 
     _set_data_field(fields, args)
 
-    if args.progress:
+    # Only show progress bar for local image files
+    if fields.get('data') and args.progress:
         filesize = utils.get_file_size(fields['data'])
         fields['data'] = progressbar.VerboseFileWrapper(
             fields['data'], filesize
