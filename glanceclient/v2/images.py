@@ -18,6 +18,7 @@ from six.moves.urllib import parse
 
 import warlock
 
+from glanceclient.common import utils
 from glanceclient.openstack.common import strutils
 
 DEFAULT_PAGE_SIZE = 20
@@ -125,7 +126,7 @@ class Controller(object):
             try:
                 setattr(image, key, value)
             except warlock.InvalidOperation as e:
-                raise TypeError(unicode(e))
+                raise TypeError(utils.exception_to_str(e))
 
         resp, body = self.http_client.json_request('POST', url, body=image)
         #NOTE(esheffield): remove 'self' for now until we have an elegant
@@ -146,7 +147,7 @@ class Controller(object):
             try:
                 setattr(image, key, value)
             except warlock.InvalidOperation as e:
-                raise TypeError(unicode(e))
+                raise TypeError(utils.exception_to_str(e))
 
         if remove_props is not None:
             cur_props = image.keys()
