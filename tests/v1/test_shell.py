@@ -17,6 +17,7 @@
 import argparse
 import json
 import os
+import six
 import subprocess
 import tempfile
 import testtools
@@ -29,6 +30,12 @@ import glanceclient.v1.images
 import glanceclient.v1.shell as v1shell
 
 from tests import utils
+
+if six.PY3:
+    import io
+    file_type = io.IOBase
+else:
+    file_type = file
 
 fixtures = {
     '/v1/images/96d2c7e1-de4e-4612-8aa2-ba26610c804e': {
@@ -402,7 +409,7 @@ class ShellStdinHandlingTests(testtools.TestCase):
             self._do_update('44d2c7e1-de4e-4612-8aa2-ba26610c444f')
 
             self.assertTrue('data' in self.collected_args[1])
-            self.assertIsInstance(self.collected_args[1]['data'], file)
+            self.assertIsInstance(self.collected_args[1]['data'], file_type)
             self.assertEqual(self.collected_args[1]['data'].read(),
                              'Some Data')
 
@@ -427,7 +434,7 @@ class ShellStdinHandlingTests(testtools.TestCase):
             self._do_update('44d2c7e1-de4e-4612-8aa2-ba26610c444f')
 
             self.assertTrue('data' in self.collected_args[1])
-            self.assertIsInstance(self.collected_args[1]['data'], file)
+            self.assertIsInstance(self.collected_args[1]['data'], file_type)
             self.assertEqual(self.collected_args[1]['data'].read(),
                              'Some Data\n')
 
