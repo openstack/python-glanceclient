@@ -81,7 +81,6 @@ class ShellTest(utils.TestCase):
         expected = argparse.ArgumentParser(
             prog='glance', usage=None,
             description=description,
-            version=None,
             conflict_handler='error',
             add_help=False,
             formatter_class=openstack_shell.HelpFormatter,)
