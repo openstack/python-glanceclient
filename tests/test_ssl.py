@@ -120,7 +120,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         """
         cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
         cert = crypto.load_certificate(crypto.FILETYPE_PEM,
-                                       file(cert_file).read())
+                                       open(cert_file).read())
         # The expected cert should have CN=0.0.0.0
         self.assertEqual(cert.get_subject().commonName, '0.0.0.0')
         try:
@@ -135,7 +135,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         """
         cert_file = os.path.join(TEST_VAR_DIR, 'wildcard-certificate.crt')
         cert = crypto.load_certificate(crypto.FILETYPE_PEM,
-                                       file(cert_file).read())
+                                       open(cert_file).read())
         # The expected cert should have CN=*.pong.example.com
         self.assertEqual(cert.get_subject().commonName, '*.pong.example.com')
         try:
@@ -150,7 +150,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         """
         cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
         cert = crypto.load_certificate(crypto.FILETYPE_PEM,
-                                       file(cert_file).read())
+                                       open(cert_file).read())
         # The expected cert should have CN=0.0.0.0
         self.assertEqual(cert.get_subject().commonName, '0.0.0.0')
         try:
@@ -171,7 +171,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         """
         cert_file = os.path.join(TEST_VAR_DIR, 'wildcard-san-certificate.crt')
         cert = crypto.load_certificate(crypto.FILETYPE_PEM,
-                                       file(cert_file).read())
+                                       open(cert_file).read())
         # The expected cert should have CN=0.0.0.0
         self.assertEqual(cert.get_subject().commonName, '0.0.0.0')
         try:
@@ -199,7 +199,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         """
         cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
         cert = crypto.load_certificate(crypto.FILETYPE_PEM,
-                                       file(cert_file).read())
+                                       open(cert_file).read())
         # The expected cert should have CN=0.0.0.0
         self.assertEqual(cert.get_subject().commonName, '0.0.0.0')
         try:
@@ -216,7 +216,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         """
         cert_file = os.path.join(TEST_VAR_DIR, 'expired-cert.crt')
         cert = crypto.load_certificate(crypto.FILETYPE_PEM,
-                                       file(cert_file).read())
+                                       open(cert_file).read())
         # The expected expired cert has CN=openstack.example.com
         self.assertEqual(cert.get_subject().commonName,
                          'openstack.example.com')

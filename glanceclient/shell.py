@@ -431,7 +431,7 @@ class OpenStackImagesShell(object):
                                                     force_auth=True)
                 schema = client.schemas.get("image")
 
-                with file(schema_file_path, 'w') as f:
+                with open(schema_file_path, 'w') as f:
                     f.write(json.dumps(schema.raw()))
             except Exception as e:
                 #NOTE(esheffield) do nothing here, we'll get a message later
