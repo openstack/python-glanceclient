@@ -5,5 +5,5 @@ discover
 mox3>=0.7.0
 mock>=1.0
 sphinx>=1.1.2,<1.2
-testrepository>=0.0.17
-testtools>=0.9.32
+testrepository>=0.0.18
+testtools>=0.9.34
