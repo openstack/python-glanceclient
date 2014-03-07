@@ -136,7 +136,7 @@ class ShellCacheSchemaTest(utils.TestCase):
 
         return Args(args)
 
-    @mock.patch('__builtin__.open', new=mock.mock_open(), create=True)
+    @mock.patch('six.moves.builtins.open', new=mock.mock_open(), create=True)
     def test_cache_schema_gets_when_not_exists(self):
         mocked_path_exists_result_lst = [True, False]
         os.path.exists.side_effect = \
@@ -154,7 +154,7 @@ class ShellCacheSchemaTest(utils.TestCase):
         self.assertEqual(mock.call().write(json.dumps(self.schema_dict)),
                          open.mock_calls[2])
 
-    @mock.patch('__builtin__.open', new=mock.mock_open(), create=True)
+    @mock.patch('six.moves.builtins.open', new=mock.mock_open(), create=True)
     def test_cache_schema_gets_when_forced(self):
         os.path.exists.return_value = True
 
@@ -170,7 +170,7 @@ class ShellCacheSchemaTest(utils.TestCase):
         self.assertEqual(mock.call().write(json.dumps(self.schema_dict)),
                          open.mock_calls[2])
 
-    @mock.patch('__builtin__.open', new=mock.mock_open(), create=True)
+    @mock.patch('six.moves.builtins.open', new=mock.mock_open(), create=True)
     def test_cache_schema_leaves_when_present_not_forced(self):
         os.path.exists.return_value = True
 
