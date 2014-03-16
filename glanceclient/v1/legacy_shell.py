@@ -273,9 +273,9 @@ def _get_images(gc, args):
 
 
 @utils.arg('--limit', dest="limit", metavar="LIMIT", default=10,
-           type=int, help="Page size to use while requesting image metadata")
+           type=int, help="Page size for image metadata requests.")
 @utils.arg('--marker', dest="marker", metavar="MARKER",
-           default=None, help="Image index after which to begin pagination")
+           default=None, help="Image index after which to begin pagination.")
 @utils.arg('--sort_key', dest="sort_key", metavar="KEY",
            help="Sort results by this image attribute.")
 @utils.arg('--sort_dir', dest="sort_dir", metavar="[desc|asc]",
@@ -306,9 +306,9 @@ def do_index(gc, args):
 
 
 @utils.arg('--limit', dest="limit", metavar="LIMIT", default=10,
-           type=int, help="Page size to use while requesting image metadata")
+           type=int, help="Page size for image metadata requests.")
 @utils.arg('--marker', dest="marker", metavar="MARKER",
-           default=None, help="Image index after which to begin pagination")
+           default=None, help="Image index after which to begin pagination.")
 @utils.arg('--sort_key', dest="sort_key", metavar="KEY",
            help="Sort results by this image attribute.")
 @utils.arg('--sort_dir', dest="sort_dir", metavar="[desc|asc]",

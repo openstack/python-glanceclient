@@ -60,7 +60,7 @@ class OpenStackImagesShell(object):
         parser.add_argument('-d', '--debug',
                             default=bool(utils.env('GLANCECLIENT_DEBUG')),
                             action='store_true',
-                            help='Defaults to env[GLANCECLIENT_DEBUG]')
+                            help='Defaults to env[GLANCECLIENT_DEBUG].')
 
         parser.add_argument('-v', '--verbose',
                             default=False, action="store_true",
@@ -69,9 +69,9 @@ class OpenStackImagesShell(object):
         parser.add_argument('--get-schema',
                             default=False, action="store_true",
                             dest='get_schema',
-                            help='Force retrieving the schema used to generate'
-                                 ' portions of the help text rather than using'
-                                 ' a cached copy. Ignored with api version 1')
+                            help='Ignores cached copy and forces retrieval '
+                                 'of schema that generates portions of the '
+                                 'help text. Ignored with API version 1.')
 
         parser.add_argument('-k', '--insecure',
                             default=False,
@@ -152,7 +152,7 @@ class OpenStackImagesShell(object):
 
         parser.add_argument('--os-username',
                             default=utils.env('OS_USERNAME'),
-                            help='Defaults to env[OS_USERNAME]')
+                            help='Defaults to env[OS_USERNAME].')
 
         parser.add_argument('--os_username',
                             help=argparse.SUPPRESS)
@@ -164,7 +164,7 @@ class OpenStackImagesShell(object):
 
         parser.add_argument('--os-password',
                             default=utils.env('OS_PASSWORD'),
-                            help='Defaults to env[OS_PASSWORD]')
+                            help='Defaults to env[OS_PASSWORD].')
 
         parser.add_argument('--os_password',
                             help=argparse.SUPPRESS)
@@ -176,14 +176,14 @@ class OpenStackImagesShell(object):
 
         parser.add_argument('--os-tenant-id',
                             default=utils.env('OS_TENANT_ID'),
-                            help='Defaults to env[OS_TENANT_ID]')
+                            help='Defaults to env[OS_TENANT_ID].')
 
         parser.add_argument('--os_tenant_id',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-tenant-name',
                             default=utils.env('OS_TENANT_NAME'),
-                            help='Defaults to env[OS_TENANT_NAME]')
+                            help='Defaults to env[OS_TENANT_NAME].')
 
         parser.add_argument('--os_tenant_name',
                             help=argparse.SUPPRESS)
@@ -195,7 +195,7 @@ class OpenStackImagesShell(object):
 
         parser.add_argument('--os-auth-url',
                             default=utils.env('OS_AUTH_URL'),
-                            help='Defaults to env[OS_AUTH_URL]')
+                            help='Defaults to env[OS_AUTH_URL].')
 
         parser.add_argument('--os_auth_url',
                             help=argparse.SUPPRESS)
@@ -207,7 +207,7 @@ class OpenStackImagesShell(object):
 
         parser.add_argument('--os-region-name',
                             default=utils.env('OS_REGION_NAME'),
-                            help='Defaults to env[OS_REGION_NAME]')
+                            help='Defaults to env[OS_REGION_NAME].')
 
         parser.add_argument('--os_region_name',
                             help=argparse.SUPPRESS)
@@ -219,7 +219,7 @@ class OpenStackImagesShell(object):
 
         parser.add_argument('--os-auth-token',
                             default=utils.env('OS_AUTH_TOKEN'),
-                            help='Defaults to env[OS_AUTH_TOKEN]')
+                            help='Defaults to env[OS_AUTH_TOKEN].')
 
         parser.add_argument('--os_auth_token',
                             help=argparse.SUPPRESS)
@@ -231,7 +231,7 @@ class OpenStackImagesShell(object):
 
         parser.add_argument('--os-image-url',
                             default=utils.env('OS_IMAGE_URL'),
-                            help='Defaults to env[OS_IMAGE_URL]')
+                            help='Defaults to env[OS_IMAGE_URL].')
 
         parser.add_argument('--os_image_url',
                             help=argparse.SUPPRESS)
@@ -244,21 +244,21 @@ class OpenStackImagesShell(object):
         parser.add_argument('--os-image-api-version',
                             default=utils.env('OS_IMAGE_API_VERSION',
                                               default='1'),
-                            help='Defaults to env[OS_IMAGE_API_VERSION] or 1')
+                            help='Defaults to env[OS_IMAGE_API_VERSION] or 1.')
 
         parser.add_argument('--os_image_api_version',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-service-type',
                             default=utils.env('OS_SERVICE_TYPE'),
-                            help='Defaults to env[OS_SERVICE_TYPE]')
+                            help='Defaults to env[OS_SERVICE_TYPE].')
 
         parser.add_argument('--os_service_type',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-endpoint-type',
                             default=utils.env('OS_ENDPOINT_TYPE'),
-                            help='Defaults to env[OS_ENDPOINT_TYPE]')
+                            help='Defaults to env[OS_ENDPOINT_TYPE].')
 
         parser.add_argument('--os_endpoint_type',
                             help=argparse.SUPPRESS)
@@ -479,7 +479,7 @@ class OpenStackImagesShell(object):
             raise exc.CommandError("Invalid OpenStack Identity credentials.")
 
     @utils.arg('command', metavar='<subcommand>', nargs='?',
-               help='Display help for <subcommand>')
+               help='Display help for <subcommand>.')
     def do_help(self, args):
         """
         Display help about this program or one of its subcommands.

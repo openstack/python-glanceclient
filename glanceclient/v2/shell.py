@@ -66,7 +66,7 @@ def do_image_create(gc, args):
            default=[], help=('Arbitrary property to associate with image.'
                              ' May be used multiple times.'))
 @utils.arg('--remove-property', metavar="key", action='append', default=[],
-           help="Name of arbitrary property to remove from the image")
+           help="Name of arbitrary property to remove from the image.")
 def do_image_update(gc, args):
     """Update an existing image."""
     schema = gc.schemas.get("image")
@@ -100,7 +100,7 @@ def do_image_update(gc, args):
 @utils.arg('--owner', metavar='<OWNER>',
            help='Display images owned by <OWNER>.')
 @utils.arg('--checksum', metavar='<CHECKSUM>',
-           help='Display images matching the checksum')
+           help='Displays images that match the checksum.')
 @utils.arg('--tag', metavar='<TAG>', action='append',
            help="Filter images by an user-defined tag.")
 def do_image_list(gc, args):
@@ -141,11 +141,11 @@ def do_member_list(gc, args):
 
 
 @utils.arg('image_id', metavar='<IMAGE_ID>',
-           help='Image from which to remove member')
+           help='Image from which to remove member.')
 @utils.arg('member_id', metavar='<MEMBER_ID>',
-           help='Tenant to remove as member')
+           help='Tenant to remove as member.')
 def do_member_delete(gc, args):
-    """Delete image member"""
+    """Delete image member."""
     if not (args.image_id and args.member_id):
         utils.exit('Unable to delete member. Specify image_id and member_id')
     else:
@@ -153,11 +153,11 @@ def do_member_delete(gc, args):
 
 
 @utils.arg('image_id', metavar='<IMAGE_ID>',
-           help='Image from which to update member')
+           help='Image from which to update member.')
 @utils.arg('member_id', metavar='<MEMBER_ID>',
-           help='Tenant to update')
+           help='Tenant to update.')
 @utils.arg('member_status', metavar='<MEMBER_STATUS>',
-           help='Updated status of member')
+           help='Updated status of member.')
 def do_member_update(gc, args):
     """Update the status of a member for a given image."""
     if not (args.image_id and args.member_id and args.member_status):
@@ -172,9 +172,9 @@ def do_member_update(gc, args):
 
 
 @utils.arg('image_id', metavar='<IMAGE_ID>',
-           help='Image on which to create member')
+           help='Image with which to create member.')
 @utils.arg('member_id', metavar='<MEMBER_ID>',
-           help='Tenant to add as member')
+           help='Tenant to add as member.')
 def do_member_create(gc, args):
     """Create member for a given image."""
     if not (args.image_id and args.member_id):
@@ -238,9 +238,9 @@ def do_image_delete(gc, args):
 
 
 @utils.arg('image_id', metavar='<IMAGE_ID>',
-           help='Image to be updated with the given tag')
+           help='Image to be updated with the given tag.')
 @utils.arg('tag_value', metavar='<TAG_VALUE>',
-           help='Value of the tag')
+           help='Value of the tag.')
 def do_image_tag_update(gc, args):
         """Update an image with the given tag."""
         if not (args.image_id and args.tag_value):
@@ -254,9 +254,9 @@ def do_image_tag_update(gc, args):
 
 
 @utils.arg('image_id', metavar='<IMAGE_ID>',
-           help='Image whose tag to be deleted')
+           help='ID of the image from which to delete tag.')
 @utils.arg('tag_value', metavar='<TAG_VALUE>',
-           help='Value of the tag')
+           help='Value of the tag.')
 def do_image_tag_delete(gc, args):
     """Delete the tag associated with the given image."""
     if not (args.image_id and args.tag_value):
