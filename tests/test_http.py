@@ -304,9 +304,9 @@ class TestClient(testtools.TestCase):
         endpoint = 'http://example.com:9292'
         test_client = http.HTTPClient(endpoint, token=u'adc123')
         actual = test_client.parse_endpoint(endpoint)
-        expected = parse.ParseResult(scheme='http',
+        expected = parse.SplitResult(scheme='http',
                                      netloc='example.com:9292', path='',
-                                     params='', query='', fragment='')
+                                     query='', fragment='')
         self.assertEqual(expected, actual)
 
     def test_get_connection_class(self):

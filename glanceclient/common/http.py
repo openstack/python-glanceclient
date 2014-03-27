@@ -39,6 +39,7 @@ import OpenSSL
 
 from glanceclient.common import utils
 from glanceclient import exc
+from glanceclient.openstack.common import network_utils
 from glanceclient.openstack.common import strutils
 
 try:
@@ -85,7 +86,7 @@ class HTTPClient(object):
 
     @staticmethod
     def parse_endpoint(endpoint):
-        return parse.urlparse(endpoint)
+        return network_utils.urlsplit(endpoint)
 
     @staticmethod
     def get_connection_class(scheme):
