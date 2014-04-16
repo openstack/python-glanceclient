@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from glanceclient.common import base
+from glanceclient.openstack.common.apiclient import base
 
 
 class ImageMember(base.Resource):
@@ -28,13 +28,13 @@ class ImageMember(base.Resource):
         self.manager.delete(self)
 
 
-class ImageMemberManager(base.Manager):
+class ImageMemberManager(base.ManagerWithFind):
     resource_class = ImageMember
 
     def get(self, image, member_id):
         image_id = base.getid(image)
         url = '/v1/images/%s/members/%s' % (image_id, member_id)
-        resp, body = self.api.json_request('GET', url)
+        resp, body = self.client.json_request('GET', url)
         member = body['member']
         member['image_id'] = image_id
         return ImageMember(self, member, loaded=True)
@@ -60,7 +60,7 @@ class ImageMemberManager(base.Manager):
     def _list_by_image(self, image):
         image_id = base.getid(image)
         url = '/v1/images/%s/members' % image_id
-        resp, body = self.api.json_request('GET', url)
+        resp, body = self.client.json_request('GET', url)
         out = []
         for member in body['members']:
             member['image_id'] = image_id
@@ -70,7 +70,7 @@ class ImageMemberManager(base.Manager):
     def _list_by_member(self, member):
         member_id = base.getid(member)
         url = '/v1/shared-images/%s' % member_id
-        resp, body = self.api.json_request('GET', url)
+        resp, body = self.client.json_request('GET', url)
         out = []
         for member in body['shared_images']:
             member['member_id'] = member_id
@@ -84,7 +84,7 @@ class ImageMemberManager(base.Manager):
         """Creates an image."""
         url = '/v1/images/%s/members/%s' % (base.getid(image), member_id)
         body = {'member': {'can_share': can_share}}
-        self._update(url, body=body)
+        self._put(url, json=body)
 
     def replace(self, image, members):
         memberships = []
@@ -100,4 +100,4 @@ class ImageMemberManager(base.Manager):
                     obj['can_share'] = member['can_share']
             memberships.append(obj)
         url = '/v1/images/%s/members' % base.getid(image)
-        self.api.json_request('PUT', url, {}, {'memberships': memberships})
+        self.client.json_request('PUT', url, {}, {'memberships': memberships})

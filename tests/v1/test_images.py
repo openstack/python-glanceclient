@@ -838,6 +838,7 @@ class ImageTest(testtools.TestCase):
         image.delete()
         expect = [
             ('HEAD', '/v1/images/1', {}, None),
+            ('HEAD', '/v1/images/1', {}, None),
             ('DELETE', '/v1/images/1', {}, None),
         ]
         self.assertEqual(expect, self.api.calls)
@@ -847,6 +848,7 @@ class ImageTest(testtools.TestCase):
         image.update(name='image-5')
         expect = [
             ('HEAD', '/v1/images/1', {}, None),
+            ('HEAD', '/v1/images/1', {}, None),
             ('PUT', '/v1/images/1', {'x-image-meta-name': 'image-5'}, None),
         ]
         self.assertEqual(expect, self.api.calls)
@@ -855,6 +857,7 @@ class ImageTest(testtools.TestCase):
         image = self.mgr.get('1')
         data = ''.join([b for b in image.data()])
         expect = [
+            ('HEAD', '/v1/images/1', {}, None),
             ('HEAD', '/v1/images/1', {}, None),
             ('GET', '/v1/images/1', {}, None),
         ]
@@ -870,6 +873,7 @@ class ImageTest(testtools.TestCase):
         image = self.mgr.get('2')
         data = ''.join([b for b in image.data(do_checksum=False)])
         expect = [
+            ('HEAD', '/v1/images/2', {}, None),
             ('HEAD', '/v1/images/2', {}, None),
             ('GET', '/v1/images/2', {}, None),
         ]
@@ -891,6 +895,7 @@ class ImageTest(testtools.TestCase):
         image = self.mgr.get('3')
         data = ''.join([b for b in image.data(do_checksum=False)])
         expect = [
+            ('HEAD', '/v1/images/3', {}, None),
             ('HEAD', '/v1/images/3', {}, None),
             ('GET', '/v1/images/3', {}, None),
         ]

@@ -44,6 +44,32 @@ class FakeAPI(object):
         fixture = self._request(*args, **kwargs)
         return FakeResponse(fixture[0]), fixture[1]
 
+    def client_request(self, method, url, **kwargs):
+        if 'json' in kwargs and 'body' not in kwargs:
+            kwargs['body'] = kwargs.pop('json')
+        resp, body = self.json_request(method, url, **kwargs)
+        resp.json = lambda: body
+        resp.content = bool(body)
+        return resp
+
+    def head(self, url, **kwargs):
+        return self.client_request("HEAD", url, **kwargs)
+
+    def get(self, url, **kwargs):
+        return self.client_request("GET", url, **kwargs)
+
+    def post(self, url, **kwargs):
+        return self.client_request("POST", url, **kwargs)
+
+    def put(self, url, **kwargs):
+        return self.client_request("PUT", url, **kwargs)
+
+    def delete(self, url, **kwargs):
+        return self.raw_request("DELETE", url, **kwargs)
+
+    def patch(self, url, **kwargs):
+        return self.client_request("PATCH", url, **kwargs)
+
 
 class FakeResponse(object):
     def __init__(self, headers, body=None,
