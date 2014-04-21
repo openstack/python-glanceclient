@@ -32,10 +32,10 @@ class TestProgressBarWrapper(testtools.TestCase):
             sys.stdout = output = test_utils.FakeTTYStdout()
             # Consume iterator.
             data = list(progressbar.VerboseIteratorWrapper(iterator, size))
-            self.assertEqual(data, ['X'] * 100)
+            self.assertEqual(['X'] * 100, data)
             self.assertEqual(
-                output.getvalue(),
-                '[%s>] 100%%\n' % ('=' * 29)
+                '[%s>] 100%%\n' % ('=' * 29),
+                output.getvalue()
             )
         finally:
             sys.stdout = saved_stdout
@@ -52,8 +52,8 @@ class TestProgressBarWrapper(testtools.TestCase):
             while chunk:
                 chunk = file_obj.read(chunksize)
             self.assertEqual(
-                output.getvalue(),
-                '[%s>] 100%%\n' % ('=' * 29)
+                '[%s>] 100%%\n' % ('=' * 29),
+                output.getvalue()
             )
         finally:
             sys.stdout = saved_stdout
@@ -70,6 +70,6 @@ class TestProgressBarWrapper(testtools.TestCase):
             while chunk:
                 chunk = file_obj.read(chunksize)
             # If stdout is not a tty progress bar should do nothing.
-            self.assertEqual(output.getvalue(), '')
+            self.assertEqual('', output.getvalue())
         finally:
             sys.stdout = saved_stdout

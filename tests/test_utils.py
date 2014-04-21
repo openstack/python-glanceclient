@@ -34,9 +34,9 @@ class TestUtils(testtools.TestCase):
         size = 98304
         file_obj = six.StringIO('X' * size)
         try:
-            self.assertEqual(utils.get_file_size(file_obj), size)
+            self.assertEqual(size, utils.get_file_size(file_obj))
             # Check that get_file_size didn't change original file position.
-            self.assertEqual(file_obj.tell(), 0)
+            self.assertEqual(0, file_obj.tell())
         finally:
             file_obj.close()
 
@@ -45,9 +45,9 @@ class TestUtils(testtools.TestCase):
         file_obj = six.StringIO('X' * size)
         file_obj.seek(consumed)
         try:
-            self.assertEqual(utils.get_file_size(file_obj), size)
+            self.assertEqual(size, utils.get_file_size(file_obj))
             # Check that get_file_size didn't change original file position.
-            self.assertEqual(file_obj.tell(), consumed)
+            self.assertEqual(consumed, file_obj.tell())
         finally:
             file_obj.close()
 
@@ -77,7 +77,7 @@ class TestUtils(testtools.TestCase):
         finally:
             sys.stdout = saved_stdout
 
-        self.assertEqual(output_list.getvalue(), '''\
+        self.assertEqual('''\
 +-------+--------------+
 | ID    | Name         |
 +-------+--------------+
@@ -85,9 +85,10 @@ class TestUtils(testtools.TestCase):
 | 1     | another      |
 | 65536 | veeeery long |
 +-------+--------------+
-''')
+''',
+                         output_list.getvalue())
 
-        self.assertEqual(output_dict.getvalue(), '''\
+        self.assertEqual('''\
 +----------+--------------------------------------------------------------+
 | Property | Value                                                        |
 +----------+--------------------------------------------------------------+
@@ -96,7 +97,8 @@ class TestUtils(testtools.TestCase):
 |          | eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |
 |          | ery long value                                               |
 +----------+--------------------------------------------------------------+
-''')
+''',
+                         output_dict.getvalue())
 
     def test_exception_to_str(self):
         class FakeException(Exception):
@@ -104,11 +106,11 @@ class TestUtils(testtools.TestCase):
                 raise UnicodeError()
 
         ret = utils.exception_to_str(Exception('error message'))
-        self.assertEqual(ret, 'error message')
+        self.assertEqual('error message', ret)
 
         ret = utils.exception_to_str(Exception('\xa5 error message'))
-        self.assertEqual(ret, ' error message')
+        self.assertEqual(' error message', ret)
 
         ret = utils.exception_to_str(FakeException('\xa5 error message'))
-        self.assertEqual(ret, "Caught '%(exception)s' exception." %
-                         {'exception': 'FakeException'})
+        self.assertEqual("Caught '%(exception)s' exception." %
+                         {'exception': 'FakeException'}, ret)

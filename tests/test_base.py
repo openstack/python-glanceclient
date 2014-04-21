@@ -23,14 +23,14 @@ class TestBase(testtools.TestCase):
 
     def test_resource_repr(self):
         r = base.Resource(None, dict(foo="bar", baz="spam"))
-        self.assertEqual(repr(r), "<Resource baz=spam, foo=bar>")
+        self.assertEqual("<Resource baz=spam, foo=bar>", repr(r))
 
     def test_getid(self):
-        self.assertEqual(base.getid(4), 4)
+        self.assertEqual(4, base.getid(4))
 
         class TmpObject(object):
             id = 4
-        self.assertEqual(base.getid(TmpObject), 4)
+        self.assertEqual(4, base.getid(TmpObject))
 
     def test_two_resources_with_same_id_are_equal(self):
         # Two resources of the same type with the same id: equal
