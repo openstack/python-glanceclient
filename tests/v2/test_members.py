@@ -77,8 +77,8 @@ class TestController(testtools.TestCase):
         image_id = IMAGE
         #NOTE(iccha): cast to list since the controller returns a generator
         image_members = list(self.controller.list(image_id))
-        self.assertEqual(image_members[0].image_id, IMAGE)
-        self.assertEqual(image_members[0].member_id, MEMBER)
+        self.assertEqual(IMAGE, image_members[0].image_id)
+        self.assertEqual(MEMBER, image_members[0].member_id)
 
     def test_delete_image_member(self):
         image_id = IMAGE
@@ -90,22 +90,22 @@ class TestController(testtools.TestCase):
                                                        mem=MEMBER),
              {},
              None)]
-        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(expect, self.api.calls)
 
     def test_update_image_members(self):
         image_id = IMAGE
         member_id = MEMBER
         status = 'accepted'
         image_member = self.controller.update(image_id, member_id, status)
-        self.assertEqual(image_member.image_id, IMAGE)
-        self.assertEqual(image_member.member_id, MEMBER)
-        self.assertEqual(image_member.status, status)
+        self.assertEqual(IMAGE, image_member.image_id)
+        self.assertEqual(MEMBER, image_member.member_id)
+        self.assertEqual(status, image_member.status)
 
     def test_create_image_members(self):
         image_id = IMAGE
         member_id = MEMBER
         status = 'pending'
         image_member = self.controller.create(image_id, member_id)
-        self.assertEqual(image_member.image_id, IMAGE)
-        self.assertEqual(image_member.member_id, MEMBER)
-        self.assertEqual(image_member.status, status)
+        self.assertEqual(IMAGE, image_member.image_id)
+        self.assertEqual(MEMBER, image_member.member_id)
+        self.assertEqual(status, image_member.status)

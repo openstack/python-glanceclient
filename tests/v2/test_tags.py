@@ -61,7 +61,7 @@ class TestController(testtools.TestCase):
                                                           tag_value=TAG),
              {},
              None)]
-        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(expect, self.api.calls)
 
     def test_delete_image_tag(self):
         image_id = IMAGE
@@ -73,4 +73,4 @@ class TestController(testtools.TestCase):
                                                           tag_value=TAG),
              {},
              None)]
-        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(expect, self.api.calls)

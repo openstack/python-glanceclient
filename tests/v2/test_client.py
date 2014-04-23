@@ -33,12 +33,12 @@ class ClientTest(testtools.TestCase):
 
     def test_endpoint(self):
         gc = client.Client("http://example.com")
-        self.assertEqual(gc.http_client.endpoint, "http://example.com")
+        self.assertEqual("http://example.com", gc.http_client.endpoint)
 
     def test_versioned_endpoint(self):
         gc = client.Client("http://example.com/v2")
-        self.assertEqual(gc.http_client.endpoint, "http://example.com")
+        self.assertEqual("http://example.com", gc.http_client.endpoint)
 
     def test_versioned_endpoint_with_minor_revision(self):
         gc = client.Client("http://example.com/v2.1")
-        self.assertEqual(gc.http_client.endpoint, "http://example.com")
+        self.assertEqual("http://example.com", gc.http_client.endpoint)
