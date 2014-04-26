@@ -66,6 +66,8 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
             conn = http.VerifiedHTTPSConnection('127.0.0.1', 0,
                                                 key_file=key_file,
                                                 cacert=cacert)
+        except exc.SSLConfigurationError:
+            pass
         except Exception:
             self.fail('Failed to init VerifiedHTTPSConnection.')
 

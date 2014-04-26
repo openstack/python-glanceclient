@@ -105,7 +105,7 @@ class TestClient(testtools.TestCase):
 
     def test_request_redirected(self):
         resp = utils.FakeResponse({'location': 'http://www.example.com'},
-                                  status=302, body=six.StringIO())
+                                  status=302, body=six.BytesIO())
         http_client.HTTPConnection.request(
             mox.IgnoreArg(),
             mox.IgnoreArg(),
@@ -114,8 +114,8 @@ class TestClient(testtools.TestCase):
         http_client.HTTPConnection.getresponse().AndReturn(resp)
 
         # The second request should be to the redirected location
-        expected_response = 'Ok'
-        resp2 = utils.FakeResponse({}, six.StringIO(expected_response))
+        expected_response = b'Ok'
+        resp2 = utils.FakeResponse({}, six.BytesIO(expected_response))
         http_client.HTTPConnection.request(
             'GET',
             'http://www.example.com',
@@ -135,8 +135,8 @@ class TestClient(testtools.TestCase):
 
         # Lets fake the response
         # returned by httplib
-        expected_response = 'Ok'
-        fake = utils.FakeResponse({}, six.StringIO(expected_response))
+        expected_response = b'Ok'
+        fake = utils.FakeResponse({}, six.BytesIO(expected_response))
         http_client.HTTPConnection.getresponse().AndReturn(fake)
         self.mock.ReplayAll()
 
@@ -146,9 +146,13 @@ class TestClient(testtools.TestCase):
         self.assertEqual(fake, resp)
 
     def test_headers_encoding(self):
-        headers = {"test": u'ni\xf1o'}
+        value = u'ni\xf1o'
+        headers = {"test": value}
         encoded = self.client.encode_headers(headers)
-        self.assertEqual("ni\xc3\xb1o", encoded["test"])
+        if six.PY2:
+            self.assertEqual("ni\xc3\xb1o", encoded["test"])
+        else:
+            self.assertEqual(value, encoded["test"])
 
     def test_raw_request(self):
         " Verify the path being used for HTTP requests reflects accurately. "
@@ -164,7 +168,7 @@ class TestClient(testtools.TestCase):
             headers=mox.IgnoreArg()).WithSideEffects(check_request)
 
         # fake the response returned by httplib
-        fake = utils.FakeResponse({}, six.StringIO('Ok'))
+        fake = utils.FakeResponse({}, six.BytesIO(b'Ok'))
         http_client.HTTPConnection.getresponse().AndReturn(fake)
         self.mock.ReplayAll()
 
@@ -192,7 +196,7 @@ class TestClient(testtools.TestCase):
             headers=mox.IgnoreArg()).WithSideEffects(check_request)
 
         # fake the response returned by httplib
-        fake = utils.FakeResponse({}, six.StringIO('Ok'))
+        fake = utils.FakeResponse({}, six.BytesIO(b'Ok'))
         http_client.HTTPConnection.getresponse().AndReturn(fake)
         self.mock.ReplayAll()
 
@@ -396,19 +400,19 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
 class TestResponseBodyIterator(testtools.TestCase):
 
     def test_iter_default_chunk_size_64k(self):
-        resp = utils.FakeResponse({}, six.StringIO('X' * 98304))
+        resp = utils.FakeResponse({}, six.BytesIO(b'X' * 98304))
         iterator = http.ResponseBodyIterator(resp)
         chunks = list(iterator)
-        self.assertEqual(['X' * 65536, 'X' * 32768], chunks)
+        self.assertEqual([b'X' * 65536, b'X' * 32768], chunks)
 
     def test_integrity_check_with_correct_checksum(self):
-        resp = utils.FakeResponse({}, six.StringIO('CCC'))
+        resp = utils.FakeResponse({}, six.BytesIO(b'CCC'))
         body = http.ResponseBodyIterator(resp)
         body.set_checksum('defb99e69a9f1f6e06f15006b1f166ae')
         list(body)
 
     def test_integrity_check_with_wrong_checksum(self):
-        resp = utils.FakeResponse({}, six.StringIO('BB'))
+        resp = utils.FakeResponse({}, six.BytesIO(b'BB'))
         body = http.ResponseBodyIterator(resp)
         body.set_checksum('wrong')
         try:
@@ -418,7 +422,7 @@ class TestResponseBodyIterator(testtools.TestCase):
             self.assertEqual(errno.EPIPE, e.errno)
 
     def test_set_checksum_in_consumed_iterator(self):
-        resp = utils.FakeResponse({}, six.StringIO('CCC'))
+        resp = utils.FakeResponse({}, six.BytesIO(b'CCC'))
         body = http.ResponseBodyIterator(resp)
         list(body)
         # Setting checksum for an already consumed iterator should raise an
@@ -430,6 +434,6 @@ class TestResponseBodyIterator(testtools.TestCase):
     def test_body_size(self):
         size = 1000000007
         resp = utils.FakeResponse(
-            {'content-length': str(size)}, six.StringIO('BB'))
+            {'content-length': str(size)}, six.BytesIO(b'BB'))
         body = http.ResponseBodyIterator(resp)
         self.assertEqual(size, len(body))

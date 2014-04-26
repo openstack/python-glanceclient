@@ -19,6 +19,7 @@ import hashlib
 import logging
 import posixpath
 import socket
+import ssl
 import struct
 
 import six
@@ -61,6 +62,13 @@ except ImportError:
 LOG = logging.getLogger(__name__)
 USER_AGENT = 'python-glanceclient'
 CHUNKSIZE = 1024 * 64  # 64kB
+
+
+def to_bytes(s):
+    if isinstance(s, six.string_types):
+        return six.b(s)
+    else:
+        return s
 
 
 class HTTPClient(object):
@@ -149,8 +157,9 @@ class HTTPClient(object):
         dump.extend(['%s: %s' % (k, v) for k, v in resp.getheaders()])
         dump.append('')
         if body:
+            body = strutils.safe_decode(body)
             dump.extend([body, ''])
-        LOG.debug(strutils.safe_encode('\n'.join(dump)))
+        LOG.debug('\n'.join([strutils.safe_encode(x) for x in dump]))
 
     @staticmethod
     def encode_headers(headers):
@@ -239,9 +248,9 @@ class HTTPClient(object):
 
         # Read body into string if it isn't obviously image data
         if resp.getheader('content-type', None) != 'application/octet-stream':
-            body_str = ''.join([chunk for chunk in body_iter])
+            body_str = b''.join([to_bytes(chunk) for chunk in body_iter])
             self.log_http_response(resp, body_str)
-            body_iter = six.StringIO(body_str)
+            body_iter = six.BytesIO(body_str)
         else:
             self.log_http_response(resp)
 
@@ -349,16 +358,28 @@ class VerifiedHTTPSConnection(HTTPSConnection):
     def __init__(self, host, port=None, key_file=None, cert_file=None,
                  cacert=None, timeout=None, insecure=False,
                  ssl_compression=True):
-        HTTPSConnection.__init__(self, host, port,
-                                 key_file=key_file,
-                                 cert_file=cert_file)
-        self.key_file = key_file
-        self.cert_file = cert_file
-        self.timeout = timeout
-        self.insecure = insecure
-        self.ssl_compression = ssl_compression
-        self.cacert = cacert
-        self.setcontext()
+        # List of exceptions reported by Python3 instead of
+        # SSLConfigurationError
+        if six.PY3:
+            excp_lst = (TypeError, FileNotFoundError, ssl.SSLError)
+        else:
+            excp_lst = ()
+        try:
+            HTTPSConnection.__init__(self, host, port,
+                                     key_file=key_file,
+                                     cert_file=cert_file)
+            self.key_file = key_file
+            self.cert_file = cert_file
+            self.timeout = timeout
+            self.insecure = insecure
+            self.ssl_compression = ssl_compression
+            self.cacert = cacert
+            self.setcontext()
+            # ssl exceptions are reported in various form in Python 3
+            # so to be compatible, we report the same kind as under
+            # Python2
+        except excp_lst as e:
+            raise exc.SSLConfigurationError(str(e))
 
     @staticmethod
     def host_matches_cert(host, x509):
@@ -388,7 +409,7 @@ class VerifiedHTTPSConnection(HTTPSConnection):
         san_list = None
         for i in range(x509.get_extension_count()):
             ext = x509.get_extension(i)
-            if ext.get_short_name() == 'subjectAltName':
+            if ext.get_short_name() == b'subjectAltName':
                 san_list = str(ext)
                 for san in ''.join(san_list.split()).split(','):
                     if san.startswith('DNS:'):
@@ -458,7 +479,7 @@ class VerifiedHTTPSConnection(HTTPSConnection):
 
         if self.cacert:
             try:
-                self.context.load_verify_locations(self.cacert)
+                self.context.load_verify_locations(to_bytes(self.cacert))
             except Exception as e:
                 msg = ('Unable to load CA from "%(cacert)s" %(exc)s' %
                        dict(cacert=self.cacert, exc=e))
@@ -537,6 +558,8 @@ class ResponseBodyIterator(object):
                 raise
             else:
                 yield chunk
+                if isinstance(chunk, six.string_types):
+                    chunk = six.b(chunk)
                 md5sum.update(chunk)
 
     def next(self):

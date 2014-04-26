@@ -16,6 +16,7 @@
 import errno
 import testtools
 
+import six
 import warlock
 
 from glanceclient.v2 import images
@@ -403,8 +404,10 @@ class TestController(testtools.TestCase):
             #   /v2/images?owner=ni%C3%B1o&limit=20
             # We just want to make sure filters are correctly encoded.
             pass
-
-        self.assertEqual("ni\xc3\xb1o", filters["owner"])
+        if six.PY2:
+            self.assertEqual("ni\xc3\xb1o", filters["owner"])
+        else:
+            self.assertEqual("ni\xf1o", filters["owner"])
 
     def test_list_images_for_tag_single_image(self):
         img_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'

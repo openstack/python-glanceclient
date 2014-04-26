@@ -109,7 +109,10 @@ class TestUtils(testtools.TestCase):
         self.assertEqual('error message', ret)
 
         ret = utils.exception_to_str(Exception('\xa5 error message'))
-        self.assertEqual(' error message', ret)
+        if six.PY2:
+            self.assertEqual(' error message', ret)
+        else:
+            self.assertEqual('\xa5 error message', ret)
 
         ret = utils.exception_to_str(FakeException('\xa5 error message'))
         self.assertEqual("Caught '%(exception)s' exception." %
