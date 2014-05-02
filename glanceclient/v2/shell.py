@@ -102,7 +102,7 @@ def do_image_update(gc, args):
 @utils.arg('--checksum', metavar='<CHECKSUM>',
            help='Displays images that match the checksum.')
 @utils.arg('--tag', metavar='<TAG>', action='append',
-           help="Filter images by an user-defined tag.")
+           help="Filter images by a user-defined tag.")
 def do_image_list(gc, args):
     """List images you can access."""
     filter_keys = ['visibility', 'member_status', 'owner', 'checksum', 'tag']
