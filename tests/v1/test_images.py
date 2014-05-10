@@ -703,6 +703,7 @@ class ImageManagerTest(testtools.TestCase):
             'x-image-meta-property-a': 'b',
             'x-image-meta-property-c': 'd',
             'x-image-meta-deleted': 'False',
+            'x-glance-registry-purge-props': 'false',
         }
         expect = [('PUT', '/v1/images/1', expect_hdrs, None)]
         self.assertEqual(expect, self.api.calls)
@@ -715,13 +716,20 @@ class ImageManagerTest(testtools.TestCase):
     def test_update_with_data(self):
         image_data = six.StringIO('XXX')
         self.mgr.update('1', data=image_data)
-        expect_headers = {'x-image-meta-size': '3'}
+        expect_headers = {'x-image-meta-size': '3',
+                          'x-glance-registry-purge-props': 'false'}
         expect = [('PUT', '/v1/images/1', expect_headers, image_data)]
         self.assertEqual(expect, self.api.calls)
 
     def test_update_with_purge_props(self):
         self.mgr.update('1', purge_props=True)
         expect_headers = {'x-glance-registry-purge-props': 'true'}
+        expect = [('PUT', '/v1/images/1', expect_headers, None)]
+        self.assertEqual(expect, self.api.calls)
+
+    def test_update_with_purge_props_false(self):
+        self.mgr.update('1', purge_props=False)
+        expect_headers = {'x-glance-registry-purge-props': 'false'}
         expect = [('PUT', '/v1/images/1', expect_headers, None)]
         self.assertEqual(expect, self.api.calls)
 
@@ -817,6 +825,7 @@ class ImageManagerTest(testtools.TestCase):
             'x-image-meta-name': 'bar',
             'x-image-meta-container_format': 'bare',
             'x-image-meta-disk_format': 'qcow2',
+            'x-glance-registry-purge-props': 'false',
         }
         expect = [('PUT', '/v1/images/v2_created_img', expect_hdrs, None)]
         self.assertEqual(expect, self.api.calls)
@@ -849,7 +858,9 @@ class ImageTest(testtools.TestCase):
         expect = [
             ('HEAD', '/v1/images/1', {}, None),
             ('HEAD', '/v1/images/1', {}, None),
-            ('PUT', '/v1/images/1', {'x-image-meta-name': 'image-5'}, None),
+            ('PUT', '/v1/images/1',
+             {'x-image-meta-name': 'image-5',
+              'x-glance-registry-purge-props': 'false'}, None),
         ]
         self.assertEqual(expect, self.api.calls)
 
