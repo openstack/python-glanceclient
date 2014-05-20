@@ -33,6 +33,7 @@ fixtures = {
         'POST': (
             {
                 'location': '/v1/images/1',
+                'x-openstack-request-id': 'req-1234',
             },
             json.dumps(
                 {'image': {
@@ -71,7 +72,7 @@ fixtures = {
     },
     '/v1/images/detail?is_public=None&limit=20': {
         'GET': (
-            {},
+            {'x-openstack-request-id': 'req-1234'},
             {'images': [
                 {
                     'id': 'a',
@@ -358,6 +359,50 @@ fixtures = {
             'ZZZ',
         ),
     },
+    '/v1/images/4': {
+        'HEAD': (
+            {
+                'x-image-meta-id': '4',
+                'x-image-meta-name': 'image-4',
+                'x-image-meta-property-arch': 'x86_64',
+                'x-image-meta-is_public': 'false',
+                'x-image-meta-protected': 'false',
+                'x-image-meta-deleted': 'false',
+                'x-openstack-request-id': 'req-1234',
+            },
+            None),
+        'GET': (
+            {
+                'x-openstack-request-id': 'req-1234',
+            },
+            'XXX',
+        ),
+        'PUT': (
+            {
+                'x-openstack-request-id': 'req-1234',
+            },
+            json.dumps(
+                {'image': {
+                    'id': '4',
+                    'name': 'image-4',
+                    'container_format': 'ovf',
+                    'disk_format': 'vhd',
+                    'owner': 'asdf',
+                    'size': '1024',
+                    'min_ram': '512',
+                    'min_disk': '10',
+                    'properties': {'a': 'b', 'c': 'd'},
+                    'is_public': False,
+                    'protected': False,
+                }},
+            ),
+        ),
+        'DELETE': (
+            {
+                'x-openstack-request-id': 'req-1234',
+            },
+            None),
+    },
     '/v1/images/v2_created_img': {
         'PUT': (
             {},
@@ -480,6 +525,12 @@ class ImageManagerTest(testtools.TestCase):
         expect = [('HEAD', '/v1/images/3', {}, None)]
         self.assertEqual(u"ni\xf1o", image.name)
 
+    def test_get_req_id(self):
+        params = {'return_req_id': []}
+        image = self.mgr.get('4', **params)
+        expect_req_id = ['req-1234']
+        self.assertEqual(expect_req_id, params['return_req_id'])
+
     def test_data(self):
         data = ''.join([b for b in self.mgr.data('1', do_checksum=False)])
         expect = [('GET', '/v1/images/1', {}, None)]
@@ -508,6 +559,15 @@ class ImageManagerTest(testtools.TestCase):
             msg = 'was fd7c5c4fdaa97163ee4ba8842baa537a expected wrong'
             self.assertTrue(msg in str(e))
 
+    def test_data_req_id(self):
+        params = {
+            'do_checksum': False,
+            'return_req_id': [],
+        }
+        data = ''.join([b for b in self.mgr.data('4', **params)])
+        expect_req_id = ['req-1234']
+        self.assertEqual(expect_req_id, params['return_req_id'])
+
     def test_data_with_checksum(self):
         data = ''.join([b for b in self.mgr.data('3', do_checksum=False)])
         expect = [('GET', '/v1/images/3', {}, None)]
@@ -523,6 +583,16 @@ class ImageManagerTest(testtools.TestCase):
         self.mgr.delete('1')
         expect = [('DELETE', '/v1/images/1', {}, None)]
         self.assertEqual(expect, self.api.calls)
+
+    def test_delete_req_id(self):
+        params = {
+            'return_req_id': []
+        }
+        self.mgr.delete('4', **params)
+        expect = [('DELETE', '/v1/images/4', {}, None)]
+        self.assertEqual(self.api.calls, expect)
+        expect_req_id = ['req-1234']
+        self.assertEqual(expect_req_id, params['return_req_id'])
 
     def test_create_without_data(self):
         params = {
@@ -573,6 +643,40 @@ class ImageManagerTest(testtools.TestCase):
         expect = [('POST', '/v1/images', expect_headers, image_data)]
         self.assertEqual(expect, self.api.calls)
 
+    def test_create_req_id(self):
+        params = {
+            'id': '4',
+            'name': 'image-4',
+            'container_format': 'ovf',
+            'disk_format': 'vhd',
+            'owner': 'asdf',
+            'size': 1024,
+            'min_ram': 512,
+            'min_disk': 10,
+            'copy_from': 'http://example.com',
+            'properties': {'a': 'b', 'c': 'd'},
+            'return_req_id': [],
+        }
+        image = self.mgr.create(**params)
+        expect_headers = {
+            'x-image-meta-id': '4',
+            'x-image-meta-name': 'image-4',
+            'x-image-meta-container_format': 'ovf',
+            'x-image-meta-disk_format': 'vhd',
+            'x-image-meta-owner': 'asdf',
+            'x-image-meta-size': '1024',
+            'x-image-meta-min_ram': '512',
+            'x-image-meta-min_disk': '10',
+            'x-glance-api-copy-from': 'http://example.com',
+            'x-image-meta-property-a': 'b',
+            'x-image-meta-property-c': 'd',
+        }
+        expect = [('POST', '/v1/images', expect_headers, None)]
+        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(image.id, '1')
+        expect_req_id = ['req-1234']
+        self.assertEqual(expect_req_id, params['return_req_id'])
+
     def test_update(self):
         fields = {
             'name': 'image-2',
@@ -621,6 +725,18 @@ class ImageManagerTest(testtools.TestCase):
         expect = [('PUT', '/v1/images/1', expect_headers, None)]
         self.assertEqual(expect, self.api.calls)
 
+    def test_update_req_id(self):
+        fields = {
+            'purge_props': True,
+            'return_req_id': [],
+        }
+        self.mgr.update('4', **fields)
+        expect_headers = {'x-glance-registry-purge-props': 'true'}
+        expect = [('PUT', '/v1/images/4', expect_headers, None)]
+        self.assertEqual(self.api.calls, expect)
+        expect_req_id = ['req-1234']
+        self.assertEqual(expect_req_id, fields['return_req_id'])
+
     def test_image_meta_from_headers_encoding(self):
         fields = {"x-image-meta-name": "ni\xc3\xb1o"}
         headers = self.mgr._image_meta_from_headers(fields)
@@ -632,6 +748,15 @@ class ImageManagerTest(testtools.TestCase):
         self.assertEqual('A', image_list[0].owner)
         self.assertEqual('a', image_list[0].id)
         self.assertEqual(1, len(image_list))
+
+    def test_image_list_with_owner_req_id(self):
+        fields = {
+            'owner': 'A',
+            'return_req_id': [],
+        }
+        images = self.mgr.list(**fields)
+        images.next()
+        self.assertEqual(fields['return_req_id'], ['req-1234'])
 
     def test_image_list_with_notfound_owner(self):
         images = self.mgr.list(owner='X', page_size=20)
