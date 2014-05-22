@@ -363,9 +363,9 @@ class VerifiedHTTPSConnection(HTTPSConnection):
     @staticmethod
     def host_matches_cert(host, x509):
         """
-        Verify that the the x509 certificate we have received
+        Verify that the x509 certificate we have received
         from 'host' correctly identifies the server we are
-        connecting to, ie that the certificate's Common Name
+        connecting to, i.e. that the certificate's Common Name
         or a Subject Alternative Name matches 'host'.
         """
         def check_match(name):

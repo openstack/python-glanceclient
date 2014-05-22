@@ -277,7 +277,7 @@ def get_file_size(file_obj):
         except IOError as e:
             if e.errno == errno.ESPIPE:
                 # Illegal seek. This means the file object
-                # is a pipe (e.g the user is trying
+                # is a pipe (e.g. the user is trying
                 # to pipe image data to the client,
                 # echo testdata | bin/glance add blah...), or
                 # that file object is empty, or that a file-like
