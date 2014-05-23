@@ -44,9 +44,9 @@ DISK_FORMATS = ('Acceptable formats: ami, ari, aki, vhd, vmdk, raw, '
 @utils.arg('--disk-format', metavar='<DISK_FORMAT>',
            help='Filter images to those that have this disk format. '
                 + DISK_FORMATS)
-@utils.arg('--size-min', metavar='<SIZE>',
+@utils.arg('--size-min', metavar='<SIZE>', type=int,
            help='Filter images to those with a size greater than this.')
-@utils.arg('--size-max', metavar='<SIZE>',
+@utils.arg('--size-max', metavar='<SIZE>', type=int,
            help='Filter images to those with a size less than this.')
 @utils.arg('--property-filter', metavar='<KEY=VALUE>',
            help="Filter images by a user-defined image property.",
@@ -167,12 +167,12 @@ def do_image_download(gc, args):
            help='Container format of image. ' + CONTAINER_FORMATS)
 @utils.arg('--owner', metavar='<TENANT_ID>',
            help='Tenant who should own image.')
-@utils.arg('--size', metavar='<SIZE>',
+@utils.arg('--size', metavar='<SIZE>', type=int,
            help=('Size of image data (in bytes). Only used with'
-                 ' \'--location\' and \'--copy-from\'.'))
-@utils.arg('--min-disk', metavar='<DISK_GB>',
+                 ' \'--location\' and \'--copy_from\'.'))
+@utils.arg('--min-disk', metavar='<DISK_GB>', type=int,
            help='Minimum size of disk needed to boot image (in gigabytes).')
-@utils.arg('--min-ram', metavar='<DISK_RAM>',
+@utils.arg('--min-ram', metavar='<DISK_RAM>', type=int,
            help='Minimum amount of ram needed to boot image (in megabytes).')
 @utils.arg('--location', metavar='<IMAGE_URL>',
            help=('URL where the data for this image already resides. For '
@@ -248,11 +248,11 @@ def do_image_create(gc, args):
            help='Container format of image. ' + CONTAINER_FORMATS)
 @utils.arg('--owner', metavar='<TENANT_ID>',
            help='Tenant who should own image.')
-@utils.arg('--size', metavar='<SIZE>',
+@utils.arg('--size', metavar='<SIZE>', type=int,
            help='Size of image data (in bytes).')
-@utils.arg('--min-disk', metavar='<DISK_GB>',
+@utils.arg('--min-disk', metavar='<DISK_GB>', type=int,
            help='Minimum size of disk needed to boot image (in gigabytes).')
-@utils.arg('--min-ram', metavar='<DISK_RAM>',
+@utils.arg('--min-ram', metavar='<DISK_RAM>', type=int,
            help='Minimum amount of ram needed to boot image (in megabytes).')
 @utils.arg('--location', metavar='<IMAGE_URL>',
            help=('URL where the data for this image already resides. For '

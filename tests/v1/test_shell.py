@@ -189,12 +189,12 @@ fixtures = {
 }
 
 
-class ShellInvalidEndpointTest(utils.TestCase):
+class ShellInvalidEndpointandParameterTest(utils.TestCase):
 
     # Patch os.environ to avoid required auth info.
     def setUp(self):
         """Run before each test."""
-        super(ShellInvalidEndpointTest, self).setUp()
+        super(ShellInvalidEndpointandParameterTest, self).setUp()
         self.old_environment = os.environ.copy()
         os.environ = {
             'OS_USERNAME': 'username',
@@ -210,7 +210,7 @@ class ShellInvalidEndpointTest(utils.TestCase):
         self.shell = shell.OpenStackImagesShell()
 
     def tearDown(self):
-        super(ShellInvalidEndpointTest, self).tearDown()
+        super(ShellInvalidEndpointandParameterTest, self).tearDown()
         os.environ = self.old_environment
 
     def run_command(self, cmd):
@@ -301,6 +301,46 @@ class ShellInvalidEndpointTest(utils.TestCase):
             exc.InvalidEndpoint,
             self.run_command,
             'member-add  <IMAGE_ID> <TENANT_ID>')
+
+    def test_image_create_invalid_size_parameter(self):
+        self.assertRaises(
+            SystemExit,
+            self.run_command, 'image-create --size 10gb')
+
+    def test_image_create_invalid_ram_parameter(self):
+        self.assertRaises(
+            SystemExit,
+            self.run_command, 'image-create --min-ram 10gb')
+
+    def test_image_create_invalid_min_disk_parameter(self):
+        self.assertRaises(
+            SystemExit,
+            self.run_command, 'image-create --min-disk 10gb')
+
+    def test_image_update_invalid_size_parameter(self):
+        self.assertRaises(
+            SystemExit,
+            self.run_command, 'image-update --size 10gb')
+
+    def test_image_update_invalid_min_disk_parameter(self):
+        self.assertRaises(
+            SystemExit,
+            self.run_command, 'image-update --min-disk 10gb')
+
+    def test_image_update_invalid_ram_parameter(self):
+        self.assertRaises(
+            SystemExit,
+            self.run_command, 'image-update --min-ram 10gb')
+
+    def test_image_list_invalid_min_size_parameter(self):
+        self.assertRaises(
+            SystemExit,
+            self.run_command, 'image-list --size-min 10gb')
+
+    def test_image_list_invalid_max_size_parameter(self):
+        self.assertRaises(
+            SystemExit,
+            self.run_command, 'image-list --size-max 10gb')
 
 
 class ShellStdinHandlingTests(testtools.TestCase):
