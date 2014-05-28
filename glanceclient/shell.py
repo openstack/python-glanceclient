@@ -20,6 +20,7 @@ Command-line interface to the OpenStack Images API.
 from __future__ import print_function
 
 import argparse
+import copy
 import json
 import logging
 import os
@@ -440,8 +441,12 @@ class OpenStackImagesShell(object):
 
     def main(self, argv):
         # Parse args once to find version
+
+        #NOTE(flepied) Under Python3, parsed arguments are removed
+        # from the list so make a copy for the first parsing
+        base_argv = copy.deepcopy(argv)
         parser = self.get_base_parser()
-        (options, args) = parser.parse_known_args(argv)
+        (options, args) = parser.parse_known_args(base_argv)
 
         # build available subcommands based on version
         api_version = options.os_image_api_version

@@ -348,7 +348,7 @@ fixtures = {
         'HEAD': (
             {
                 'x-image-meta-id': '3',
-                'x-image-meta-name': "ni\xc3\xb1o"
+                'x-image-meta-name': u"ni\xf1o"
             },
             None,
         ),
@@ -738,9 +738,13 @@ class ImageManagerTest(testtools.TestCase):
         self.assertEqual(expect_req_id, fields['return_req_id'])
 
     def test_image_meta_from_headers_encoding(self):
-        fields = {"x-image-meta-name": "ni\xc3\xb1o"}
+        value = u"ni\xf1o"
+        if six.PY2:
+            fields = {"x-image-meta-name": "ni\xc3\xb1o"}
+        else:
+            fields = {"x-image-meta-name": value}
         headers = self.mgr._image_meta_from_headers(fields)
-        self.assertEqual(u"ni\xf1o", headers["name"])
+        self.assertEqual(value, headers["name"])
 
     def test_image_list_with_owner(self):
         images = self.mgr.list(owner='A', page_size=20)
