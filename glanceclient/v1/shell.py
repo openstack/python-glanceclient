@@ -169,7 +169,7 @@ def do_image_download(gc, args):
            help='Tenant who should own image.')
 @utils.arg('--size', metavar='<SIZE>',
            help=('Size of image data (in bytes). Only used with'
-                 ' \'--location\' and \'--copy_from\'.'))
+                 ' \'--location\' and \'--copy-from\'.'))
 @utils.arg('--min-disk', metavar='<DISK_GB>',
            help='Minimum size of disk needed to boot image (in gigabytes).')
 @utils.arg('--min-ram', metavar='<DISK_RAM>',
