@@ -128,6 +128,8 @@ class HTTPClient(object):
         curl = ['curl -i -X %s' % method]
 
         for (key, value) in kwargs['headers'].items():
+            if key.lower() == 'x-auth-token':
+                value = '*' * 3
             header = '-H \'%s: %s\'' % (key, value)
             curl.append(header)
 
@@ -154,7 +156,10 @@ class HTTPClient(object):
     def log_http_response(resp, body=None):
         status = (resp.version / 10.0, resp.status, resp.reason)
         dump = ['\nHTTP/%.1f %s %s' % status]
-        dump.extend(['%s: %s' % (k, v) for k, v in resp.getheaders()])
+        headers = resp.getheaders()
+        if 'X-Auth-Token' in headers:
+            headers['X-Auth-Token'] = '*' * 3
+        dump.extend(['%s: %s' % (k, v) for k, v in headers])
         dump.append('')
         if body:
             body = strutils.safe_decode(body)
