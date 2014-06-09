@@ -759,7 +759,7 @@ class ImageManagerTest(testtools.TestCase):
             'return_req_id': [],
         }
         images = self.mgr.list(**fields)
-        images.next()
+        next(images)
         self.assertEqual(fields['return_req_id'], ['req-1234'])
 
     def test_image_list_with_notfound_owner(self):
