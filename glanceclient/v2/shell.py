@@ -215,19 +215,24 @@ def do_image_download(gc, args):
 
 
 @utils.arg('--file', metavar='<FILE>',
-           help=('Local file that contains disk image to be uploaded'
-                 ' during creation. Alternatively, images can be passed'
+           help=('Local file that contains disk image to be uploaded.'
+                 ' Alternatively, images can be passed'
                  ' to the client via stdin.'))
 @utils.arg('--size', metavar='<IMAGE_SIZE>', type=int,
            help='Size in bytes of image to be uploaded. Default is to get '
                 'size from provided data object but this is supported in case '
                 'where size cannot be inferred.',
            default=None)
+@utils.arg('--progress', action='store_true', default=False,
+           help='Show upload progress bar.')
 @utils.arg('id', metavar='<IMAGE_ID>',
            help='ID of image to upload data to.')
 def do_image_upload(gc, args):
     """Upload data for a specific image."""
     image_data = utils.get_data_file(args)
+    if args.progress:
+        filesize = utils.get_file_size(image_data)
+        image_data = progressbar.VerboseFileWrapper(image_data, filesize)
     gc.images.upload(args.id, image_data, args.size)
 
 

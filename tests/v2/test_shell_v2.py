@@ -221,13 +221,26 @@ class ShellV2Test(testtools.TestCase):
             self.gc.schemas.get.assert_called_once_with('test')
 
     def test_image_upload(self):
-        args = self._make_args({'id': 'IMG-01', 'file': 'test', 'size': 1024})
+        args = self._make_args(
+            {'id': 'IMG-01', 'file': 'test', 'size': 1024, 'progress': False})
 
         with mock.patch.object(self.gc.images, 'upload') as mocked_upload:
             utils.get_data_file = mock.Mock(return_value='testfile')
             mocked_upload.return_value = None
             test_shell.do_image_upload(self.gc, args)
             mocked_upload.assert_called_once_with('IMG-01', 'testfile', 1024)
+
+    def test_image_upload_with_progressbar(self):
+        args = self._make_args(
+            {'id': 'IMG-01', 'file': 'test', 'size': 1024, 'progress': True})
+
+        with mock.patch.object(self.gc.images, 'upload') as mocked_upload:
+            utils.get_data_file = mock.Mock(return_value='testfile')
+            utils.get_file_size = mock.Mock(return_value=8)
+            mocked_upload.return_value = None
+            test_shell.do_image_upload(self.gc, args)
+            self.assertIsInstance(mocked_upload.call_args[0][1],
+                                  progressbar.VerboseFileWrapper)
 
     def test_image_download(self):
         args = self._make_args(
