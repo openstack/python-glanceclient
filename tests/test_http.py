@@ -337,6 +337,16 @@ class TestClient(testtools.TestCase):
                     'timeout': 600.0}
         self.assertEqual(expected, actual)
 
+    def test_log_curl_request_with_non_ascii_char(self):
+        try:
+            headers = {'header1': 'value1\xa5\xa6'}
+            http_client_object = http.HTTPClient(self.endpoint)
+            http_client_object.log_curl_request('GET',
+                                                'http://www.example.com/\xa5',
+                                                {'headers': headers})
+        except UnicodeDecodeError as e:
+            self.fail("Unexpected UnicodeDecodeError exception '%s'" % e)
+
 
 class TestHostResolutionError(testtools.TestCase):
 

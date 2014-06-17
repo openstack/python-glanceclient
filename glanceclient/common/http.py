@@ -150,7 +150,7 @@ class HTTPClient(object):
             curl.append('-d \'%s\'' % kwargs['body'])
 
         curl.append('%s%s' % (self.endpoint, url))
-        LOG.debug(strutils.safe_encode(' '.join(curl)))
+        LOG.debug(strutils.safe_encode(' '.join(curl), errors='ignore'))
 
     @staticmethod
     def log_http_response(resp, body=None):
