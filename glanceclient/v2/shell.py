@@ -117,7 +117,6 @@ def do_image_list(gc, args):
 def do_image_show(gc, args):
     """Describe a specific image."""
     image = gc.images.get(args.id)
-    ignore = ['self', 'access', 'file', 'schema']
     utils.print_image(image, int(args.max_column_width))
 
 
@@ -285,7 +284,7 @@ def do_location_add(gc, args):
            help='ID of image whose locations are to be removed.')
 def do_location_delete(gc, args):
     """Remove locations (and related metadata) from an image."""
-    image = gc.images.delete_locations(args.id, set(args.url))
+    gc.images.delete_locations(args.id, set(args.url))
 
 
 @utils.arg('--url', metavar='<URL>', required=True,

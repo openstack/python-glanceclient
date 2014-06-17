@@ -522,12 +522,11 @@ class ImageManagerTest(testtools.TestCase):
 
     def test_get_encoding(self):
         image = self.mgr.get('3')
-        expect = [('HEAD', '/v1/images/3', {}, None)]
         self.assertEqual(u"ni\xf1o", image.name)
 
     def test_get_req_id(self):
         params = {'return_req_id': []}
-        image = self.mgr.get('4', **params)
+        self.mgr.get('4', **params)
         expect_req_id = ['req-1234']
         self.assertEqual(expect_req_id, params['return_req_id'])
 
@@ -564,7 +563,7 @@ class ImageManagerTest(testtools.TestCase):
             'do_checksum': False,
             'return_req_id': [],
         }
-        data = ''.join([b for b in self.mgr.data('4', **params)])
+        ''.join([b for b in self.mgr.data('4', **params)])
         expect_req_id = ['req-1234']
         self.assertEqual(expect_req_id, params['return_req_id'])
 

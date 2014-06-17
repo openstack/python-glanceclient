@@ -241,7 +241,6 @@ class ShellV2Test(testtools.TestCase):
         args = self._make_args({'id': 'pass', 'url': loc_set})
 
         with mock.patch.object(gc.images, 'delete_locations') as mocked_rmloc:
-            expect_image = {'id': 'pass', 'locations': []}
             test_shell.do_location_delete(self.gc, args)
             mocked_rmloc.assert_called_once_with('pass', loc_set)
 

@@ -697,7 +697,7 @@ class TestController(testtools.TestCase):
         image_id = 'a2b83adc-888e-11e3-8872-78acc0b951d8'
         new_loc = {'url': 'http://spam.com/', 'metadata': {'spam': 'ham'}}
         add_patch = {'path': '/locations/-', 'value': new_loc, 'op': 'add'}
-        image = self.controller.add_location(image_id, **new_loc)
+        self.controller.add_location(image_id, **new_loc)
         self.assertEqual(self.api.calls, [
             self._empty_get(image_id),
             self._patch_req(image_id, [add_patch]),
@@ -719,7 +719,7 @@ class TestController(testtools.TestCase):
         url_set = set(['http://foo.com/', 'http://bar.com/'])
         del_patches = [{'path': '/locations/1', 'op': 'remove'},
                        {'path': '/locations/0', 'op': 'remove'}]
-        image = self.controller.delete_locations(image_id, url_set)
+        self.controller.delete_locations(image_id, url_set)
         self.assertEqual(self.api.calls, [
             self._empty_get(image_id),
             self._patch_req(image_id, del_patches)
@@ -746,7 +746,7 @@ class TestController(testtools.TestCase):
                       'value': []},
                      {'path': '/locations', 'op': 'replace',
                       'value': list(loc_map.values())}]
-        image = self.controller.update_location(image_id, **new_loc)
+        self.controller.update_location(image_id, **new_loc)
         self.assertEqual(self.api.calls, [
             self._empty_get(image_id),
             self._patch_req(image_id, mod_patch),

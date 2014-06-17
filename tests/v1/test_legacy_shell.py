@@ -330,7 +330,7 @@ class LegacyShellV1Test(testtools.TestCase):
             def __init__(self):
                 self.images = FakeImage1()
 
-        actual = test_shell.do_delete(FakeClient(), FakeImage1())
+        test_shell.do_delete(FakeClient(), FakeImage1())
 
     def test_show(self):
         class Image():
@@ -376,7 +376,7 @@ class LegacyShellV1Test(testtools.TestCase):
         gc = client.Client('1', 'http://is.invalid')
         with mock.patch.object(gc.images, 'list') as mocked_list:
             mocked_list.return_value = [Image(), Image()]
-            actual = test_shell.do_index(gc, args)
+            test_shell.do_index(gc, args)
 
     def test_index_return_empty(self):
         class Image():
@@ -424,7 +424,7 @@ class LegacyShellV1Test(testtools.TestCase):
         gc = client.Client('1', 'http://is.invalid')
         with mock.patch.object(gc.images, 'list') as mocked_list:
             mocked_list.return_value = [Image(), Image()]
-            actual = test_shell.do_details(gc, args)
+            test_shell.do_details(gc, args)
 
     def test_do_image_members(self):
         class FakeImage1():
@@ -463,7 +463,7 @@ class LegacyShellV1Test(testtools.TestCase):
             def list(self, image):
                 return [ImageMembers(), ImageMembers()]
 
-        actual = test_shell.do_image_members(FakeClient(), FakeImage1())
+        test_shell.do_image_members(FakeClient(), FakeImage1())
 
     def test_do_member_add_error(self):
         class FakeClient():
@@ -492,7 +492,7 @@ class LegacyShellV1Test(testtools.TestCase):
             def list(self, image):
                 return [ImageMembers(), ImageMembers()]
 
-        actual = test_shell.do_member_add(FakeClient(), FakeImage1())
+        test_shell.do_member_add(FakeClient(), FakeImage1())
 
     def test_do_member_images_empty_result(self):
         class FakeImage1():
@@ -520,7 +520,7 @@ class LegacyShellV1Test(testtools.TestCase):
             def list(self, image):
                 return [ImageMembers(), ImageMembers()]
 
-        actual = test_shell.do_member_add(FakeClient(), ImageMembers())
+        test_shell.do_member_add(FakeClient(), ImageMembers())
 
     def test_do_members_replace_dry_run_true(self):
         class Fake():
@@ -531,7 +531,7 @@ class LegacyShellV1Test(testtools.TestCase):
                 self.member_id = 'test'
 
         gc = client.Client('1', 'http://is.invalid')
-        actual = test_shell.do_members_replace(gc, Fake())
+        test_shell.do_members_replace(gc, Fake())
 
     def test_do_members_replace_dry_run_false(self):
         class Fake():
@@ -546,7 +546,7 @@ class LegacyShellV1Test(testtools.TestCase):
         with mock.patch.object(gc.image_members, 'list') as mocked_list:
             mocked_list.return_value = []
             with mock.patch.object(gc.image_members, 'create'):
-                actual = test_shell.do_members_replace(gc, Fake())
+                test_shell.do_members_replace(gc, Fake())
 
     def test_do_member_images(self):
         class FakeClient():
@@ -563,7 +563,7 @@ class LegacyShellV1Test(testtools.TestCase):
             def list(self, member):
                 return [ImageMembers(), ImageMembers()]
 
-        actual = test_shell.do_member_images(FakeClient(), ImageMembers())
+        test_shell.do_member_images(FakeClient(), ImageMembers())
 
     def test_create_pretty_table(self):
         class MyPrettyTable(test_shell.PrettyTable):

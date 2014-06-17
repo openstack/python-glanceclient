@@ -434,7 +434,7 @@ class OpenStackImagesShell(object):
 
                 with open(schema_file_path, 'w') as f:
                     f.write(json.dumps(schema.raw()))
-            except Exception as e:
+            except Exception:
                 #NOTE(esheffield) do nothing here, we'll get a message later
                 #if the schema is missing
                 pass
