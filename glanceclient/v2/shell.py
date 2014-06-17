@@ -19,7 +19,6 @@ from glanceclient import exc
 import json
 import os
 from os.path import expanduser
-import six
 
 IMAGE_SCHEMA = None
 
@@ -54,14 +53,11 @@ def do_image_create(gc, args):
         fields[key] = value
 
     image = gc.images.create(**fields)
-    ignore = ['self', 'access', 'file', 'schema']
-    image = dict([item for item in six.iteritems(image)
-                  if item[0] not in ignore])
-    utils.print_dict(image)
+    utils.print_image(image)
 
 
 @utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to update.')
-@utils.schema_args(get_image_schema, omit=['id'])
+@utils.schema_args(get_image_schema, omit=['id', 'locations'])
 @utils.arg('--property', metavar="<key=value>", action='append',
            default=[], help=('Arbitrary property to associate with image.'
                              ' May be used multiple times.'))
@@ -85,10 +81,7 @@ def do_image_update(gc, args):
 
     image_id = fields.pop('id')
     image = gc.images.update(image_id, remove_properties, **fields)
-    ignore = ['self', 'access', 'file', 'schema']
-    image = dict([item for item in six.iteritems(image)
-                  if item[0] not in ignore])
-    utils.print_dict(image)
+    utils.print_image(image)
 
 
 @utils.arg('--page-size', metavar='<SIZE>', default=None, type=int,
@@ -125,9 +118,7 @@ def do_image_show(gc, args):
     """Describe a specific image."""
     image = gc.images.get(args.id)
     ignore = ['self', 'access', 'file', 'schema']
-    image = dict([item for item in six.iteritems(image) if item[0] not in
-                  ignore])
-    utils.print_dict(image, max_column_width=int(args.max_column_width))
+    utils.print_image(image, int(args.max_column_width))
 
 
 @utils.arg('--image-id', metavar='<IMAGE_ID>', required=True,
@@ -268,3 +259,48 @@ def do_image_tag_delete(gc, args):
         utils.exit('Unable to delete tag. Specify image_id and tag_value')
     else:
         gc.image_tags.delete(args.image_id, args.tag_value)
+
+
+@utils.arg('--url', metavar='<URL>', required=True,
+           help='URL of location to add.')
+@utils.arg('--metadata', metavar='<STRING>', default='{}',
+           help=('Metadata associated with the location. '
+                 'Must be a valid JSON object (default: %(default)s)'))
+@utils.arg('id', metavar='<ID>',
+           help='ID of image to which the location is to be added.')
+def do_location_add(gc, args):
+    """Add a location (and related metadata) to an image."""
+    try:
+        metadata = json.loads(args.metadata)
+    except ValueError:
+        utils.exit('Metadata is not a valid JSON object.')
+    else:
+        image = gc.images.add_location(args.id, args.url, metadata)
+        utils.print_dict(image)
+
+
+@utils.arg('--url', metavar='<URL>', action='append', required=True,
+           help='URL of location to remove. May be used multiple times.')
+@utils.arg('id', metavar='<ID>',
+           help='ID of image whose locations are to be removed.')
+def do_location_delete(gc, args):
+    """Remove locations (and related metadata) from an image."""
+    image = gc.images.delete_locations(args.id, set(args.url))
+
+
+@utils.arg('--url', metavar='<URL>', required=True,
+           help='URL of location to update.')
+@utils.arg('--metadata', metavar='<STRING>', default='{}',
+           help=('Metadata associated with the location. '
+                 'Must be a valid JSON object (default: %(default)s)'))
+@utils.arg('id', metavar='<ID>',
+           help='ID of image whose location is to be updated.')
+def do_location_update(gc, args):
+    """Update metadata of an image's location."""
+    try:
+        metadata = json.loads(args.metadata)
+    except ValueError:
+        utils.exit('Metadata is not a valid JSON object.')
+    else:
+        image = gc.images.update_location(args.id, args.url, metadata)
+        utils.print_dict(image)

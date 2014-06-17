@@ -325,3 +325,13 @@ def strip_version(endpoint):
     if re.match('v\d+\.?\d*', url_bits[-1]):
         endpoint = '/'.join(url_bits[:-1])
     return endpoint
+
+
+def print_image(image_obj, max_col_width=None):
+    ignore = ['self', 'access', 'file', 'schema']
+    image = dict([item for item in six.iteritems(image_obj)
+                  if item[0] not in ignore])
+    if str(max_col_width).isdigit():
+        print_dict(image, max_column_width=max_col_width)
+    else:
+        print_dict(image)
