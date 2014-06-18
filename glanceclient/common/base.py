@@ -15,71 +15,21 @@
 
 """
 Base utilities to build API operation managers and objects on top of.
+
+DEPRECATED post v.0.12.0. Use 'glanceclient.openstack.common.apiclient.base'
+instead of this module."
 """
 
-import copy
+import warnings
 
 from glanceclient.openstack.common.apiclient import base
 
-# Python 2.4 compat
-try:
-    all
-except NameError:
-    def all(iterable):
-        return True not in (not x for x in iterable)
+
+warnings.warn("The 'glanceclient.common.base' module is deprecated post "
+              "v.0.12.0. Use 'glanceclient.openstack.common.apiclient.base' "
+              "instead of this one.", DeprecationWarning)
 
 
-def getid(obj):
-    """
-    Abstracts the common pattern of allowing both an object or an object's ID
-    (UUID) as a parameter when dealing with relationships.
-    """
-    try:
-        return obj.id
-    except AttributeError:
-        return obj
-
-
-class Manager(object):
-    """
-    Managers interact with a particular type of API (servers, flavors, images,
-    etc.) and provide CRUD operations for them.
-    """
-    resource_class = None
-
-    def __init__(self, api):
-        self.api = api
-
-    def _list(self, url, response_key, obj_class=None, body=None):
-        resp, body = self.api.json_request('GET', url)
-
-        if obj_class is None:
-            obj_class = self.resource_class
-
-        data = body[response_key]
-        return ([obj_class(self, res, loaded=True) for res in data if res],
-                resp)
-
-    def _delete(self, url):
-        resp = self.api.raw_request('DELETE', url)
-        return resp[0]
-
-    def _update(self, url, body, response_key=None):
-        resp, body = self.api.json_request('PUT', url, body=body)
-        # PUT requests may not return a body
-        if body:
-            return self.resource_class(self, body[response_key])
-
-
-class Resource(base.Resource):
-    """
-    A resource represents a particular instance of an object (tenant, user,
-    etc). This is pretty much just a bag for attributes.
-    """
-
-    def to_dict(self):
-        # Note(akurilin): There is a patch in Oslo, that adds to_dict() method
-        # to common Resource - I1db6c12a1f798de7f7fafd0c34fb0ef523610153.
-        # When Oslo code comes, we will be in able to remove this method
-        # and class at all.
-        return copy.deepcopy(self._info)
+getid = base.getid
+Manager = base.ManagerWithFind
+Resource = base.Resource

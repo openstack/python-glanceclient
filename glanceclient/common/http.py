@@ -327,6 +327,36 @@ class HTTPClient(object):
 
         return self._http_request(url, method, **kwargs)
 
+    def client_request(self, method, url, **kwargs):
+        # NOTE(akurilin): this method provides compatibility with methods which
+        # expects requests.Response object(for example - methods of
+        # class Managers from common code).
+        if 'json' in kwargs and 'body' not in kwargs:
+            kwargs['body'] = kwargs.pop('json')
+        resp, body = self.json_request(method, url, **kwargs)
+        resp.json = lambda: body
+        resp.content = bool(body)
+        resp.status_code = resp.status
+        return resp
+
+    def head(self, url, **kwargs):
+        return self.client_request("HEAD", url, **kwargs)
+
+    def get(self, url, **kwargs):
+        return self.client_request("GET", url, **kwargs)
+
+    def post(self, url, **kwargs):
+        return self.client_request("POST", url, **kwargs)
+
+    def put(self, url, **kwargs):
+        return self.client_request("PUT", url, **kwargs)
+
+    def delete(self, url, **kwargs):
+        return self.raw_request("DELETE", url, **kwargs)
+
+    def patch(self, url, **kwargs):
+        return self.client_request("PATCH", url, **kwargs)
+
 
 class OpenSSLConnectionDelegator(object):
     """
