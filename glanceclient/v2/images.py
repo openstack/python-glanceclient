@@ -117,7 +117,7 @@ class Controller(object):
 
     def delete(self, image_id):
         """Delete an image."""
-        self.http_client.json_request('DELETE', 'v2/images/%s' % image_id)
+        self.http_client.json_request('DELETE', '/v2/images/%s' % image_id)
 
     def create(self, **kwargs):
         """Create an image."""

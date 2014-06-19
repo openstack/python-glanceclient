@@ -118,7 +118,7 @@ fixtures = {
             },
         ),
     },
-    'v2/images/87b634c1-f893-33c9-28a9-e5673c99239a': {
+    '/v2/images/87b634c1-f893-33c9-28a9-e5673c99239a': {
         'DELETE': (
             {},
             {
@@ -496,7 +496,7 @@ class TestController(testtools.TestCase):
         self.controller.delete('87b634c1-f893-33c9-28a9-e5673c99239a')
         expect = [
             ('DELETE',
-                'v2/images/87b634c1-f893-33c9-28a9-e5673c99239a',
+                '/v2/images/87b634c1-f893-33c9-28a9-e5673c99239a',
                 {},
                 None)]
         self.assertEqual(expect, self.api.calls)
