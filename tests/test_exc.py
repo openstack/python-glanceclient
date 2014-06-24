@@ -26,4 +26,4 @@ class TestHTTPExceptions(testtools.TestCase):
     def test_from_response(self):
         """exc.from_response should return instance of an HTTP exception."""
         out = exc.from_response(FakeResponse(400))
-        self.assertTrue(isinstance(out, exc.HTTPBadRequest))
+        self.assertIsInstance(out, exc.HTTPBadRequest)
