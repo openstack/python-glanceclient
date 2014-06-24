@@ -305,13 +305,12 @@ class ImageManager(base.ManagerWithFind):
                 kwargs.setdefault('size', image_size)
 
         hdrs = {}
-        try:
-            purge_props = 'true' if kwargs.pop('purge_props') else 'false'
-        except KeyError:
-            pass
-        else:
-            hdrs['x-glance-registry-purge-props'] = purge_props
+        purge_props = 'false'
+        purge_props_bool = kwargs.pop('purge_props', None)
+        if purge_props_bool:
+            purge_props = 'true'
 
+        hdrs['x-glance-registry-purge-props'] = purge_props
         fields = {}
         for field in kwargs:
             if field in UPDATE_PARAMS:
