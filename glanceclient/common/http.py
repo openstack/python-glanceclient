@@ -39,8 +39,11 @@ import OpenSSL
 
 from glanceclient.common import utils
 from glanceclient import exc
+from glanceclient.openstack.common import importutils
 from glanceclient.openstack.common import network_utils
 from glanceclient.openstack.common import strutils
+
+osprofiler_web = importutils.try_import("osprofiler.web")
 
 try:
     from eventlet import patcher
@@ -175,6 +178,10 @@ class HTTPClient(object):
         # Copy the kwargs so we can reuse the original in case of redirects
         kwargs['headers'] = copy.deepcopy(kwargs.get('headers', {}))
         kwargs['headers'].setdefault('User-Agent', USER_AGENT)
+
+        if osprofiler_web:
+            kwargs['headers'].update(osprofiler_web.get_trace_id_headers())
+
         if self.auth_token:
             kwargs['headers'].setdefault('X-Auth-Token', self.auth_token)
 
