@@ -274,3 +274,24 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
                 cacert=cacert, ssl_compression=False)
         except exc.SSLConfigurationError:
             self.fail('Failed to init VerifiedHTTPSConnection.')
+
+    def test_ssl_init_non_byte_string(self):
+        """
+        Test VerifiedHTTPSConnection class non byte string
+
+        Reproduces bug #1301849
+        """
+        key_file = os.path.join(TEST_VAR_DIR, 'privatekey.key')
+        cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
+        cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
+        # Note: we reproduce on python 2.6/2.7, on 3.3 the bug doesn't occur.
+        key_file = key_file.encode('ascii', 'strict').decode('utf-8')
+        cert_file = cert_file.encode('ascii', 'strict').decode('utf-8')
+        cacert = cacert.encode('ascii', 'strict').decode('utf-8')
+        try:
+            conn = http.VerifiedHTTPSConnection('127.0.0.1', 0,
+                                                key_file=key_file,
+                                                cert_file=cert_file,
+                                                cacert=cacert)
+        except exc.SSLConfigurationError:
+            self.fail('Failed to init VerifiedHTTPSConnection.')

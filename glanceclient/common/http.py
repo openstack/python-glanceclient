@@ -408,7 +408,7 @@ class VerifiedHTTPSConnection(HTTPSConnection):
             self.timeout = timeout
             self.insecure = insecure
             self.ssl_compression = ssl_compression
-            self.cacert = cacert
+            self.cacert = None if cacert is None else str(cacert)
             self.setcontext()
             # ssl exceptions are reported in various form in Python 3
             # so to be compatible, we report the same kind as under
