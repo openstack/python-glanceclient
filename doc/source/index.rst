@@ -37,6 +37,15 @@ See also :doc:`/man/glance`.
 Release Notes
 =============
 
+0.13.0
+------
+
+* Add command line support for image multi-locations
+* Py3K support completed
+* Fixed several issues related to UX
+* Progress bar support for V2
+
+
 0.12.0
 ------
 
