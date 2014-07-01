@@ -81,5 +81,5 @@ class Controller(object):
 
     def get(self, schema_name):
         uri = '/v2/schemas/%s' % schema_name
-        _, raw_schema = self.http_client.json_request('GET', uri)
+        _, raw_schema = self.http_client.get(uri)
         return Schema(raw_schema)

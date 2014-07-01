@@ -13,17 +13,12 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
 import json
 import mock
-import six
 import testtools
 
-from glanceclient.common import http
-from glanceclient.common import progressbar
 from glanceclient.common import utils
 from glanceclient.v2 import shell as test_shell
-from tests import utils as test_utils
 
 
 class ShellV2Test(testtools.TestCase):
@@ -208,16 +203,18 @@ class ShellV2Test(testtools.TestCase):
             utils.print_dict.assert_called_once_with({
                 'id': 'pass', 'name': 'IMG-01', 'disk_format': 'vhd'})
 
-    def test_do_location_add_update_with_invalid_json_metadata(self):
-        args = self._make_args({'id': 'pass',
-                                'url': 'http://foo/bar',
-                                'metadata': '{1, 2, 3}'})
-        self.assert_exits_with_msg(test_shell.do_location_add,
-                                   args,
-                                   'Metadata is not a valid JSON object.')
-        self.assert_exits_with_msg(test_shell.do_location_update,
-                                   args,
-                                   'Metadata is not a valid JSON object.')
+    def test_do_explain(self):
+        input = {
+            'page_size': 18,
+            'id': 'pass',
+            'schemas': 'test',
+            'model': 'test',
+        }
+        args = self._make_args(input)
+        with mock.patch.object(utils, 'print_list'):
+            test_shell.do_explain(self.gc, args)
+
+            self.gc.schemas.get.assert_called_once_with('test')
 
     def test_do_location_add(self):
         gc = self.gc
@@ -260,19 +257,6 @@ class ShellV2Test(testtools.TestCase):
                                                   loc['metadata'])
             utils.print_dict.assert_called_once_with(expect_image)
 
-    def test_do_explain(self):
-        input = {
-            'page_size': 18,
-            'id': 'pass',
-            'schemas': 'test',
-            'model': 'test',
-        }
-        args = self._make_args(input)
-        with mock.patch.object(utils, 'print_list'):
-            test_shell.do_explain(self.gc, args)
-
-            self.gc.schemas.get.assert_called_once_with('test')
-
     def test_image_upload(self):
         args = self._make_args(
             {'id': 'IMG-01', 'file': 'test', 'size': 1024, 'progress': False})
@@ -282,46 +266,6 @@ class ShellV2Test(testtools.TestCase):
             mocked_upload.return_value = None
             test_shell.do_image_upload(self.gc, args)
             mocked_upload.assert_called_once_with('IMG-01', 'testfile', 1024)
-
-    def test_image_upload_with_progressbar(self):
-        args = self._make_args(
-            {'id': 'IMG-01', 'file': 'test', 'size': 1024, 'progress': True})
-
-        with mock.patch.object(self.gc.images, 'upload') as mocked_upload:
-            utils.get_data_file = mock.Mock(return_value='testfile')
-            utils.get_file_size = mock.Mock(return_value=8)
-            mocked_upload.return_value = None
-            test_shell.do_image_upload(self.gc, args)
-            self.assertIsInstance(mocked_upload.call_args[0][1],
-                                  progressbar.VerboseFileWrapper)
-
-    def test_image_download(self):
-        args = self._make_args(
-            {'id': 'pass', 'file': 'test', 'progress': False})
-
-        with mock.patch.object(self.gc.images, 'data') as mocked_data:
-            resp = test_utils.FakeResponse({}, six.StringIO('CCC'))
-            ret = mocked_data.return_value = http.ResponseBodyIterator(resp)
-            test_shell.do_image_download(self.gc, args)
-
-            mocked_data.assert_called_once_with('pass')
-            utils.save_image.assert_called_once_with(ret, 'test')
-
-    def test_image_download_with_progressbar(self):
-        args = self._make_args(
-            {'id': 'pass', 'file': 'test', 'progress': True})
-
-        with mock.patch.object(self.gc.images, 'data') as mocked_data:
-            resp = test_utils.FakeResponse({}, six.StringIO('CCC'))
-            mocked_data.return_value = http.ResponseBodyIterator(resp)
-            test_shell.do_image_download(self.gc, args)
-
-            mocked_data.assert_called_once_with('pass')
-            utils.save_image.assert_called_once_with(mock.ANY, 'test')
-            self.assertIsInstance(
-                utils.save_image.call_args[0][0],
-                progressbar.VerboseIteratorWrapper
-            )
 
     def test_do_image_delete(self):
         args = self._make_args({'id': 'pass', 'file': 'test'})

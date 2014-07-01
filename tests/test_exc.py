@@ -12,18 +12,16 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-import collections
+import mock
 import testtools
 
 from glanceclient import exc
 
 
-FakeResponse = collections.namedtuple('HTTPResponse', ['status'])
-
-
 class TestHTTPExceptions(testtools.TestCase):
     def test_from_response(self):
         """exc.from_response should return instance of an HTTP exception."""
-        out = exc.from_response(FakeResponse(400))
+        mock_resp = mock.Mock()
+        mock_resp.status_code = 400
+        out = exc.from_response(mock_resp)
         self.assertIsInstance(out, exc.HTTPBadRequest)

@@ -514,9 +514,11 @@ class TestController(testtools.TestCase):
         image_data = 'CCC'
         image_id = '606b0e88-7c5a-4d54-b5bb-046105d4de6f'
         self.controller.upload(image_id, image_data, image_size=3)
+        body = {'image_data': image_data,
+                'image_size': 3}
         expect = [('PUT', '/v2/images/%s/file' % image_id,
                   {'Content-Type': 'application/octet-stream'},
-                  image_data, 3)]
+                  body)]
         self.assertEqual(expect, self.api.calls)
 
     def test_data_without_checksum(self):

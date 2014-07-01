@@ -14,11 +14,9 @@
 #    under the License.
 
 import copy
-import requests
+import json
 import six
 import testtools
-
-from glanceclient.common import http
 
 
 class FakeAPI(object):
@@ -26,52 +24,43 @@ class FakeAPI(object):
         self.fixtures = fixtures
         self.calls = []
 
-    def _request(self, method, url, headers=None, body=None,
+    def _request(self, method, url, headers=None, data=None,
                  content_length=None):
-        call = (method, url, headers or {}, body)
+        call = (method, url, headers or {}, data)
         if content_length is not None:
             call = tuple(list(call) + [content_length])
         self.calls.append(call)
-        return self.fixtures[url][method]
+        fixture = self.fixtures[url][method]
 
-    def raw_request(self, *args, **kwargs):
-        fixture = self._request(*args, **kwargs)
-        resp = FakeResponse(fixture[0], six.StringIO(fixture[1]))
-        body_iter = http.ResponseBodyIterator(resp)
-        return resp, body_iter
+        data = fixture[1]
+        if isinstance(fixture[1], six.string_types):
+            try:
+                data = json.loads(fixture[1])
+            except ValueError:
+                data = six.StringIO(fixture[1])
 
-    def json_request(self, *args, **kwargs):
-        fixture = self._request(*args, **kwargs)
-        return FakeResponse(fixture[0]), fixture[1]
+        return FakeResponse(fixture[0], fixture[1]), data
 
-    def client_request(self, method, url, **kwargs):
-        if 'json' in kwargs and 'body' not in kwargs:
-            kwargs['body'] = kwargs.pop('json')
-        resp, body = self.json_request(method, url, **kwargs)
-        resp.json = lambda: body
-        resp.content = bool(body)
-        return resp
+    def get(self, *args, **kwargs):
+        return self._request('GET', *args, **kwargs)
 
-    def head(self, url, **kwargs):
-        return self.client_request("HEAD", url, **kwargs)
+    def post(self, *args, **kwargs):
+        return self._request('POST', *args, **kwargs)
 
-    def get(self, url, **kwargs):
-        return self.client_request("GET", url, **kwargs)
+    def put(self, *args, **kwargs):
+        return self._request('PUT', *args, **kwargs)
 
-    def post(self, url, **kwargs):
-        return self.client_request("POST", url, **kwargs)
+    def patch(self, *args, **kwargs):
+        return self._request('PATCH', *args, **kwargs)
 
-    def put(self, url, **kwargs):
-        return self.client_request("PUT", url, **kwargs)
+    def delete(self, *args, **kwargs):
+        return self._request('DELETE', *args, **kwargs)
 
-    def delete(self, url, **kwargs):
-        return self.raw_request("DELETE", url, **kwargs)
-
-    def patch(self, url, **kwargs):
-        return self.client_request("PATCH", url, **kwargs)
+    def head(self, *args, **kwargs):
+        return self._request('HEAD', *args, **kwargs)
 
 
-class FakeResponse(object):
+class RawRequest(object):
     def __init__(self, headers, body=None,
                  version=1.0, status=200, reason="Ok"):
         """
@@ -97,34 +86,53 @@ class FakeResponse(object):
         return self.body.read(amt)
 
 
+class FakeResponse(object):
+    def __init__(self, headers=None, body=None,
+                 version=1.0, status_code=200, reason="Ok"):
+        """
+        :param headers: dict representing HTTP response headers
+        :param body: file-like object
+        :param version: HTTP Version
+        :param status: Response status code
+        :param reason: Status code related message.
+        """
+        self.body = body
+        self.reason = reason
+        self.version = version
+        self.headers = headers
+        self.status_code = status_code
+        self.raw = RawRequest(headers, body=body, reason=reason,
+                              version=version, status=status_code)
+
+    @property
+    def ok(self):
+        return (self.status_code < 400 or
+                self.status_code >= 600)
+
+    def read(self, amt):
+        return self.body.read(amt)
+
+    @property
+    def content(self):
+        if hasattr(self.body, "read"):
+            return self.body.read()
+        return self.body
+
+    def json(self, **kwargs):
+        return self.body and json.loads(self.content) or ""
+
+    def iter_content(self, chunk_size=1, decode_unicode=False):
+        while True:
+            chunk = self.raw.read(chunk_size)
+            if not chunk:
+                break
+            yield chunk
+
+
 class TestCase(testtools.TestCase):
     TEST_REQUEST_BASE = {
         'config': {'danger_mode': False},
         'verify': True}
-
-
-class TestResponse(requests.Response):
-    """
-    Class used to wrap requests.Response and provide some
-    convenience to initialize with a dict
-    """
-    def __init__(self, data):
-        self._text = None
-        super(TestResponse, self)
-        if isinstance(data, dict):
-            self.status_code = data.get('status_code', None)
-            self.headers = data.get('headers', None)
-            # Fake the text attribute to streamline Response creation
-            self._text = data.get('text', None)
-        else:
-            self.status_code = data
-
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
-
-    @property
-    def text(self):
-        return self._text
 
 
 class FakeTTYStdout(six.StringIO):

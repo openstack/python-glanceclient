@@ -257,7 +257,7 @@ class LegacyShellV1Test(testtools.TestCase):
         args = Image()
         gc = client.Client('1', 'http://is.invalid')
         self.assertRaises(
-            exc.InvalidEndpoint, test_shell.do_update, gc, args)
+            exc.CommunicationError, test_shell.do_update, gc, args)
 
     def test_do_update(self):
         class Image():

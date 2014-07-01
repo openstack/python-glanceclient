@@ -34,7 +34,7 @@ class ImageMemberManager(base.ManagerWithFind):
     def get(self, image, member_id):
         image_id = base.getid(image)
         url = '/v1/images/%s/members/%s' % (image_id, member_id)
-        resp, body = self.client.json_request('GET', url)
+        resp, body = self.client.get(url)
         member = body['member']
         member['image_id'] = image_id
         return ImageMember(self, member, loaded=True)
@@ -60,7 +60,7 @@ class ImageMemberManager(base.ManagerWithFind):
     def _list_by_image(self, image):
         image_id = base.getid(image)
         url = '/v1/images/%s/members' % image_id
-        resp, body = self.client.json_request('GET', url)
+        resp, body = self.client.get(url)
         out = []
         for member in body['members']:
             member['image_id'] = image_id
@@ -70,7 +70,7 @@ class ImageMemberManager(base.ManagerWithFind):
     def _list_by_member(self, member):
         member_id = base.getid(member)
         url = '/v1/shared-images/%s' % member_id
-        resp, body = self.client.json_request('GET', url)
+        resp, body = self.client.get(url)
         out = []
         for member in body['shared_images']:
             member['member_id'] = member_id
@@ -84,7 +84,7 @@ class ImageMemberManager(base.ManagerWithFind):
         """Creates an image."""
         url = '/v1/images/%s/members/%s' % (base.getid(image), member_id)
         body = {'member': {'can_share': can_share}}
-        self._put(url, json=body)
+        self.client.put(url, data=body)
 
     def replace(self, image, members):
         memberships = []
@@ -100,4 +100,4 @@ class ImageMemberManager(base.ManagerWithFind):
                     obj['can_share'] = member['can_share']
             memberships.append(obj)
         url = '/v1/images/%s/members' % base.getid(image)
-        self.client.json_request('PUT', url, {}, {'memberships': memberships})
+        self.client.put(url, data={'memberships': memberships})

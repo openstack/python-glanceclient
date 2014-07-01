@@ -14,10 +14,9 @@
 #    under the License.
 
 import copy
-import json
 
 import six
-from six.moves.urllib import parse
+import six.moves.urllib.parse as urlparse
 
 from glanceclient.common import utils
 from glanceclient.openstack.common.apiclient import base
@@ -60,12 +59,12 @@ class ImageManager(base.ManagerWithFind):
     resource_class = Image
 
     def _list(self, url, response_key, obj_class=None, body=None):
-        resp = self.client.get(url)
+        resp, body = self.client.get(url)
 
         if obj_class is None:
             obj_class = self.resource_class
 
-        data = resp.json()[response_key]
+        data = body[response_key]
         return ([obj_class(self, res, loaded=True) for res in data if res],
                 resp)
 
@@ -123,13 +122,12 @@ class ImageManager(base.ManagerWithFind):
         :rtype: :class:`Image`
         """
         image_id = base.getid(image)
-        resp, body = self.client.raw_request(
-            'HEAD', '/v1/images/%s' % parse.quote(str(image_id)))
-        meta = self._image_meta_from_headers(dict(resp.getheaders()))
+        resp, body = self.client.head('/v1/images/%s'
+                                      % urlparse.quote(str(image_id)))
+        meta = self._image_meta_from_headers(resp.headers)
         return_request_id = kwargs.get('return_req_id', None)
         if return_request_id is not None:
-            return_request_id.append(resp.getheader(OS_REQ_ID_HDR, None))
-
+            return_request_id.append(resp.headers.get(OS_REQ_ID_HDR, None))
         return Image(self, meta)
 
     def data(self, image, do_checksum=True, **kwargs):
@@ -140,14 +138,14 @@ class ImageManager(base.ManagerWithFind):
         :rtype: iterable containing image data
         """
         image_id = base.getid(image)
-        resp, body = self.client.raw_request(
-            'GET', '/v1/images/%s' % parse.quote(str(image_id)))
-        checksum = resp.getheader('x-image-meta-checksum', None)
+        resp, body = self.client.get('/v1/images/%s'
+                                     % urlparse.quote(str(image_id)))
+        checksum = resp.headers.get('x-image-meta-checksum', None)
         if do_checksum and checksum is not None:
-            body.set_checksum(checksum)
+            return utils.integrity_iter(body, checksum)
         return_request_id = kwargs.get('return_req_id', None)
         if return_request_id is not None:
-            return_request_id.append(resp.getheader(OS_REQ_ID_HDR, None))
+            return_request_id.append(resp.headers.get(OS_REQ_ID_HDR, None))
 
         return body
 
@@ -194,11 +192,11 @@ class ImageManager(base.ManagerWithFind):
                     # trying to encode them
                     qp[param] = strutils.safe_encode(value)
 
-            url = '/v1/images/detail?%s' % parse.urlencode(qp)
+            url = '/v1/images/detail?%s' % urlparse.urlencode(qp)
             images, resp = self._list(url, "images")
 
             if return_request_id is not None:
-                return_request_id.append(resp.getheader(OS_REQ_ID_HDR, None))
+                return_request_id.append(resp.headers.get(OS_REQ_ID_HDR, None))
 
             for image in images:
                 if filter_owner(owner, image):
@@ -253,10 +251,11 @@ class ImageManager(base.ManagerWithFind):
 
     def delete(self, image, **kwargs):
         """Delete an image."""
-        resp = self._delete("/v1/images/%s" % base.getid(image))[0]
+        url = "/v1/images/%s" % base.getid(image)
+        resp, body = self.client.delete(url)
         return_request_id = kwargs.get('return_req_id', None)
         if return_request_id is not None:
-            return_request_id.append(resp.getheader(OS_REQ_ID_HDR, None))
+            return_request_id.append(resp.headers.get(OS_REQ_ID_HDR, None))
 
     def create(self, **kwargs):
         """Create an image
@@ -284,12 +283,12 @@ class ImageManager(base.ManagerWithFind):
         if copy_from is not None:
             hdrs['x-glance-api-copy-from'] = copy_from
 
-        resp, body_iter = self.client.raw_request(
-            'POST', '/v1/images', headers=hdrs, body=image_data)
-        body = json.loads(''.join([c for c in body_iter]))
+        resp, body = self.client.post('/v1/images',
+                                      headers=hdrs,
+                                      data=image_data)
         return_request_id = kwargs.get('return_req_id', None)
         if return_request_id is not None:
-            return_request_id.append(resp.getheader(OS_REQ_ID_HDR, None))
+            return_request_id.append(resp.headers.get(OS_REQ_ID_HDR, None))
 
         return Image(self, self._format_image_meta_for_user(body['image']))
 
@@ -327,11 +326,9 @@ class ImageManager(base.ManagerWithFind):
             hdrs['x-glance-api-copy-from'] = copy_from
 
         url = '/v1/images/%s' % base.getid(image)
-        resp, body_iter = self.client.raw_request(
-            'PUT', url, headers=hdrs, body=image_data)
-        body = json.loads(''.join([c for c in body_iter]))
+        resp, body = self.client.put(url, headers=hdrs, data=image_data)
         return_request_id = kwargs.get('return_req_id', None)
         if return_request_id is not None:
-            return_request_id.append(resp.getheader(OS_REQ_ID_HDR, None))
+            return_request_id.append(resp.headers.get(OS_REQ_ID_HDR, None))
 
         return Image(self, self._format_image_meta_for_user(body['image']))

@@ -21,25 +21,22 @@ class Controller(object):
 
     def list(self, image_id):
         url = '/v2/images/%s/members' % image_id
-        resp, body = self.http_client.json_request('GET', url)
+        resp, body = self.http_client.get(url)
         for member in body['members']:
             yield self.model(member)
 
     def delete(self, image_id, member_id):
-        self.http_client.json_request('DELETE',
-                                      '/v2/images/%s/members/%s' %
-                                      (image_id, member_id))
+        self.http_client.delete('/v2/images/%s/members/%s' %
+                                (image_id, member_id))
 
     def update(self, image_id, member_id, member_status):
         url = '/v2/images/%s/members/%s' % (image_id, member_id)
         body = {'status': member_status}
-        resp, updated_member = self.http_client.json_request('PUT', url,
-                                                             body=body)
+        resp, updated_member = self.http_client.put(url, data=body)
         return self.model(updated_member)
 
     def create(self, image_id, member_id):
         url = '/v2/images/%s/members' % image_id
         body = {'member': member_id}
-        resp, created_member = self.http_client.json_request('POST', url,
-                                                             body=body)
+        resp, created_member = self.http_client.post(url, data=body)
         return self.model(created_member)

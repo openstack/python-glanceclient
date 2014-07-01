@@ -13,10 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from glanceclient.common import http
+from glanceclient.common.http import HTTPClient
 from glanceclient.common import utils
-from glanceclient.v1 import image_members
-from glanceclient.v1 import images
+from glanceclient.v1.image_members import ImageMemberManager
+from glanceclient.v1.images import ImageManager
 
 
 class Client(object):
@@ -31,7 +31,7 @@ class Client(object):
 
     def __init__(self, endpoint, *args, **kwargs):
         """Initialize a new client for the Images v1 API."""
-        self.http_client = http.HTTPClient(utils.strip_version(endpoint),
-                                           *args, **kwargs)
-        self.images = images.ImageManager(self.http_client)
-        self.image_members = image_members.ImageMemberManager(self.http_client)
+        self.http_client = HTTPClient(utils.strip_version(endpoint),
+                                      *args, **kwargs)
+        self.images = ImageManager(self.http_client)
+        self.image_members = ImageMemberManager(self.http_client)

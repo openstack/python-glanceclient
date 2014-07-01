@@ -105,13 +105,11 @@ class ShellCacheSchemaTest(utils.TestCase):
         super(ShellCacheSchemaTest, self).setUp()
         self._mock_client_setup()
         self._mock_shell_setup()
-        os.path.exists = mock.MagicMock()
         self.cache_dir = '/dir_for_cached_schema'
         self.cache_file = self.cache_dir + '/image_schema.json'
 
     def tearDown(self):
         super(ShellCacheSchemaTest, self).tearDown()
-        os.path.exists.reset_mock()
 
     def _mock_client_setup(self):
         self.schema_dict = {
@@ -137,27 +135,8 @@ class ShellCacheSchemaTest(utils.TestCase):
         return Args(args)
 
     @mock.patch('six.moves.builtins.open', new=mock.mock_open(), create=True)
-    def test_cache_schema_gets_when_not_exists(self):
-        mocked_path_exists_result_lst = [True, False]
-        os.path.exists.side_effect = \
-            lambda *args: mocked_path_exists_result_lst.pop(0)
-
-        options = {
-            'get_schema': False
-        }
-
-        self.shell._cache_schema(self._make_args(options),
-                                 home_dir=self.cache_dir)
-
-        self.assertEqual(4, open.mock_calls.__len__())
-        self.assertEqual(mock.call(self.cache_file, 'w'), open.mock_calls[0])
-        self.assertEqual(mock.call().write(json.dumps(self.schema_dict)),
-                         open.mock_calls[2])
-
-    @mock.patch('six.moves.builtins.open', new=mock.mock_open(), create=True)
-    def test_cache_schema_gets_when_forced(self):
-        os.path.exists.return_value = True
-
+    @mock.patch('os.path.exists', return_value=True)
+    def test_cache_schema_gets_when_forced(self, exists_mock):
         options = {
             'get_schema': True
         }
@@ -171,9 +150,23 @@ class ShellCacheSchemaTest(utils.TestCase):
                          open.mock_calls[2])
 
     @mock.patch('six.moves.builtins.open', new=mock.mock_open(), create=True)
-    def test_cache_schema_leaves_when_present_not_forced(self):
-        os.path.exists.return_value = True
+    @mock.patch('os.path.exists', side_effect=[True, False])
+    def test_cache_schema_gets_when_not_exists(self, exists_mock):
+        options = {
+            'get_schema': False
+        }
 
+        self.shell._cache_schema(self._make_args(options),
+                                 home_dir=self.cache_dir)
+
+        self.assertEqual(4, open.mock_calls.__len__())
+        self.assertEqual(mock.call(self.cache_file, 'w'), open.mock_calls[0])
+        self.assertEqual(mock.call().write(json.dumps(self.schema_dict)),
+                         open.mock_calls[2])
+
+    @mock.patch('six.moves.builtins.open', new=mock.mock_open(), create=True)
+    @mock.patch('os.path.exists', return_value=True)
+    def test_cache_schema_leaves_when_present_not_forced(self, exists_mock):
         options = {
             'get_schema': False
         }
@@ -183,5 +176,5 @@ class ShellCacheSchemaTest(utils.TestCase):
 
         os.path.exists.assert_any_call(self.cache_dir)
         os.path.exists.assert_any_call(self.cache_file)
-        self.assertEqual(2, os.path.exists.call_count)
+        self.assertEqual(2, exists_mock.call_count)
         self.assertEqual(0, open.mock_calls.__len__())

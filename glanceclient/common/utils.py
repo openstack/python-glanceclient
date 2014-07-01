@@ -16,6 +16,7 @@
 from __future__ import print_function
 
 import errno
+import hashlib
 import os
 import re
 import sys
@@ -335,3 +336,22 @@ def print_image(image_obj, max_col_width=None):
         print_dict(image, max_column_width=max_col_width)
     else:
         print_dict(image)
+
+
+def integrity_iter(iter, checksum):
+    """
+    Check image data integrity.
+
+    :raises: IOError
+    """
+    md5sum = hashlib.md5()
+    for chunk in iter:
+        yield chunk
+        if isinstance(chunk, six.string_types):
+            chunk = six.b(chunk)
+        md5sum.update(chunk)
+    md5sum = md5sum.hexdigest()
+    if md5sum != checksum:
+        raise IOError(errno.EPIPE,
+                      'Corrupt image download. Checksum was %s expected %s' %
+                      (md5sum, checksum))

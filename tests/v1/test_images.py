@@ -932,7 +932,7 @@ class ParameterFakeAPI(utils.FakeAPI):
         },
     ]}
 
-    def json_request(self, method, url, **kwargs):
+    def get(self, url, **kwargs):
         self.url = url
         return utils.FakeResponse({}), ParameterFakeAPI.image_list
 

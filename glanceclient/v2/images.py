@@ -16,7 +16,6 @@
 import json
 import six
 from six.moves.urllib import parse
-
 import warlock
 
 from glanceclient.common import utils
@@ -42,7 +41,7 @@ class Controller(object):
         empty_fun = lambda *args, **kwargs: None
 
         def paginate(url):
-            resp, body = self.http_client.json_request('GET', url)
+            resp, body = self.http_client.get(url)
             for image in body['images']:
                 # NOTE(bcwaldon): remove 'self' for now until we have
                 # an elegant way to pass it into the model constructor
@@ -94,7 +93,7 @@ class Controller(object):
 
     def get(self, image_id):
         url = '/v2/images/%s' % image_id
-        resp, body = self.http_client.json_request('GET', url)
+        resp, body = self.http_client.get(url)
         #NOTE(bcwaldon): remove 'self' for now until we have an elegant
         # way to pass it into the model constructor without conflict
         body.pop('self', None)
@@ -108,11 +107,12 @@ class Controller(object):
         :param do_checksum: Enable/disable checksum validation.
         """
         url = '/v2/images/%s/file' % image_id
-        resp, body = self.http_client.raw_request('GET', url)
-        checksum = resp.getheader('content-md5', None)
+        resp, body = self.http_client.get(url)
+        checksum = resp.headers.get('content-md5', None)
         if do_checksum and checksum is not None:
-            body.set_checksum(checksum)
-        return body
+            return utils.integrity_iter(body, checksum)
+        else:
+            return body
 
     def upload(self, image_id, image_data, image_size=None):
         """
@@ -124,14 +124,17 @@ class Controller(object):
         """
         url = '/v2/images/%s/file' % image_id
         hdrs = {'Content-Type': 'application/octet-stream'}
-        self.http_client.raw_request('PUT', url,
-                                     headers=hdrs,
-                                     body=image_data,
-                                     content_length=image_size)
+        if image_size:
+            body = {'image_data': image_data,
+                    'image_size': image_size}
+        else:
+            body = image_data
+        self.http_client.put(url, headers=hdrs, data=body)
 
     def delete(self, image_id):
         """Delete an image."""
-        self.http_client.json_request('DELETE', '/v2/images/%s' % image_id)
+        url = '/v2/images/%s' % image_id
+        self.http_client.delete(url)
 
     def create(self, **kwargs):
         """Create an image."""
@@ -144,7 +147,7 @@ class Controller(object):
             except warlock.InvalidOperation as e:
                 raise TypeError(utils.exception_to_str(e))
 
-        resp, body = self.http_client.json_request('POST', url, body=image)
+        resp, body = self.http_client.post(url, data=image)
         #NOTE(esheffield): remove 'self' for now until we have an elegant
         # way to pass it into the model constructor without conflict
         body.pop('self', None)
@@ -178,9 +181,7 @@ class Controller(object):
 
         url = '/v2/images/%s' % image_id
         hdrs = {'Content-Type': 'application/openstack-images-v2.1-json-patch'}
-        self.http_client.raw_request('PATCH', url,
-                                     headers=hdrs,
-                                     body=image.patch)
+        self.http_client.patch(url, headers=hdrs, data=image.patch)
 
         #NOTE(bcwaldon): calling image.patch doesn't clear the changes, so
         # we need to fetch the image again to get a clean history. This is
@@ -197,9 +198,7 @@ class Controller(object):
     def _send_image_update_request(self, image_id, patch_body):
         url = '/v2/images/%s' % image_id
         hdrs = {'Content-Type': 'application/openstack-images-v2.1-json-patch'}
-        self.http_client.raw_request('PATCH', url,
-                                     headers=hdrs,
-                                     body=json.dumps(patch_body))
+        self.http_client.patch(url, headers=hdrs, data=json.dumps(patch_body))
 
     def add_location(self, image_id, url, metadata):
         """Add a new location entry to an image's list of locations.

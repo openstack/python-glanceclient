@@ -4,5 +4,6 @@ argparse
 PrettyTable>=0.7,<0.8
 python-keystoneclient>=0.9.0
 pyOpenSSL>=0.11
+requests>=1.1
 warlock>=1.0.1,<2
 six>=1.7.0

@@ -224,81 +224,81 @@ class ShellInvalidEndpointandParameterTest(utils.TestCase):
 
     def test_image_list_invalid_endpoint(self):
         self.assertRaises(
-            exc.InvalidEndpoint, self.run_command, 'image-list')
+            exc.CommunicationError, self.run_command, 'image-list')
 
     def test_image_details_invalid_endpoint_legacy(self):
         self.assertRaises(
-            exc.InvalidEndpoint, self.run_command, 'details')
+            exc.CommunicationError, self.run_command, 'details')
 
     def test_image_update_invalid_endpoint_legacy(self):
         self.assertRaises(
-            exc.InvalidEndpoint,
+            exc.CommunicationError,
             self.run_command, 'update {"name":""test}')
 
     def test_image_index_invalid_endpoint_legacy(self):
         self.assertRaises(
-            exc.InvalidEndpoint,
+            exc.CommunicationError,
             self.run_command, 'index')
 
     def test_image_create_invalid_endpoint(self):
         self.assertRaises(
-            exc.InvalidEndpoint,
+            exc.CommunicationError,
             self.run_command, 'image-create')
 
     def test_image_delete_invalid_endpoint(self):
         self.assertRaises(
-            exc.InvalidEndpoint,
+            exc.CommunicationError,
             self.run_command, 'image-delete <fake>')
 
     def test_image_download_invalid_endpoint(self):
         self.assertRaises(
-            exc.InvalidEndpoint,
+            exc.CommunicationError,
             self.run_command, 'image-download <fake>')
 
     def test_image_members_invalid_endpoint(self):
         self.assertRaises(
-            exc.InvalidEndpoint,
+            exc.CommunicationError,
             self.run_command, 'image-members fake_id')
 
     def test_members_list_invalid_endpoint(self):
         self.assertRaises(
-            exc.InvalidEndpoint,
+            exc.CommunicationError,
             self.run_command, 'member-list --image-id fake')
 
     def test_member_replace_invalid_endpoint(self):
         self.assertRaises(
-            exc.InvalidEndpoint,
+            exc.CommunicationError,
             self.run_command, 'members-replace image_id member_id')
 
     def test_image_show_invalid_endpoint_legacy(self):
         self.assertRaises(
-            exc.InvalidEndpoint, self.run_command, 'show image')
+            exc.CommunicationError, self.run_command, 'show image')
 
     def test_image_show_invalid_endpoint(self):
         self.assertRaises(
-            exc.InvalidEndpoint,
+            exc.CommunicationError,
             self.run_command, 'image-show --human-readable <IMAGE_ID>')
 
     def test_member_images_invalid_endpoint_legacy(self):
         self.assertRaises(
-            exc.InvalidEndpoint,
+            exc.CommunicationError,
             self.run_command, 'member-images member_id')
 
     def test_member_create_invalid_endpoint(self):
         self.assertRaises(
-            exc.InvalidEndpoint,
+            exc.CommunicationError,
             self.run_command,
             'member-create --can-share <IMAGE_ID> <TENANT_ID>')
 
     def test_member_delete_invalid_endpoint(self):
         self.assertRaises(
-            exc.InvalidEndpoint,
+            exc.CommunicationError,
             self.run_command,
             'member-delete  <IMAGE_ID> <TENANT_ID>')
 
     def test_member_add_invalid_endpoint(self):
         self.assertRaises(
-            exc.InvalidEndpoint,
+            exc.CommunicationError,
             self.run_command,
             'member-add  <IMAGE_ID> <TENANT_ID>')
 

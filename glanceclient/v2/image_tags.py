@@ -27,7 +27,7 @@ class Controller(object):
         :param tag_value:   value of the tag.
         """
         url = '/v2/images/%s/tags/%s' % (image_id, tag_value)
-        self.http_client.json_request('PUT', url)
+        self.http_client.put(url)
 
     def delete(self, image_id, tag_value):
         """
@@ -37,4 +37,4 @@ class Controller(object):
         :param tag_value:   tag value to be deleted.
         """
         url = '/v2/images/%s/tags/%s' % (image_id, tag_value)
-        self.http_client.json_request('DELETE', url)
+        self.http_client.delete(url)
