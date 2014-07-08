@@ -37,10 +37,27 @@ class Controller(object):
         :param page_size: Number of images to request in each paginated request
         :returns generator over list of Images
         """
+
+        ori_validate_fun = self.model.validate
+        empty_fun = lambda *args, **kwargs: None
+
         def paginate(url):
             resp, body = self.http_client.json_request('GET', url)
             for image in body['images']:
-                yield image
+                # NOTE(bcwaldon): remove 'self' for now until we have
+                # an elegant way to pass it into the model constructor
+                # without conflict.
+                image.pop('self', None)
+                yield self.model(**image)
+                # NOTE(zhiyan): In order to resolve the performance issue
+                # of JSON schema validation for image listing case, we
+                # don't validate each image entry but do it only on first
+                # image entry for each page.
+                self.model.validate = empty_fun
+
+            # NOTE(zhiyan); Reset validation function.
+            self.model.validate = ori_validate_fun
+
             try:
                 next_url = body['next']
             except KeyError:
@@ -73,10 +90,7 @@ class Controller(object):
             url = '%s&%s' % (url, parse.urlencode(param))
 
         for image in paginate(url):
-            #NOTE(bcwaldon): remove 'self' for now until we have an elegant
-            # way to pass it into the model constructor without conflict
-            image.pop('self', None)
-            yield self.model(**image)
+            yield image
 
     def get(self, image_id):
         url = '/v2/images/%s' % image_id
