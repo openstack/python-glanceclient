@@ -57,7 +57,7 @@ def do_image_create(gc, args):
 
 
 @utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to update.')
-@utils.schema_args(get_image_schema, omit=['id', 'locations'])
+@utils.schema_args(get_image_schema, omit=['id', 'locations', 'tags'])
 @utils.arg('--property', metavar="<key=value>", action='append',
            default=[], help=('Arbitrary property to associate with image.'
                              ' May be used multiple times.'))
