@@ -160,6 +160,7 @@ class HTTPClient(object):
                 data = chunk_body(data)
 
         headers['Content-Type'] = content_type
+        stream = True if content_type == 'application/octet-stream' else False
 
         # Note(flaper87): Before letting headers / url fly,
         # they should be encoded otherwise httplib will
@@ -172,7 +173,7 @@ class HTTPClient(object):
             resp = self.session.request(method,
                                         conn_url,
                                         data=data,
-                                        stream=True,
+                                        stream=stream,
                                         headers=headers,
                                         **kwargs)
         except requests.exceptions.Timeout as e:
@@ -217,6 +218,10 @@ class HTTPClient(object):
                 body_iter = resp.json()
             else:
                 body_iter = six.StringIO(content)
+                try:
+                    body_iter = json.loads(''.join([c for c in body_iter]))
+                except ValueError:
+                    body_iter = None
         return resp, body_iter
 
     def head(self, url, **kwargs):
