@@ -177,7 +177,9 @@ def do_image_download(gc, args):
 @utils.arg('--location', metavar='<IMAGE_URL>',
            help=('URL where the data for this image already resides. For '
                  'example, if the image data is stored in swift, you could '
-                 'specify \'swift://account:key@example.com/container/obj\'.'))
+                 'specify \'swift+http://tenant%%3Aaccount:key@auth_url/'
+                 'v2.0/container/obj\'. '
+                 '(Note: \'%%3A\' is \':\' URL encoded.)'))
 @utils.arg('--file', metavar='<FILE>',
            help=('Local file that contains disk image to be uploaded during'
                  ' creation. Alternatively, images can be passed to the client'
@@ -257,7 +259,9 @@ def do_image_create(gc, args):
 @utils.arg('--location', metavar='<IMAGE_URL>',
            help=('URL where the data for this image already resides. For '
                  'example, if the image data is stored in swift, you could '
-                 'specify \'swift://account:key@example.com/container/obj\'.'))
+                 'specify \'swift+http://tenant%%3Aaccount:key@auth_url/'
+                 'v2.0/container/obj\'. '
+                 '(Note: \'%%3A\' is \':\' URL encoded.)'))
 @utils.arg('--file', metavar='<FILE>',
            help=('Local file that contains disk image to be uploaded during'
                  ' update. Alternatively, images can be passed to the client'
