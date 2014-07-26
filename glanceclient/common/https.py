@@ -265,7 +265,18 @@ class VerifiedHTTPSConnection(HTTPSConnection):
         Connect to an SSL port using the OpenSSL library and apply
         per-connection parameters.
         """
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        result = socket.getaddrinfo(self.host, self.port, 0,
+                                    socket.SOCK_STREAM)
+        if result:
+            socket_family = result[0][0]
+            if socket_family == socket.AF_INET6:
+                sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+            else:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        else:
+            # If due to some reason the address lookup fails - we still connect
+            # to IPv4 socket. This retains the older behavior.
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if self.timeout is not None:
             # '0' microseconds
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO,
