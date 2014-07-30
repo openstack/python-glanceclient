@@ -50,6 +50,7 @@ except ImportError:
 
 
 from glanceclient import exc
+from glanceclient.openstack.common import strutils
 
 
 def to_bytes(s):
@@ -72,8 +73,15 @@ class HTTPSAdapter(adapters.HTTPAdapter):
     def __init__(self, *args, **kwargs):
         # NOTE(flaper87): This line forces poolmanager to use
         # glanceclient HTTPSConnection
-        poolmanager.pool_classes_by_scheme["https"] = HTTPSConnectionPool
+        classes_by_scheme = poolmanager.pool_classes_by_scheme
+        classes_by_scheme["glance+https"] = HTTPSConnectionPool
         super(HTTPSAdapter, self).__init__(*args, **kwargs)
+
+    def request_url(self, request, proxies):
+        # NOTE(flaper87): Make sure the url is encoded, otherwise
+        # python's standard httplib will fail with a TypeError.
+        url = super(HTTPSAdapter, self).request_url(request, proxies)
+        return strutils.safe_encode(url)
 
     def cert_verify(self, conn, url, verify, cert):
         super(HTTPSAdapter, self).cert_verify(conn, url, verify, cert)
@@ -93,7 +101,7 @@ class HTTPSConnectionPool(connectionpool.HTTPSConnectionPool):
     be used just when the user sets --no-ssl-compression.
     """
 
-    scheme = 'https'
+    scheme = 'glance+https'
 
     def _new_conn(self):
         self.num_connections += 1
@@ -150,6 +158,10 @@ class VerifiedHTTPSConnection(HTTPSConnection):
             self.cert_file = cert_file
             self.timeout = timeout
             self.insecure = insecure
+            # NOTE(flaper87): `is_verified` is needed for
+            # requests' urllib3. If insecure is True then
+            # the request is not `verified`, hence `not insecure`
+            self.is_verified = not insecure
             self.ssl_compression = ssl_compression
             self.cacert = None if cacert is None else str(cacert)
             self.set_context()
