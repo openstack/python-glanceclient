@@ -195,7 +195,7 @@ class HTTPClient(object):
             raise exc.CommunicationError(message=message)
 
         if not resp.ok:
-            LOG.error("Request returned failure status %s." % resp.status_code)
+            LOG.debug("Request returned failure status %s." % resp.status_code)
             raise exc.from_response(resp, resp.content)
         elif resp.status_code == requests.codes.MULTIPLE_CHOICES:
             raise exc.from_response(resp)
