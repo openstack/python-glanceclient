@@ -79,11 +79,14 @@ class HTTPClient(object):
     def log_curl_request(self, method, url, headers, data, kwargs):
         curl = ['curl -i -X %s' % method]
 
-        for (key, value) in self.session.headers.items():
+        headers = copy.deepcopy(headers)
+        headers.update(self.session.headers)
+
+        for (key, value) in six.iteritems(headers):
             if key.lower() == 'x-auth-token':
                 value = '*' * 3
             header = '-H \'%s: %s\'' % (key, value)
-            curl.append(strutils.safe_encode(header))
+            curl.append(header)
 
         if not self.session.verify:
             curl.append('-k')
@@ -98,7 +101,10 @@ class HTTPClient(object):
             curl.append('-d \'%s\'' % data)
 
         curl.append(url)
-        LOG.debug(strutils.safe_encode(' '.join(curl), errors='ignore'))
+
+        msg = ' '.join([strutils.safe_encode(item, errors='ignore')
+                        for item in curl])
+        LOG.debug(msg)
 
     @staticmethod
     def log_http_response(resp, body=None):
@@ -159,6 +165,9 @@ class HTTPClient(object):
 
         headers['Content-Type'] = content_type
         stream = True if content_type == 'application/octet-stream' else False
+
+        if osprofiler_web:
+            headers.update(osprofiler_web.get_trace_id_headers())
 
         # Note(flaper87): Before letting headers / url fly,
         # they should be encoded otherwise httplib will
