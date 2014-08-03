@@ -46,7 +46,8 @@ def arg(*args, **kwargs):
     return _decorator
 
 
-def schema_args(schema_getter, omit=[]):
+def schema_args(schema_getter, omit=None):
+    omit = omit or []
     typemap = {
         'string': str,
         'integer': int,
@@ -105,7 +106,8 @@ def pretty_choice_list(l):
     return ', '.join("'%s'" % i for i in l)
 
 
-def print_list(objs, fields, formatters={}):
+def print_list(objs, fields, formatters=None):
+    formatters = formatters or {}
     pt = prettytable.PrettyTable([f for f in fields], caching=False)
     pt.align = 'l'
 
