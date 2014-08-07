@@ -27,53 +27,32 @@ import os
 from os.path import expanduser
 import sys
 
-from keystoneclient.v2_0 import client as ksclient
 import netaddr
+import six.moves.urllib.parse as urlparse
 
 import glanceclient
 from glanceclient.common import utils
 from glanceclient import exc
 from glanceclient.openstack.common import strutils
 
+from keystoneclient.auth.identity import v2 as v2_auth
+from keystoneclient.auth.identity import v3 as v3_auth
+from keystoneclient import discover
+from keystoneclient.openstack.common.apiclient import exceptions as ks_exc
+from keystoneclient import session
+
 
 class OpenStackImagesShell(object):
 
-    def get_base_parser(self):
-        parser = argparse.ArgumentParser(
-            prog='glance',
-            description=__doc__.strip(),
-            epilog='See "glance help COMMAND" '
-                   'for help on a specific command.',
-            add_help=False,
-            formatter_class=HelpFormatter,
-        )
-
-        # Global arguments
-        parser.add_argument('-h', '--help',
-                            action='store_true',
-                            help=argparse.SUPPRESS,
-                            )
-
-        parser.add_argument('--version',
-                            action='version',
-                            version=glanceclient.__version__)
-
-        parser.add_argument('-d', '--debug',
-                            default=bool(utils.env('GLANCECLIENT_DEBUG')),
-                            action='store_true',
-                            help='Defaults to env[GLANCECLIENT_DEBUG].')
-
-        parser.add_argument('-v', '--verbose',
-                            default=False, action="store_true",
-                            help="Print more verbose output")
-
-        parser.add_argument('--get-schema',
-                            default=False, action="store_true",
-                            dest='get_schema',
-                            help='Ignores cached copy and forces retrieval '
-                                 'of schema that generates portions of the '
-                                 'help text. Ignored with API version 1.')
-
+    def _append_global_identity_args(self, parser):
+        # FIXME(bobt): these are global identity (Keystone) arguments which
+        # should be consistent and shared by all service clients. Therefore,
+        # they should be provided by python-keystoneclient. We will need to
+        # refactor this code once this functionality is avaible in
+        # python-keystoneclient. See
+        #
+        # https://bugs.launchpad.net/python-keystoneclient/+bug/1332337
+        #
         parser.add_argument('-k', '--insecure',
                             default=False,
                             action='store_true',
@@ -83,15 +62,23 @@ class OpenStackImagesShell(object):
                             'certificate authorities. This option should '
                             'be used with caution.')
 
-        parser.add_argument('--cert-file',
+        parser.add_argument('--os-cert',
                             help='Path of certificate file to use in SSL '
                             'connection. This file can optionally be '
                             'prepended with the private key.')
 
-        parser.add_argument('--key-file',
+        parser.add_argument('--cert-file',
+                            dest='os_cert',
+                            help='DEPRECATED! Use --os-cert.')
+
+        parser.add_argument('--os-key',
                             help='Path of client key to use in SSL '
                             'connection. This option is not necessary '
                             'if your key is prepended to your cert file.')
+
+        parser.add_argument('--key-file',
+                            dest='os_key',
+                            help='DEPRECATED! Use --os-key.')
 
         parser.add_argument('--os-cacert',
                             metavar='<ca-certificate-file>',
@@ -106,57 +93,46 @@ class OpenStackImagesShell(object):
                             dest='os_cacert',
                             help='DEPRECATED! Use --os-cacert.')
 
-        parser.add_argument('--timeout',
-                            default=600,
-                            help='Number of seconds to wait for a response')
-
-        parser.add_argument('--no-ssl-compression',
-                            dest='ssl_compression',
-                            default=True, action='store_false',
-                            help='Disable SSL compression when using https.')
-
-        parser.add_argument('-f', '--force',
-                            dest='force',
-                            default=False, action='store_true',
-                            help='Prevent select actions from requesting '
-                            'user confirmation.')
-
-        #NOTE(bcwaldon): DEPRECATED
-        parser.add_argument('--dry-run',
-                            default=False,
-                            action='store_true',
-                            help='DEPRECATED! Only used for deprecated '
-                            'legacy commands.')
-
-        #NOTE(bcwaldon): DEPRECATED
-        parser.add_argument('--ssl',
-                            dest='use_ssl',
-                            default=False,
-                            action='store_true',
-                            help='DEPRECATED! Send a fully-formed endpoint '
-                            'using --os-image-url instead.')
-
-        #NOTE(bcwaldon): DEPRECATED
-        parser.add_argument('-H', '--host',
-                            metavar='ADDRESS',
-                            help='DEPRECATED! Send a fully-formed endpoint '
-                            'using --os-image-url instead.')
-
-        #NOTE(bcwaldon): DEPRECATED
-        parser.add_argument('-p', '--port',
-                            dest='port',
-                            metavar='PORT',
-                            type=int,
-                            default=9292,
-                            help='DEPRECATED! Send a fully-formed endpoint '
-                            'using --os-image-url instead.')
-
         parser.add_argument('--os-username',
                             default=utils.env('OS_USERNAME'),
                             help='Defaults to env[OS_USERNAME].')
 
         parser.add_argument('--os_username',
                             help=argparse.SUPPRESS)
+
+        parser.add_argument('--os-user-id',
+                            default=utils.env('OS_USER_ID'),
+                            help='Defaults to env[OS_USER_ID].')
+
+        parser.add_argument('--os-user-domain-id',
+                            default=utils.env('OS_USER_DOMAIN_ID'),
+                            help='Defaults to env[OS_USER_DOMAIN_ID].')
+
+        parser.add_argument('--os-user-domain-name',
+                            default=utils.env('OS_USER_DOMAIN_NAME'),
+                            help='Defaults to env[OS_USER_DOMAIN_NAME].')
+
+        parser.add_argument('--os-project-id',
+                            default=utils.env('OS_PROJECT_ID'),
+                            help='Another way to specify tenant ID. '
+                                 'This option is mutually exclusive with '
+                                 ' --os-tenant-id. '
+                                 'Defaults to env[OS_PROJECT_ID].')
+
+        parser.add_argument('--os-project-name',
+                            default=utils.env('OS_PROJECT_NAME'),
+                            help='Another way to specify tenant name. '
+                                 'This option is mutually exclusive with '
+                                 ' --os-tenant-name. '
+                                 'Defaults to env[OS_PROJECT_NAME].')
+
+        parser.add_argument('--os-project-domain-id',
+                            default=utils.env('OS_PROJECT_DOMAIN_ID'),
+                            help='Defaults to env[OS_PROJECT_DOMAIN_ID].')
+
+        parser.add_argument('--os-project-domain-name',
+                            default=utils.env('OS_PROJECT_DOMAIN_NAME'),
+                            help='Defaults to env[OS_PROJECT_DOMAIN_NAME].')
 
         #NOTE(bcwaldon): DEPRECATED
         parser.add_argument('-I',
@@ -230,6 +206,101 @@ class OpenStackImagesShell(object):
                             dest='os_auth_token',
                             help='DEPRECATED! Use --os-auth-token.')
 
+        parser.add_argument('--os-service-type',
+                            default=utils.env('OS_SERVICE_TYPE'),
+                            help='Defaults to env[OS_SERVICE_TYPE].')
+
+        parser.add_argument('--os_service_type',
+                            help=argparse.SUPPRESS)
+
+        parser.add_argument('--os-endpoint-type',
+                            default=utils.env('OS_ENDPOINT_TYPE'),
+                            help='Defaults to env[OS_ENDPOINT_TYPE].')
+
+        parser.add_argument('--os_endpoint_type',
+                            help=argparse.SUPPRESS)
+
+    def get_base_parser(self):
+        parser = argparse.ArgumentParser(
+            prog='glance',
+            description=__doc__.strip(),
+            epilog='See "glance help COMMAND" '
+                   'for help on a specific command.',
+            add_help=False,
+            formatter_class=HelpFormatter,
+        )
+
+        # Global arguments
+        parser.add_argument('-h', '--help',
+                            action='store_true',
+                            help=argparse.SUPPRESS,
+                            )
+
+        parser.add_argument('--version',
+                            action='version',
+                            version=glanceclient.__version__)
+
+        parser.add_argument('-d', '--debug',
+                            default=bool(utils.env('GLANCECLIENT_DEBUG')),
+                            action='store_true',
+                            help='Defaults to env[GLANCECLIENT_DEBUG].')
+
+        parser.add_argument('-v', '--verbose',
+                            default=False, action="store_true",
+                            help="Print more verbose output")
+
+        parser.add_argument('--get-schema',
+                            default=False, action="store_true",
+                            dest='get_schema',
+                            help='Ignores cached copy and forces retrieval '
+                                 'of schema that generates portions of the '
+                                 'help text. Ignored with API version 1.')
+
+        parser.add_argument('--timeout',
+                            default=600,
+                            help='Number of seconds to wait for a response')
+
+        parser.add_argument('--no-ssl-compression',
+                            dest='ssl_compression',
+                            default=True, action='store_false',
+                            help='Disable SSL compression when using https.')
+
+        parser.add_argument('-f', '--force',
+                            dest='force',
+                            default=False, action='store_true',
+                            help='Prevent select actions from requesting '
+                            'user confirmation.')
+
+        #NOTE(bcwaldon): DEPRECATED
+        parser.add_argument('--dry-run',
+                            default=False,
+                            action='store_true',
+                            help='DEPRECATED! Only used for deprecated '
+                            'legacy commands.')
+
+        #NOTE(bcwaldon): DEPRECATED
+        parser.add_argument('--ssl',
+                            dest='use_ssl',
+                            default=False,
+                            action='store_true',
+                            help='DEPRECATED! Send a fully-formed endpoint '
+                            'using --os-image-url instead.')
+
+        #NOTE(bcwaldon): DEPRECATED
+        parser.add_argument('-H', '--host',
+                            metavar='ADDRESS',
+                            help='DEPRECATED! Send a fully-formed endpoint '
+                            'using --os-image-url instead.')
+
+        #NOTE(bcwaldon): DEPRECATED
+        parser.add_argument('-p', '--port',
+                            dest='port',
+                            metavar='PORT',
+                            type=int,
+                            default=9292,
+                            help='DEPRECATED! Send a fully-formed endpoint '
+                            'using --os-image-url instead.')
+
         parser.add_argument('--os-image-url',
                             default=utils.env('OS_IMAGE_URL'),
                             help='Defaults to env[OS_IMAGE_URL].')
@@ -250,24 +321,13 @@ class OpenStackImagesShell(object):
         parser.add_argument('--os_image_api_version',
                             help=argparse.SUPPRESS)
 
-        parser.add_argument('--os-service-type',
-                            default=utils.env('OS_SERVICE_TYPE'),
-                            help='Defaults to env[OS_SERVICE_TYPE].')
-
-        parser.add_argument('--os_service_type',
-                            help=argparse.SUPPRESS)
-
-        parser.add_argument('--os-endpoint-type',
-                            default=utils.env('OS_ENDPOINT_TYPE'),
-                            help='Defaults to env[OS_ENDPOINT_TYPE].')
-
-        parser.add_argument('--os_endpoint_type',
-                            help=argparse.SUPPRESS)
-
         #NOTE(bcwaldon): DEPRECATED
         parser.add_argument('-S', '--os_auth_strategy',
                             help='DEPRECATED! This option is '
                             'completely ignored.')
+
+        # FIXME(bobt): this method should come from python-keystoneclient
+        self._append_global_identity_args(parser)
 
         return parser
 
@@ -306,36 +366,6 @@ class OpenStackImagesShell(object):
                 subparser.add_argument(*args, **kwargs)
             subparser.set_defaults(func=callback)
 
-    def _get_ksclient(self, **kwargs):
-        """Get an endpoint and auth token from Keystone.
-
-        :param username: name of user
-        :param password: user's password
-        :param tenant_id: unique identifier of tenant
-        :param tenant_name: name of tenant
-        :param auth_url: endpoint to authenticate against
-        """
-        return ksclient.Client(username=kwargs.get('username'),
-                               password=kwargs.get('password'),
-                               tenant_id=kwargs.get('tenant_id'),
-                               tenant_name=kwargs.get('tenant_name'),
-                               auth_url=kwargs.get('auth_url'),
-                               cacert=kwargs.get('cacert'),
-                               insecure=kwargs.get('insecure'))
-
-    def _get_endpoint(self, client, **kwargs):
-        """Get an endpoint using the provided keystone client."""
-        endpoint_kwargs = {
-            'service_type': kwargs.get('service_type') or 'image',
-            'endpoint_type': kwargs.get('endpoint_type') or 'publicURL',
-        }
-
-        if kwargs.get('region_name'):
-            endpoint_kwargs['attr'] = 'region'
-            endpoint_kwargs['filter_value'] = kwargs.get('region_name')
-
-        return client.service_catalog.url_for(**endpoint_kwargs)
-
     def _get_image_url(self, args):
         """Translate the available url-related options into a single string.
 
@@ -353,6 +383,101 @@ class OpenStackImagesShell(object):
         else:
             return None
 
+    def _discover_auth_versions(self, session, auth_url):
+        # discover the API versions the server is supporting base on the
+        # given URL
+        v2_auth_url = None
+        v3_auth_url = None
+        try:
+            ks_discover = discover.Discover(session=session, auth_url=auth_url)
+            v2_auth_url = ks_discover.url_for('2.0')
+            v3_auth_url = ks_discover.url_for('3.0')
+        except ks_exc.ClientException as e:
+            # Identity service may not support discover API version.
+            # Lets trying to figure out the API version from the original URL.
+            url_parts = urlparse.urlparse(auth_url)
+            (scheme, netloc, path, params, query, fragment) = url_parts
+            path = path.lower()
+            if path.startswith('/v3'):
+                v3_auth_url = auth_url
+            elif path.startswith('/v2'):
+                v2_auth_url = auth_url
+            else:
+                # not enough information to determine the auth version
+                msg = ('Unable to determine the Keystone version '
+                       'to authenticate with using the given '
+                       'auth_url. Identity service may not support API '
+                       'version discovery. Please provide a versioned '
+                       'auth_url instead. error=%s') % (e)
+                raise exc.CommandError(msg)
+
+        return (v2_auth_url, v3_auth_url)
+
+    def _get_keystone_session(self, **kwargs):
+        ks_session = session.Session.construct(kwargs)
+
+        # discover the supported keystone versions using the given auth url
+        auth_url = kwargs.pop('auth_url', None)
+        (v2_auth_url, v3_auth_url) = self._discover_auth_versions(
+            session=ks_session,
+            auth_url=auth_url)
+
+        # Determine which authentication plugin to use. First inspect the
+        # auth_url to see the supported version. If both v3 and v2 are
+        # supported, then use the highest version if possible.
+        user_id = kwargs.pop('user_id', None)
+        username = kwargs.pop('username', None)
+        password = kwargs.pop('password', None)
+        user_domain_name = kwargs.pop('user_domain_name', None)
+        user_domain_id = kwargs.pop('user_domain_id', None)
+        # project and tenant can be used interchangeably
+        project_id = (kwargs.pop('project_id', None) or
+                      kwargs.pop('tenant_id', None))
+        project_name = (kwargs.pop('project_name', None) or
+                        kwargs.pop('tenant_name', None))
+        project_domain_id = kwargs.pop('project_domain_id', None)
+        project_domain_name = kwargs.pop('project_domain_name', None)
+        auth = None
+
+        use_domain = (user_domain_id or
+                      user_domain_name or
+                      project_domain_id or
+                      project_domain_name)
+        use_v3 = v3_auth_url and (use_domain or (not v2_auth_url))
+        use_v2 = v2_auth_url and not use_domain
+
+        if use_v3:
+            auth = v3_auth.Password(
+                v3_auth_url,
+                user_id=user_id,
+                username=username,
+                password=password,
+                user_domain_id=user_domain_id,
+                user_domain_name=user_domain_name,
+                project_id=project_id,
+                project_name=project_name,
+                project_domain_id=project_domain_id,
+                project_domain_name=project_domain_name)
+        elif use_v2:
+            auth = v2_auth.Password(
+                v2_auth_url,
+                username,
+                password,
+                tenant_id=project_id,
+                tenant_name=project_name)
+        else:
+            # if we get here it means domain information is provided
+            # (caller meant to use Keystone V3) but the auth url is
+            # actually Keystone V2. Obviously we can't authenticate a V3
+            # user using V2.
+            exc.CommandError("Credential and auth_url mismatch. The given "
+                             "auth_url is using Keystone V2 endpoint, which "
+                             "may not able to handle Keystone V3 credentials. "
+                             "Please provide a correct Keystone V3 auth_url.")
+
+        ks_session.auth = auth
+        return ks_session
+
     def _get_endpoint_and_token(self, args, force_auth=False):
         image_url = self._get_image_url(args)
         auth_token = args.os_auth_token
@@ -364,42 +489,74 @@ class OpenStackImagesShell(object):
             endpoint = image_url
             token = args.os_auth_token
         else:
+
             if not args.os_username:
-                raise exc.CommandError("You must provide a username via"
-                                       " either --os-username or "
-                                       "env[OS_USERNAME]")
+                raise exc.CommandError(
+                    _("You must provide a username via"
+                      " either --os-username or "
+                      "env[OS_USERNAME]"))
 
             if not args.os_password:
-                raise exc.CommandError("You must provide a password via"
-                                       " either --os-password or "
-                                       "env[OS_PASSWORD]")
+                raise exc.CommandError(
+                    _("You must provide a password via"
+                      " either --os-password or "
+                      "env[OS_PASSWORD]"))
 
-            if not (args.os_tenant_id or args.os_tenant_name):
-                raise exc.CommandError("You must provide a tenant_id via"
-                                       " either --os-tenant-id or "
-                                       "via env[OS_TENANT_ID]")
+            # Validate password flow auth
+            project_info = (args.os_tenant_name or
+                            args.os_tenant_id or
+                            (args.os_project_name and
+                            (args.project_domain_name or
+                                args.project_domain_id)) or
+                            args.os_project_id)
+
+            if (not project_info):
+                # tenent is deprecated in Keystone v3. Use the latest
+                # terminology instead.
+                raise exc.CommandError(
+                    _("You must provide a project_id or project_name ("
+                      "with project_domain_name or project_domain_id) "
+                      "via "
+                      "  --os-project-id (env[OS_PROJECT_ID])"
+                      "  --os-project-name (env[OS_PROJECT_NAME]),"
+                      "  --os-project-domain-id "
+                      "(env[OS_PROJECT_DOMAIN_ID])"
+                      "  --os-project-domain-name "
+                      "(env[OS_PROJECT_DOMAIN_NAME])"))
 
             if not args.os_auth_url:
-                raise exc.CommandError("You must provide an auth url via"
-                                       " either --os-auth-url or "
-                                       "via env[OS_AUTH_URL]")
-            kwargs = {
-                'username': args.os_username,
-                'password': args.os_password,
-                'tenant_id': args.os_tenant_id,
-                'tenant_name': args.os_tenant_name,
-                'auth_url': args.os_auth_url,
-                'service_type': args.os_service_type,
-                'endpoint_type': args.os_endpoint_type,
-                'cacert': args.os_cacert,
-                'insecure': args.insecure,
-                'region_name': args.os_region_name,
-            }
-            _ksclient = self._get_ksclient(**kwargs)
-            token = args.os_auth_token or _ksclient.auth_token
+                raise exc.CommandError(
+                    _("You must provide an auth url via"
+                      " either --os-auth-url or "
+                      "via env[OS_AUTH_URL]"))
 
-            endpoint = args.os_image_url or self._get_endpoint(_ksclient,
-                                                               **kwargs)
+            kwargs = {
+                'auth_url': args.os_auth_url,
+                'username': args.os_username,
+                'user_id': args.os_user_id,
+                'user_domain_id': args.os_user_domain_id,
+                'user_domain_name': args.os_user_domain_name,
+                'password': args.os_password,
+                'tenant_name': args.os_tenant_name,
+                'tenant_id': args.os_tenant_id,
+                'project_name': args.os_project_name,
+                'project_id': args.os_project_id,
+                'project_domain_name': args.os_project_domain_name,
+                'project_domain_id': args.os_project_domain_id,
+                'insecure': args.insecure,
+                'cacert': args.os_cacert,
+                'cert': args.os_cert,
+                'key': args.os_key
+            }
+            ks_session = self._get_keystone_session(**kwargs)
+            token = args.os_auth_token or ks_session.get_token()
+
+            endpoint_type = args.os_endpoint_type or 'public'
+            service_type = args.os_service_type or 'image'
+            endpoint = args.os_image_url or ks_session.get_endpoint(
+                service_type=service_type,
+                endpoint_type=endpoint_type,
+                region_name=args.os_region_name)
 
         return endpoint, token
 
@@ -412,8 +569,8 @@ class OpenStackImagesShell(object):
             'insecure': args.insecure,
             'timeout': args.timeout,
             'cacert': args.os_cacert,
-            'cert_file': args.cert_file,
-            'key_file': args.key_file,
+            'cert': args.os_cert,
+            'key': args.os_key,
             'ssl_compression': args.ssl_compression
         }
         client = glanceclient.Client(api_version, endpoint, **kwargs)
