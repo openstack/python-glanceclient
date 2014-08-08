@@ -27,7 +27,6 @@ import os
 from os.path import expanduser
 import sys
 
-import netaddr
 import six.moves.urllib.parse as urlparse
 
 import glanceclient
@@ -134,22 +133,12 @@ class OpenStackImagesShell(object):
                             default=utils.env('OS_PROJECT_DOMAIN_NAME'),
                             help='Defaults to env[OS_PROJECT_DOMAIN_NAME].')
 
-        #NOTE(bcwaldon): DEPRECATED
-        parser.add_argument('-I',
-                            dest='os_username',
-                            help='DEPRECATED! Use --os-username.')
-
         parser.add_argument('--os-password',
                             default=utils.env('OS_PASSWORD'),
                             help='Defaults to env[OS_PASSWORD].')
 
         parser.add_argument('--os_password',
                             help=argparse.SUPPRESS)
-
-        #NOTE(bcwaldon): DEPRECATED
-        parser.add_argument('-K',
-                            dest='os_password',
-                            help='DEPRECATED! Use --os-password.')
 
         parser.add_argument('--os-tenant-id',
                             default=utils.env('OS_TENANT_ID'),
@@ -165,22 +154,12 @@ class OpenStackImagesShell(object):
         parser.add_argument('--os_tenant_name',
                             help=argparse.SUPPRESS)
 
-        #NOTE(bcwaldon): DEPRECATED
-        parser.add_argument('-T',
-                            dest='os_tenant_name',
-                            help='DEPRECATED! Use --os-tenant-name.')
-
         parser.add_argument('--os-auth-url',
                             default=utils.env('OS_AUTH_URL'),
                             help='Defaults to env[OS_AUTH_URL].')
 
         parser.add_argument('--os_auth_url',
                             help=argparse.SUPPRESS)
-
-        #NOTE(bcwaldon): DEPRECATED
-        parser.add_argument('-N',
-                            dest='os_auth_url',
-                            help='DEPRECATED! Use --os-auth-url.')
 
         parser.add_argument('--os-region-name',
                             default=utils.env('OS_REGION_NAME'),
@@ -189,22 +168,12 @@ class OpenStackImagesShell(object):
         parser.add_argument('--os_region_name',
                             help=argparse.SUPPRESS)
 
-        #NOTE(bcwaldon): DEPRECATED
-        parser.add_argument('-R',
-                            dest='os_region_name',
-                            help='DEPRECATED! Use --os-region-name.')
-
         parser.add_argument('--os-auth-token',
                             default=utils.env('OS_AUTH_TOKEN'),
                             help='Defaults to env[OS_AUTH_TOKEN].')
 
         parser.add_argument('--os_auth_token',
                             help=argparse.SUPPRESS)
-
-        #NOTE(bcwaldon): DEPRECATED
-        parser.add_argument('-A', '--auth_token',
-                            dest='os_auth_token',
-                            help='DEPRECATED! Use --os-auth-token.')
 
         parser.add_argument('--os-service-type',
                             default=utils.env('OS_SERVICE_TYPE'),
@@ -271,47 +240,12 @@ class OpenStackImagesShell(object):
                             help='Prevent select actions from requesting '
                             'user confirmation.')
 
-        #NOTE(bcwaldon): DEPRECATED
-        parser.add_argument('--dry-run',
-                            default=False,
-                            action='store_true',
-                            help='DEPRECATED! Only used for deprecated '
-                            'legacy commands.')
-
-        #NOTE(bcwaldon): DEPRECATED
-        parser.add_argument('--ssl',
-                            dest='use_ssl',
-                            default=False,
-                            action='store_true',
-                            help='DEPRECATED! Send a fully-formed endpoint '
-                            'using --os-image-url instead.')
-
-        #NOTE(bcwaldon): DEPRECATED
-        parser.add_argument('-H', '--host',
-                            metavar='ADDRESS',
-                            help='DEPRECATED! Send a fully-formed endpoint '
-                            'using --os-image-url instead.')
-
-        #NOTE(bcwaldon): DEPRECATED
-        parser.add_argument('-p', '--port',
-                            dest='port',
-                            metavar='PORT',
-                            type=int,
-                            default=9292,
-                            help='DEPRECATED! Send a fully-formed endpoint '
-                            'using --os-image-url instead.')
-
         parser.add_argument('--os-image-url',
                             default=utils.env('OS_IMAGE_URL'),
                             help='Defaults to env[OS_IMAGE_URL].')
 
         parser.add_argument('--os_image_url',
                             help=argparse.SUPPRESS)
-
-        #NOTE(bcwaldon): DEPRECATED
-        parser.add_argument('-U', '--url',
-                            dest='os_image_url',
-                            help='DEPRECATED! Use --os-image-url.')
 
         parser.add_argument('--os-image-api-version',
                             default=utils.env('OS_IMAGE_API_VERSION',
@@ -321,12 +255,7 @@ class OpenStackImagesShell(object):
         parser.add_argument('--os_image_api_version',
                             help=argparse.SUPPRESS)
 
-        #NOTE(bcwaldon): DEPRECATED
-        parser.add_argument('-S', '--os_auth_strategy',
-                            help='DEPRECATED! This option is '
-                            'completely ignored.')
-
-        # FIXME(bobt): this method should come from python-keystoneclient
+       # FIXME(bobt): this method should come from python-keystoneclient
         self._append_global_identity_args(parser)
 
         return parser
@@ -374,12 +303,6 @@ class OpenStackImagesShell(object):
         """
         if args.os_image_url:
             return args.os_image_url
-        elif args.host:
-            # Check if it is legal ipv6 address, if so, need wrap it with '[]'
-            if netaddr.valid_ipv6(args.host):
-                args.host = '[%s]' % args.host
-            scheme = 'https' if args.use_ssl else 'http'
-            return '%s://%s:%s/' % (scheme, args.host, args.port)
         else:
             return None
 

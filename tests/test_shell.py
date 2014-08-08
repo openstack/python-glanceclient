@@ -107,17 +107,6 @@ class ShellTest(utils.TestCase):
         # Convert ArgumentPaser to string first.
         self.assertEqual(str(expected), str(actual_parser))
 
-    def test_get_image_url_by_ipv6Addr_host(self):
-        fake_args = lambda: None
-        setattr(fake_args, 'os_image_url', None)
-        setattr(fake_args, 'host', '2011:2013:1:f101::1')
-        setattr(fake_args, 'use_ssl', True)
-        setattr(fake_args, 'port', '9292')
-        expected_image_url = 'https://[2011:2013:1:f101::1]:9292/'
-        test_shell = openstack_shell.OpenStackImagesShell()
-        targeted_image_url = test_shell._get_image_url(fake_args)
-        self.assertEqual(expected_image_url, targeted_image_url)
-
     @mock.patch.object(openstack_shell.OpenStackImagesShell,
                        '_get_versioned_client')
     def test_cert_and_key_args_interchangeable(self,

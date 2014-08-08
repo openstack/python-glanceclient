@@ -15,7 +15,6 @@
 
 import errno
 import json
-import sys
 import testtools
 
 import six
@@ -23,7 +22,6 @@ from six.moves.urllib import parse
 
 from glanceclient.v1 import client
 from glanceclient.v1 import images
-from glanceclient.v1 import legacy_shell
 from glanceclient.v1 import shell
 from tests import utils
 
@@ -963,20 +961,3 @@ class UrlParameterTest(testtools.TestCase):
         qs_dict = parse.parse_qs(parts.query)
         self.assertTrue('is_public' in qs_dict)
         self.assertTrue(qs_dict['is_public'][0].lower() == "true")
-
-    def test_copy_from_used(self):
-        class LegacyFakeArg(object):
-            def __init__(self, fields):
-                self.fields = fields
-                self.dry_run = False
-                self.verbose = False
-
-        def images_create(**kwargs):
-            class FakeImage():
-                id = "ThisiSanID"
-            self.assertNotEqual(kwargs['data'], sys.stdin)
-            return FakeImage()
-
-        self.gc.images.create = images_create
-        args = LegacyFakeArg(["copy_from=http://somehost.com/notreal.qcow"])
-        legacy_shell.do_add(self.gc, args)
