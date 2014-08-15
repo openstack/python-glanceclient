@@ -21,6 +21,7 @@ from __future__ import print_function
 
 import argparse
 import copy
+import getpass
 import json
 import logging
 import os
@@ -439,10 +440,21 @@ class OpenStackImagesShell(object):
                       "env[OS_USERNAME]"))
 
             if not args.os_password:
-                raise exc.CommandError(
-                    _("You must provide a password via"
-                      " either --os-password or "
-                      "env[OS_PASSWORD]"))
+                # No password, If we've got a tty, try prompting for it
+                if hasattr(sys.stdin, 'isatty') and sys.stdin.isatty():
+                    # Check for Ctl-D
+                    try:
+                        args.os_password = getpass.getpass('OS Password: ')
+                    except EOFError:
+                        pass
+                # No password because we didn't have a tty or the
+                # user Ctl-D when prompted.
+                if not args.os_password:
+                    raise exc.CommandError(
+                        _("You must provide a password via "
+                          "either --os-password, "
+                          "env[OS_PASSWORD], "
+                          "or prompted response"))
 
             # Validate password flow auth
             project_info = (args.os_tenant_name or
