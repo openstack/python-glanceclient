@@ -77,7 +77,8 @@ class HTTPSAdapter(adapters.HTTPAdapter):
 
     def cert_verify(self, conn, url, verify, cert):
         super(HTTPSAdapter, self).cert_verify(conn, url, verify, cert)
-        conn.insecure = not verify
+        conn.ca_certs = verify[0]
+        conn.insecure = verify[1]
 
 
 class HTTPSConnectionPool(connectionpool.HTTPSConnectionPool):

@@ -67,8 +67,16 @@ class HTTPClient(object):
             if not compression:
                 self.session.mount("https://", https.HTTPSAdapter())
 
-            self.session.verify = kwargs.get('cacert',
-                                             not kwargs.get('insecure', True))
+                self.session.verify = (kwargs.get('cacert', None),
+                                       kwargs.get('insecure', False))
+
+            else:
+                if kwargs.get('insecure', False) is True:
+                    self.session.verify = False
+                else:
+                    if kwargs.get('cacert', None) is not '':
+                        self.session.verify = kwargs.get('cacert', True)
+
             self.session.cert = (kwargs.get('cert_file'),
                                  kwargs.get('key_file'))
 
