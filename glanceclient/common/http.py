@@ -97,8 +97,6 @@ class HTTPClient(object):
         if data and isinstance(data, six.string_types):
             curl.append('-d \'%s\'' % data)
 
-        if "//:" not in url:
-            url = '%s%s' % (self.endpoint, url)
         curl.append(url)
         LOG.debug(strutils.safe_encode(' '.join(curl), errors='ignore'))
 
@@ -168,7 +166,10 @@ class HTTPClient(object):
         headers = self.encode_headers(headers)
 
         try:
-            conn_url = "%s/%s" % (self.endpoint, url)
+            if self.endpoint.endswith("/") or url.startswith("/"):
+                conn_url = "%s%s" % (self.endpoint, url)
+            else:
+                conn_url = "%s/%s" % (self.endpoint, url)
             self.log_curl_request(method, conn_url, headers, data, kwargs)
             resp = self.session.request(method,
                                         conn_url,
