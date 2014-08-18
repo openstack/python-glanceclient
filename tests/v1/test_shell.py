@@ -22,6 +22,8 @@ import subprocess
 import tempfile
 import testtools
 
+import mock
+
 from glanceclient import exc
 from glanceclient import shell
 
@@ -263,42 +265,50 @@ class ShellInvalidEndpointandParameterTest(utils.TestCase):
             self.run_command,
             'member-delete  <IMAGE_ID> <TENANT_ID>')
 
-    def test_image_create_invalid_size_parameter(self):
+    @mock.patch('sys.stderr')
+    def test_image_create_invalid_size_parameter(self, __):
         self.assertRaises(
             SystemExit,
             self.run_command, 'image-create --size 10gb')
 
-    def test_image_create_invalid_ram_parameter(self):
+    @mock.patch('sys.stderr')
+    def test_image_create_invalid_ram_parameter(self, __):
         self.assertRaises(
             SystemExit,
             self.run_command, 'image-create --min-ram 10gb')
 
-    def test_image_create_invalid_min_disk_parameter(self):
+    @mock.patch('sys.stderr')
+    def test_image_create_invalid_min_disk_parameter(self, __):
         self.assertRaises(
             SystemExit,
             self.run_command, 'image-create --min-disk 10gb')
 
-    def test_image_update_invalid_size_parameter(self):
+    @mock.patch('sys.stderr')
+    def test_image_update_invalid_size_parameter(self, __):
         self.assertRaises(
             SystemExit,
             self.run_command, 'image-update --size 10gb')
 
-    def test_image_update_invalid_min_disk_parameter(self):
+    @mock.patch('sys.stderr')
+    def test_image_update_invalid_min_disk_parameter(self, __):
         self.assertRaises(
             SystemExit,
             self.run_command, 'image-update --min-disk 10gb')
 
-    def test_image_update_invalid_ram_parameter(self):
+    @mock.patch('sys.stderr')
+    def test_image_update_invalid_ram_parameter(self, __):
         self.assertRaises(
             SystemExit,
             self.run_command, 'image-update --min-ram 10gb')
 
-    def test_image_list_invalid_min_size_parameter(self):
+    @mock.patch('sys.stderr')
+    def test_image_list_invalid_min_size_parameter(self, __):
         self.assertRaises(
             SystemExit,
             self.run_command, 'image-list --size-min 10gb')
 
-    def test_image_list_invalid_max_size_parameter(self):
+    @mock.patch('sys.stderr')
+    def test_image_list_invalid_max_size_parameter(self, __):
         self.assertRaises(
             SystemExit,
             self.run_command, 'image-list --size-max 10gb')
