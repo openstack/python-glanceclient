@@ -16,5 +16,6 @@ run_tests.err.log
 .testrepository
 .tox
 doc/source/api
+doc/build
 *.egg
 glanceclient/versioninfo
