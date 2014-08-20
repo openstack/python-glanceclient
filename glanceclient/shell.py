@@ -32,6 +32,7 @@ import six.moves.urllib.parse as urlparse
 import glanceclient
 from glanceclient.common import utils
 from glanceclient import exc
+from glanceclient.openstack.common import importutils
 from glanceclient.openstack.common import strutils
 
 from keystoneclient.auth.identity import v2 as v2_auth
@@ -39,6 +40,8 @@ from keystoneclient.auth.identity import v3 as v3_auth
 from keystoneclient import discover
 from keystoneclient.openstack.common.apiclient import exceptions as ks_exc
 from keystoneclient import session
+
+osprofiler_profiler = importutils.try_import("osprofiler.profiler")
 
 
 class OpenStackImagesShell(object):
@@ -255,7 +258,21 @@ class OpenStackImagesShell(object):
         parser.add_argument('--os_image_api_version',
                             help=argparse.SUPPRESS)
 
-       # FIXME(bobt): this method should come from python-keystoneclient
+        if osprofiler_profiler:
+            parser.add_argument('--profile',
+                                metavar='HMAC_KEY',
+                                help='HMAC key to use for encrypting context '
+                                'data for performance profiling of operation. '
+                                'This key should be the value of HMAC key '
+                                'configured in osprofiler middleware in '
+                                'glance, it is specified in paste '
+                                'configuration file at '
+                                '/etc/glance/api-paste.ini and '
+                                '/etc/glance/registry-paste.ini. Without key '
+                                'the profiling will not be triggered even '
+                                'if osprofiler is enabled on server side.')
+
+        # FIXME(bobt): this method should come from python-keystoneclient
         self._append_global_identity_args(parser)
 
         return parser
@@ -555,6 +572,10 @@ class OpenStackImagesShell(object):
         LOG.addHandler(logging.StreamHandler())
         LOG.setLevel(logging.DEBUG if args.debug else logging.INFO)
 
+        profile = osprofiler_profiler and options.profile
+        if profile:
+            osprofiler_profiler.init(options.profile)
+
         client = self._get_versioned_client(api_version, args,
                                             force_auth=False)
 
@@ -562,6 +583,12 @@ class OpenStackImagesShell(object):
             args.func(client, args)
         except exc.Unauthorized:
             raise exc.CommandError("Invalid OpenStack Identity credentials.")
+        finally:
+            if profile:
+                trace_id = osprofiler_profiler.get().get_base_id()
+                print("Profiling trace ID: %s" % trace_id)
+                print("To display trace use next command:\n"
+                      "osprofiler trace show --html %s " % trace_id)
 
     @utils.arg('command', metavar='<subcommand>', nargs='?',
                help='Display help for <subcommand>.')
