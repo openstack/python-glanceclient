@@ -286,6 +286,8 @@ class OpenStackImagesShell(object):
         self._find_actions(subparsers, submodule)
         self._find_actions(subparsers, self)
 
+        self._add_bash_completion_subparser(subparsers)
+
         return parser
 
     def _find_actions(self, subparsers, actions_module):
@@ -311,6 +313,13 @@ class OpenStackImagesShell(object):
             for (args, kwargs) in arguments:
                 subparser.add_argument(*args, **kwargs)
             subparser.set_defaults(func=callback)
+
+    def _add_bash_completion_subparser(self, subparsers):
+        subparser = subparsers.add_parser('bash_completion',
+                                          add_help=False,
+                                          formatter_class=HelpFormatter)
+        self.subcommands['bash_completion'] = subparser
+        subparser.set_defaults(func=self.do_bash_completion)
 
     def _get_image_url(self, args):
         """Translate the available url-related options into a single string.
@@ -567,6 +576,9 @@ class OpenStackImagesShell(object):
         if args.func == self.do_help:
             self.do_help(args)
             return 0
+        elif args.func == self.do_bash_completion:
+            self.do_bash_completion(args)
+            return 0
 
         LOG = logging.getLogger('glanceclient')
         LOG.addHandler(logging.StreamHandler())
@@ -604,6 +616,22 @@ class OpenStackImagesShell(object):
                                        args.command)
         else:
             self.parser.print_help()
+
+    def do_bash_completion(self, _args):
+        """
+        Prints all of the commands and options to stdout so that the
+        glance.bash_completion script doesn't have to hard code them.
+        """
+        commands = set()
+        options = set()
+        for sc_str, sc in self.subcommands.items():
+            commands.add(sc_str)
+            for option in sc._optionals._option_string_actions.keys():
+                options.add(option)
+
+        commands.remove('bash_completion')
+        commands.remove('bash-completion')
+        print(' '.join(commands | options))
 
 
 class HelpFormatter(argparse.HelpFormatter):

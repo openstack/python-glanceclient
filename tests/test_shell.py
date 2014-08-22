@@ -16,8 +16,10 @@
 
 import argparse
 import os
+import sys
 
 import mock
+import six
 
 from glanceclient import exc
 from glanceclient import shell as openstack_shell
@@ -78,6 +80,26 @@ class ShellTest(utils.TestCase):
         super(ShellTest, self).tearDown()
         global _old_env
         os.environ = _old_env
+
+    def shell(self, argstr, exitcodes=(0,)):
+        orig = sys.stdout
+        orig_stderr = sys.stderr
+        try:
+            sys.stdout = six.StringIO()
+            sys.stderr = six.StringIO()
+            _shell = openstack_shell.OpenStackImagesShell()
+            _shell.main(argstr.split())
+        except SystemExit:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            self.assertIn(exc_value.code, exitcodes)
+        finally:
+            stdout = sys.stdout.getvalue()
+            sys.stdout.close()
+            sys.stdout = orig
+            stderr = sys.stderr.getvalue()
+            sys.stderr.close()
+            sys.stderr = orig_stderr
+        return (stdout, stderr)
 
     def test_help_unknown_command(self):
         shell = openstack_shell.OpenStackImagesShell()
@@ -284,6 +306,22 @@ class ShellTestWithKeystoneV3Auth(ShellTest):
             keystone_client_fixtures.BASE_URL)
         glance_shell = openstack_shell.OpenStackImagesShell()
         self.assertRaises(exc.CommandError, glance_shell.main, args.split())
+
+    def test_bash_completion(self):
+        stdout, stderr = self.shell('bash_completion')
+        # just check we have some output
+        required = [
+            '--status',
+            'image-create',
+            'help',
+            '--size']
+        for r in required:
+            self.assertIn(r, stdout.split())
+        avoided = [
+            'bash_completion',
+            'bash-completion']
+        for r in avoided:
+            self.assertNotIn(r, stdout.split())
 
 
 class ShellCacheSchemaTest(utils.TestCase):
