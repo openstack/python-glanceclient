@@ -119,7 +119,7 @@ class HTTPClient(object):
         status = (resp.raw.version / 10.0, resp.status_code, resp.reason)
         dump = ['\nHTTP/%.1f %s %s' % status]
         headers = resp.headers.items()
-        if 'X-Auth-Token' in headers:
+        if 'X-Auth-Token' in resp.headers:
             headers['X-Auth-Token'] = '*' * 3
         dump.extend(['%s: %s' % (k, v) for k, v in headers])
         dump.append('')
