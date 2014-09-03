@@ -18,6 +18,10 @@ import logging
 import socket
 
 import requests
+try:
+    from requests.packages.urllib3.exceptions import ProtocolError
+except ImportError:
+    ProtocolError = requests.exceptions.ConnectionError
 import six
 from six.moves.urllib import parse
 
@@ -198,7 +202,7 @@ class HTTPClient(object):
             message = ("Error communicating with %(endpoint)s %(e)s" %
                        dict(url=conn_url, e=e))
             raise exc.InvalidEndpoint(message=message)
-        except requests.exceptions.ConnectionError as e:
+        except (requests.exceptions.ConnectionError, ProtocolError) as e:
             message = ("Error finding address for %(url)s: %(e)s" %
                        dict(url=conn_url, e=e))
             raise exc.CommunicationError(message=message)
