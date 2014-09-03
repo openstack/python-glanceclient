@@ -303,3 +303,389 @@ def do_location_update(gc, args):
     else:
         image = gc.images.update_location(args.id, args.url, metadata)
         utils.print_dict(image)
+
+
+# Metadata - catalog
+NAMESPACE_SCHEMA = None
+
+
+def get_namespace_schema():
+    global NAMESPACE_SCHEMA
+    if NAMESPACE_SCHEMA is None:
+        schema_path = expanduser("~/.glanceclient/namespace_schema.json")
+        if os.path.exists(schema_path) and os.path.isfile(schema_path):
+            with open(schema_path, "r") as f:
+                schema_raw = f.read()
+                NAMESPACE_SCHEMA = json.loads(schema_raw)
+    return NAMESPACE_SCHEMA
+
+
+def _namespace_show(namespace, max_column_width=None):
+    namespace = dict(namespace)  # Warlock objects are compatible with dicts
+    # Flatten dicts for display
+    if 'properties' in namespace:
+        props = [k for k in namespace['properties']]
+        namespace['properties'] = props
+    if 'resource_type_associations' in namespace:
+        assocs = [assoc['name']
+                  for assoc in namespace['resource_type_associations']]
+        namespace['resource_type_associations'] = assocs
+    if 'objects' in namespace:
+        objects = [obj['name'] for obj in namespace['objects']]
+        namespace['objects'] = objects
+
+    if max_column_width:
+        utils.print_dict(namespace, max_column_width)
+    else:
+        utils.print_dict(namespace)
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of the namespace.')
+@utils.schema_args(get_namespace_schema, omit=['namespace', 'property_count',
+                                               'properties', 'tag_count',
+                                               'tags', 'object_count',
+                                               'objects', 'resource_types'])
+def do_md_namespace_create(gc, args):
+    """Create a new metadata definitions namespace."""
+    schema = gc.schemas.get('metadefs/namespace')
+    _args = [(x[0].replace('-', '_'), x[1]) for x in vars(args).items()]
+    fields = dict(filter(lambda x: x[1] is not None and
+                         (schema.is_core_property(x[0])),
+                         _args))
+    namespace = gc.metadefs_namespace.create(**fields)
+
+    _namespace_show(namespace)
+
+
+@utils.arg('--file', metavar='<FILEPATH>',
+           help='Path to file with namespace schema to import. Alternatively, '
+                'namespaces schema can be passed to the client via stdin.')
+def do_md_namespace_import(gc, args):
+    """Import a metadata definitions namespace from file or standard input."""
+    namespace_data = utils.get_data_file(args)
+    if not namespace_data:
+        utils.exit('No metadata definition namespace passed via stdin or '
+                   '--file argument.')
+
+    try:
+        namespace_json = json.load(namespace_data)
+    except ValueError:
+        utils.exit('Schema is not a valid JSON object.')
+    else:
+        namespace = gc.metadefs_namespace.create(**namespace_json)
+        _namespace_show(namespace)
+
+
+@utils.arg('id', metavar='<NAMESPACE>', help='Name of namespace to update.')
+@utils.schema_args(get_namespace_schema, omit=['property_count', 'properties',
+                                               'tag_count', 'tags',
+                                               'object_count', 'objects',
+                                               'resource_type_associations',
+                                               'schema'])
+def do_md_namespace_update(gc, args):
+    """Update an existing metadata definitions namespace."""
+    schema = gc.schemas.get('metadefs/namespace')
+
+    _args = [(x[0].replace('-', '_'), x[1]) for x in vars(args).items()]
+    fields = dict(filter(lambda x: x[1] is not None and
+                         (schema.is_core_property(x[0])),
+                         _args))
+    namespace = gc.metadefs_namespace.update(args.id, **fields)
+
+    _namespace_show(namespace)
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>',
+           help='Name of namespace to describe.')
+@utils.arg('--resource-type', metavar='<RESOURCE_TYPE>',
+           help='Applies prefix of given resource type associated to a '
+                'namespace to all properties of a namespace.', default=None)
+@utils.arg('--max-column-width', metavar='<integer>', default=80,
+           help='The max column width of the printed table.')
+def do_md_namespace_show(gc, args):
+    """Describe a specific metadata definitions namespace.
+
+    Lists also the namespace properties, objects and resource type
+    associations.
+    """
+    kwargs = {}
+    if args.resource_type:
+        kwargs['resource_type'] = args.resource_type
+
+    namespace = gc.metadefs_namespace.get(args.namespace, **kwargs)
+    _namespace_show(namespace, int(args.max_column_width))
+
+
+@utils.arg('--resource-types', metavar='<RESOURCE_TYPES>', action='append',
+           help='Resource type to filter namespaces.')
+@utils.arg('--visibility', metavar='<VISIBILITY>',
+           help='Visibility parameter to filter namespaces.')
+@utils.arg('--page-size', metavar='<SIZE>', default=None, type=int,
+           help='Number of namespaces to request in each paginated request.')
+def do_md_namespace_list(gc, args):
+    """List metadata definitions namespaces."""
+    filter_keys = ['resource_types', 'visibility']
+    filter_items = [(key, getattr(args, key, None)) for key in filter_keys]
+    filters = dict([item for item in filter_items if item[1] is not None])
+
+    kwargs = {'filters': filters}
+    if args.page_size is not None:
+        kwargs['page_size'] = args.page_size
+
+    namespaces = gc.metadefs_namespace.list(**kwargs)
+    columns = ['namespace']
+    utils.print_list(namespaces, columns)
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>',
+           help='Name of namespace to delete.')
+def do_md_namespace_delete(gc, args):
+    """Delete specified metadata definitions namespace with its contents."""
+    gc.metadefs_namespace.delete(args.namespace)
+
+
+# Metadata - catalog
+RESOURCE_TYPE_SCHEMA = None
+
+
+def get_resource_type_schema():
+    global RESOURCE_TYPE_SCHEMA
+    if RESOURCE_TYPE_SCHEMA is None:
+        schema_path = expanduser("~/.glanceclient/resource_type_schema.json")
+        if os.path.exists(schema_path) and os.path.isfile(schema_path):
+            with open(schema_path, "r") as f:
+                schema_raw = f.read()
+                RESOURCE_TYPE_SCHEMA = json.loads(schema_raw)
+    return RESOURCE_TYPE_SCHEMA
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of namespace.')
+@utils.schema_args(get_resource_type_schema)
+def do_md_resource_type_associate(gc, args):
+    """Associate resource type with a metadata definitions namespace."""
+    schema = gc.schemas.get('metadefs/resource_type')
+    _args = [(x[0].replace('-', '_'), x[1]) for x in vars(args).items()]
+    fields = dict(filter(lambda x: x[1] is not None and
+                         (schema.is_core_property(x[0])),
+                         _args))
+    resource_type = gc.metadefs_resource_type.associate(args.namespace,
+                                                        **fields)
+    utils.print_dict(resource_type)
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of namespace.')
+@utils.arg('resource_type', metavar='<RESOURCE_TYPE>',
+           help='Name of resource type.')
+def do_md_resource_type_deassociate(gc, args):
+    """Deassociate resource type with a metadata definitions namespace."""
+    gc.metadefs_resource_type.deassociate(args.namespace, args.resource_type)
+
+
+def do_md_resource_type_list(gc, args):
+    """List available resource type names."""
+    resource_types = gc.metadefs_resource_type.list()
+    utils.print_list(resource_types, ['name'])
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of namespace.')
+def do_md_namespace_resource_type_list(gc, args):
+    """List resource types associated to specific namespace."""
+    resource_types = gc.metadefs_resource_type.get(args.namespace)
+    utils.print_list(resource_types, ['name', 'prefix', 'properties_target'])
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>',
+           help='Name of namespace the property will belong.')
+@utils.arg('--name', metavar='<NAME>', required=True,
+           help='Internal name of a property.')
+@utils.arg('--title', metavar='<TITLE>', required=True,
+           help='Property name displayed to the user.')
+@utils.arg('--schema', metavar='<SCHEMA>', required=True,
+           help='Valid JSON schema of a property.')
+def do_md_property_create(gc, args):
+    """Create a new metadata definitions property inside a namespace."""
+    try:
+        schema = json.loads(args.schema)
+    except ValueError:
+        utils.exit('Schema is not a valid JSON object.')
+    else:
+        fields = {'name': args.name, 'title': args.title}
+        fields.update(schema)
+        new_property = gc.metadefs_property.create(args.namespace, **fields)
+        utils.print_dict(new_property)
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>',
+           help='Name of namespace the property belongs.')
+@utils.arg('property', metavar='<PROPERTY>', help='Name of a property.')
+@utils.arg('--name', metavar='<NAME>', default=None,
+           help='New name of a property.')
+@utils.arg('--title', metavar='<TITLE>', default=None,
+           help='Property name displayed to the user.')
+@utils.arg('--schema', metavar='<SCHEMA>', default=None,
+           help='Valid JSON schema of a property.')
+def do_md_property_update(gc, args):
+    """Update metadata definitions property inside a namespace."""
+    fields = {}
+    if args.name:
+        fields['name'] = args.name
+    if args.title:
+        fields['title'] = args.title
+    if args.schema:
+        try:
+            schema = json.loads(args.schema)
+        except ValueError:
+            utils.exit('Schema is not a valid JSON object.')
+        else:
+            fields.update(schema)
+
+    new_property = gc.metadefs_property.update(args.namespace, args.property,
+                                               **fields)
+    utils.print_dict(new_property)
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>',
+           help='Name of namespace the property belongs.')
+@utils.arg('property', metavar='<PROPERTY>', help='Name of a property.')
+@utils.arg('--max-column-width', metavar='<integer>', default=80,
+           help='The max column width of the printed table.')
+def do_md_property_show(gc, args):
+    """Describe a specific metadata definitions property inside a namespace."""
+    prop = gc.metadefs_property.get(args.namespace, args.property)
+    utils.print_dict(prop, int(args.max_column_width))
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>',
+           help='Name of namespace the property belongs.')
+@utils.arg('property', metavar='<PROPERTY>', help='Name of a property.')
+def do_md_property_delete(gc, args):
+    """Delete a specific metadata definitions property inside a namespace."""
+    gc.metadefs_property.delete(args.namespace, args.property)
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of namespace.')
+def do_md_namespace_properties_delete(gc, args):
+    """Delete all metadata definitions property inside a specific namespace."""
+    gc.metadefs_property.delete_all(args.namespace)
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of namespace.')
+def do_md_property_list(gc, args):
+    """List metadata definitions properties inside a specific namespace."""
+    properties = gc.metadefs_property.list(args.namespace)
+    columns = ['name', 'title', 'type']
+    utils.print_list(properties, columns)
+
+
+def _object_show(obj, max_column_width=None):
+    obj = dict(obj)  # Warlock objects are compatible with dicts
+    # Flatten dicts for display
+    if 'properties' in obj:
+        objects = [k for k in obj['properties']]
+        obj['properties'] = objects
+
+    if max_column_width:
+        utils.print_dict(obj, max_column_width)
+    else:
+        utils.print_dict(obj)
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>',
+           help='Name of namespace the object will belong.')
+@utils.arg('--name', metavar='<NAME>', required=True,
+           help='Internal name of an object.')
+@utils.arg('--schema', metavar='<SCHEMA>', required=True,
+           help='Valid JSON schema of an object.')
+def do_md_object_create(gc, args):
+    """Create a new metadata definitions object inside a namespace."""
+    try:
+        schema = json.loads(args.schema)
+    except ValueError:
+        utils.exit('Schema is not a valid JSON object.')
+    else:
+        fields = {'name': args.name}
+        fields.update(schema)
+        new_object = gc.metadefs_object.create(args.namespace, **fields)
+        _object_show(new_object)
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>',
+           help='Name of namespace the object belongs.')
+@utils.arg('object', metavar='<OBJECT>', help='Name of an object.')
+@utils.arg('--name', metavar='<NAME>', default=None,
+           help='New name of an object.')
+@utils.arg('--schema', metavar='<SCHEMA>', default=None,
+           help='Valid JSON schema of an object.')
+def do_md_object_update(gc, args):
+    """Update metadata definitions object inside a namespace."""
+    fields = {}
+    if args.name:
+        fields['name'] = args.name
+    if args.schema:
+        try:
+            schema = json.loads(args.schema)
+        except ValueError:
+            utils.exit('Schema is not a valid JSON object.')
+        else:
+            fields.update(schema)
+
+    new_object = gc.metadefs_object.update(args.namespace, args.object,
+                                           **fields)
+    _object_show(new_object)
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>',
+           help='Name of namespace the object belongs.')
+@utils.arg('object', metavar='<OBJECT>', help='Name of an object.')
+@utils.arg('--max-column-width', metavar='<integer>', default=80,
+           help='The max column width of the printed table.')
+def do_md_object_show(gc, args):
+    """Describe a specific metadata definitions object inside a namespace."""
+    obj = gc.metadefs_object.get(args.namespace, args.object)
+    _object_show(obj, int(args.max_column_width))
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>',
+           help='Name of namespace the object belongs.')
+@utils.arg('object', metavar='<OBJECT>', help='Name of an object.')
+@utils.arg('property', metavar='<PROPERTY>', help='Name of a property.')
+@utils.arg('--max-column-width', metavar='<integer>', default=80,
+           help='The max column width of the printed table.')
+def do_md_object_property_show(gc, args):
+    """Describe a specific metadata definitions property inside an object."""
+    obj = gc.metadefs_object.get(args.namespace, args.object)
+    try:
+        prop = obj['properties'][args.property]
+        prop['name'] = args.property
+    except KeyError:
+        utils.exit('Property %s not found in object %s.' % (args.property,
+                   args.object))
+    utils.print_dict(prop, int(args.max_column_width))
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>',
+           help='Name of namespace the object belongs.')
+@utils.arg('object', metavar='<OBJECT>', help='Name of an object.')
+def do_md_object_delete(gc, args):
+    """Delete a specific metadata definitions object inside a namespace."""
+    gc.metadefs_object.delete(args.namespace, args.object)
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of namespace.')
+def do_md_namespace_objects_delete(gc, args):
+    """Delete all metadata definitions objects inside a specific namespace."""
+    gc.metadefs_object.delete_all(args.namespace)
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of namespace.')
+def do_md_object_list(gc, args):
+    """List metadata definitions objects inside a specific namespace."""
+    objects = gc.metadefs_object.list(args.namespace)
+    columns = ['name', 'description']
+    column_settings = {
+        "description": {
+            "max_width": 50,
+            "align": "l"
+        }
+    }
+    utils.print_list(objects, columns, field_settings=column_settings)

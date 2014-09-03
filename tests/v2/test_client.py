@@ -26,6 +26,14 @@ class ClientTest(testtools.TestCase):
         self.mock = mox.Mox()
         self.mock.StubOutWithMock(client.Client, '_get_image_model')
         self.mock.StubOutWithMock(client.Client, '_get_member_model')
+        self.mock.StubOutWithMock(client.Client,
+                                  '_get_metadefs_namespace_model')
+        self.mock.StubOutWithMock(client.Client,
+                                  '_get_metadefs_resource_type_model')
+        self.mock.StubOutWithMock(client.Client,
+                                  '_get_metadefs_property_model')
+        self.mock.StubOutWithMock(client.Client,
+                                  '_get_metadefs_object_model')
 
     def tearDown(self):
         super(ClientTest, self).tearDown()

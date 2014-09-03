@@ -20,6 +20,7 @@ from glanceclient.common import utils
 from glanceclient.v2 import image_members
 from glanceclient.v2 import image_tags
 from glanceclient.v2 import images
+from glanceclient.v2 import metadefs
 from glanceclient.v2 import schemas
 
 
@@ -44,10 +45,43 @@ class Client(object):
         self.image_members = image_members.Controller(self.http_client,
                                                       self._get_member_model())
 
+        resource_type_model = self._get_metadefs_resource_type_model()
+        self.metadefs_resource_type = (
+            metadefs.ResourceTypeController(self.http_client,
+                                            resource_type_model))
+
+        property_model = self._get_metadefs_property_model()
+        self.metadefs_property = (
+            metadefs.PropertyController(self.http_client, property_model))
+
+        object_model = self._get_metadefs_object_model()
+        self.metadefs_object = (
+            metadefs.ObjectController(self.http_client, object_model))
+
+        namespace_model = self._get_metadefs_namespace_model()
+        self.metadefs_namespace = (
+            metadefs.NamespaceController(self.http_client, namespace_model))
+
     def _get_image_model(self):
         schema = self.schemas.get('image')
         return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
 
     def _get_member_model(self):
         schema = self.schemas.get('member')
+        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
+
+    def _get_metadefs_namespace_model(self):
+        schema = self.schemas.get('metadefs/namespace')
+        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
+
+    def _get_metadefs_resource_type_model(self):
+        schema = self.schemas.get('metadefs/resource_type')
+        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
+
+    def _get_metadefs_property_model(self):
+        schema = self.schemas.get('metadefs/property')
+        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
+
+    def _get_metadefs_object_model(self):
+        schema = self.schemas.get('metadefs/object')
         return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)

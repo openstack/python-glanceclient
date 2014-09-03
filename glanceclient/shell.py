@@ -516,25 +516,30 @@ class OpenStackImagesShell(object):
         client = glanceclient.Client(api_version, endpoint, **kwargs)
         return client
 
-    def _cache_schema(self, options, home_dir='~/.glanceclient'):
+    def _cache_schemas(self, options, home_dir='~/.glanceclient'):
         homedir = expanduser(home_dir)
         if not os.path.exists(homedir):
             os.makedirs(homedir)
 
-        schema_file_path = homedir + os.sep + "image_schema.json"
+        resources = ['image', 'metadefs/namespace', 'metadefs/resource_type']
+        schema_file_paths = [homedir + os.sep + x + '_schema.json'
+                             for x in ['image', 'namespace', 'resource_type']]
 
-        if (not os.path.exists(schema_file_path)) or options.get_schema:
-            try:
-                client = self._get_versioned_client('2', options,
-                                                    force_auth=True)
-                schema = client.schemas.get("image")
+        client = None
+        for resource, schema_file_path in zip(resources, schema_file_paths):
+            if (not os.path.exists(schema_file_path)) or options.get_schema:
+                try:
+                    if not client:
+                        client = self._get_versioned_client('2', options,
+                                                            force_auth=True)
+                    schema = client.schemas.get(resource)
 
-                with open(schema_file_path, 'w') as f:
-                    f.write(json.dumps(schema.raw()))
-            except Exception:
-                #NOTE(esheffield) do nothing here, we'll get a message later
-                #if the schema is missing
-                pass
+                    with open(schema_file_path, 'w') as f:
+                        f.write(json.dumps(schema.raw()))
+                except Exception:
+                    #NOTE(esheffield) do nothing here, we'll get a message
+                    #later if the schema is missing
+                    pass
 
     def main(self, argv):
         # Parse args once to find version
@@ -549,7 +554,7 @@ class OpenStackImagesShell(object):
         api_version = options.os_image_api_version
 
         if api_version == '2':
-            self._cache_schema(options)
+            self._cache_schemas(options)
 
         subcommand_parser = self.get_subcommand_parser(api_version)
         self.parser = subcommand_parser
