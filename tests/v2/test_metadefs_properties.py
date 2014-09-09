@@ -15,8 +15,6 @@
 
 import testtools
 
-import warlock
-
 from glanceclient.v2 import metadefs
 from tests import utils
 
@@ -25,7 +23,7 @@ PROPERTY1 = 'Property1'
 PROPERTY2 = 'Property2'
 PROPERTYNEW = 'PropertyNew'
 
-fixtures = {
+data_fixtures = {
     "/v2/metadefs/namespaces/%s/properties" % NAMESPACE1: {
         "GET": (
             {},
@@ -108,134 +106,140 @@ fixtures = {
             {},
             {}
         )
-    },
-}
-
-
-fake_property_schema = {
-    "additionalProperties": False,
-    "definitions": {
-        "positiveIntegerDefault0": {
-            "allOf": [
-                {
-                    "$ref": "#/definitions/positiveInteger"
-                },
-                {
-                    "default": 0
-                }
-            ]
-        },
-        "stringArray": {
-            "minItems": 1,
-            "items": {
-                "type": "string"
-            },
-            "uniqueItems": True,
-            "type": "array"
-        },
-        "positiveInteger": {
-            "minimum": 0,
-            "type": "integer"
-        }
-    },
-    "required": [
-        "name",
-        "title",
-        "type"
-    ],
-    "name": "property",
-    "properties": {
-        "description": {
-            "type": "string"
-        },
-        "minLength": {
-            "$ref": "#/definitions/positiveIntegerDefault0"
-        },
-        "enum": {
-            "type": "array"
-        },
-        "minimum": {
-            "type": "number"
-        },
-        "maxItems": {
-            "$ref": "#/definitions/positiveInteger"
-        },
-        "maxLength": {
-            "$ref": "#/definitions/positiveInteger"
-        },
-        "uniqueItems": {
-            "default": False,
-            "type": "boolean"
-        },
-        "additionalItems": {
-            "type": "boolean"
-        },
-        "name": {
-            "type": "string"
-        },
-        "title": {
-            "type": "string"
-        },
-        "default": {},
-        "pattern": {
-            "type": "string",
-            "format": "regex"
-        },
-        "required": {
-            "$ref": "#/definitions/stringArray"
-        },
-        "maximum": {
-            "type": "number"
-        },
-        "minItems": {
-            "$ref": "#/definitions/positiveIntegerDefault0"
-        },
-        "readonly": {
-            "type": "boolean"
-        },
-        "items": {
-            "type": "object",
-            "properties": {
-                "enum": {
-                    "type": "array"
-                },
-                "type": {
-                    "enum": [
-                        "array",
-                        "boolean",
-                        "integer",
-                        "number",
-                        "object",
-                        "string",
-                        "null"
-                    ],
-                    "type": "string"
-                }
-            }
-        },
-        "type": {
-            "enum": [
-                "array",
-                "boolean",
-                "integer",
-                "number",
-                "object",
-                "string",
-                "null"
-            ],
-            "type": "string"
-        }
     }
 }
-FakePropertyModel = warlock.model_factory(fake_property_schema)
+
+schema_fixtures = {
+    "metadefs/property": {
+        "GET": (
+            {},
+            {
+                "additionalProperties": False,
+                "definitions": {
+                    "positiveIntegerDefault0": {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/positiveInteger"
+                            },
+                            {
+                                "default": 0
+                            }
+                        ]
+                    },
+                    "stringArray": {
+                        "minItems": 1,
+                        "items": {
+                            "type": "string"
+                        },
+                        "uniqueItems": True,
+                        "type": "array"
+                    },
+                    "positiveInteger": {
+                        "minimum": 0,
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "name",
+                    "title",
+                    "type"
+                ],
+                "name": "property",
+                "properties": {
+                    "description": {
+                        "type": "string"
+                    },
+                    "minLength": {
+                        "$ref": "#/definitions/positiveIntegerDefault0"
+                    },
+                    "enum": {
+                        "type": "array"
+                    },
+                    "minimum": {
+                        "type": "number"
+                    },
+                    "maxItems": {
+                        "$ref": "#/definitions/positiveInteger"
+                    },
+                    "maxLength": {
+                        "$ref": "#/definitions/positiveInteger"
+                    },
+                    "uniqueItems": {
+                        "default": False,
+                        "type": "boolean"
+                    },
+                    "additionalItems": {
+                        "type": "boolean"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "default": {},
+                    "pattern": {
+                        "type": "string",
+                        "format": "regex"
+                    },
+                    "required": {
+                        "$ref": "#/definitions/stringArray"
+                    },
+                    "maximum": {
+                        "type": "number"
+                    },
+                    "minItems": {
+                        "$ref": "#/definitions/positiveIntegerDefault0"
+                    },
+                    "readonly": {
+                        "type": "boolean"
+                    },
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "enum": {
+                                "type": "array"
+                            },
+                            "type": {
+                                "enum": [
+                                    "array",
+                                    "boolean",
+                                    "integer",
+                                    "number",
+                                    "object",
+                                    "string",
+                                    "null"
+                                ],
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "type": {
+                        "enum": [
+                            "array",
+                            "boolean",
+                            "integer",
+                            "number",
+                            "object",
+                            "string",
+                            "null"
+                        ],
+                        "type": "string"
+                    }
+                }
+            }
+        )
+    }
+}
 
 
 class TestPropertyController(testtools.TestCase):
     def setUp(self):
         super(TestPropertyController, self).setUp()
-        self.api = utils.FakeAPI(fixtures)
+        self.api = utils.FakeAPI(data_fixtures)
+        self.schema_api = utils.FakeSchemaAPI(schema_fixtures)
         self.controller = metadefs.PropertyController(self.api,
-                                                      FakePropertyModel)
+                                                      self.schema_api)
 
     def test_list_property(self):
         properties = list(self.controller.list(NAMESPACE1))

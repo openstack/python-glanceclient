@@ -15,8 +15,6 @@
 
 import testtools
 
-import warlock
-
 from glanceclient.v2 import image_members
 from tests import utils
 
@@ -25,7 +23,7 @@ IMAGE = '3a4560a1-e585-443e-9b39-553b46ec92d1'
 MEMBER = '11223344-5566-7788-9911-223344556677'
 
 
-fixtures = {
+data_fixtures = {
     '/v2/images/{image}/members'.format(image=IMAGE): {
         'GET': (
             {},
@@ -58,20 +56,31 @@ fixtures = {
                 'status': 'accepted'
             }
         ),
-    },
+    }
 }
 
-
-fake_schema = {'name': 'member', 'properties': {'image_id': {},
-                                                'member_id': {}}}
-FakeModel = warlock.model_factory(fake_schema)
+schema_fixtures = {
+    'member': {
+        'GET': (
+            {},
+            {
+                'name': 'member',
+                'properties': {
+                    'image_id': {},
+                    'member_id': {}
+                }
+            },
+        )
+    }
+}
 
 
 class TestController(testtools.TestCase):
     def setUp(self):
         super(TestController, self).setUp()
-        self.api = utils.FakeAPI(fixtures)
-        self.controller = image_members.Controller(self.api, FakeModel)
+        self.api = utils.FakeAPI(data_fixtures)
+        self.schema_api = utils.FakeSchemaAPI(schema_fixtures)
+        self.controller = image_members.Controller(self.api, self.schema_api)
 
     def test_list_image_members(self):
         image_id = IMAGE

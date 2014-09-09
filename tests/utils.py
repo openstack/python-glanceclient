@@ -18,6 +18,8 @@ import json
 import six
 import testtools
 
+from glanceclient.v2.schemas import Schema
+
 
 class FakeAPI(object):
     def __init__(self, fixtures):
@@ -58,6 +60,15 @@ class FakeAPI(object):
 
     def head(self, *args, **kwargs):
         return self._request('HEAD', *args, **kwargs)
+
+
+class FakeSchemaAPI(FakeAPI):
+    def __init__(cls, *args):
+        super(FakeSchemaAPI, cls).__init__(*args)
+
+    def get(self, *args, **kwargs):
+        _, raw_schema = self._request('GET', *args, **kwargs)
+        return Schema(raw_schema)
 
 
 class RawRequest(object):

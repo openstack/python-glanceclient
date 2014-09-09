@@ -19,14 +19,20 @@ import warlock
 
 from glanceclient.common import utils
 from glanceclient.openstack.common import strutils
+from glanceclient.v2 import schemas
 
 DEFAULT_PAGE_SIZE = 20
 
 
 class NamespaceController(object):
-    def __init__(self, http_client, model):
+    def __init__(self, http_client, schema_client):
         self.http_client = http_client
-        self.model = model
+        self.schema_client = schema_client
+
+    @utils.memoized_property
+    def model(self):
+        schema = self.schema_client.get('metadefs/namespace')
+        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
 
     def create(self, **kwargs):
         """Create a namespace.
@@ -75,7 +81,7 @@ class NamespaceController(object):
 
         url = '/v2/metadefs/namespaces/{0}{1}'.format(namespace, query_params)
         resp, body = self.http_client.get(url)
-        #NOTE(bcwaldon): remove 'self' for now until we have an elegant
+        # NOTE(bcwaldon): remove 'self' for now until we have an elegant
         # way to pass it into the model constructor without conflict
         body.pop('self', None)
         return self.model(**body)
@@ -141,9 +147,14 @@ class NamespaceController(object):
 
 
 class ResourceTypeController(object):
-    def __init__(self, http_client, model):
+    def __init__(self, http_client, schema_client):
         self.http_client = http_client
-        self.model = model
+        self.schema_client = schema_client
+
+    @utils.memoized_property
+    def model(self):
+        schema = self.schema_client.get('metadefs/resource_type')
+        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
 
     def associate(self, namespace, **kwargs):
         """Associate a resource type with a namespace."""
@@ -184,9 +195,14 @@ class ResourceTypeController(object):
 
 
 class PropertyController(object):
-    def __init__(self, http_client, model):
+    def __init__(self, http_client, schema_client):
         self.http_client = http_client
-        self.model = model
+        self.schema_client = schema_client
+
+    @utils.memoized_property
+    def model(self):
+        schema = self.schema_client.get('metadefs/property')
+        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
 
     def create(self, namespace, **kwargs):
         """Create a property.
@@ -259,9 +275,14 @@ class PropertyController(object):
 
 
 class ObjectController(object):
-    def __init__(self, http_client, model):
+    def __init__(self, http_client, schema_client):
         self.http_client = http_client
-        self.model = model
+        self.schema_client = schema_client
+
+    @utils.memoized_property
+    def model(self):
+        schema = self.schema_client.get('metadefs/object')
+        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
 
     def create(self, namespace, **kwargs):
         """Create an object.

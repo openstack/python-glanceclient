@@ -16,8 +16,6 @@
 import six
 import testtools
 
-import warlock
-
 from glanceclient.v2 import metadefs
 from tests import utils
 
@@ -50,8 +48,7 @@ def _get_object_fixture(ns_name, obj_name, **kwargs):
                 "description": "DESCRIPTION",
                 "maximum": 1000000,
                 "title": "Quota: CPU Period"
-            },
-        },
+            }},
         "schema": "/v2/schemas/metadefs/object",
         "created_at": "2014-08-14T09:07:06Z",
         "updated_at": "2014-08-14T09:07:06Z",
@@ -61,7 +58,7 @@ def _get_object_fixture(ns_name, obj_name, **kwargs):
 
     return obj
 
-fixtures = {
+data_fixtures = {
     "/v2/metadefs/namespaces/%s/objects" % NAMESPACE1: {
         "GET": (
             {},
@@ -98,166 +95,174 @@ fixtures = {
     }
 }
 
-
-fake_object_schema = {
-    "additionalProperties": False,
-    "definitions": {
-        "property": {
-            "additionalProperties": {
-                "required": [
-                    "title",
-                    "type"
-                ],
-                "type": "object",
-                "properties": {
-                    "additionalItems": {
-                        "type": "boolean"
+schema_fixtures = {
+    "metadefs/object": {
+        "GET": (
+            {},
+            {
+                "additionalProperties": False,
+                "definitions": {
+                    "property": {
+                        "additionalProperties": {
+                            "required": [
+                                "title",
+                                "type"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "additionalItems": {
+                                    "type": "boolean"
+                                },
+                                "enum": {
+                                    "type": "array"
+                                },
+                                "description": {
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "type": "string"
+                                },
+                                "default": {},
+                                "minLength": {
+                                    "$ref": "#/definitions/positiveInteger"
+                                            "Default0"
+                                },
+                                "required": {
+                                    "$ref": "#/definitions/stringArray"
+                                },
+                                "maximum": {
+                                    "type": "number"
+                                },
+                                "minItems": {
+                                    "$ref": "#/definitions/positiveInteger"
+                                            "Default0"
+                                },
+                                "readonly": {
+                                    "type": "boolean"
+                                },
+                                "minimum": {
+                                    "type": "number"
+                                },
+                                "maxItems": {
+                                    "$ref": "#/definitions/positiveInteger"
+                                },
+                                "maxLength": {
+                                    "$ref": "#/definitions/positiveInteger"
+                                },
+                                "uniqueItems": {
+                                    "default": False,
+                                    "type": "boolean"
+                                },
+                                "pattern": {
+                                    "type": "string",
+                                    "format": "regex"
+                                },
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "enum": {
+                                            "type": "array"
+                                        },
+                                        "type": {
+                                            "enum": [
+                                                "array",
+                                                "boolean",
+                                                "integer",
+                                                "number",
+                                                "object",
+                                                "string",
+                                                "null"
+                                            ],
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "type": {
+                                    "enum": [
+                                        "array",
+                                        "boolean",
+                                        "integer",
+                                        "number",
+                                        "object",
+                                        "string",
+                                        "null"
+                                    ],
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "type": "object"
                     },
-                    "enum": {
+                    "positiveIntegerDefault0": {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/positiveInteger"
+                            },
+                            {
+                                "default": 0
+                            }
+                        ]
+                    },
+                    "stringArray": {
+                        "uniqueItems": True,
+                        "items": {
+                            "type": "string"
+                        },
                         "type": "array"
+                    },
+                    "positiveInteger": {
+                        "minimum": 0,
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "name": "object",
+                "properties": {
+                    "created_at": {
+                        "type": "string",
+                        "description": "Date and time of object creation "
+                                       "(READ-ONLY)",
+                        "format": "date-time"
                     },
                     "description": {
                         "type": "string"
                     },
-                    "title": {
+                    "name": {
                         "type": "string"
                     },
-                    "default": {},
-                    "minLength": {
-                        "$ref": "#/definitions/positiveIntegerDefault0"
+                    "self": {
+                        "type": "string"
                     },
                     "required": {
                         "$ref": "#/definitions/stringArray"
                     },
-                    "maximum": {
-                        "type": "number"
+                    "properties": {
+                        "$ref": "#/definitions/property"
                     },
-                    "minItems": {
-                        "$ref": "#/definitions/positiveIntegerDefault0"
-                    },
-                    "readonly": {
-                        "type": "boolean"
-                    },
-                    "minimum": {
-                        "type": "number"
-                    },
-                    "maxItems": {
-                        "$ref": "#/definitions/positiveInteger"
-                    },
-                    "maxLength": {
-                        "$ref": "#/definitions/positiveInteger"
-                    },
-                    "uniqueItems": {
-                        "default": False,
-                        "type": "boolean"
-                    },
-                    "pattern": {
-                        "type": "string",
-                        "format": "regex"
-                    },
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "enum": {
-                                "type": "array"
-                            },
-                            "type": {
-                                "enum": [
-                                    "array",
-                                    "boolean",
-                                    "integer",
-                                    "number",
-                                    "object",
-                                    "string",
-                                    "null"
-                                ],
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "type": {
-                        "enum": [
-                            "array",
-                            "boolean",
-                            "integer",
-                            "number",
-                            "object",
-                            "string",
-                            "null"
-                        ],
+                    "schema": {
                         "type": "string"
-                    }
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "description": "Date and time of the last object "
+                                       "modification (READ-ONLY)",
+                        "format": "date-time"
+                    },
                 }
-            },
-            "type": "object"
-        },
-        "positiveIntegerDefault0": {
-            "allOf": [
-                {
-                    "$ref": "#/definitions/positiveInteger"
-                },
-                {
-                    "default": 0
-                }
-            ]
-        },
-        "stringArray": {
-            "uniqueItems": True,
-            "items": {
-                "type": "string"
-            },
-            "type": "array"
-        },
-        "positiveInteger": {
-            "minimum": 0,
-            "type": "integer"
-        }
-    },
-    "required": [
-        "name"
-    ],
-    "name": "object",
-    "properties": {
-        "created_at": {
-            "type": "string",
-            "description": "Date and time of object creation (READ-ONLY)",
-            "format": "date-time"
-        },
-        "description": {
-            "type": "string"
-        },
-        "name": {
-            "type": "string"
-        },
-        "self": {
-            "type": "string"
-        },
-        "required": {
-            "$ref": "#/definitions/stringArray"
-        },
-        "properties": {
-            "$ref": "#/definitions/property"
-        },
-        "schema": {
-            "type": "string"
-        },
-        "updated_at": {
-            "type": "string",
-            "description": "Date and time of the last object modification "
-                           "(READ-ONLY)",
-            "format": "date-time"
-        },
+            }
+        )
     }
 }
-FakeObjectModel = warlock.model_factory(fake_object_schema)
 
 
 class TestObjectController(testtools.TestCase):
     def setUp(self):
         super(TestObjectController, self).setUp()
-        self.api = utils.FakeAPI(fixtures)
-        self.controller = metadefs.ObjectController(self.api,
-                                                    FakeObjectModel)
+        self.api = utils.FakeAPI(data_fixtures)
+        self.schema_api = utils.FakeSchemaAPI(schema_fixtures)
+        self.controller = metadefs.ObjectController(self.api, self.schema_api)
 
     def test_list_object(self):
         objects = list(self.controller.list(NAMESPACE1))
