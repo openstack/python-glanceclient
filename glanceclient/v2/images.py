@@ -26,6 +26,10 @@ from glanceclient.v2 import schemas
 
 DEFAULT_PAGE_SIZE = 20
 
+SORT_DIR_VALUES = ('asc', 'desc')
+SORT_KEY_VALUES = ('name', 'status', 'container_format', 'disk_format',
+                   'size', 'id', 'created_at', 'updated_at')
+
 
 class Controller(object):
     def __init__(self, http_client, schema_client):
@@ -94,6 +98,10 @@ class Controller(object):
         # the page_size as Glance's limit.
         filters['limit'] = page_size
 
+        sort_dir = kwargs.get('sort_dir')
+        if sort_dir is not None:
+            filters['sort_dir'] = sort_dir
+
         tags = filters.pop('tag', [])
         tags_url_params = []
 
@@ -109,6 +117,13 @@ class Controller(object):
 
         for param in tags_url_params:
             url = '%s&%s' % (url, parse.urlencode(param))
+
+        sort_key = kwargs.get('sort_key')
+        if sort_key is not None:
+            if isinstance(sort_key, six.string_types):
+                sort_key = [sort_key]
+            for key in sort_key:
+                url = '%s&sort_key=%s' % (url, key)
 
         for image in paginate(url, page_size, limit):
             yield image
