@@ -32,6 +32,7 @@ import six.moves.urllib.parse as urlparse
 import glanceclient
 from glanceclient.common import utils
 from glanceclient import exc
+from glanceclient.openstack.common.gettextutils import _
 from glanceclient.openstack.common import importutils
 from glanceclient.openstack.common import strutils
 
