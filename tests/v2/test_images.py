@@ -15,10 +15,9 @@
 
 import errno
 import json
-import testtools
 
 import six
-import warlock
+import testtools
 
 from glanceclient import exc
 from glanceclient.v2 import images
@@ -39,7 +38,31 @@ _PUBLIC_ID = '857806e7-05b6-48e0-9d40-cb0e6fb727b9'
 _SHARED_ID = '331ac905-2a38-44c5-a83d-653db8f08313'
 _STATUS_REJECTED_ID = 'f3ea56ff-d7e4-4451-998c-1e3d33539c8e'
 
-fixtures = {
+data_fixtures = {
+    '/v2/schemas/image': {
+        'GET': (
+            {},
+            {
+                'name': 'image',
+                'properties': {
+                    'id': {},
+                    'name': {},
+                    'locations': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'metadata': {'type': 'object'},
+                                'url': {'type': 'string'},
+                            },
+                            'required': ['url', 'metadata'],
+                        },
+                    },
+                },
+                'additionalProperties': {'type': 'string'}
+            },
+        ),
+    },
     '/v2/images?limit=%d' % images.DEFAULT_PAGE_SIZE: {
         'GET': (
             {},
@@ -325,36 +348,43 @@ fixtures = {
 }
 
 
-fake_schema = {
-    'name': 'image',
-    'properties': {
-        'id': {},
-        'name': {},
-        'locations': {
-            'type': 'array',
-            'items': {
-                'type': 'object',
+schema_fixtures = {
+    'image': {
+        'GET': (
+            {},
+            {
+                'name': 'image',
                 'properties': {
-                    'metadata': {'type': 'object'},
-                    'url': {'type': 'string'},
+                    'id': {},
+                    'name': {},
+                    'locations': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'metadata': {'type': 'object'},
+                                'url': {'type': 'string'},
+                            },
+                            'required': ['url', 'metadata'],
+                        }
+                    }
                 },
-                'required': ['url', 'metadata'],
-            },
-        },
-    },
-    'additionalProperties': {'type': 'string'}
+                'additionalProperties': {'type': 'string'}
+            }
+        )
+    }
 }
-FakeModel = warlock.model_factory(fake_schema)
 
 
 class TestController(testtools.TestCase):
     def setUp(self):
         super(TestController, self).setUp()
-        self.api = utils.FakeAPI(fixtures)
-        self.controller = images.Controller(self.api, FakeModel)
+        self.api = utils.FakeAPI(data_fixtures)
+        self.schema_api = utils.FakeSchemaAPI(schema_fixtures)
+        self.controller = images.Controller(self.api, self.schema_api)
 
     def test_list_images(self):
-        #NOTE(bcwaldon): cast to list since the controller returns a generator
+        # NOTE(bcwaldon):cast to list since the controller returns a generator
         images = list(self.controller.list())
         self.assertEqual('3a4560a1-e585-443e-9b39-553b46ec92d1', images[0].id)
         self.assertEqual('image-1', images[0].name)
@@ -362,7 +392,7 @@ class TestController(testtools.TestCase):
         self.assertEqual('image-2', images[1].name)
 
     def test_list_images_paginated(self):
-        #NOTE(bcwaldon): cast to list since the controller returns a generator
+        # NOTE(bcwaldon):cast to list since the controller returns a generator
         images = list(self.controller.list(page_size=1))
         self.assertEqual('3a4560a1-e585-443e-9b39-553b46ec92d1', images[0].id)
         self.assertEqual('image-1', images[0].name)
@@ -571,7 +601,7 @@ class TestController(testtools.TestCase):
         ]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual(image_id, image.id)
-        #NOTE(bcwaldon): due to limitations of our fake api framework, the name
+        # NOTE(bcwaldon):due to limitations of our fake api framework, the name
         # will not actually change - yet in real life it will...
         self.assertEqual('image-1', image.name)
 
@@ -590,7 +620,7 @@ class TestController(testtools.TestCase):
         ]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual(image_id, image.id)
-        #NOTE(bcwaldon): due to limitations of our fake api framework, the name
+        # NOTE(bcwaldon):due to limitations of our fake api framework, the name
         # will not actually change - yet in real life it will...
         self.assertEqual('image-1', image.name)
 
@@ -609,7 +639,7 @@ class TestController(testtools.TestCase):
         ]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual(image_id, image.id)
-        #NOTE(bcwaldon): due to limitations of our fake api framework, the name
+        # NOTE(bcwaldon):due to limitations of our fake api framework, the name
         # will not actually change - yet in real life it will...
         self.assertEqual('image-3', image.name)
 
@@ -622,8 +652,8 @@ class TestController(testtools.TestCase):
         expect_hdrs = {
             'Content-Type': 'application/openstack-images-v2.1-json-patch',
         }
-        expect_body = '[{"path": "/barney", "value": "miller", ' \
-                      '"op": "replace"}]'
+        expect_body = ('[{"path": "/barney", "value": "miller", '
+                       '"op": "replace"}]')
         expect = [
             ('GET', '/v2/images/%s' % image_id, {}, None),
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
@@ -631,7 +661,7 @@ class TestController(testtools.TestCase):
         ]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual(image_id, image.id)
-        #NOTE(bcwaldon): due to limitations of our fake api framework, the name
+        # NOTE(bcwaldon):due to limitations of our fake api framework, the name
         # will not actually change - yet in real life it will...
         self.assertEqual('image-3', image.name)
 
@@ -652,7 +682,7 @@ class TestController(testtools.TestCase):
         ]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual(image_id, image.id)
-        #NOTE(bcwaldon): due to limitations of our fake api framework, the name
+        # NOTE(bcwaldon):due to limitations of our fake api framework, the name
         # will not actually change - yet in real life it will...
         self.assertEqual('image-3', image.name)
 
@@ -741,7 +771,7 @@ class TestController(testtools.TestCase):
         image_id = 'a2b83adc-888e-11e3-8872-78acc0b951d8'
         new_loc = {'url': 'http://foo.com/', 'metadata': {'spam': 'ham'}}
         fixture_idx = '/v2/images/%s' % (image_id)
-        orig_locations = fixtures[fixture_idx]['GET'][1]['locations']
+        orig_locations = data_fixtures[fixture_idx]['GET'][1]['locations']
         loc_map = dict([(l['url'], l) for l in orig_locations])
         loc_map[new_loc['url']] = new_loc
         mod_patch = [{'path': '/locations', 'op': 'replace',

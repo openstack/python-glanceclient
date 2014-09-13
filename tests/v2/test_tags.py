@@ -14,7 +14,6 @@
 #    under the License.
 
 import testtools
-import warlock
 
 from glanceclient.v2 import image_tags
 from tests import utils
@@ -24,7 +23,7 @@ IMAGE = '3a4560a1-e585-443e-9b39-553b46ec92d1'
 TAG = 'tag01'
 
 
-fixtures = {
+data_fixtures = {
     '/v2/images/{image}/tags/{tag_value}'.format(image=IMAGE, tag_value=TAG): {
         'DELETE': (
             {},
@@ -37,19 +36,25 @@ fixtures = {
                 'tag_value': TAG
             }
         ),
-    },
+    }
 }
 
-
-fake_schema = {'name': 'image', 'properties': {'image_id': {}, 'tags': {}}}
-FakeModel = warlock.model_factory(fake_schema)
+schema_fixtures = {
+    'tag': {
+        'GET': (
+            {},
+            {'name': 'image', 'properties': {'image_id': {}, 'tags': {}}}
+        )
+    }
+}
 
 
 class TestController(testtools.TestCase):
     def setUp(self):
         super(TestController, self).setUp()
-        self.api = utils.FakeAPI(fixtures)
-        self.controller = image_tags.Controller(self.api, FakeModel)
+        self.api = utils.FakeAPI(data_fixtures)
+        self.schema_api = utils.FakeSchemaAPI(schema_fixtures)
+        self.controller = image_tags.Controller(self.api, self.schema_api)
 
     def test_update_image_tag(self):
         image_id = IMAGE

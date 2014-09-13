@@ -15,8 +15,6 @@
 
 import testtools
 
-import warlock
-
 from glanceclient.v2 import metadefs
 from tests import utils
 
@@ -28,7 +26,7 @@ RESOURCE_TYPE4 = 'ResourceType4'
 RESOURCE_TYPENEW = 'ResourceTypeNew'
 
 
-fixtures = {
+data_fixtures = {
     "/v2/metadefs/namespaces/%s/resource_types" % NAMESPACE1: {
         "GET": (
             {},
@@ -84,64 +82,76 @@ fixtures = {
                 ]
             }
         )
-    },
-}
-
-
-fake_resource_type_schema = {
-    "name": "resource_type",
-    "properties": {
-        "prefix": {
-            "type": "string",
-            "description": "Specifies the prefix to use for the given "
-                           "resource type. Any properties in the namespace "
-                           "should be prefixed with this prefix when being "
-                           "applied to the specified resource type. Must "
-                           "include prefix separator (e.g. a colon :).",
-            "maxLength": 80
-        },
-        "properties_target": {
-            "type": "string",
-            "description": "Some resource types allow more than one "
-                           "key / value pair per instance.  For example, "
-                           "Cinder allows user and image metadata on volumes. "
-                           "Only the image properties metadata is evaluated "
-                           "by Nova (scheduling or drivers). This property "
-                           "allows a namespace target to remove the "
-                           "ambiguity.",
-            "maxLength": 80
-        },
-        "name": {
-            "type": "string",
-            "description": "Resource type names should be aligned with Heat "
-                           "resource types whenever possible: http://docs."
-                           "openstack.org/developer/heat/template_guide/"
-                           "openstack.html",
-            "maxLength": 80
-        },
-        "created_at": {
-            "type": "string",
-            "description": "Date and time of resource type association"
-                           " (READ-ONLY)",
-            "format": "date-time"
-        },
-        "updated_at": {
-            "type": "string",
-            "description": "Date and time of the last resource type "
-                           "association modification (READ-ONLY)",
-            "format": "date-time"
-        },
     }
 }
-FakeRTModel = warlock.model_factory(fake_resource_type_schema)
+
+schema_fixtures = {
+    "metadefs/resource_type": {
+        "GET": (
+            {},
+            {
+                "name": "resource_type",
+                "properties": {
+                    "prefix": {
+                        "type": "string",
+                        "description": "Specifies the prefix to use for the "
+                                       "given resource type. Any properties "
+                                       "in the namespace should be prefixed "
+                                       "with this prefix when being applied "
+                                       "to the specified resource type. Must "
+                                       "include prefix separator (e.g. a "
+                                       "colon :).",
+                        "maxLength": 80
+                    },
+                    "properties_target": {
+                        "type": "string",
+                        "description": "Some resource types allow more than "
+                                       "one key / value pair per instance.  "
+                                       "For example, Cinder allows user and "
+                                       "image metadata on volumes. Only the "
+                                       "image properties metadata is "
+                                       "evaluated by Nova (scheduling or "
+                                       "drivers). This property allows a "
+                                       "namespace target to remove the "
+                                       "ambiguity.",
+                        "maxLength": 80
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Resource type names should be "
+                                       "aligned with Heat resource types "
+                                       "whenever possible: http://docs."
+                                       "openstack.org/developer/heat/"
+                                       "template_guide/openstack.html",
+                        "maxLength": 80
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "description": "Date and time of resource type "
+                                       "association (READ-ONLY)",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "description": "Date and time of the last resource "
+                                       "type association modification "
+                                       "(READ-ONLY)",
+                        "format": "date-time"
+                    },
+                }
+            }
+        )
+    }
+}
 
 
 class TestResoureTypeController(testtools.TestCase):
     def setUp(self):
         super(TestResoureTypeController, self).setUp()
-        self.api = utils.FakeAPI(fixtures)
+        self.api = utils.FakeAPI(data_fixtures)
+        self.schema_api = utils.FakeSchemaAPI(schema_fixtures)
         self.controller = metadefs.ResourceTypeController(self.api,
-                                                          FakeRTModel)
+                                                          self.schema_api)
 
     def test_list_resource_types(self):
         resource_types = list(self.controller.list())

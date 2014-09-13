@@ -15,8 +15,6 @@
 
 import testtools
 
-import warlock
-
 from glanceclient.v2 import metadefs
 from tests import utils
 
@@ -59,7 +57,7 @@ def _get_namespace_fixture(ns_name, rt_name=RESOURCE_TYPE1, **kwargs):
 
     return ns
 
-fixtures = {
+data_fixtures = {
     "/v2/metadefs/namespaces?limit=20": {
         "GET": (
             {},
@@ -271,230 +269,243 @@ fixtures = {
                 "updated_at": "2014-08-14T09:07:06Z",
             }
         ),
-    },
+    }
 }
 
-fake_namespace_schema = {
-    "additionalProperties": False,
-    "definitions": {
-        "property": {
-            "additionalProperties": {
-                "required": [
-                    "title",
-                    "type"
-                ],
-                "type": "object",
-                "properties": {
-                    "additionalItems": {
-                        "type": "boolean"
+schema_fixtures = {
+    "metadefs/namespace":
+    {
+        "GET": (
+            {},
+            {
+                "additionalProperties": False,
+                "definitions": {
+                    "property": {
+                        "additionalProperties": {
+                            "required": [
+                                "title",
+                                "type"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "additionalItems": {
+                                    "type": "boolean"
+                                },
+                                "enum": {
+                                    "type": "array"
+                                },
+                                "description": {
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "type": "string"
+                                },
+                                "default": {},
+                                "minLength": {
+                                    "$ref": "#/definitions/"
+                                            "positiveIntegerDefault0"
+                                },
+                                "required": {
+                                    "$ref": "#/definitions/stringArray"
+                                },
+                                "maximum": {
+                                    "type": "number"
+                                },
+                                "minItems": {
+                                    "$ref": "#/definitions/"
+                                            "positiveIntegerDefault0"
+                                },
+                                "readonly": {
+                                    "type": "boolean"
+                                },
+                                "minimum": {
+                                    "type": "number"
+                                },
+                                "maxItems": {
+                                    "$ref": "#/definitions/"
+                                            "positiveInteger"
+                                },
+                                "maxLength": {
+                                    "$ref": "#/definitions/positiveInteger"
+                                },
+                                "uniqueItems": {
+                                    "default": False,
+                                    "type": "boolean"
+                                },
+                                "pattern": {
+                                    "type": "string",
+                                    "format": "regex"
+                                },
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "enum": {
+                                            "type": "array"
+                                        },
+                                        "type": {
+                                            "enum": [
+                                                "array",
+                                                "boolean",
+                                                "integer",
+                                                "number",
+                                                "object",
+                                                "string",
+                                                "null"
+                                            ],
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "type": {
+                                    "enum": [
+                                        "array",
+                                        "boolean",
+                                        "integer",
+                                        "number",
+                                        "object",
+                                        "string",
+                                        "null"
+                                    ],
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "type": "object"
                     },
-                    "enum": {
+                    "positiveIntegerDefault0": {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/positiveInteger"
+                            },
+                            {
+                                "default": 0
+                            }
+                        ]
+                    },
+                    "stringArray": {
+                        "uniqueItems": True,
+                        "items": {
+                            "type": "string"
+                        },
                         "type": "array"
                     },
-                    "description": {
-                        "type": "string"
-                    },
-                    "title": {
-                        "type": "string"
-                    },
-                    "default": {},
-                    "minLength": {
-                        "$ref": "#/definitions/positiveIntegerDefault0"
-                    },
-                    "required": {
-                        "$ref": "#/definitions/stringArray"
-                    },
-                    "maximum": {
-                        "type": "number"
-                    },
-                    "minItems": {
-                        "$ref": "#/definitions/positiveIntegerDefault0"
-                    },
-                    "readonly": {
-                        "type": "boolean"
-                    },
-                    "minimum": {
-                        "type": "number"
-                    },
-                    "maxItems": {
-                        "$ref": "#/definitions/positiveInteger"
-                    },
-                    "maxLength": {
-                        "$ref": "#/definitions/positiveInteger"
-                    },
-                    "uniqueItems": {
-                        "default": False,
-                        "type": "boolean"
-                    },
-                    "pattern": {
-                        "type": "string",
-                        "format": "regex"
-                    },
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "enum": {
-                                "type": "array"
-                            },
-                            "type": {
-                                "enum": [
-                                    "array",
-                                    "boolean",
-                                    "integer",
-                                    "number",
-                                    "object",
-                                    "string",
-                                    "null"
-                                ],
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "type": {
-                        "enum": [
-                            "array",
-                            "boolean",
-                            "integer",
-                            "number",
-                            "object",
-                            "string",
-                            "null"
-                        ],
-                        "type": "string"
+                    "positiveInteger": {
+                        "minimum": 0,
+                        "type": "integer"
                     }
-                }
-            },
-            "type": "object"
-        },
-        "positiveIntegerDefault0": {
-            "allOf": [
-                {
-                    "$ref": "#/definitions/positiveInteger"
                 },
-                {
-                    "default": 0
-                }
-            ]
-        },
-        "stringArray": {
-            "uniqueItems": True,
-            "items": {
-                "type": "string"
-            },
-            "type": "array"
-        },
-        "positiveInteger": {
-            "minimum": 0,
-            "type": "integer"
-        }
-    },
-    "required": [
-        "namespace"
-    ],
-    "name": "namespace",
-    "properties": {
-        "description": {
-            "type": "string",
-            "description": "Provides a user friendly description of the "
-                           "namespace.",
-            "maxLength": 500
-        },
-        "updated_at": {
-            "type": "string",
-            "description": "Date and time of the last namespace modification "
-                           "(READ-ONLY)",
-            "format": "date-time"
-        },
-        "visibility": {
-            "enum": [
-                "public",
-                "private"
-            ],
-            "type": "string",
-            "description": "Scope of namespace accessibility."
-        },
-        "self": {
-            "type": "string"
-        },
-        "objects": {
-            "items": {
-                "type": "object",
+                "required": [
+                    "namespace"
+                ],
+                "name": "namespace",
                 "properties": {
+                    "description": {
+                        "type": "string",
+                        "description": "Provides a user friendly description "
+                                       "of the namespace.",
+                        "maxLength": 500
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "description": "Date and time of the last namespace "
+                                       "modification (READ-ONLY)",
+                        "format": "date-time"
+                    },
+                    "visibility": {
+                        "enum": [
+                            "public",
+                            "private"
+                        ],
+                        "type": "string",
+                        "description": "Scope of namespace accessibility."
+                    },
+                    "self": {
+                        "type": "string"
+                    },
+                    "objects": {
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "properties": {
+                                    "$ref": "#/definitions/property"
+                                },
+                                "required": {
+                                    "$ref": "#/definitions/stringArray"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "type": "array"
+                    },
+                    "owner": {
+                        "type": "string",
+                        "description": "Owner of the namespace.",
+                        "maxLength": 255
+                    },
+                    "resource_types": {
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "prefix": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "metadata_type": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "type": "array"
+                    },
                     "properties": {
                         "$ref": "#/definitions/property"
                     },
-                    "required": {
-                        "$ref": "#/definitions/stringArray"
+                    "display_name": {
+                        "type": "string",
+                        "description": "The user friendly name for the "
+                                       "namespace. Used by UI if available.",
+                        "maxLength": 80
                     },
-                    "name": {
-                        "type": "string"
+                    "created_at": {
+                        "type": "string",
+                        "description": "Date and time of namespace creation "
+                                       "(READ-ONLY)",
+                        "format": "date-time"
                     },
-                    "description": {
+                    "namespace": {
+                        "type": "string",
+                        "description": "The unique namespace text.",
+                        "maxLength": 80
+                    },
+                    "protected": {
+                        "type": "boolean",
+                        "description": "If true, namespace will not be "
+                                       "deletable."
+                    },
+                    "schema": {
                         "type": "string"
                     }
                 }
-            },
-            "type": "array"
-        },
-        "owner": {
-            "type": "string",
-            "description": "Owner of the namespace.",
-            "maxLength": 255
-        },
-        "resource_types": {
-            "items": {
-                "type": "object",
-                "properties": {
-                    "prefix": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "metadata_type": {
-                        "type": "string"
-                    }
-                }
-            },
-            "type": "array"
-        },
-        "properties": {
-            "$ref": "#/definitions/property"
-        },
-        "display_name": {
-            "type": "string",
-            "description": "The user friendly name for the namespace. Used by"
-                           " UI if available.",
-            "maxLength": 80
-        },
-        "created_at": {
-            "type": "string",
-            "description": "Date and time of namespace creation (READ-ONLY)",
-            "format": "date-time"
-        },
-        "namespace": {
-            "type": "string",
-            "description": "The unique namespace text.",
-            "maxLength": 80
-        },
-        "protected": {
-            "type": "boolean",
-            "description": "If true, namespace will not be deletable."
-        },
-        "schema": {
-            "type": "string"
-        }
+            }
+        ),
     }
 }
-FakeNamespaceModel = warlock.model_factory(fake_namespace_schema)
 
 
 class TestNamespaceController(testtools.TestCase):
     def setUp(self):
         super(TestNamespaceController, self).setUp()
-        self.api = utils.FakeAPI(fixtures)
+        self.api = utils.FakeAPI(data_fixtures)
+        self.schema_api = utils.FakeSchemaAPI(schema_fixtures)
         self.controller = metadefs.NamespaceController(self.api,
-                                                       FakeNamespaceModel)
+                                                       self.schema_api)
 
     def test_list_namespaces(self):
         namespaces = list(self.controller.list())

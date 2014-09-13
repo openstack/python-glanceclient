@@ -21,14 +21,20 @@ import warlock
 from glanceclient.common import utils
 from glanceclient import exc
 from glanceclient.openstack.common import strutils
+from glanceclient.v2 import schemas
 
 DEFAULT_PAGE_SIZE = 20
 
 
 class Controller(object):
-    def __init__(self, http_client, model):
+    def __init__(self, http_client, schema_client):
         self.http_client = http_client
-        self.model = model
+        self.schema_client = schema_client
+
+    @utils.memoized_property
+    def model(self):
+        schema = self.schema_client.get('image')
+        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
 
     def list(self, **kwargs):
         """Retrieve a listing of Image objects

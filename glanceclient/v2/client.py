@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import warlock
 
 from glanceclient.common import http
 from glanceclient.common import utils
@@ -38,50 +37,21 @@ class Client(object):
         self.http_client = http.HTTPClient(utils.strip_version(endpoint),
                                            *args, **kwargs)
         self.schemas = schemas.Controller(self.http_client)
-        image_model = self._get_image_model()
-        self.images = images.Controller(self.http_client,
-                                        image_model)
-        self.image_tags = image_tags.Controller(self.http_client, image_model)
+
+        self.images = images.Controller(self.http_client, self.schemas)
+        self.image_tags = image_tags.Controller(self.http_client,
+                                                self.schemas)
         self.image_members = image_members.Controller(self.http_client,
-                                                      self._get_member_model())
+                                                      self.schemas)
 
-        resource_type_model = self._get_metadefs_resource_type_model()
         self.metadefs_resource_type = (
-            metadefs.ResourceTypeController(self.http_client,
-                                            resource_type_model))
+            metadefs.ResourceTypeController(self.http_client, self.schemas))
 
-        property_model = self._get_metadefs_property_model()
         self.metadefs_property = (
-            metadefs.PropertyController(self.http_client, property_model))
+            metadefs.PropertyController(self.http_client, self.schemas))
 
-        object_model = self._get_metadefs_object_model()
         self.metadefs_object = (
-            metadefs.ObjectController(self.http_client, object_model))
+            metadefs.ObjectController(self.http_client, self.schemas))
 
-        namespace_model = self._get_metadefs_namespace_model()
         self.metadefs_namespace = (
-            metadefs.NamespaceController(self.http_client, namespace_model))
-
-    def _get_image_model(self):
-        schema = self.schemas.get('image')
-        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
-
-    def _get_member_model(self):
-        schema = self.schemas.get('member')
-        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
-
-    def _get_metadefs_namespace_model(self):
-        schema = self.schemas.get('metadefs/namespace')
-        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
-
-    def _get_metadefs_resource_type_model(self):
-        schema = self.schemas.get('metadefs/resource_type')
-        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
-
-    def _get_metadefs_property_model(self):
-        schema = self.schemas.get('metadefs/property')
-        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
-
-    def _get_metadefs_object_model(self):
-        schema = self.schemas.get('metadefs/object')
-        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
+            metadefs.NamespaceController(self.http_client, self.schemas))

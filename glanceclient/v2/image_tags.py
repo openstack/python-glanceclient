@@ -13,11 +13,21 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import warlock
+
+from glanceclient.common import utils
+from glanceclient.v2 import schemas
+
 
 class Controller(object):
-    def __init__(self, http_client, model):
+    def __init__(self, http_client, schema_client):
         self.http_client = http_client
-        self.model = model
+        self.schema_client = schema_client
+
+    @utils.memoized_property
+    def model(self):
+        schema = self.schema_client.get('image')
+        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
 
     def update(self, image_id, tag_value):
         """
