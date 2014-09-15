@@ -130,7 +130,8 @@ class HTTPClient(object):
         if body:
             body = strutils.safe_decode(body)
             dump.extend([body, ''])
-        LOG.debug('\n'.join([strutils.safe_encode(x) for x in dump]))
+        LOG.debug('\n'.join([strutils.safe_encode(x, errors='ignore')
+                             for x in dump]))
 
     @staticmethod
     def encode_headers(headers):

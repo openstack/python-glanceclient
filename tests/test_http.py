@@ -232,6 +232,16 @@ class TestClient(testtools.TestCase):
         self.assertTrue(isinstance(body, types.GeneratorType))
         self.assertEqual([data], list(body))
 
+    def test_log_http_response_with_non_ascii_char(self):
+        try:
+            response = 'Ok'
+            headers = {"Content-Type": "text/plain",
+                       "test": "value1\xa5\xa6"}
+            fake = utils.FakeResponse(headers, six.StringIO(response))
+            self.client.log_http_response(fake)
+        except UnicodeDecodeError as e:
+            self.fail("Unexpected UnicodeDecodeError exception '%s'" % e)
+
 
 class TestVerifiedHTTPSConnection(testtools.TestCase):
     """Test fixture for glanceclient.common.http.VerifiedHTTPSConnection."""
