@@ -26,6 +26,7 @@ import logging
 import os
 from os.path import expanduser
 import sys
+import traceback
 
 import six.moves.urllib.parse as urlparse
 
@@ -589,6 +590,12 @@ class OpenStackImagesShell(object):
             args.func(client, args)
         except exc.Unauthorized:
             raise exc.CommandError("Invalid OpenStack Identity credentials.")
+        except Exception:
+            #NOTE(kragniz) Print any exceptions raised to stderr if the --debug
+            # flag is set
+            if args.debug:
+                traceback.print_exc()
+            raise
         finally:
             if profile:
                 trace_id = osprofiler_profiler.get().get_base_id()
