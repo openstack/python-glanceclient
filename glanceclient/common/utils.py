@@ -39,6 +39,8 @@ from glanceclient.openstack.common import strutils
 
 _memoized_property_lock = threading.Lock()
 
+SENSITIVE_HEADERS = ('X-Auth-Token', )
+
 
 # Decorator for cli-args
 def arg(*args, **kwargs):
@@ -385,3 +387,13 @@ def memoized_property(fn):
                     setattr(self, attr_name, fn(self))
             return getattr(self, attr_name)
     return _memoized_property
+
+
+def safe_header(name, value):
+    if name in SENSITIVE_HEADERS:
+        v = value.encode('utf-8')
+        h = hashlib.sha1(v)
+        d = h.hexdigest()
+        return name, "{SHA1}%s" % d
+    else:
+        return name, value
