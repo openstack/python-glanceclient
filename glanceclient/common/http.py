@@ -36,6 +36,7 @@ if not hasattr(parse, 'parse_qsl'):
     parse.parse_qsl = cgi.parse_qsl
 
 from glanceclient.common import https
+from glanceclient.common.utils import safe_header
 from glanceclient import exc
 from glanceclient.openstack.common import importutils
 from glanceclient.openstack.common import network_utils
@@ -95,9 +96,7 @@ class HTTPClient(object):
         headers.update(self.session.headers)
 
         for (key, value) in six.iteritems(headers):
-            if key.lower() == 'x-auth-token':
-                value = '*' * 3
-            header = '-H \'%s: %s\'' % (key, value)
+            header = '-H \'%s: %s\'' % safe_header(key, value)
             curl.append(header)
 
         if not self.session.verify:
@@ -123,9 +122,7 @@ class HTTPClient(object):
         status = (resp.raw.version / 10.0, resp.status_code, resp.reason)
         dump = ['\nHTTP/%.1f %s %s' % status]
         headers = resp.headers.items()
-        if 'X-Auth-Token' in resp.headers:
-            headers['X-Auth-Token'] = '*' * 3
-        dump.extend(['%s: %s' % (k, v) for k, v in headers])
+        dump.extend(['%s: %s' % safe_header(k, v) for k, v in headers])
         dump.append('')
         if body:
             body = strutils.safe_decode(body)
