@@ -510,14 +510,14 @@ class TestNamespaceController(testtools.TestCase):
     def test_list_namespaces(self):
         namespaces = list(self.controller.list())
 
-        self.assertEqual(len(namespaces), 2)
+        self.assertEqual(2, len(namespaces))
         self.assertEqual(NAMESPACE1, namespaces[0]['namespace'])
         self.assertEqual(NAMESPACE2, namespaces[1]['namespace'])
 
     def test_list_namespaces_paginate(self):
         namespaces = list(self.controller.list(page_size=1))
 
-        self.assertEqual(len(namespaces), 2)
+        self.assertEqual(2, len(namespaces))
         self.assertEqual(NAMESPACE7, namespaces[0]['namespace'])
         self.assertEqual(NAMESPACE8, namespaces[1]['namespace'])
 
@@ -528,7 +528,7 @@ class TestNamespaceController(testtools.TestCase):
             }
         ))
 
-        self.assertEqual(len(namespaces), 1)
+        self.assertEqual(1, len(namespaces))
         self.assertEqual(NAMESPACE3, namespaces[0]['namespace'])
 
     def test_list_namespaces_with_multiple_resource_types_filter(self):
@@ -538,7 +538,7 @@ class TestNamespaceController(testtools.TestCase):
             }
         ))
 
-        self.assertEqual(len(namespaces), 1)
+        self.assertEqual(1, len(namespaces))
         self.assertEqual(NAMESPACE4, namespaces[0]['namespace'])
 
     def test_list_namespaces_with_visibility_filter(self):
@@ -548,7 +548,7 @@ class TestNamespaceController(testtools.TestCase):
             }
         ))
 
-        self.assertEqual(len(namespaces), 1)
+        self.assertEqual(1, len(namespaces))
         self.assertEqual(NAMESPACE5, namespaces[0]['namespace'])
 
     def test_get_namespace(self):

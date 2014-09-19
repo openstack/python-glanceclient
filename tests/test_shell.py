@@ -116,8 +116,8 @@ class ShellTest(utils.TestCase):
         shell(args)
         assert mock_versioned_client.called
         ((api_version, args), kwargs) = mock_versioned_client.call_args
-        self.assertEqual(args.os_cert, 'mycert')
-        self.assertEqual(args.os_key, 'mykey')
+        self.assertEqual('mycert', args.os_cert)
+        self.assertEqual('mykey', args.os_key)
 
         # make sure we get the same thing with --cert-file and --key-file
         args = '--cert-file mycertfile --key-file mykeyfile image-list'
@@ -125,8 +125,8 @@ class ShellTest(utils.TestCase):
         glance_shell.main(args.split())
         assert mock_versioned_client.called
         ((api_version, args), kwargs) = mock_versioned_client.call_args
-        self.assertEqual(args.os_cert, 'mycertfile')
-        self.assertEqual(args.os_key, 'mykeyfile')
+        self.assertEqual('mycertfile', args.os_cert)
+        self.assertEqual('mykeyfile', args.os_key)
 
     @mock.patch('glanceclient.v1.client.Client')
     def test_no_auth_with_token_and_image_url_with_v1(self, v1_client):
@@ -138,8 +138,8 @@ class ShellTest(utils.TestCase):
         glance_shell.main(args.split())
         assert v1_client.called
         (args, kwargs) = v1_client.call_args
-        self.assertEqual(kwargs['token'], 'mytoken')
-        self.assertEqual(args[0], 'https://image:1234/v1')
+        self.assertEqual('mytoken', kwargs['token'])
+        self.assertEqual('https://image:1234/v1', args[0])
 
     @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas')
     def test_no_auth_with_token_and_image_url_with_v2(self,
@@ -153,8 +153,8 @@ class ShellTest(utils.TestCase):
             glance_shell = openstack_shell.OpenStackImagesShell()
             glance_shell.main(args.split())
             ((args), kwargs) = v2_client.call_args
-            self.assertEqual(args[0], 'https://image:1234/v2')
-            self.assertEqual(kwargs['token'], 'mytoken')
+            self.assertEqual('https://image:1234/v2', args[0])
+            self.assertEqual('mytoken', kwargs['token'])
 
     def _assert_auth_plugin_args(self, mock_auth_plugin):
         # make sure our auth plugin is invoked with the correct args

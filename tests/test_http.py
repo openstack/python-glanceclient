@@ -117,7 +117,7 @@ class TestClient(testtools.TestCase):
 
         headers = {"test": u'ni\xf1o'}
         resp, body = self.client.get('/v1/images/detail', headers=headers)
-        self.assertEqual(resp, fake)
+        self.assertEqual(fake, resp)
 
     def test_headers_encoding(self):
         value = u'ni\xf1o'
@@ -142,7 +142,7 @@ class TestClient(testtools.TestCase):
         self.mock.ReplayAll()
 
         resp, body = self.client.get('/v1/images/detail', headers=headers)
-        self.assertEqual(resp, fake)
+        self.assertEqual(fake, resp)
 
     def test_parse_endpoint(self):
         endpoint = 'http://example.com:9292'
@@ -175,7 +175,7 @@ class TestClient(testtools.TestCase):
         headers = {"test": u'chunked_request'}
         resp, body = self.client.post('/v1/images/',
                                       headers=headers, data=data)
-        self.assertEqual(resp, fake)
+        self.assertEqual(fake, resp)
 
     def test_http_json(self):
         data = {"test": "json_request"}
@@ -213,7 +213,7 @@ class TestClient(testtools.TestCase):
         resp, body = self.client.post('/v1/images/',
                                       headers=headers,
                                       data=data)
-        self.assertEqual(resp, fake)
+        self.assertEqual(fake, resp)
 
     def test_http_chunked_response(self):
         headers = {"Content-Type": "application/octet-stream"}
