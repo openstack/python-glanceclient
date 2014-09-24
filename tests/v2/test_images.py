@@ -58,6 +58,7 @@ data_fixtures = {
                             'required': ['url', 'metadata'],
                         },
                     },
+                    'color': {'type': 'string', 'is_base': False},
                 },
                 'additionalProperties': {'type': 'string'}
             },
@@ -125,6 +126,7 @@ data_fixtures = {
                 'name': 'image-3',
                 'barney': 'rubble',
                 'george': 'jetson',
+                'color': 'red',
             },
         ),
         'PATCH': (
@@ -367,7 +369,8 @@ schema_fixtures = {
                             },
                             'required': ['url', 'metadata'],
                         }
-                    }
+                    },
+                    'color': {'type': 'string', 'is_base': False},
                 },
                 'additionalProperties': {'type': 'string'}
             }
@@ -691,6 +694,38 @@ class TestController(testtools.TestCase):
         params = {'name': 'pong', 'bad_prop': False}
         with testtools.ExpectedException(TypeError):
             self.controller.update(image_id, **params)
+
+    def test_update_add_custom_property(self):
+        image_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
+        params = {'color': 'red'}
+        image = self.controller.update(image_id, **params)
+        expect_hdrs = {
+            'Content-Type': 'application/openstack-images-v2.1-json-patch',
+        }
+        expect_body = '[{"path": "/color", "value": "red", "op": "add"}]'
+        expect = [
+            ('GET', '/v2/images/%s' % image_id, {}, None),
+            ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
+            ('GET', '/v2/images/%s' % image_id, {}, None),
+        ]
+        self.assertEqual(expect, self.api.calls)
+        self.assertEqual(image_id, image.id)
+
+    def test_update_replace_custom_property(self):
+        image_id = 'e7e59ff6-fa2e-4075-87d3-1a1398a07dc3'
+        params = {'color': 'blue'}
+        image = self.controller.update(image_id, **params)
+        expect_hdrs = {
+            'Content-Type': 'application/openstack-images-v2.1-json-patch',
+        }
+        expect_body = '[{"path": "/color", "value": "blue", "op": "replace"}]'
+        expect = [
+            ('GET', '/v2/images/%s' % image_id, {}, None),
+            ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
+            ('GET', '/v2/images/%s' % image_id, {}, None),
+        ]
+        self.assertEqual(expect, self.api.calls)
+        self.assertEqual(image_id, image.id)
 
     def test_location_ops_when_server_disabled_location_ops(self):
         # Location operations should not be allowed if server has not

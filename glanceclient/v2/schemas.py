@@ -15,6 +15,7 @@
 
 import copy
 import jsonpatch
+import six
 import warlock.model as warlock
 
 
@@ -34,9 +35,10 @@ class SchemaBasedModel(warlock.Model):
         original = copy.deepcopy(self.__dict__['__original__'])
         new = dict(self)
         if self.__dict__['schema']:
-            for prop in self.schema['properties']:
-                if prop not in original and prop in new:
-                    original[prop] = None
+            for (name, prop) in six.iteritems(self.schema['properties']):
+                if (name not in original and name in new and
+                        prop.get('is_base', True)):
+                    original[name] = None
 
         return jsonpatch.make_patch(original, dict(self)).to_string()
 

@@ -50,6 +50,7 @@ _SCHEMA = schemas.Schema({
     'properties': {
         'name': {'type': 'string'},
         'color': {'type': 'string'},
+        'shape': {'type': 'string', 'is_base': False},
     },
 })
 
@@ -170,3 +171,28 @@ class TestSchemaBasedModel(testtools.TestCase):
         expected = '[{"path": "/color", "op": "remove"}]'
         self.assertTrue(compare_json_patches(patch, expected))
         self.assertEqual(expected, patch)
+
+    def test_patch_should_add_missing_custom_properties(self):
+        obj = {
+            'name': 'fred'
+        }
+
+        original = self.model(obj)
+        original['shape'] = 'circle'
+
+        patch = original.patch
+        expected = '[{"path": "/shape", "value": "circle", "op": "add"}]'
+        self.assertTrue(compare_json_patches(patch, expected))
+
+    def test_patch_should_replace_custom_properties(self):
+        obj = {
+            'name': 'fred',
+            'shape': 'circle'
+        }
+
+        original = self.model(obj)
+        original['shape'] = 'square'
+
+        patch = original.patch
+        expected = '[{"path": "/shape", "value": "square", "op": "replace"}]'
+        self.assertTrue(compare_json_patches(patch, expected))
