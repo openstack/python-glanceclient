@@ -289,6 +289,15 @@ class ShellTest(utils.TestCase):
             self.assertEqual('mydomain', kwargs['project_domain_name'])
             self.assertEqual('myid', kwargs['project_domain_id'])
 
+    @mock.patch.object(openstack_shell.OpenStackImagesShell, 'main')
+    def test_shell_keyboard_interrupt(self, mock_glance_shell):
+        # Ensure that exit code is 130 for KeyboardInterrupt
+        try:
+            mock_glance_shell.side_effect = KeyboardInterrupt()
+            openstack_shell.main()
+        except SystemExit as ex:
+            self.assertEqual(130, ex.code)
+
 
 class ShellTestWithKeystoneV3Auth(ShellTest):
     # auth environment to use

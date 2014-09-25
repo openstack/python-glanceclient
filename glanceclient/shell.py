@@ -697,6 +697,6 @@ def main():
     try:
         OpenStackImagesShell().main(map(encodeutils.safe_decode, sys.argv[1:]))
     except KeyboardInterrupt:
-        utils.exit('... terminating glance client')
+        utils.exit('... terminating glance client', exit_code=130)
     except Exception as e:
         utils.exit(utils.exception_to_str(e))
