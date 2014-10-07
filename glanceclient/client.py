@@ -19,6 +19,15 @@ from glanceclient.common import utils
 
 
 def Client(version=None, endpoint=None, *args, **kwargs):
+    """Client for the OpenStack Images API.
+
+    Generic client for the OpenStack Images API. See version classes
+    for specific details.
+
+    :param string version: The version of API to use. Note this is
+                           deprecated and should be passed as part of the URL
+                           (http://$HOST:$PORT/v$VERSION_NUMBER).
+    """
     if version is not None:
         warnings.warn(("`version` keyword is being deprecated. Please pass the"
                        " version as part of the URL. "
