@@ -15,7 +15,6 @@
 
 from __future__ import print_function
 
-import argparse
 import copy
 import six
 import sys
@@ -188,10 +187,6 @@ def do_image_download(gc, args):
            help=('Similar to \'--location\' in usage, but this indicates that'
                  ' the Glance server should immediately copy the data and'
                  ' store it in its configured image store.'))
-#NOTE(bcwaldon): This will be removed once devstack is updated
-# to use --is-public
-@utils.arg('--public', action='store_true', default=False,
-           help=argparse.SUPPRESS)
 @utils.arg('--is-public',
            type=strutils.bool_from_string, metavar='{True,False}',
            help='Make image accessible to the public.')
