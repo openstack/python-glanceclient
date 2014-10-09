@@ -17,6 +17,7 @@ import copy
 import logging
 import socket
 
+from oslo.utils import netutils
 import requests
 try:
     from requests.packages.urllib3.exceptions import ProtocolError
@@ -39,7 +40,6 @@ from glanceclient.common import https
 from glanceclient.common.utils import safe_header
 from glanceclient import exc
 from glanceclient.openstack.common import importutils
-from glanceclient.openstack.common import network_utils
 from glanceclient.openstack.common import strutils
 
 osprofiler_web = importutils.try_import("osprofiler.web")
@@ -88,7 +88,7 @@ class HTTPClient(object):
 
     @staticmethod
     def parse_endpoint(endpoint):
-        return network_utils.urlsplit(endpoint)
+        return netutils.urlsplit(endpoint)
 
     def log_curl_request(self, method, url, headers, data, kwargs):
         curl = ['curl -i -X %s' % method]
