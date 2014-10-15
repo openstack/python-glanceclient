@@ -89,9 +89,46 @@ data_fixtures = {
         "GET": (
             {},
             {
-                "first": "/v2/metadefs/namespaces?limit=1",
+                "first": "/v2/metadefs/namespaces?limit=2",
                 "namespaces": [
                     _get_namespace_fixture(NAMESPACE8),
+                ],
+                "schema": "/v2/schemas/metadefs/namespaces"
+            }
+        )
+    },
+    "/v2/metadefs/namespaces?limit=2&marker=%s" % NAMESPACE6: {
+        "GET": (
+            {},
+            {
+                "first": "/v2/metadefs/namespaces?limit=2",
+                "namespaces": [
+                    _get_namespace_fixture(NAMESPACE7),
+                    _get_namespace_fixture(NAMESPACE8),
+                ],
+                "schema": "/v2/schemas/metadefs/namespaces"
+            }
+        )
+    },
+    "/v2/metadefs/namespaces?limit=20&sort_dir=asc": {
+        "GET": (
+            {},
+            {
+                "first": "/v2/metadefs/namespaces?limit=1",
+                "namespaces": [
+                    _get_namespace_fixture(NAMESPACE1),
+                ],
+                "schema": "/v2/schemas/metadefs/namespaces"
+            }
+        )
+    },
+    "/v2/metadefs/namespaces?limit=20&sort_key=created_at": {
+        "GET": (
+            {},
+            {
+                "first": "/v2/metadefs/namespaces?limit=1",
+                "namespaces": [
+                    _get_namespace_fixture(NAMESPACE1),
                 ],
                 "schema": "/v2/schemas/metadefs/namespaces"
             }
@@ -269,7 +306,7 @@ data_fixtures = {
                 "updated_at": "2014-08-14T09:07:06Z",
             }
         ),
-    }
+    },
 }
 
 schema_fixtures = {
@@ -520,6 +557,40 @@ class TestNamespaceController(testtools.TestCase):
         self.assertEqual(2, len(namespaces))
         self.assertEqual(NAMESPACE7, namespaces[0]['namespace'])
         self.assertEqual(NAMESPACE8, namespaces[1]['namespace'])
+
+    def test_list_with_limit_greater_than_page_size(self):
+        namespaces = list(self.controller.list(page_size=1, limit=2))
+        self.assertEqual(2, len(namespaces))
+        self.assertEqual(NAMESPACE7, namespaces[0]['namespace'])
+        self.assertEqual(NAMESPACE8, namespaces[1]['namespace'])
+
+    def test_list_with_marker(self):
+        namespaces = list(self.controller.list(marker=NAMESPACE6, page_size=2))
+        self.assertEqual(2, len(namespaces))
+        self.assertEqual(NAMESPACE7, namespaces[0]['namespace'])
+        self.assertEqual(NAMESPACE8, namespaces[1]['namespace'])
+
+    def test_list_with_sort_dir(self):
+        namespaces = list(self.controller.list(sort_dir='asc', limit=1))
+        self.assertEqual(1, len(namespaces))
+        self.assertEqual(NAMESPACE1, namespaces[0]['namespace'])
+
+    def test_list_with_sort_dir_invalid(self):
+        # NOTE(TravT): The clients work by returning an iterator.
+        # Invoking the iterator is what actually executes the logic.
+        ns_iterator = self.controller.list(sort_dir='foo')
+        self.assertRaises(ValueError, next, ns_iterator)
+
+    def test_list_with_sort_key(self):
+        namespaces = list(self.controller.list(sort_key='created_at', limit=1))
+        self.assertEqual(1, len(namespaces))
+        self.assertEqual(NAMESPACE1, namespaces[0]['namespace'])
+
+    def test_list_with_sort_key_invalid(self):
+        # NOTE(TravT): The clients work by returning an iterator.
+        # Invoking the iterator is what actually executes the logic.
+        ns_iterator = self.controller.list(sort_key='foo')
+        self.assertRaises(ValueError, next, ns_iterator)
 
     def test_list_namespaces_with_one_resource_type_filter(self):
         namespaces = list(self.controller.list(
