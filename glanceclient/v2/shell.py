@@ -93,6 +93,9 @@ def do_image_update(gc, args):
            help='The status of images to display.')
 @utils.arg('--owner', metavar='<OWNER>',
            help='Display images owned by <OWNER>.')
+@utils.arg('--property-filter', metavar='<KEY=VALUE>',
+           help="Filter images by a user-defined image property.",
+           action='append', dest='properties', default=[])
 @utils.arg('--checksum', metavar='<CHECKSUM>',
            help='Displays images that match the checksum.')
 @utils.arg('--tag', metavar='<TAG>', action='append',
@@ -101,6 +104,12 @@ def do_image_list(gc, args):
     """List images you can access."""
     filter_keys = ['visibility', 'member_status', 'owner', 'checksum', 'tag']
     filter_items = [(key, getattr(args, key)) for key in filter_keys]
+    if args.properties:
+        filter_properties = [prop.split('=', 1) for prop in args.properties]
+        if False in (len(pair) == 2 for pair in filter_properties):
+            utils.exit('Argument --property-filter expected properties in the'
+                       ' format KEY=VALUE')
+        filter_items += filter_properties
     filters = dict([item for item in filter_items if item[1] is not None])
 
     kwargs = {'filters': filters}

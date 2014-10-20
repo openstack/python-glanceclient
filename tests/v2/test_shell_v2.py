@@ -64,7 +64,8 @@ class ShellV2Test(testtools.TestCase):
             'member_status': 'Fake',
             'owner': 'test',
             'checksum': 'fake_checksum',
-            'tag': 'fake tag'
+            'tag': 'fake tag',
+            'properties': []
         }
         args = self._make_args(input)
         with mock.patch.object(self.gc.images, 'list') as mocked_list:
@@ -80,6 +81,36 @@ class ShellV2Test(testtools.TestCase):
                 'tag': 'fake tag'
             }
             mocked_list.assert_called_once_with(page_size=18,
+                                                filters=exp_img_filters)
+            utils.print_list.assert_called_once_with({}, ['ID', 'Name'])
+
+    def test_do_image_list_with_property_filter(self):
+        input = {
+            'page_size': 1,
+            'visibility': True,
+            'member_status': 'Fake',
+            'owner': 'test',
+            'checksum': 'fake_checksum',
+            'tag': 'fake tag',
+            'properties': ['os_distro=NixOS', 'architecture=x86_64']
+        }
+        args = self._make_args(input)
+        with mock.patch.object(self.gc.images, 'list') as mocked_list:
+            mocked_list.return_value = {}
+
+            test_shell.do_image_list(self.gc, args)
+
+            exp_img_filters = {
+                'owner': 'test',
+                'member_status': 'Fake',
+                'visibility': True,
+                'checksum': 'fake_checksum',
+                'tag': 'fake tag',
+                'os_distro': 'NixOS',
+                'architecture': 'x86_64'
+            }
+
+            mocked_list.assert_called_once_with(page_size=1,
                                                 filters=exp_img_filters)
             utils.print_list.assert_called_once_with({}, ['ID', 'Name'])
 
