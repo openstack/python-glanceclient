@@ -18,7 +18,6 @@ from __future__ import print_function
 import copy
 import functools
 import six
-import sys
 
 from oslo.utils import encodeutils
 from oslo.utils import strutils
@@ -349,15 +348,15 @@ def do_image_delete(gc, args):
 def do_member_list(gc, args):
     """Describe sharing permissions by image or tenant."""
     if args.image_id and args.tenant_id:
-        print('Unable to filter members by both --image-id and --tenant-id.')
-        sys.exit(1)
+        utils.exit('Unable to filter members by both --image-id and'
+                   ' --tenant-id.')
     elif args.image_id:
         kwargs = {'image': args.image_id}
     elif args.tenant_id:
         kwargs = {'member': args.tenant_id}
     else:
-        print('Unable to list all members. Specify --image-id or --tenant-id')
-        sys.exit(1)
+        utils.exit('Unable to list all members. Specify --image-id or'
+                   ' --tenant-id')
 
     members = gc.image_members.list(**kwargs)
     columns = ['Image ID', 'Member ID', 'Can Share']
