@@ -341,6 +341,19 @@ class ShellV2Test(testtools.TestCase):
             test_shell.do_image_upload(self.gc, args)
             mocked_upload.assert_called_once_with('IMG-01', 'testfile', 1024)
 
+    def test_image_download(self):
+        args = self._make_args(
+            {'id': 'IMG-01', 'file': 'test', 'progress': True})
+
+        with mock.patch.object(self.gc.images, 'data') as mocked_data:
+            def _data():
+                for c in 'abcedf':
+                    yield c
+            mocked_data.return_value = utils.IterableWithLength(_data(), 5)
+
+            test_shell.do_image_download(self.gc, args)
+            mocked_data.assert_called_once_with('IMG-01')
+
     def test_do_image_delete(self):
         args = self._make_args({'id': 'pass', 'file': 'test'})
         with mock.patch.object(self.gc.images, 'delete') as mocked_delete:

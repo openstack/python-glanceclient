@@ -421,3 +421,18 @@ def safe_header(name, value):
         return name, "{SHA1}%s" % d
     else:
         return name, value
+
+
+class IterableWithLength(object):
+    def __init__(self, iterable, length):
+        self.iterable = iterable
+        self.length = length
+
+    def __iter__(self):
+        return self.iterable
+
+    def next(self):
+        return next(self.iterable)
+
+    def __len__(self):
+        return self.length

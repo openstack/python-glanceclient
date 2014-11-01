@@ -115,10 +115,12 @@ class Controller(object):
         url = '/v2/images/%s/file' % image_id
         resp, body = self.http_client.get(url)
         checksum = resp.headers.get('content-md5', None)
+        content_length = int(resp.headers.get('content-length', 0))
+
         if do_checksum and checksum is not None:
-            return utils.integrity_iter(body, checksum)
-        else:
-            return body
+            body = utils.integrity_iter(body, checksum)
+
+        return utils.IterableWithLength(body, content_length)
 
     def upload(self, image_id, image_data, image_size=None):
         """

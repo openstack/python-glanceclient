@@ -140,14 +140,15 @@ class ImageManager(base.ManagerWithFind):
         image_id = base.getid(image)
         resp, body = self.client.get('/v1/images/%s'
                                      % urlparse.quote(str(image_id)))
+        content_length = int(resp.headers.get('content-length', 0))
         checksum = resp.headers.get('x-image-meta-checksum', None)
         if do_checksum and checksum is not None:
-            return utils.integrity_iter(body, checksum)
+            body = utils.integrity_iter(body, checksum)
         return_request_id = kwargs.get('return_req_id', None)
         if return_request_id is not None:
             return_request_id.append(resp.headers.get(OS_REQ_ID_HDR, None))
 
-        return body
+        return utils.IterableWithLength(body, content_length)
 
     def list(self, **kwargs):
         """Get a list of images.
