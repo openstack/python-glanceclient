@@ -39,12 +39,22 @@ class TestRequestsIntegration(testtools.TestCase):
         adapter = client.session.adapters.get("https://")
         self.assertFalse(isinstance(adapter, https.HTTPSAdapter))
 
+        adapter = client.session.adapters.get("glance+https://")
+        self.assertFalse(isinstance(adapter, https.HTTPSAdapter))
+
+    def test_custom_https_adapter(self):
         client = http.HTTPClient("https://localhost",
                                  ssl_compression=False)
+        self.assertNotEqual(https.HTTPSConnectionPool,
+                            poolmanager.pool_classes_by_scheme["https"])
+
         self.assertEqual(https.HTTPSConnectionPool,
-                         poolmanager.pool_classes_by_scheme["https"])
+                         poolmanager.pool_classes_by_scheme["glance+https"])
 
         adapter = client.session.adapters.get("https://")
+        self.assertFalse(isinstance(adapter, https.HTTPSAdapter))
+
+        adapter = client.session.adapters.get("glance+https://")
         self.assertTrue(isinstance(adapter, https.HTTPSAdapter))
 
 

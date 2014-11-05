@@ -70,7 +70,8 @@ class HTTPClient(object):
             compression = kwargs.get('ssl_compression', True)
 
             if not compression:
-                self.session.mount("https://", https.HTTPSAdapter())
+                self.session.mount("glance+https://", https.HTTPSAdapter())
+                self.endpoint = 'glance+' + self.endpoint
 
                 self.session.verify = (
                     kwargs.get('cacert', requests.certs.where()),
