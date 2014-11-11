@@ -15,6 +15,7 @@ In order to use the python api directly, you must first obtain an auth token and
                 f.write(chunk)
     >>> image.delete()
 
+For an API v2 example see also :doc:`apiv2`.
 
 Command-line Tool
 =================
