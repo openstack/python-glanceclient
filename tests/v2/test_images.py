@@ -14,7 +14,6 @@
 #    under the License.
 
 import errno
-import json
 
 import six
 import testtools
@@ -226,7 +225,7 @@ data_fixtures = {
             {'images': []},
         ),
     },
-    '/v2/images?owner=%s&limit=%d' % (_OWNER_ID, images.DEFAULT_PAGE_SIZE): {
+    '/v2/images?limit=%d&owner=%s' % (images.DEFAULT_PAGE_SIZE, _OWNER_ID): {
         'GET': (
             {},
             {'images': [
@@ -236,14 +235,14 @@ data_fixtures = {
             ]},
         ),
     },
-    '/v2/images?owner=%s&limit=%d' % (_BOGUS_ID, images.DEFAULT_PAGE_SIZE): {
+    '/v2/images?limit=%d&owner=%s' % (images.DEFAULT_PAGE_SIZE, _BOGUS_ID): {
         'GET': (
             {},
             {'images': []},
         ),
     },
-    '/v2/images?owner=%s&limit=%d&member_status=pending&visibility=shared'
-    % (_BOGUS_ID, images.DEFAULT_PAGE_SIZE): {
+    '/v2/images?limit=%d&member_status=pending&owner=%s&visibility=shared'
+    % (images.DEFAULT_PAGE_SIZE, _BOGUS_ID): {
         'GET': (
             {},
             {'images': [
@@ -551,7 +550,7 @@ class TestController(testtools.TestCase):
                 'image_size': 3}
         expect = [('PUT', '/v2/images/%s/file' % image_id,
                   {'Content-Type': 'application/octet-stream'},
-                  body)]
+                  sorted(body.items()))]
         self.assertEqual(expect, self.api.calls)
 
     def test_data_without_checksum(self):
@@ -596,7 +595,8 @@ class TestController(testtools.TestCase):
         expect_hdrs = {
             'Content-Type': 'application/openstack-images-v2.1-json-patch',
         }
-        expect_body = '[{"path": "/name", "value": "pong", "op": "replace"}]'
+        expect_body = [[('op', 'replace'), ('path', '/name'),
+                        ('value', 'pong')]]
         expect = [
             ('GET', '/v2/images/%s' % image_id, {}, None),
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
@@ -615,7 +615,7 @@ class TestController(testtools.TestCase):
         expect_hdrs = {
             'Content-Type': 'application/openstack-images-v2.1-json-patch',
         }
-        expect_body = '[{"path": "/finn", "value": "human", "op": "add"}]'
+        expect_body = [[('op', 'add'), ('path', '/finn'), ('value', 'human')]]
         expect = [
             ('GET', '/v2/images/%s' % image_id, {}, None),
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
@@ -634,7 +634,7 @@ class TestController(testtools.TestCase):
         expect_hdrs = {
             'Content-Type': 'application/openstack-images-v2.1-json-patch',
         }
-        expect_body = '[{"path": "/barney", "op": "remove"}]'
+        expect_body = [[('op', 'remove'), ('path', '/barney')]]
         expect = [
             ('GET', '/v2/images/%s' % image_id, {}, None),
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
@@ -655,8 +655,8 @@ class TestController(testtools.TestCase):
         expect_hdrs = {
             'Content-Type': 'application/openstack-images-v2.1-json-patch',
         }
-        expect_body = ('[{"path": "/barney", "value": "miller", '
-                       '"op": "replace"}]')
+        expect_body = ([[('op', 'replace'), ('path', '/barney'),
+                         ('value', 'miller')]])
         expect = [
             ('GET', '/v2/images/%s' % image_id, {}, None),
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
@@ -677,7 +677,7 @@ class TestController(testtools.TestCase):
         expect_hdrs = {
             'Content-Type': 'application/openstack-images-v2.1-json-patch',
         }
-        expect_body = '[{"path": "/finn", "value": "human", "op": "add"}]'
+        expect_body = [[('op', 'add'), ('path', '/finn'), ('value', 'human')]]
         expect = [
             ('GET', '/v2/images/%s' % image_id, {}, None),
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
@@ -702,7 +702,7 @@ class TestController(testtools.TestCase):
         expect_hdrs = {
             'Content-Type': 'application/openstack-images-v2.1-json-patch',
         }
-        expect_body = '[{"path": "/color", "value": "red", "op": "add"}]'
+        expect_body = [[('op', 'add'), ('path', '/color'), ('value', 'red')]]
         expect = [
             ('GET', '/v2/images/%s' % image_id, {}, None),
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
@@ -718,7 +718,8 @@ class TestController(testtools.TestCase):
         expect_hdrs = {
             'Content-Type': 'application/openstack-images-v2.1-json-patch',
         }
-        expect_body = '[{"path": "/color", "value": "blue", "op": "replace"}]'
+        expect_body = [[('op', 'replace'), ('path', '/color'),
+                        ('value', 'blue')]]
         expect = [
             ('GET', '/v2/images/%s' % image_id, {}, None),
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
@@ -755,10 +756,11 @@ class TestController(testtools.TestCase):
 
     def _patch_req(self, image_id, patch_body):
         c_type = 'application/openstack-images-v2.1-json-patch'
+        data = [sorted(d.items()) for d in patch_body]
         return ('PATCH',
                 '/v2/images/%s' % image_id,
                 {'Content-Type': c_type},
-                json.dumps(patch_body))
+                data)
 
     def test_add_location(self):
         image_id = 'a2b83adc-888e-11e3-8872-78acc0b951d8'

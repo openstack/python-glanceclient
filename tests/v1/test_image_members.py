@@ -92,7 +92,8 @@ class ImageMemberManagerTest(testtools.TestCase):
     def test_create(self):
         self.mgr.create(self.image, '1', can_share=True)
         expect_body = {'member': {'can_share': True}}
-        expect = [('PUT', '/v1/images/1/members/1', {}, expect_body)]
+        expect = [('PUT', '/v1/images/1/members/1', {},
+                   sorted(expect_body.items()))]
         self.assertEqual(expect, self.api.calls)
 
     def test_replace(self):
@@ -101,7 +102,8 @@ class ImageMemberManagerTest(testtools.TestCase):
             {'member_id': '3'},
         ]
         self.mgr.replace(self.image, body)
-        expect = [('PUT', '/v1/images/1/members', {}, {'memberships': body})]
+        expect = [('PUT', '/v1/images/1/members', {},
+                   sorted({'memberships': body}.items()))]
         self.assertEqual(expect, self.api.calls)
 
     def test_replace_objects(self):
@@ -118,5 +120,6 @@ class ImageMemberManagerTest(testtools.TestCase):
                 {'member_id': '3', 'can_share': True},
             ],
         }
-        expect = [('PUT', '/v1/images/1/members', {}, expect_body)]
+        expect = [('PUT', '/v1/images/1/members', {},
+                   sorted(expect_body.items()))]
         self.assertEqual(expect, self.api.calls)

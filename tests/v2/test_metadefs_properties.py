@@ -245,7 +245,7 @@ class TestPropertyController(testtools.TestCase):
         properties = list(self.controller.list(NAMESPACE1))
 
         actual = [prop.name for prop in properties]
-        self.assertEqual([PROPERTY1, PROPERTY2], actual)
+        self.assertEqual(sorted([PROPERTY1, PROPERTY2]), sorted(actual))
 
     def test_get_property(self):
         prop = self.controller.get(NAMESPACE1, PROPERTY1)

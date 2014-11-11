@@ -112,7 +112,7 @@ fixtures = {
             },
         ),
     },
-    '/v2/tasks?owner=%s&limit=%d' % (_OWNER_ID, tasks.DEFAULT_PAGE_SIZE): {
+    '/v2/tasks?limit=%d&owner=%s' % (tasks.DEFAULT_PAGE_SIZE, _OWNER_ID): {
         'GET': (
             {},
             {'tasks': [
@@ -122,7 +122,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v2/tasks?status=processing&limit=%d' % (tasks.DEFAULT_PAGE_SIZE): {
+    '/v2/tasks?limit=%d&status=processing' % (tasks.DEFAULT_PAGE_SIZE): {
         'GET': (
             {},
             {'tasks': [
@@ -132,7 +132,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v2/tasks?type=import&limit=%d' % (tasks.DEFAULT_PAGE_SIZE): {
+    '/v2/tasks?limit=%d&type=import' % (tasks.DEFAULT_PAGE_SIZE): {
         'GET': (
             {},
             {'tasks': [
@@ -149,7 +149,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v2/tasks?status=fake&limit=%d' % (tasks.DEFAULT_PAGE_SIZE): {
+    '/v2/tasks?limit=%d&status=fake' % (tasks.DEFAULT_PAGE_SIZE): {
         'GET': (
             {},
             {'tasks': [
@@ -166,8 +166,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v2/tasks?owner=%s&limit=%d' % (_FAKE_OWNER_ID,
-                                     tasks.DEFAULT_PAGE_SIZE):
+    '/v2/tasks?limit=%d&owner=%s' % (tasks.DEFAULT_PAGE_SIZE, _FAKE_OWNER_ID):
     {
         'GET': ({},
                 {'tasks': []},
