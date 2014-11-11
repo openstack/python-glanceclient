@@ -497,7 +497,7 @@ class OpenStackImagesShell(object):
             service_type = args.os_service_type or 'image'
             endpoint = args.os_image_url or ks_session.get_endpoint(
                 service_type=service_type,
-                endpoint_type=endpoint_type,
+                interface=endpoint_type,
                 region_name=args.os_region_name)
 
         return endpoint, token
