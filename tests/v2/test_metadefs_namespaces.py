@@ -85,7 +85,7 @@ data_fixtures = {
             }
         )
     },
-    "/v2/metadefs/namespaces?marker=%s&limit=1" % NAMESPACE7: {
+    "/v2/metadefs/namespaces?limit=1&marker=%s" % NAMESPACE7: {
         "GET": (
             {},
             {

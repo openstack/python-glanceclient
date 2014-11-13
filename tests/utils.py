@@ -16,6 +16,7 @@
 import copy
 import json
 import six
+import six.moves.urllib.parse as urlparse
 import testtools
 
 from glanceclient.v2.schemas import Schema
@@ -28,11 +29,13 @@ class FakeAPI(object):
 
     def _request(self, method, url, headers=None, data=None,
                  content_length=None):
-        call = (method, url, headers or {}, data)
+        call = build_call_record(method, sort_url_by_query_keys(url),
+                                 headers or {}, data)
         if content_length is not None:
             call = tuple(list(call) + [content_length])
         self.calls.append(call)
-        fixture = self.fixtures[url][method]
+
+        fixture = self.fixtures[sort_url_by_query_keys(url)][method]
 
         data = fixture[1]
         if isinstance(fixture[1], six.string_types):
@@ -165,3 +168,41 @@ class FakeNoTTYStdout(FakeTTYStdout):
 
     def isatty(self):
         return False
+
+
+def sort_url_by_query_keys(url):
+    """A helper function which sorts the keys of the query string of a url.
+       For example, an input of '/v2/tasks?sort_key=id&sort_dir=asc&limit=10'
+       returns '/v2/tasks?limit=10&sort_dir=asc&sort_key=id'. This is to
+       prevent non-deterministic ordering of the query string causing
+       problems with unit tests.
+    :param url: url which will be ordered by query keys
+    :returns url: url with ordered query keys
+    """
+    parsed = urlparse.urlparse(url)
+    queries = urlparse.parse_qsl(parsed.query, True)
+    sorted_query = sorted(queries, key=lambda x: x[0])
+
+    encoded_sorted_query = urlparse.urlencode(sorted_query, True)
+
+    url_parts = (parsed.scheme, parsed.netloc, parsed.path,
+                 parsed.params, encoded_sorted_query,
+                 parsed.fragment)
+
+    return urlparse.urlunparse(url_parts)
+
+
+def build_call_record(method, url, headers, data):
+    """Key the request body be ordered if it's a dict type.
+    """
+    if isinstance(data, dict):
+        data = sorted(data.items())
+    if isinstance(data, six.string_types):
+        # NOTE(flwang): For image update, the data will be a 'list' which
+        # contains operation dict, such as: [{"op": "remove", "path": "/a"}]
+        try:
+            data = json.loads(data)
+        except ValueError:
+            return (method, url, headers or {}, data)
+        data = [sorted(d.items()) for d in data]
+    return (method, url, headers or {}, data)

@@ -158,7 +158,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?marker=a&limit=20': {
+    '/v1/images/detail?limit=20&marker=a': {
         'GET': (
             {},
             {'images': [
@@ -187,7 +187,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?marker=a&limit=1': {
+    '/v1/images/detail?limit=1&marker=a': {
         'GET': (
             {},
             {'images': [
@@ -216,7 +216,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?marker=b&limit=2': {
+    '/v1/images/detail?limit=2&marker=b': {
         'GET': (
             {},
             {'images': [
@@ -245,7 +245,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?property-ping=pong&limit=20':
+    '/v1/images/detail?limit=20&property-ping=pong':
     {
         'GET': (
             {},
@@ -258,7 +258,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?sort_dir=desc&limit=20': {
+    '/v1/images/detail?limit=20&sort_dir=desc': {
         'GET': (
             {},
             {'images': [
@@ -275,7 +275,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?sort_key=name&limit=20': {
+    '/v1/images/detail?limit=20&sort_key=name': {
         'GET': (
             {},
             {'images': [
@@ -441,7 +441,7 @@ class ImageManagerTest(testtools.TestCase):
         images = list(self.mgr.list(page_size=2))
         expect = [
             ('GET', '/v1/images/detail?limit=2', {}, None),
-            ('GET', '/v1/images/detail?marker=b&limit=2', {}, None),
+            ('GET', '/v1/images/detail?limit=2&marker=b', {}, None),
         ]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual(3, len(images))
@@ -459,7 +459,7 @@ class ImageManagerTest(testtools.TestCase):
         images = list(self.mgr.list(page_size=1, limit=2))
         expect = [
             ('GET', '/v1/images/detail?limit=1', {}, None),
-            ('GET', '/v1/images/detail?marker=a&limit=1', {}, None),
+            ('GET', '/v1/images/detail?limit=1&marker=a', {}, None),
         ]
         self.assertEqual(2, len(images))
         self.assertEqual('a', images[0].id)
@@ -468,7 +468,7 @@ class ImageManagerTest(testtools.TestCase):
 
     def test_list_with_marker(self):
         list(self.mgr.list(marker='a'))
-        url = '/v1/images/detail?marker=a&limit=20'
+        url = '/v1/images/detail?limit=20&marker=a'
         expect = [('GET', url, {}, None)]
         self.assertEqual(expect, self.api.calls)
 
@@ -480,19 +480,19 @@ class ImageManagerTest(testtools.TestCase):
 
     def test_list_with_property_filters(self):
         list(self.mgr.list(filters={'properties': {'ping': 'pong'}}))
-        url = '/v1/images/detail?property-ping=pong&limit=20'
+        url = '/v1/images/detail?limit=20&property-ping=pong'
         expect = [('GET', url, {}, None)]
         self.assertEqual(expect, self.api.calls)
 
     def test_list_with_sort_dir(self):
         list(self.mgr.list(sort_dir='desc'))
-        url = '/v1/images/detail?sort_dir=desc&limit=20'
+        url = '/v1/images/detail?limit=20&sort_dir=desc'
         expect = [('GET', url, {}, None)]
         self.assertEqual(expect, self.api.calls)
 
     def test_list_with_sort_key(self):
         list(self.mgr.list(sort_key='name'))
-        url = '/v1/images/detail?sort_key=name&limit=20'
+        url = '/v1/images/detail?limit=20&sort_key=name'
         expect = [('GET', url, {}, None)]
         self.assertEqual(expect, self.api.calls)
 

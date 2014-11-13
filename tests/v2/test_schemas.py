@@ -170,7 +170,6 @@ class TestSchemaBasedModel(testtools.TestCase):
         patch = original.patch
         expected = '[{"path": "/color", "op": "remove"}]'
         self.assertTrue(compare_json_patches(patch, expected))
-        self.assertEqual(expected, patch)
 
     def test_patch_should_add_missing_custom_properties(self):
         obj = {

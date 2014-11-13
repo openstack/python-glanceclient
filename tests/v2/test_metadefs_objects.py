@@ -273,8 +273,8 @@ class TestObjectController(testtools.TestCase):
     def test_get_object(self):
         obj = self.controller.get(NAMESPACE1, OBJECT1)
         self.assertEqual(OBJECT1, obj.name)
-        self.assertEqual([PROPERTY1, PROPERTY2],
-                         list(six.iterkeys(obj.properties)))
+        self.assertEqual(sorted([PROPERTY1, PROPERTY2]),
+                         sorted(list(six.iterkeys(obj.properties))))
 
     def test_create_object(self):
         properties = {
