@@ -37,6 +37,59 @@ See also :doc:`/man/glance`.
 Release Notes
 =============
 
+0.14.2
+------
+
+* Add support for Glance Tasks calls (task create, list all and show)
+* 1362179_: Default to system CA bundle if no CA certificate is provided
+* 1350251_, 1347150_, 1362766_: Don't replace the https handler in the poolmanager
+* 1371559_: Skip non-base properties in patch method
+
+.. _1362179: https://bugs.launchpad.net/python-glanceclient/+bug/1362179
+.. _1350251: https://bugs.launchpad.net/python-glanceclient/+bug/1350251
+.. _1347150: https://bugs.launchpad.net/python-glanceclient/+bug/1347150
+.. _1362766: https://bugs.launchpad.net/python-glanceclient/+bug/1362766
+.. _1371559: https://bugs.launchpad.net/python-glanceclient/+bug/1371559
+
+
+0.14.1
+------
+
+* Print traceback to stderr if ``--debug`` is set
+* Downgrade log message for http request failures
+* Fix CLI image-update giving the wrong help on '--tags' parameter
+* 1367326_: Fix requests to non-bleeding edge servers using the v2 API
+* 1329301_: Update how tokens are redacted
+* 1369756_: Fix decoding errors when logging response headers
+
+.. _1367326: https://bugs.launchpad.net/python-glanceclient/+bug/1367326
+.. _1329301: https://bugs.launchpad.net/python-glanceclient/+bug/1329301
+.. _1369756: https://bugs.launchpad.net/python-glanceclient/+bug/1369756
+
+
+0.14.0
+------
+
+* Add support for metadata definitions catalog API
+* Enable osprofiler profiling support to glanceclient and its shell. This adds the ``--profile <HMAC_KEY>`` argument.
+* Add support for Keystone v3
+* Replace old httpclient with requests
+* Fix performance issue for image listing of v2 API
+* 1364893_: Catch a new urllib3 exception: ProtocolError
+* 1359880_: Fix error when logging http response with python 3
+* 1357430_: Ensure server's SSL cert is validated to help guard against man-in-the-middle attack
+* 1314218_: Remove deprecated commands from shell
+* 1348030_: Fix glance-client on IPv6 controllers
+* 1341777_: Don't stream non-binary requests
+
+.. _1364893: https://bugs.launchpad.net/python-glanceclient/+bug/1364893
+.. _1359880: https://bugs.launchpad.net/python-glanceclient/+bug/1359880
+.. _1357430: https://bugs.launchpad.net/python-glanceclient/+bug/1357430
+.. _1314218: https://bugs.launchpad.net/python-glanceclient/+bug/1314218
+.. _1348030: https://bugs.launchpad.net/python-glanceclient/+bug/1348030
+.. _1341777: https://bugs.launchpad.net/python-glanceclient/+bug/1341777
+
+
 0.13.0
 ------
 
