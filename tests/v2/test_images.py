@@ -346,6 +346,25 @@ data_fixtures = {
             '',
         )
     },
+    '/v2/images?limit=%d&os_distro=NixOS' % images.DEFAULT_PAGE_SIZE: {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': '8b052954-c76c-4e02-8e90-be89a70183a8',
+                    'name': 'image-5',
+                    'os_distro': 'NixOS',
+                },
+            ]},
+        ),
+    },
+    '/v2/images?limit=%d&my_little_property=cant_be_this_cute' %
+    images.DEFAULT_PAGE_SIZE: {
+        'GET': (
+            {},
+            {'images': []},
+        ),
+    },
 }
 
 
@@ -500,6 +519,17 @@ class TestController(testtools.TestCase):
 
     def test_list_images_for_non_existent_tag(self):
         filters = {'filters': dict([('tag', ['fake'])])}
+        images = list(self.controller.list(**filters))
+        self.assertEqual(0, len(images))
+
+    def test_list_images_for_property(self):
+        filters = {'filters': dict([('os_distro', 'NixOS')])}
+        images = list(self.controller.list(**filters))
+        self.assertEqual(1, len(images))
+
+    def test_list_images_for_non_existent_property(self):
+        filters = {'filters': dict([('my_little_property',
+                                     'cant_be_this_cute')])}
         images = list(self.controller.list(**filters))
         self.assertEqual(0, len(images))
 
