@@ -62,7 +62,9 @@ class HTTPClient(object):
 
         self.session = requests.Session()
         self.session.headers["User-Agent"] = USER_AGENT
-        self.session.headers["X-Auth-Token"] = self.auth_token
+
+        if self.auth_token:
+            self.session.headers["X-Auth-Token"] = self.auth_token
 
         self.timeout = float(kwargs.get('timeout', 600))
 

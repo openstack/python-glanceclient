@@ -75,6 +75,22 @@ class TestClient(testtools.TestCase):
         self.assertTrue(http_client_object.identity_headers.
                         get('X-Auth-Token') is None)
 
+    def test_identity_headers_and_no_token_in_session_header(self):
+        # Tests that if token or X-Auth-Token are not provided in the kwargs
+        # when creating the http client, the session headers don't contain
+        # the X-Auth-Token key.
+        identity_headers = {
+            'X-User-Id': 'user',
+            'X-Tenant-Id': 'tenant',
+            'X-Roles': 'roles',
+            'X-Identity-Status': 'Confirmed',
+            'X-Service-Catalog': 'service_catalog',
+        }
+        kwargs = {'identity_headers': identity_headers}
+        http_client_object = http.HTTPClient(self.endpoint, **kwargs)
+        self.assertIsNone(http_client_object.auth_token)
+        self.assertNotIn('X-Auth-Token', http_client_object.session.headers)
+
     def test_connection_refused(self):
         """
         Should receive a CommunicationError if connection refused.
