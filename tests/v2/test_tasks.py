@@ -220,32 +220,32 @@ class TestController(testtools.TestCase):
         self.assertEqual(tasks[1].type, 'import')
 
     def test_list_tasks_with_status(self):
-        filters = {'filters': dict([('status', 'processing')])}
+        filters = {'filters': {'status': 'processing'}}
         tasks = list(self.controller.list(**filters))
         self.assertEqual(tasks[0].id, _OWNED_TASK_ID)
 
     def test_list_tasks_with_wrong_status(self):
-        filters = {'filters': dict([('status', 'fake')])}
+        filters = {'filters': {'status': 'fake'}}
         tasks = list(self.controller.list(**filters))
         self.assertEqual(len(tasks), 0)
 
     def test_list_tasks_with_type(self):
-        filters = {'filters': dict([('type', 'import')])}
+        filters = {'filters': {'type': 'import'}}
         tasks = list(self.controller.list(**filters))
         self.assertEqual(tasks[0].id, _OWNED_TASK_ID)
 
     def test_list_tasks_with_wrong_type(self):
-        filters = {'filters': dict([('type', 'fake')])}
+        filters = {'filters': {'type': 'fake'}}
         tasks = list(self.controller.list(**filters))
         self.assertEqual(len(tasks), 0)
 
     def test_list_tasks_for_owner(self):
-        filters = {'filters': dict([('owner', _OWNER_ID)])}
+        filters = {'filters': {'owner': _OWNER_ID}}
         tasks = list(self.controller.list(**filters))
         self.assertEqual(tasks[0].id, _OWNED_TASK_ID)
 
     def test_list_tasks_for_fake_owner(self):
-        filters = {'filters': dict([('owner', _FAKE_OWNER_ID)])}
+        filters = {'filters': {'owner': _FAKE_OWNER_ID}}
         tasks = list(self.controller.list(**filters))
         self.assertEqual(tasks, [])
 
