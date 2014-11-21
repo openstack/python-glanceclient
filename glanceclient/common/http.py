@@ -157,6 +157,10 @@ class HTTPClient(object):
         headers = kwargs.pop("headers", {})
         headers = headers and copy.deepcopy(headers) or {}
 
+        if self.identity_headers:
+            for k, v in six.iteritems(self.identity_headers):
+                headers.setdefault(k, v)
+
         # Default Content-Type is octet-stream
         content_type = headers.get('Content-Type', 'application/octet-stream')
 
