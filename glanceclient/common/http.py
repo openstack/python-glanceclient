@@ -94,7 +94,7 @@ class HTTPClient(object):
         return netutils.urlsplit(endpoint)
 
     def log_curl_request(self, method, url, headers, data, kwargs):
-        curl = ['curl -i -X %s' % method]
+        curl = ['curl -g -i -X %s' % method]
 
         headers = copy.deepcopy(headers)
         headers.update(self.session.headers)
