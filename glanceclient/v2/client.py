@@ -35,8 +35,10 @@ class Client(object):
     """
 
     def __init__(self, endpoint, *args, **kwargs):
-        self.http_client = http.HTTPClient(utils.strip_version(endpoint),
-                                           *args, **kwargs)
+        endpoint, version = utils.strip_version(endpoint)
+        self.version = version or 2.0
+        self.http_client = http.HTTPClient(endpoint, *args, **kwargs)
+
         self.schemas = schemas.Controller(self.http_client)
 
         self.images = images.Controller(self.http_client, self.schemas)

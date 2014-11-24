@@ -335,14 +335,22 @@ def get_data_file(args):
 
 def strip_version(endpoint):
     """Strip version from the last component of endpoint if present."""
+    # NOTE(flaper87): This shouldn't be necessary if
+    # we make endpoint the first argument. However, we
+    # can't do that just yet because we need to keep
+    # backwards compatibility.
+    if not isinstance(endpoint, six.string_types):
+        raise ValueError("Expected endpoint")
+
+    version = None
     # Get rid of trailing '/' if present
-    if endpoint.endswith('/'):
-        endpoint = endpoint[:-1]
+    endpoint = endpoint.rstrip('/')
     url_bits = endpoint.split('/')
     # regex to match 'v1' or 'v2.0' etc
     if re.match('v\d+\.?\d*', url_bits[-1]):
+        version = float(url_bits[-1].lstrip('v'))
         endpoint = '/'.join(url_bits[:-1])
-    return endpoint
+    return endpoint, version
 
 
 def print_image(image_obj, max_col_width=None):

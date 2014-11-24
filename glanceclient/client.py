@@ -13,10 +13,27 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import warnings
+
 from glanceclient.common import utils
 
 
-def Client(version, *args, **kwargs):
+def Client(version=None, endpoint=None, *args, **kwargs):
+    if version is not None:
+        warnings.warn(("`version` keyword is being deprecated. Please pass the"
+                       " version as part of the URL. "
+                       "http://$HOST:$PORT/v$VERSION_NUMBER"),
+                      DeprecationWarning)
+
+    endpoint, url_version = utils.strip_version(endpoint)
+
+    if not url_version and not version:
+        msg = ("Please provide either the version or an url with the form "
+               "http://$HOST:$PORT/v$VERSION_NUMBER")
+        raise RuntimeError(msg)
+
+    version = int(version or url_version)
+
     module = utils.import_versioned_module(version, 'client')
     client_class = getattr(module, 'Client')
-    return client_class(*args, **kwargs)
+    return client_class(endpoint, *args, **kwargs)

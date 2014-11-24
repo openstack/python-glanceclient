@@ -1,4 +1,4 @@
-# Copyright 2013 OpenStack LLC.
+# Copyright 2014 Red Hat, Inc.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -15,22 +15,32 @@
 
 import testtools
 
-from glanceclient.v1 import client
+from glanceclient import client
+from glanceclient.v1 import client as v1
+from glanceclient.v2 import client as v2
 
 
 class ClientTest(testtools.TestCase):
 
-    def setUp(self):
-        super(ClientTest, self).setUp()
+    def test_no_endpoint_error(self):
+        self.assertRaises(ValueError, client.Client, None)
 
     def test_endpoint(self):
-        gc = client.Client("http://example.com")
+        gc = client.Client(1, "http://example.com")
         self.assertEqual("http://example.com", gc.http_client.endpoint)
+        self.assertIsInstance(gc, v1.Client)
 
     def test_versioned_endpoint(self):
-        gc = client.Client("http://example.com/v1")
+        gc = client.Client(1, "http://example.com/v2")
         self.assertEqual("http://example.com", gc.http_client.endpoint)
+        self.assertIsInstance(gc, v1.Client)
+
+    def test_versioned_endpoint_no_version(self):
+        gc = client.Client(endpoint="http://example.com/v2")
+        self.assertEqual("http://example.com", gc.http_client.endpoint)
+        self.assertIsInstance(gc, v2.Client)
 
     def test_versioned_endpoint_with_minor_revision(self):
-        gc = client.Client("http://example.com/v1.1")
+        gc = client.Client(2.2, "http://example.com/v2.1")
         self.assertEqual("http://example.com", gc.http_client.endpoint)
+        self.assertIsInstance(gc, v2.Client)

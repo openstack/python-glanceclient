@@ -167,7 +167,7 @@ class ShellTest(utils.TestCase):
         assert v1_client.called
         (args, kwargs) = v1_client.call_args
         self.assertEqual('mytoken', kwargs['token'])
-        self.assertEqual('https://image:1234/v1', args[0])
+        self.assertEqual('https://image:1234', args[0])
 
     @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas')
     def test_no_auth_with_token_and_image_url_with_v2(self,
@@ -181,7 +181,7 @@ class ShellTest(utils.TestCase):
             glance_shell = openstack_shell.OpenStackImagesShell()
             glance_shell.main(args.split())
             ((args), kwargs) = v2_client.call_args
-            self.assertEqual('https://image:1234/v2', args[0])
+            self.assertEqual('https://image:1234', args[0])
             self.assertEqual('mytoken', kwargs['token'])
 
     def _assert_auth_plugin_args(self, mock_auth_plugin):

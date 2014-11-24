@@ -248,14 +248,19 @@ class OpenStackImagesShell(object):
 
         parser.add_argument('--os-image-url',
                             default=utils.env('OS_IMAGE_URL'),
-                            help='Defaults to env[OS_IMAGE_URL].')
+                            help=('Defaults to env[OS_IMAGE_URL]. '
+                                  'If the provided image url contains a '
+                                  'a version number and '
+                                  '`--os-image-api-version` is omitted '
+                                  'the version of the URL will be picked as '
+                                  'the image api version to use.'))
 
         parser.add_argument('--os_image_url',
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--os-image-api-version',
                             default=utils.env('OS_IMAGE_API_VERSION',
-                                              default='1'),
+                                              default=None),
                             help='Defaults to env[OS_IMAGE_API_VERSION] or 1.')
 
         parser.add_argument('--os_image_api_version',
@@ -579,10 +584,22 @@ class OpenStackImagesShell(object):
         parser = self.get_base_parser()
         (options, args) = parser.parse_known_args(base_argv)
 
-        # build available subcommands based on version
-        api_version = options.os_image_api_version
+        try:
+            # NOTE(flaper87): Try to get the version from the
+            # image-url first. If no version was specified, fallback
+            # to the api-image-version arg. If both of these fail then
+            # fallback to the minimum supported one and let keystone
+            # do the magic.
+            endpoint = self._get_image_url(options)
+            endpoint, url_version = utils.strip_version(endpoint)
+        except ValueError:
+            # NOTE(flaper87): ValueError is raised if no endpoint is povided
+            url_version = None
 
-        if api_version == '2':
+        # build available subcommands based on version
+        api_version = int(options.os_image_api_version or url_version or 1)
+
+        if api_version == 2:
             self._cache_schemas(options)
 
         subcommand_parser = self.get_subcommand_parser(api_version)
