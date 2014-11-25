@@ -29,10 +29,9 @@ class Client(object):
                             http requests. (optional)
     """
 
-    def __init__(self, endpoint, **kwargs):
+    def __init__(self, endpoint=None, **kwargs):
         """Initialize a new client for the Images v1 API."""
-        endpoint, version = utils.strip_version(endpoint)
-        self.version = version or 1.0
-        self.http_client = http.HTTPClient(endpoint, **kwargs)
+        endpoint, self.version = utils.endpoint_version_from_url(endpoint, 1.0)
+        self.http_client = http.get_http_client(endpoint=endpoint, **kwargs)
         self.images = ImageManager(self.http_client)
         self.image_members = ImageMemberManager(self.http_client)

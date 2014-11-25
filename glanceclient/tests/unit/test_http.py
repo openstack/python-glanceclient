@@ -12,13 +12,17 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import functools
 import json
 
+from keystoneclient.auth import token_endpoint
+from keystoneclient import session
 import mock
 import requests
 from requests_mock.contrib import fixture
 import six
 from six.moves.urllib import parse
+from testscenarios import load_tests_apply_scenarios as load_tests  # noqa
 import testtools
 from testtools import matchers
 import types
@@ -30,7 +34,29 @@ from glanceclient import exc
 from glanceclient.tests import utils
 
 
+def original_only(f):
+    @functools.wraps(f)
+    def wrapper(self, *args, **kwargs):
+        if not hasattr(self.client, 'log_curl_request'):
+            self.skipTest('Skip logging tests for session client')
+
+        return f(self, *args, **kwargs)
+
+
 class TestClient(testtools.TestCase):
+
+    scenarios = [
+        ('httpclient', {'create_client': '_create_http_client'}),
+        ('session', {'create_client': '_create_session_client'})
+    ]
+
+    def _create_http_client(self):
+        return http.HTTPClient(self.endpoint, token=self.token)
+
+    def _create_session_client(self):
+        auth = token_endpoint.Token(self.endpoint, self.token)
+        sess = session.Session(auth=auth)
+        return http.SessionClient(sess)
 
     def setUp(self):
         super(TestClient, self).setUp()
@@ -38,7 +64,9 @@ class TestClient(testtools.TestCase):
 
         self.endpoint = 'http://example.com:9292'
         self.ssl_endpoint = 'https://example.com:9292'
-        self.client = http.HTTPClient(self.endpoint, token=u'abc123')
+        self.token = u'abc123'
+
+        self.client = getattr(self, self.create_client)()
 
     def test_identity_headers_and_token(self):
         identity_headers = {
@@ -140,6 +168,9 @@ class TestClient(testtools.TestCase):
         self.assertEqual(text, resp.text)
 
     def test_headers_encoding(self):
+        if not hasattr(self.client, 'encode_headers'):
+            self.skipTest('Cannot do header encoding check on SessionClient')
+
         value = u'ni\xf1o'
         headers = {"test": value, "none-val": None}
         encoded = self.client.encode_headers(headers)
@@ -206,6 +237,7 @@ class TestClient(testtools.TestCase):
         self.assertTrue(isinstance(body, types.GeneratorType))
         self.assertEqual([data], list(body))
 
+    @original_only
     def test_log_http_response_with_non_ascii_char(self):
         try:
             response = 'Ok'
@@ -216,6 +248,7 @@ class TestClient(testtools.TestCase):
         except UnicodeDecodeError as e:
             self.fail("Unexpected UnicodeDecodeError exception '%s'" % e)
 
+    @original_only
     def test_log_curl_request_with_non_ascii_char(self):
         try:
             headers = {'header1': 'value1\xa5\xa6'}
@@ -225,6 +258,7 @@ class TestClient(testtools.TestCase):
         except UnicodeDecodeError as e:
             self.fail("Unexpected UnicodeDecodeError exception '%s'" % e)
 
+    @original_only
     @mock.patch('glanceclient.common.http.LOG.debug')
     def test_log_curl_request_with_body_and_header(self, mock_log):
         hd_name = 'header1'

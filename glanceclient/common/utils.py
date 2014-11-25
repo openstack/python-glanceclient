@@ -428,6 +428,14 @@ def safe_header(name, value):
         return name, value
 
 
+def endpoint_version_from_url(endpoint, default_version=None):
+    if endpoint:
+        endpoint, version = strip_version(endpoint)
+        return endpoint, version or default_version
+    else:
+        return None, default_version
+
+
 class IterableWithLength(object):
     def __init__(self, iterable, length):
         self.iterable = iterable
