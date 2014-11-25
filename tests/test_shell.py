@@ -18,6 +18,7 @@ import argparse
 import os
 import sys
 
+import fixtures
 import mock
 import six
 
@@ -66,6 +67,11 @@ class ShellTest(utils.TestCase):
     auth_env = FAKE_V2_ENV.copy()
     # expected auth plugin to invoke
     auth_plugin = 'keystoneclient.auth.identity.v2.Password'
+
+    # Patch os.environ to avoid required auth info
+    def make_env(self, exclude=None, fake_env=FAKE_V2_ENV):
+        env = dict((k, v) for k, v in fake_env.items() if k != exclude)
+        self.useFixture(fixtures.MonkeyPatch('os.environ', env))
 
     def setUp(self):
         super(ShellTest, self).setUp()
@@ -245,6 +251,27 @@ class ShellTest(utils.TestCase):
             glance_shell = openstack_shell.OpenStackImagesShell()
             glance_shell.main(args.split())
             self._assert_auth_plugin_args(mock_auth_plugin)
+
+    @mock.patch('sys.stdin', side_effect=mock.MagicMock)
+    @mock.patch('getpass.getpass', return_value='password')
+    def test_password_prompted_with_v2(self, mock_getpass, mock_stdin):
+        glance_shell = openstack_shell.OpenStackImagesShell()
+        self.make_env(exclude='OS_PASSWORD')
+        # We will get a Connection Refused because there is no keystone.
+        self.assertRaises(ks_exc.ConnectionRefused,
+                          glance_shell.main, ['image-list'])
+        # Make sure we are actually prompted.
+        mock_getpass.assert_called_with('OS Password: ')
+
+    @mock.patch('sys.stdin', side_effect=mock.MagicMock)
+    @mock.patch('getpass.getpass', side_effect=EOFError)
+    def test_password_prompted_ctrlD_with_v2(self, mock_getpass, mock_stdin):
+        glance_shell = openstack_shell.OpenStackImagesShell()
+        self.make_env(exclude='OS_PASSWORD')
+        # We should get Command Error because we mock Ctl-D.
+        self.assertRaises(exc.CommandError, glance_shell.main, ['image-list'])
+        # Make sure we are actually prompted.
+        mock_getpass.assert_called_with('OS Password: ')
 
 
 class ShellTestWithKeystoneV3Auth(ShellTest):
