@@ -56,7 +56,7 @@ class HTTPMultipleChoices(HTTPException):
     code = 300
 
     def __str__(self):
-        self.details = ("Requested version of OpenStack Images API is not"
+        self.details = ("Requested version of OpenStack Images API is not "
                         "available.")
         return "%s (HTTP %s) %s" % (self.__class__.__name__, self.code,
                                     self.details)
