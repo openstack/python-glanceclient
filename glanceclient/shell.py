@@ -284,7 +284,13 @@ class OpenStackImagesShell(object):
 
         self.subcommands = {}
         subparsers = parser.add_subparsers(metavar='<subcommand>')
-        submodule = utils.import_versioned_module(version, 'shell')
+        try:
+            submodule = utils.import_versioned_module(version, 'shell')
+        except ImportError:
+            print('"%s" is not a supported API version. Example '
+                  'values are "1" or "2".' % version)
+            utils.exit()
+
         self._find_actions(subparsers, submodule)
         self._find_actions(subparsers, self)
 
