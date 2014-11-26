@@ -111,7 +111,7 @@ def do_image_list(gc, args):
     filter_items = [(key, getattr(args, key)) for key in filter_keys]
     if args.properties:
         filter_properties = [prop.split('=', 1) for prop in args.properties]
-        if False in (len(pair) == 2 for pair in filter_properties):
+        if any(len(pair) != 2 for pair in filter_properties):
             utils.exit('Argument --property-filter expected properties in the'
                        ' format KEY=VALUE')
         filter_items += filter_properties
