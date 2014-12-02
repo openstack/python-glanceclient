@@ -417,6 +417,10 @@ def _namespace_show(namespace, max_column_width=None):
         objects = [obj['name'] for obj in namespace['objects']]
         namespace['objects'] = objects
 
+    if 'tags' in namespace:
+        tags = [tag['name'] for tag in namespace['tags']]
+        namespace['tags'] = tags
+
     if max_column_width:
         utils.print_dict(namespace, max_column_width)
     else:
@@ -773,6 +777,116 @@ def do_md_object_list(gc, args):
         }
     }
     utils.print_list(objects, columns, field_settings=column_settings)
+
+
+def _tag_show(tag, max_column_width=None):
+    tag = dict(tag)  # Warlock objects are compatible with dicts
+    if max_column_width:
+        utils.print_dict(tag, max_column_width)
+    else:
+        utils.print_dict(tag)
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>',
+           help='Name of the namespace the tag will belong to.')
+@utils.arg('--name', metavar='<NAME>', required=True,
+           help='The name of the new tag to add.')
+def do_md_tag_create(gc, args):
+    """Add a new metadata definitions tag inside a namespace."""
+    name = args.name.strip()
+    if name:
+        new_tag = gc.metadefs_tag.create(args.namespace, name)
+        _tag_show(new_tag)
+    else:
+        utils.exit('Please supply at least one non-blank tag name.')
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>',
+           help='Name of the namespace the tags will belong to.')
+@utils.arg('--names', metavar='<NAMES>', required=True,
+           help='A comma separated list of tag names.')
+@utils.arg('--delim', metavar='<DELIM>', required=False,
+           help='The delimiter used to separate the names'
+                ' (if none is provided then the default is a comma).')
+def do_md_tag_create_multiple(gc, args):
+    """Create new metadata definitions tags inside a namespace."""
+    delim = args.delim or ','
+
+    tags = []
+    names_list = args.names.split(delim)
+    for name in names_list:
+        name = name.strip()
+        if name:
+            tags.append(name)
+
+    if not tags:
+        utils.exit('Please supply at least one tag name. For example: '
+                   '--names Tag1')
+
+    fields = {'tags': tags}
+    new_tags = gc.metadefs_tag.create_multiple(args.namespace, **fields)
+    columns = ['name']
+    column_settings = {
+        "description": {
+            "max_width": 50,
+            "align": "l"
+        }
+    }
+    utils.print_list(new_tags, columns, field_settings=column_settings)
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>',
+           help='Name of the namespace to which the tag belongs.')
+@utils.arg('tag', metavar='<TAG>', help='Name of the old tag.')
+@utils.arg('--name', metavar='<NAME>', default=None, required=True,
+           help='New name of the new tag.')
+def do_md_tag_update(gc, args):
+    """Rename a metadata definitions tag inside a namespace."""
+    name = args.name.strip()
+    if name:
+        fields = {'name': name}
+        new_tag = gc.metadefs_tag.update(args.namespace, args.tag,
+                                         **fields)
+        _tag_show(new_tag)
+    else:
+        utils.exit('Please supply at least one non-blank tag name.')
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>',
+           help='Name of the namespace to which the tag belongs.')
+@utils.arg('tag', metavar='<TAG>', help='Name of the tag.')
+def do_md_tag_show(gc, args):
+    """Describe a specific metadata definitions tag inside a namespace."""
+    tag = gc.metadefs_tag.get(args.namespace, args.tag)
+    _tag_show(tag)
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>',
+           help='Name of the namespace to which the tag belongs.')
+@utils.arg('tag', metavar='<TAG>', help='Name of the tag.')
+def do_md_tag_delete(gc, args):
+    """Delete a specific metadata definitions tag inside a namespace."""
+    gc.metadefs_tag.delete(args.namespace, args.tag)
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of namespace.')
+def do_md_namespace_tags_delete(gc, args):
+    """Delete all metadata definitions tags inside a specific namespace."""
+    gc.metadefs_tag.delete_all(args.namespace)
+
+
+@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of namespace.')
+def do_md_tag_list(gc, args):
+    """List metadata definitions tags inside a specific namespace."""
+    tags = gc.metadefs_tag.list(args.namespace)
+    columns = ['name']
+    column_settings = {
+        "description": {
+            "max_width": 50,
+            "align": "l"
+        }
+    }
+    utils.print_list(tags, columns, field_settings=column_settings)
 
 
 @utils.arg('--sort-key', default='status',
