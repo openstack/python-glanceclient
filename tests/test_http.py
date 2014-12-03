@@ -14,6 +14,7 @@
 #    under the License.
 import json
 
+import mock
 from mox3 import mox
 import requests
 import six
@@ -90,6 +91,31 @@ class TestClient(testtools.TestCase):
         http_client_object = http.HTTPClient(self.endpoint, **kwargs)
         self.assertIsNone(http_client_object.auth_token)
         self.assertNotIn('X-Auth-Token', http_client_object.session.headers)
+
+    def test_identity_headers_are_passed(self):
+        # Tests that if token or X-Auth-Token are not provided in the kwargs
+        # when creating the http client, the session headers don't contain
+        # the X-Auth-Token key.
+        identity_headers = {
+            'X-User-Id': 'user',
+            'X-Tenant-Id': 'tenant',
+            'X-Roles': 'roles',
+            'X-Identity-Status': 'Confirmed',
+            'X-Service-Catalog': 'service_catalog',
+        }
+        kwargs = {'identity_headers': identity_headers}
+        http_client = http.HTTPClient(self.endpoint, **kwargs)
+
+        def check_headers(*args, **kwargs):
+            headers = kwargs.get('headers')
+            for k, v in six.iteritems(identity_headers):
+                self.assertEqual(v, headers[k])
+
+            return utils.FakeResponse({}, six.StringIO('{}'))
+
+        with mock.patch.object(http_client.session, 'request') as mreq:
+            mreq.side_effect = check_headers
+            http_client.get('http://example.com:9292/v1/images/my-image')
 
     def test_connection_refused(self):
         """
