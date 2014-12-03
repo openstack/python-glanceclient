@@ -41,6 +41,12 @@ def get_image_schema():
 @utils.arg('--property', metavar="<key=value>", action='append',
            default=[], help=('Arbitrary property to associate with image.'
                              ' May be used multiple times.'))
+@utils.arg('--file', metavar='<FILE>',
+           help='Local file to save downloaded image data to. '
+                'If this is not specified the image data will be '
+                'written to stdout.')
+@utils.arg('--progress', action='store_true', default=False,
+           help='Show upload progress bar.')
 def do_image_create(gc, args):
     """Create a new image."""
     schema = gc.schemas.get("image")
@@ -55,8 +61,19 @@ def do_image_create(gc, args):
         key, value = datum.split('=', 1)
         fields[key] = value
 
+    file_name = fields.pop('file', None)
+    if file_name is not None and os.access(file_name, os.R_OK) is False:
+        utils.exit("File %s does not exist or user does not have read "
+                   "privileges to it" % file_name)
     image = gc.images.create(**fields)
-    utils.print_image(image)
+    try:
+        if file_name is not None:
+            args.id = image['id']
+            args.size = None
+            do_image_upload(gc, args)
+            image = gc.images.get(args.id)
+    finally:
+        utils.print_image(image)
 
 
 @utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to update.')
