@@ -16,7 +16,10 @@
 import os
 
 from OpenSSL import crypto
-from requests.packages.urllib3 import poolmanager
+try:
+    from requests.packages.urllib3 import poolmanager
+except ImportError:
+    from urllib3 import poolmanager
 import testtools
 
 from glanceclient.common import http
@@ -47,9 +50,6 @@ class TestRequestsIntegration(testtools.TestCase):
                                  ssl_compression=False)
         self.assertNotEqual(https.HTTPSConnectionPool,
                             poolmanager.pool_classes_by_scheme["https"])
-
-        self.assertEqual(https.HTTPSConnectionPool,
-                         poolmanager.pool_classes_by_scheme["glance+https"])
 
         adapter = client.session.adapters.get("https://")
         self.assertFalse(isinstance(adapter, https.HTTPSAdapter))

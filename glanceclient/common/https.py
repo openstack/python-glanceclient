@@ -14,19 +14,18 @@
 #    under the License.
 
 import socket
+import ssl
 import struct
 
 import OpenSSL
 from requests import adapters
+from requests import compat
 try:
     from requests.packages.urllib3 import connectionpool
-    from requests.packages.urllib3 import poolmanager
 except ImportError:
     from urllib3 import connectionpool
-    from urllib3 import poolmanager
 
 import six
-import ssl
 
 from glanceclient.common import utils
 
@@ -70,18 +69,36 @@ class HTTPSAdapter(adapters.HTTPAdapter):
     one.
     """
 
-    def __init__(self, *args, **kwargs):
-        # NOTE(flaper87): This line forces poolmanager to use
-        # glanceclient HTTPSConnection
-        classes_by_scheme = poolmanager.pool_classes_by_scheme
-        classes_by_scheme["glance+https"] = HTTPSConnectionPool
-        super(HTTPSAdapter, self).__init__(*args, **kwargs)
-
     def request_url(self, request, proxies):
         # NOTE(flaper87): Make sure the url is encoded, otherwise
         # python's standard httplib will fail with a TypeError.
         url = super(HTTPSAdapter, self).request_url(request, proxies)
         return strutils.safe_encode(url)
+
+    def _create_glance_httpsconnectionpool(self, url):
+        kw = self.poolmanager.connection_kw
+        # Parse the url to get the scheme, host, and port
+        parsed = compat.urlparse(url)
+        # If there is no port specified, we should use the standard HTTPS port
+        port = parsed.port or 443
+        pool = HTTPSConnectionPool(parsed.host, port, **kw)
+
+        with self.poolmanager.pools.lock:
+            self.poolmanager.pools[(parsed.scheme, parsed.host, port)] = pool
+
+        return pool
+
+    def get_connection(self, url, proxies=None):
+        try:
+            return super(HTTPSAdapter, self).get_connection(url, proxies)
+        except KeyError:
+            # NOTE(sigamvirus24): This works around modifying a module global
+            # which fixes bug #1396550
+            # The scheme is most likely glance+https but check anyway
+            if not url.startswith('glance+https://'):
+                raise
+
+            return self._create_glance_httpsconnectionpool(url)
 
     def cert_verify(self, conn, url, verify, cert):
         super(HTTPSAdapter, self).cert_verify(conn, url, verify, cert)
