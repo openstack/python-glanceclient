@@ -37,6 +37,58 @@ See also :doc:`/man/glance`.
 Release Notes
 =============
 
+0.15.0
+------
+
+* Stop requiring a version to create a Client instance. The ``version`` argument is
+  now a keyword. If no ``version`` is specified and a versioned endpoint is
+  supplied, glanceclient will use the endpoint's version. If the endpoint is
+  unversioned and a value for ``version`` is not supplied, glanceclient falls
+  back to v1. This change is backwards-compatible. Examples::
+
+    >>> glanceclient.Client(version=1, endpoint='http://localhost:9292') # returns a v1 client
+    >>> glanceclient.Client(endpoint='http://localhost:9292/v2') # returns a v2 client
+    >>> glanceclient.Client(endpoint='http://localhost:9292') # returns a v1 client
+    >>> glanceclient.Client(2, 'http://localhost:9292/v2') # old behavior is preserved
+
+* Add bash completion to glance client. The new bash completion files are stored in ``tools/glance.bash_completion``
+* Add tty password entry. This prompts for a password if neither ``--os-password`` nor ``OS_PASSWORD`` have been set
+* Add the ``--property-filter`` option from the v1 client to v2 image-list. This allows you to do something similar to::
+
+    $ glance --os-image-api-version 2 image-list --property-filter os_distro=NixOS
+
+* 1324067_: Allow --file flag in v2 image-create. This selects a local disk image to upload during the creation of the image
+* 1395841_: Output a useful error on an invalid ``--os-image-api-version`` argument
+* 1394965_: Add ``identity_headers`` back into the request headers
+* 1350802_: Remove read only options from v2 shell commands. The options omitted are
+
+  - ``created_at``
+  - ``updated_at``
+  - ``file``
+  - ``checksum``
+  - ``virtual_size``
+  - ``size``
+  - ``status``
+  - ``schema``
+  - ``direct_url``
+
+* 1381295_: Stop setting X-Auth-Token key in http session header if there is no token provided
+* 1378844_: Fix ``--public`` being ignored on image-create
+* 1367782_: Fix to ensure ``endpoint_type`` is used by ``_get_endpoint()``
+* 1381816_: Support Pagination for namespace list
+* 1401032_: Add support for enum types in the schema that accept ``None``
+
+.. _1324067: https://bugs.launchpad.net/python-glanceclient/+bug/1324067
+.. _1395841: https://bugs.launchpad.net/python-glanceclient/+bug/1395841
+.. _1394965: https://bugs.launchpad.net/python-glanceclient/+bug/1394965
+.. _1350802: https://bugs.launchpad.net/python-glanceclient/+bug/1350802
+.. _1381295: https://bugs.launchpad.net/python-glanceclient/+bug/1381295
+.. _1378844: https://bugs.launchpad.net/python-glanceclient/+bug/1378844
+.. _1367782: https://bugs.launchpad.net/python-glanceclient/+bug/1367782
+.. _1381816: https://bugs.launchpad.net/python-glanceclient/+bug/1381816
+.. _1401032: https://bugs.launchpad.net/python-glanceclient/+bug/1401032
+
+
 0.14.2
 ------
 
