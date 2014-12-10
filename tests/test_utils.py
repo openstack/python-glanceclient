@@ -117,3 +117,47 @@ class TestUtils(testtools.TestCase):
         ret = utils.exception_to_str(FakeException('\xa5 error message'))
         self.assertEqual("Caught '%(exception)s' exception." %
                          {'exception': 'FakeException'}, ret)
+
+    def test_schema_args_with_list_types(self):
+        # NOTE(flaper87): Regression for bug
+        # https://bugs.launchpad.net/python-glanceclient/+bug/1401032
+
+        def schema_getter(_type='string', enum=False):
+            prop = {
+                'type': ['null', _type],
+                'description': 'Test schema (READ-ONLY)',
+            }
+
+            if enum:
+                prop['enum'] = [None, 'opt-1', 'opt-2']
+
+            def actual_getter():
+                return {
+                    'additionalProperties': False,
+                    'required': ['name'],
+                    'name': 'test_schema',
+                    'properties': {
+                        'test': prop,
+                    }
+                }
+
+            return actual_getter
+
+        def dummy_func():
+            pass
+
+        decorated = utils.schema_args(schema_getter())(dummy_func)
+        arg, opts = decorated.__dict__['arguments'][0]
+        self.assertIn('--test', arg)
+        self.assertEqual(str, opts['type'])
+
+        decorated = utils.schema_args(schema_getter('integer'))(dummy_func)
+        arg, opts = decorated.__dict__['arguments'][0]
+        self.assertIn('--test', arg)
+        self.assertEqual(int, opts['type'])
+
+        decorated = utils.schema_args(schema_getter(enum=True))(dummy_func)
+        arg, opts = decorated.__dict__['arguments'][0]
+        self.assertIn('--test', arg)
+        self.assertEqual(str, opts['type'])
+        self.assertIn('None, opt-1, opt-2', opts['help'])
