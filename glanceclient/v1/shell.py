@@ -321,6 +321,9 @@ def do_image_delete(gc, args):
     """Delete specified image(s)."""
     for args_image in args.images:
         image = utils.find_resource(gc.images, args_image)
+        if image and image.status == "deleted":
+            msg = "No image with an ID of '%s' exists." % image.id
+            raise exc.CommandError(msg)
         try:
             if args.verbose:
                 print('Requesting image delete for %s ...' %

@@ -187,6 +187,28 @@ fixtures = {
             },
             None
         )
+    },
+    '/v1/images/detail?limit=20&name=70aa106f-3750-4d7c-a5ce-0a535ac08d0a': {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': '70aa106f-3750-4d7c-a5ce-0a535ac08d0a',
+                    'name': 'imagedeleted',
+                    'deleted': True,
+                    'status': 'deleted',
+                },
+            ]},
+        ),
+    },
+    '/v1/images/70aa106f-3750-4d7c-a5ce-0a535ac08d0a': {
+        'HEAD': (
+            {
+                'x-image-meta-id': '70aa106f-3750-4d7c-a5ce-0a535ac08d0a',
+                'x-image-meta-status': 'deleted'
+            },
+            None
+        )
     }
 }
 
@@ -384,6 +406,16 @@ class ShellStdinHandlingTests(testtools.TestCase):
                 human_readable=False,
                 file=None,
                 progress=False
+            )
+        )
+
+    def test_image_delete_deleted(self):
+        self.assertRaises(
+            exc.CommandError,
+            v1shell.do_image_delete,
+            self.gc,
+            argparse.Namespace(
+                images=['70aa106f-3750-4d7c-a5ce-0a535ac08d0a']
             )
         )
 

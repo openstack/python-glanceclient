@@ -350,6 +350,18 @@ class ShellV2Test(testtools.TestCase):
 
             mocked_delete.assert_called_once_with('pass')
 
+    def test_do_image_delete_deleted(self):
+        image_id = 'deleted-img'
+        args = self._make_args({'id': image_id})
+        with mock.patch.object(self.gc.images, 'get') as mocked_get:
+            mocked_get.return_value = self._make_args({'id': image_id,
+                                                       'status': 'deleted'})
+
+            msg = "No image with an ID of '%s' exists." % image_id
+            self.assert_exits_with_msg(func=test_shell.do_image_delete,
+                                       func_args=args,
+                                       err_msg=msg)
+
     def test_do_member_list(self):
         args = self._make_args({'image_id': 'IMG-01'})
         with mock.patch.object(self.gc.image_members, 'list') as mocked_list:
