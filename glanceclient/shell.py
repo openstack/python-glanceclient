@@ -597,7 +597,11 @@ class OpenStackImagesShell(object):
             url_version = None
 
         # build available subcommands based on version
-        api_version = int(options.os_image_api_version or url_version or 1)
+        try:
+            api_version = int(options.os_image_api_version or url_version or 1)
+        except ValueError:
+            print("Invalid API version parameter")
+            utils.exit()
 
         if api_version == 2:
             self._cache_schemas(options)
