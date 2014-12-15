@@ -34,10 +34,10 @@ class Client(object):
                             http requests. (optional)
     """
 
-    def __init__(self, endpoint, *args, **kwargs):
+    def __init__(self, endpoint, **kwargs):
         endpoint, version = utils.strip_version(endpoint)
         self.version = version or 2.0
-        self.http_client = http.HTTPClient(endpoint, *args, **kwargs)
+        self.http_client = http.HTTPClient(endpoint, **kwargs)
 
         self.schemas = schemas.Controller(self.http_client)
 
