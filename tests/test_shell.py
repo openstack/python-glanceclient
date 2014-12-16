@@ -19,7 +19,11 @@ import os
 import sys
 
 import fixtures
+from keystoneclient import exceptions as ks_exc
+from keystoneclient import fixture as ks_fixture
 import mock
+import requests
+from requests_mock.contrib import fixture as rm_fixture
 import six
 
 from glanceclient import exc
@@ -28,11 +32,7 @@ from glanceclient import shell as openstack_shell
 #NOTE (esheffield) Used for the schema caching tests
 from glanceclient.v2 import schemas as schemas
 import json
-from tests import keystone_client_fixtures
 from tests import utils
-
-import keystoneclient
-from keystoneclient.openstack.common.apiclient import exceptions as ks_exc
 
 
 DEFAULT_IMAGE_URL = 'http://127.0.0.1:5000/'
@@ -43,8 +43,8 @@ DEFAULT_TENANT_NAME = 'tenant_name'
 DEFAULT_PROJECT_ID = '0123456789'
 DEFAULT_USER_DOMAIN_NAME = 'user_domain_name'
 DEFAULT_UNVERSIONED_AUTH_URL = 'http://127.0.0.1:5000/'
-DEFAULT_V2_AUTH_URL = 'http://127.0.0.1:5000/v2.0/'
-DEFAULT_V3_AUTH_URL = 'http://127.0.0.1:5000/v3/'
+DEFAULT_V2_AUTH_URL = '%sv2.0' % DEFAULT_UNVERSIONED_AUTH_URL
+DEFAULT_V3_AUTH_URL = '%sv3' % DEFAULT_UNVERSIONED_AUTH_URL
 DEFAULT_AUTH_TOKEN = ' 3bcc3d3a03f44e3d8377f9247b0ad155'
 TEST_SERVICE_URL = 'http://127.0.0.1:5000/'
 
@@ -66,6 +66,7 @@ class ShellTest(utils.TestCase):
     # auth environment to use
     auth_env = FAKE_V2_ENV.copy()
     # expected auth plugin to invoke
+    token_url = DEFAULT_V2_AUTH_URL + '/tokens'
     auth_plugin = 'keystoneclient.auth.identity.v2.Password'
 
     # Patch os.environ to avoid required auth info
@@ -77,6 +78,17 @@ class ShellTest(utils.TestCase):
         super(ShellTest, self).setUp()
         global _old_env
         _old_env, os.environ = os.environ, self.auth_env
+
+        self.requests = self.useFixture(rm_fixture.Fixture())
+
+        json_list = ks_fixture.DiscoveryList(DEFAULT_UNVERSIONED_AUTH_URL)
+        self.requests.get(DEFAULT_IMAGE_URL, json=json_list, status_code=300)
+
+        json_v2 = {'version': ks_fixture.V2Discovery(DEFAULT_V2_AUTH_URL)}
+        self.requests.get(DEFAULT_V2_AUTH_URL, json=json_v2)
+
+        json_v3 = {'version': ks_fixture.V3Discovery(DEFAULT_V3_AUTH_URL)}
+        self.requests.get(DEFAULT_V3_AUTH_URL, json=json_v3)
 
         global shell, _shell, assert_called, assert_called_anytime
         _shell = openstack_shell.OpenStackImagesShell()
@@ -187,20 +199,14 @@ class ShellTest(utils.TestCase):
     def _assert_auth_plugin_args(self, mock_auth_plugin):
         # make sure our auth plugin is invoked with the correct args
         mock_auth_plugin.assert_called_once_with(
-            keystone_client_fixtures.V2_URL,
+            DEFAULT_V2_AUTH_URL,
             self.auth_env['OS_USERNAME'],
             self.auth_env['OS_PASSWORD'],
             tenant_name=self.auth_env['OS_TENANT_NAME'],
             tenant_id='')
 
     @mock.patch('glanceclient.v1.client.Client')
-    @mock.patch('keystoneclient.session.Session')
-    @mock.patch.object(keystoneclient.discover.Discover, 'url_for',
-                       side_effect=[keystone_client_fixtures.V2_URL, None])
-    def test_auth_plugin_invocation_with_v1(self,
-                                            v1_client,
-                                            ks_session,
-                                            url_for):
+    def test_auth_plugin_invocation_with_v1(self, v1_client):
         with mock.patch(self.auth_plugin) as mock_auth_plugin:
             args = 'image-list'
             glance_shell = openstack_shell.OpenStackImagesShell()
@@ -208,14 +214,9 @@ class ShellTest(utils.TestCase):
             self._assert_auth_plugin_args(mock_auth_plugin)
 
     @mock.patch('glanceclient.v2.client.Client')
-    @mock.patch('keystoneclient.session.Session')
     @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas')
-    @mock.patch.object(keystoneclient.discover.Discover, 'url_for',
-                       side_effect=[keystone_client_fixtures.V2_URL, None])
     def test_auth_plugin_invocation_with_v2(self,
                                             v2_client,
-                                            ks_session,
-                                            url_for,
                                             cache_schemas):
         with mock.patch(self.auth_plugin) as mock_auth_plugin:
             args = '--os-image-api-version 2 image-list'
@@ -224,40 +225,29 @@ class ShellTest(utils.TestCase):
             self._assert_auth_plugin_args(mock_auth_plugin)
 
     @mock.patch('glanceclient.v1.client.Client')
-    @mock.patch('keystoneclient.session.Session')
-    @mock.patch.object(keystoneclient.discover.Discover, 'url_for',
-                       side_effect=[keystone_client_fixtures.V2_URL,
-                                    keystone_client_fixtures.V3_URL])
     def test_auth_plugin_invocation_with_unversioned_auth_url_with_v1(
-            self, v1_client, ks_session, url_for):
+            self, v1_client):
         with mock.patch(self.auth_plugin) as mock_auth_plugin:
-            args = '--os-auth-url %s image-list' % (
-                keystone_client_fixtures.BASE_URL)
+            args = '--os-auth-url %s image-list' % DEFAULT_UNVERSIONED_AUTH_URL
             glance_shell = openstack_shell.OpenStackImagesShell()
             glance_shell.main(args.split())
             self._assert_auth_plugin_args(mock_auth_plugin)
 
     @mock.patch('glanceclient.v2.client.Client')
-    @mock.patch('keystoneclient.session.Session')
     @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas')
-    @mock.patch.object(keystoneclient.discover.Discover, 'url_for',
-                       side_effect=[keystone_client_fixtures.V2_URL,
-                                    keystone_client_fixtures.V3_URL])
     def test_auth_plugin_invocation_with_unversioned_auth_url_with_v2(
-            self, v2_client, ks_session, cache_schemas, url_for):
+            self, v2_client, cache_schemas):
         with mock.patch(self.auth_plugin) as mock_auth_plugin:
             args = ('--os-auth-url %s --os-image-api-version 2 '
-                    'image-list') % (keystone_client_fixtures.BASE_URL)
+                    'image-list') % DEFAULT_UNVERSIONED_AUTH_URL
             glance_shell = openstack_shell.OpenStackImagesShell()
             glance_shell.main(args.split())
             self._assert_auth_plugin_args(mock_auth_plugin)
 
     @mock.patch('sys.stdin', side_effect=mock.MagicMock)
     @mock.patch('getpass.getpass', return_value='password')
-    @mock.patch('keystoneclient.session.Session.get_token',
-                side_effect=ks_exc.ConnectionRefused)
-    def test_password_prompted_with_v2(self, mock_session, mock_getpass,
-                                       mock_stdin):
+    def test_password_prompted_with_v2(self, mock_getpass, mock_stdin):
+        self.requests.post(self.token_url, exc=requests.ConnectionError)
         glance_shell = openstack_shell.OpenStackImagesShell()
         self.make_env(exclude='OS_PASSWORD')
         self.assertRaises(ks_exc.ConnectionRefused,
@@ -352,12 +342,13 @@ class ShellTest(utils.TestCase):
 class ShellTestWithKeystoneV3Auth(ShellTest):
     # auth environment to use
     auth_env = FAKE_V3_ENV.copy()
+    token_url = DEFAULT_V3_AUTH_URL + '/auth/tokens'
     # expected auth plugin to invoke
     auth_plugin = 'keystoneclient.auth.identity.v3.Password'
 
     def _assert_auth_plugin_args(self, mock_auth_plugin):
         mock_auth_plugin.assert_called_once_with(
-            keystone_client_fixtures.V3_URL,
+            DEFAULT_V3_AUTH_URL,
             user_id='',
             username=self.auth_env['OS_USERNAME'],
             password=self.auth_env['OS_PASSWORD'],
@@ -369,13 +360,7 @@ class ShellTestWithKeystoneV3Auth(ShellTest):
             project_domain_name='')
 
     @mock.patch('glanceclient.v1.client.Client')
-    @mock.patch('keystoneclient.session.Session')
-    @mock.patch.object(keystoneclient.discover.Discover, 'url_for',
-                       side_effect=[None, keystone_client_fixtures.V3_URL])
-    def test_auth_plugin_invocation_with_v1(self,
-                                            v1_client,
-                                            ks_session,
-                                            url_for):
+    def test_auth_plugin_invocation_with_v1(self, v1_client):
         with mock.patch(self.auth_plugin) as mock_auth_plugin:
             args = 'image-list'
             glance_shell = openstack_shell.OpenStackImagesShell()
@@ -383,29 +368,19 @@ class ShellTestWithKeystoneV3Auth(ShellTest):
             self._assert_auth_plugin_args(mock_auth_plugin)
 
     @mock.patch('glanceclient.v2.client.Client')
-    @mock.patch('keystoneclient.session.Session')
     @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas')
-    @mock.patch.object(keystoneclient.discover.Discover, 'url_for',
-                       side_effect=[None, keystone_client_fixtures.V3_URL])
-    def test_auth_plugin_invocation_with_v2(self,
-                                            v2_client,
-                                            ks_session,
-                                            url_for,
-                                            cache_schemas):
+    def test_auth_plugin_invocation_with_v2(self, v2_client, cache_schemas):
         with mock.patch(self.auth_plugin) as mock_auth_plugin:
             args = '--os-image-api-version 2 image-list'
             glance_shell = openstack_shell.OpenStackImagesShell()
             glance_shell.main(args.split())
             self._assert_auth_plugin_args(mock_auth_plugin)
 
-    @mock.patch('keystoneclient.session.Session')
     @mock.patch('keystoneclient.discover.Discover',
                 side_effect=ks_exc.ClientException())
     def test_api_discovery_failed_with_unversioned_auth_url(self,
-                                                            ks_session,
                                                             discover):
-        args = '--os-auth-url %s image-list' % (
-            keystone_client_fixtures.BASE_URL)
+        args = '--os-auth-url %s image-list' % DEFAULT_UNVERSIONED_AUTH_URL
         glance_shell = openstack_shell.OpenStackImagesShell()
         self.assertRaises(exc.CommandError, glance_shell.main, args.split())
 
