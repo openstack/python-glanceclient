@@ -168,6 +168,8 @@ class HTTPClient(object):
             chunk = body
             while chunk:
                 chunk = body.read(CHUNKSIZE)
+                if chunk == '':
+                    break
                 yield chunk
 
         data = kwargs.pop("data", None)
