@@ -480,12 +480,12 @@ class OpenStackImagesShell(object):
             project_info = (args.os_tenant_name or
                             args.os_tenant_id or
                             (args.os_project_name and
-                            (args.project_domain_name or
-                                args.project_domain_id)) or
+                            (args.os_project_domain_name or
+                                args.os_project_domain_id)) or
                             args.os_project_id)
 
             if (not project_info):
-                # tenent is deprecated in Keystone v3. Use the latest
+                # tenant is deprecated in Keystone v3. Use the latest
                 # terminology instead.
                 raise exc.CommandError(
                     _("You must provide a project_id or project_name ("

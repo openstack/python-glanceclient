@@ -273,6 +273,22 @@ class ShellTest(utils.TestCase):
         # Make sure we are actually prompted.
         mock_getpass.assert_called_with('OS Password: ')
 
+    @mock.patch(
+        'glanceclient.shell.OpenStackImagesShell._get_keystone_session')
+    @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas')
+    def test_no_auth_with_proj_name(self, cache_schemas, session):
+        with mock.patch('glanceclient.v2.client.Client'):
+            args = ('--os-project-name myname '
+                    '--os-project-domain-name mydomain '
+                    '--os-project-domain-id myid '
+                    '--os-image-api-version 2 image-list')
+            glance_shell = openstack_shell.OpenStackImagesShell()
+            glance_shell.main(args.split())
+            ((args), kwargs) = session.call_args
+            self.assertEqual('myname', kwargs['project_name'])
+            self.assertEqual('mydomain', kwargs['project_domain_name'])
+            self.assertEqual('myid', kwargs['project_domain_id'])
+
 
 class ShellTestWithKeystoneV3Auth(ShellTest):
     # auth environment to use
