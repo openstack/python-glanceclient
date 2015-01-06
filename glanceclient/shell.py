@@ -30,13 +30,13 @@ import sys
 import traceback
 
 from oslo.utils import encodeutils
+from oslo.utils import importutils
 import six.moves.urllib.parse as urlparse
 
 import glanceclient
 from glanceclient.common import utils
 from glanceclient import exc
 from glanceclient.openstack.common.gettextutils import _
-from glanceclient.openstack.common import importutils
 
 from keystoneclient.auth.identity import v2 as v2_auth
 from keystoneclient.auth.identity import v3 as v3_auth
