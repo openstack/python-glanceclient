@@ -20,10 +20,12 @@ import functools
 import six
 import sys
 
+from oslo.utils import encodeutils
+from oslo.utils import strutils
+
 from glanceclient.common import progressbar
 from glanceclient.common import utils
 from glanceclient import exc
-from glanceclient.openstack.common import strutils
 import glanceclient.v1.images
 
 CONTAINER_FORMATS = 'Acceptable formats: ami, ari, aki, bare, and ovf.'
@@ -327,7 +329,7 @@ def do_image_delete(gc, args):
         try:
             if args.verbose:
                 print('Requesting image delete for %s ...' %
-                      strutils.safe_encode(args_image), end=' ')
+                      encodeutils.safe_decode(args_image), end=' ')
 
             gc.images.delete(image)
 

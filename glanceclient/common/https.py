@@ -14,6 +14,7 @@
 #    under the License.
 
 import socket
+import ssl
 import struct
 
 import OpenSSL
@@ -25,8 +26,8 @@ except ImportError:
     from urllib3 import connectionpool
     from urllib3 import poolmanager
 
+from oslo.utils import encodeutils
 import six
-import ssl
 
 from glanceclient.common import utils
 
@@ -50,7 +51,6 @@ except ImportError:
 
 
 from glanceclient import exc
-from glanceclient.openstack.common import strutils
 
 
 def to_bytes(s):
@@ -81,7 +81,7 @@ class HTTPSAdapter(adapters.HTTPAdapter):
         # NOTE(flaper87): Make sure the url is encoded, otherwise
         # python's standard httplib will fail with a TypeError.
         url = super(HTTPSAdapter, self).request_url(request, proxies)
-        return strutils.safe_encode(url)
+        return encodeutils.safe_encode(url)
 
     def cert_verify(self, conn, url, verify, cert):
         super(HTTPSAdapter, self).cert_verify(conn, url, verify, cert)

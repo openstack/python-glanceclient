@@ -29,6 +29,7 @@ from os.path import expanduser
 import sys
 import traceback
 
+from oslo.utils import encodeutils
 import six.moves.urllib.parse as urlparse
 
 import glanceclient
@@ -36,7 +37,6 @@ from glanceclient.common import utils
 from glanceclient import exc
 from glanceclient.openstack.common.gettextutils import _
 from glanceclient.openstack.common import importutils
-from glanceclient.openstack.common import strutils
 
 from keystoneclient.auth.identity import v2 as v2_auth
 from keystoneclient.auth.identity import v3 as v3_auth
@@ -695,7 +695,7 @@ class HelpFormatter(argparse.HelpFormatter):
 
 def main():
     try:
-        OpenStackImagesShell().main(map(strutils.safe_decode, sys.argv[1:]))
+        OpenStackImagesShell().main(map(encodeutils.safe_decode, sys.argv[1:]))
     except KeyboardInterrupt:
         print('... terminating glance client', file=sys.stderr)
         sys.exit(1)

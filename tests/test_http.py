@@ -97,11 +97,11 @@ class TestClient(testtools.TestCase):
         # when creating the http client, the session headers don't contain
         # the X-Auth-Token key.
         identity_headers = {
-            'X-User-Id': 'user',
-            'X-Tenant-Id': 'tenant',
-            'X-Roles': 'roles',
-            'X-Identity-Status': 'Confirmed',
-            'X-Service-Catalog': 'service_catalog',
+            b'X-User-Id': b'user',
+            b'X-Tenant-Id': b'tenant',
+            b'X-Roles': b'roles',
+            b'X-Identity-Status': b'Confirmed',
+            b'X-Service-Catalog': b'service_catalog',
         }
         kwargs = {'identity_headers': identity_headers}
         http_client = http.HTTPClient(self.endpoint, **kwargs)
@@ -165,10 +165,7 @@ class TestClient(testtools.TestCase):
         value = u'ni\xf1o'
         headers = {"test": value}
         encoded = self.client.encode_headers(headers)
-        if six.PY2:
-            self.assertEqual("ni\xc3\xb1o", encoded["test"])
-        else:
-            self.assertEqual(value, encoded["test"])
+        self.assertEqual(b"ni\xc3\xb1o", encoded[b"test"])
 
     def test_raw_request(self):
         " Verify the path being used for HTTP requests reflects accurately. "

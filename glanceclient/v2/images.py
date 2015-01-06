@@ -14,13 +14,14 @@
 #    under the License.
 
 import json
+
+from oslo.utils import encodeutils
 import six
 from six.moves.urllib import parse
 import warlock
 
 from glanceclient.common import utils
 from glanceclient import exc
-from glanceclient.openstack.common import strutils
 from glanceclient.v2 import schemas
 
 DEFAULT_PAGE_SIZE = 20
@@ -83,11 +84,11 @@ class Controller(object):
 
         for tag in tags:
             if isinstance(tag, six.string_types):
-                tags_url_params.append({'tag': strutils.safe_encode(tag)})
+                tags_url_params.append({'tag': encodeutils.safe_encode(tag)})
 
         for param, value in six.iteritems(filters):
             if isinstance(value, six.string_types):
-                filters[param] = strutils.safe_encode(value)
+                filters[param] = encodeutils.safe_encode(value)
 
         url = '/v2/images?%s' % parse.urlencode(filters)
 
