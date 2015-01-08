@@ -21,6 +21,19 @@ wrong the tests might raise AssertionError. I've indicated in comments the
 places where actual behavior differs from the spec.
 """
 
+########################################################################
+#
+# THIS MODULE IS DEPRECATED
+#
+# Please refer to
+# https://etherpad.openstack.org/p/kilo-glanceclient-library-proposals for
+# the discussion leading to this deprecation.
+#
+# We recommend checking out the python-openstacksdk project
+# (https://launchpad.net/python-openstacksdk) instead.
+#
+########################################################################
+
 # W0102: Dangerous default value %s as argument
 # pylint: disable=W0102
 
@@ -33,7 +46,9 @@ from six.moves.urllib import parse
 from glanceclient.openstack.common.apiclient import client
 
 
-def assert_has_keys(dct, required=[], optional=[]):
+def assert_has_keys(dct, required=None, optional=None):
+    required = required or []
+    optional = optional or []
     for k in required:
         try:
             assert k in dct
@@ -79,7 +94,7 @@ class FakeHTTPClient(client.HTTPClient):
     def __init__(self, *args, **kwargs):
         self.callstack = []
         self.fixtures = kwargs.pop("fixtures", None) or {}
-        if not args and not "auth_plugin" in kwargs:
+        if not args and "auth_plugin" not in kwargs:
             args = (None, )
         super(FakeHTTPClient, self).__init__(*args, **kwargs)
 
@@ -166,6 +181,8 @@ class FakeHTTPClient(client.HTTPClient):
         else:
             status, body = resp
             headers = {}
+        self.last_request_id = headers.get('x-openstack-request-id',
+                                           'req-test')
         return TestResponse({
             "status_code": status,
             "text": body,

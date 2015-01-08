@@ -25,6 +25,7 @@ OpenStack Client interface. Handles the REST calls and responses.
 # E0202: An attribute inherited from %s hide this method
 # pylint: disable=E0202
 
+import hashlib
 import logging
 import time
 
@@ -33,19 +34,22 @@ try:
 except ImportError:
     import json
 
+from oslo.utils import encodeutils
+from oslo.utils import importutils
 import requests
 
+from glanceclient.openstack.common._i18n import _
 from glanceclient.openstack.common.apiclient import exceptions
-from glanceclient.openstack.common import importutils
-
 
 _logger = logging.getLogger(__name__)
+SENSITIVE_HEADERS = ('X-Auth-Token', 'X-Subject-Token',)
 
 
 class HTTPClient(object):
     """This client handles sending HTTP requests to OpenStack servers.
 
     Features:
+
     - share authentication information between several clients to different
       services (e.g., for compute and image clients);
     - reissue authentication request for expired tokens;
@@ -96,19 +100,32 @@ class HTTPClient(object):
         self.http = http or requests.Session()
 
         self.cached_token = None
+        self.last_request_id = None
+
+    def _safe_header(self, name, value):
+        if name in SENSITIVE_HEADERS:
+            # because in python3 byte string handling is ... ug
+            v = value.encode('utf-8')
+            h = hashlib.sha1(v)
+            d = h.hexdigest()
+            return encodeutils.safe_decode(name), "{SHA1}%s" % d
+        else:
+            return (encodeutils.safe_decode(name),
+                    encodeutils.safe_decode(value))
 
     def _http_log_req(self, method, url, kwargs):
         if not self.debug:
             return
 
         string_parts = [
-            "curl -i",
+            "curl -g -i",
             "-X '%s'" % method,
             "'%s'" % url,
         ]
 
         for element in kwargs['headers']:
-            header = "-H '%s: %s'" % (element, kwargs['headers'][element])
+            header = ("-H '%s: %s'" %
+                      self._safe_header(element, kwargs['headers'][element]))
             string_parts.append(header)
 
         _logger.debug("REQ: %s" % " ".join(string_parts))
@@ -151,10 +168,10 @@ class HTTPClient(object):
         :param method: method of HTTP request
         :param url: URL of HTTP request
         :param kwargs: any other parameter that can be passed to
-'            requests.Session.request (such as `headers`) or `json`
+             requests.Session.request (such as `headers`) or `json`
              that will be encoded as JSON and used as `data` argument
         """
-        kwargs.setdefault("headers", kwargs.get("headers", {}))
+        kwargs.setdefault("headers", {})
         kwargs["headers"]["User-Agent"] = self.user_agent
         if self.original_ip:
             kwargs["headers"]["Forwarded"] = "for=%s;by=%s" % (
@@ -174,6 +191,8 @@ class HTTPClient(object):
             self.times.append(("%s %s" % (method, url),
                                start_time, time.time()))
         self._http_log_resp(resp)
+
+        self.last_request_id = resp.headers.get('x-openstack-request-id')
 
         if resp.status_code >= 400:
             _logger.debug(
@@ -206,7 +225,7 @@ class HTTPClient(object):
         :param method: method of HTTP request
         :param url: URL of HTTP request
         :param kwargs: any other parameter that can be passed to
-'            `HTTPClient.request`
+            `HTTPClient.request`
         """
 
         filter_args = {
@@ -228,7 +247,7 @@ class HTTPClient(object):
                     **filter_args)
                 if not (token and endpoint):
                     raise exceptions.AuthorizationFailure(
-                        "Cannot find endpoint or token for request")
+                        _("Cannot find endpoint or token for request"))
 
         old_token_endpoint = (token, endpoint)
         kwargs.setdefault("headers", {})["X-Auth-Token"] = token
@@ -245,6 +264,10 @@ class HTTPClient(object):
                 raise
             self.cached_token = None
             client.cached_endpoint = None
+            if self.auth_plugin.opts.get('token'):
+                self.auth_plugin.opts['token'] = None
+            if self.auth_plugin.opts.get('endpoint'):
+                self.auth_plugin.opts['endpoint'] = None
             self.authenticate()
             try:
                 token, endpoint = self.auth_plugin.token_and_endpoint(
@@ -321,6 +344,10 @@ class BaseClient(object):
         return self.http_client.client_request(
             self, method, url, **kwargs)
 
+    @property
+    def last_request_id(self):
+        return self.http_client.last_request_id
+
     def head(self, url, **kwargs):
         return self.client_request("HEAD", url, **kwargs)
 
@@ -351,8 +378,11 @@ class BaseClient(object):
         try:
             client_path = version_map[str(version)]
         except (KeyError, ValueError):
-            msg = "Invalid %s client version '%s'. must be one of: %s" % (
-                  (api_name, version, ', '.join(version_map.keys())))
+            msg = _("Invalid %(api_name)s client version '%(version)s'. "
+                    "Must be one of: %(version_map)s") % {
+                        'api_name': api_name,
+                        'version': version,
+                        'version_map': ', '.join(version_map.keys())}
             raise exceptions.UnsupportedVersion(msg)
 
         return importutils.import_class(client_path)
