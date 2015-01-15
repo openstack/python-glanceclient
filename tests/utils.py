@@ -126,6 +126,9 @@ class FakeResponse(object):
     def read(self, amt):
         return self.body.read(amt)
 
+    def close(self):
+        pass
+
     @property
     def content(self):
         if hasattr(self.body, "read"):

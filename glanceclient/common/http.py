@@ -236,7 +236,7 @@ class HTTPClient(object):
         if content_type == 'application/octet-stream':
             # Do not read all response in memory when
             # downloading an image.
-            body_iter = resp.iter_content(chunk_size=CHUNKSIZE)
+            body_iter = _close_after_stream(resp, CHUNKSIZE)
             self.log_http_response(resp)
         else:
             content = resp.content
@@ -271,3 +271,14 @@ class HTTPClient(object):
 
     def delete(self, url, **kwargs):
         return self._request('DELETE', url, **kwargs)
+
+
+def _close_after_stream(response, chunk_size):
+    """Iterate over the content and ensure the response is closed after."""
+    # Yield each chunk in the response body
+    for chunk in response.iter_content(chunk_size=chunk_size):
+        yield chunk
+    # Once we're done streaming the body, ensure everything is closed.
+    # This will return the connection to the HTTPConnectionPool in urllib3
+    # and ideally reduce the number of HTTPConnectionPool full warnings.
+    response.close()
