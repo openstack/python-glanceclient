@@ -70,7 +70,7 @@ class ShellV2Test(testtools.TestCase):
             'tag': 'fake tag',
             'properties': [],
             'sort_key': ['name', 'id'],
-            'sort_dir': 'desc'
+            'sort_dir': ['desc', 'asc']
         }
         args = self._make_args(input)
         with mock.patch.object(self.gc.images, 'list') as mocked_list:
@@ -87,7 +87,7 @@ class ShellV2Test(testtools.TestCase):
             }
             mocked_list.assert_called_once_with(page_size=18,
                                                 sort_key=['name', 'id'],
-                                                sort_dir='desc',
+                                                sort_dir=['desc', 'asc'],
                                                 filters=exp_img_filters)
             utils.print_list.assert_called_once_with({}, ['ID', 'Name'])
 
@@ -102,7 +102,7 @@ class ShellV2Test(testtools.TestCase):
             'tag': 'fake tag',
             'properties': [],
             'sort_key': ['name'],
-            'sort_dir': 'desc'
+            'sort_dir': ['desc']
         }
         args = self._make_args(input)
         with mock.patch.object(self.gc.images, 'list') as mocked_list:
@@ -119,7 +119,7 @@ class ShellV2Test(testtools.TestCase):
             }
             mocked_list.assert_called_once_with(page_size=18,
                                                 sort_key=['name'],
-                                                sort_dir='desc',
+                                                sort_dir=['desc'],
                                                 filters=exp_img_filters)
             utils.print_list.assert_called_once_with({}, ['ID', 'Name'])
 
@@ -134,7 +134,7 @@ class ShellV2Test(testtools.TestCase):
             'tag': 'fake tag',
             'properties': ['os_distro=NixOS', 'architecture=x86_64'],
             'sort_key': ['name'],
-            'sort_dir': 'desc'
+            'sort_dir': ['desc']
         }
         args = self._make_args(input)
         with mock.patch.object(self.gc.images, 'list') as mocked_list:
@@ -154,7 +154,7 @@ class ShellV2Test(testtools.TestCase):
 
             mocked_list.assert_called_once_with(page_size=1,
                                                 sort_key=['name'],
-                                                sort_dir='desc',
+                                                sort_dir=['desc'],
                                                 filters=exp_img_filters)
             utils.print_list.assert_called_once_with({}, ['ID', 'Name'])
 
