@@ -47,6 +47,29 @@ class Controller(object):
             return [value]
         return value
 
+    @staticmethod
+    def _validate_sort_param(sort):
+        """Validates sorting argument for invalid keys and directions values.
+
+        :param sort: comma-separated list of sort keys with optional <:dir>
+        after each key
+        """
+        for sort_param in sort.strip().split(','):
+            key, _sep, dir = sort_param.partition(':')
+            if dir and dir not in SORT_DIR_VALUES:
+                msg = ('Invalid sort direction: %(sort_dir)s.'
+                       ' It must be one of the following: %(available)s.'
+                       ) % {'sort_dir': dir,
+                            'available': ', '.join(SORT_DIR_VALUES)}
+                raise exc.HTTPBadRequest(msg)
+            if key not in SORT_KEY_VALUES:
+                msg = ('Invalid sort key: %(sort_key)s.'
+                       ' It must be one of the following: %(available)s.'
+                       ) % {'sort_key': key,
+                            'available': ', '.join(SORT_KEY_VALUES)}
+                raise exc.HTTPBadRequest(msg)
+        return sort
+
     def list(self, **kwargs):
         """Retrieve a listing of Image objects
 
@@ -104,16 +127,6 @@ class Controller(object):
         # the page_size as Glance's limit.
         filters['limit'] = page_size
 
-        sort_dir = self._wrap(kwargs.get('sort_dir', []))
-        sort_key = self._wrap(kwargs.get('sort_key', []))
-
-        if len(sort_key) != len(sort_dir) and len(sort_dir) > 1:
-            raise exc.HTTPBadRequest("Unexpected number of sort directions: "
-                                     "provide only one default sorting "
-                                     "direction for each key or make sure "
-                                     "that sorting keys number matches with a "
-                                     "number of sorting directions.")
-
         tags = filters.pop('tag', [])
         tags_url_params = []
 
@@ -130,11 +143,27 @@ class Controller(object):
         for param in tags_url_params:
             url = '%s&%s' % (url, parse.urlencode(param))
 
-        for key in sort_key:
-            url = '%s&sort_key=%s' % (url, key)
+        if 'sort' in kwargs:
+            if 'sort_key' in kwargs or 'sort_dir' in kwargs:
+                raise exc.HTTPBadRequest("The 'sort' argument is not supported"
+                                         " with 'sort_key' or 'sort_dir'.")
+            url = '%s&sort=%s' % (url,
+                                  self._validate_sort_param(
+                                      kwargs['sort']))
+        else:
+            sort_dir = self._wrap(kwargs.get('sort_dir', []))
+            sort_key = self._wrap(kwargs.get('sort_key', []))
 
-        for dir in sort_dir:
-            url = '%s&sort_dir=%s' % (url, dir)
+            if len(sort_key) != len(sort_dir) and len(sort_dir) > 1:
+                raise exc.HTTPBadRequest(
+                    "Unexpected number of sort directions: "
+                    "either provide a single sort direction or an equal "
+                    "number of sort keys and sort directions.")
+            for key in sort_key:
+                url = '%s&sort_key=%s' % (url, key)
+
+            for dir in sort_dir:
+                url = '%s&sort_dir=%s' % (url, dir)
 
         for image in paginate(url, page_size, limit):
             yield image

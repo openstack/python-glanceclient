@@ -473,6 +473,22 @@ data_fixtures = {
             ]},
         ),
     },
+    '/v2/images?limit=%d&sort=name%%3Adesc%%2Csize%%3Aasc'
+    % images.DEFAULT_PAGE_SIZE: {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810',
+                    'name': 'image-2',
+                },
+                {
+                    'id': '2a4560b2-e585-443e-9b39-553b46ec92d1',
+                    'name': 'image-1',
+                },
+            ]},
+        ),
+    },
 }
 
 schema_fixtures = {
@@ -678,6 +694,13 @@ class TestController(testtools.TestCase):
         self.assertEqual(2, len(images))
         self.assertEqual('%s' % img_id1, images[1].id)
 
+    def test_list_images_with_new_sorting_syntax(self):
+        img_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
+        sort = 'name:desc,size:asc'
+        images = list(self.controller.list(sort=sort))
+        self.assertEqual(2, len(images))
+        self.assertEqual('%s' % img_id1, images[1].id)
+
     def test_list_images_sort_dirs_fewer_than_keys(self):
         sort_key = ['name', 'id', 'created_at']
         sort_dir = ['desc', 'asc']
@@ -686,6 +709,31 @@ class TestController(testtools.TestCase):
                           self.controller.list(
                               sort_key=sort_key,
                               sort_dir=sort_dir))
+
+    def test_list_images_combined_syntax(self):
+        sort_key = ['name', 'id']
+        sort_dir = ['desc', 'asc']
+        sort = 'name:asc'
+        self.assertRaises(exc.HTTPBadRequest,
+                          list,
+                          self.controller.list(
+                              sort=sort,
+                              sort_key=sort_key,
+                              sort_dir=sort_dir))
+
+    def test_list_images_new_sorting_syntax_invalid_key(self):
+        sort = 'INVALID:asc'
+        self.assertRaises(exc.HTTPBadRequest,
+                          list,
+                          self.controller.list(
+                              sort=sort))
+
+    def test_list_images_new_sorting_syntax_invalid_direction(self):
+        sort = 'name:INVALID'
+        self.assertRaises(exc.HTTPBadRequest,
+                          list,
+                          self.controller.list(
+                              sort=sort))
 
     def test_list_images_for_property(self):
         filters = {'filters': dict([('os_distro', 'NixOS')])}

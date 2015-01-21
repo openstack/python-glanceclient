@@ -70,7 +70,8 @@ class ShellV2Test(testtools.TestCase):
             'tag': 'fake tag',
             'properties': [],
             'sort_key': ['name', 'id'],
-            'sort_dir': ['desc', 'asc']
+            'sort_dir': ['desc', 'asc'],
+            'sort': None
         }
         args = self._make_args(input)
         with mock.patch.object(self.gc.images, 'list') as mocked_list:
@@ -102,7 +103,8 @@ class ShellV2Test(testtools.TestCase):
             'tag': 'fake tag',
             'properties': [],
             'sort_key': ['name'],
-            'sort_dir': ['desc']
+            'sort_dir': ['desc'],
+            'sort': None
         }
         args = self._make_args(input)
         with mock.patch.object(self.gc.images, 'list') as mocked_list:
@@ -123,6 +125,39 @@ class ShellV2Test(testtools.TestCase):
                                                 filters=exp_img_filters)
             utils.print_list.assert_called_once_with({}, ['ID', 'Name'])
 
+    def test_do_image_list_new_sorting_syntax(self):
+        input = {
+            'limit': None,
+            'page_size': 18,
+            'visibility': True,
+            'member_status': 'Fake',
+            'owner': 'test',
+            'checksum': 'fake_checksum',
+            'tag': 'fake tag',
+            'properties': [],
+            'sort': 'name:desc,size:asc',
+            'sort_key': [],
+            'sort_dir': []
+        }
+        args = self._make_args(input)
+        with mock.patch.object(self.gc.images, 'list') as mocked_list:
+            mocked_list.return_value = {}
+
+            test_shell.do_image_list(self.gc, args)
+
+            exp_img_filters = {
+                'owner': 'test',
+                'member_status': 'Fake',
+                'visibility': True,
+                'checksum': 'fake_checksum',
+                'tag': 'fake tag'
+            }
+            mocked_list.assert_called_once_with(
+                page_size=18,
+                sort='name:desc,size:asc',
+                filters=exp_img_filters)
+            utils.print_list.assert_called_once_with({}, ['ID', 'Name'])
+
     def test_do_image_list_with_property_filter(self):
         input = {
             'limit': None,
@@ -134,7 +169,8 @@ class ShellV2Test(testtools.TestCase):
             'tag': 'fake tag',
             'properties': ['os_distro=NixOS', 'architecture=x86_64'],
             'sort_key': ['name'],
-            'sort_dir': ['desc']
+            'sort_dir': ['desc'],
+            'sort': None
         }
         args = self._make_args(input)
         with mock.patch.object(self.gc.images, 'list') as mocked_list:
