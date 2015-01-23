@@ -16,6 +16,7 @@
 from __future__ import print_function
 
 import copy
+import functools
 import six
 import sys
 
@@ -28,6 +29,8 @@ import glanceclient.v1.images
 CONTAINER_FORMATS = 'Acceptable formats: ami, ari, aki, bare, and ovf.'
 DISK_FORMATS = ('Acceptable formats: ami, ari, aki, vhd, vmdk, raw, '
                 'qcow2, vdi, and iso.')
+
+_bool_strict = functools.partial(strutils.bool_from_string, strict=True)
 
 
 @utils.arg('--name', metavar='<NAME>',
@@ -58,7 +61,7 @@ DISK_FORMATS = ('Acceptable formats: ami, ari, aki, vhd, vmdk, raw, '
            choices=glanceclient.v1.images.SORT_DIR_VALUES,
            help='Sort image list in specified direction.')
 @utils.arg('--is-public',
-           type=strutils.bool_from_string, metavar='{True,False}',
+           type=_bool_strict, metavar='{True,False}',
            help=('Allows the user to select a listing of public or non '
                  'public images.'))
 @utils.arg('--owner', default=None, metavar='<TENANT_ID>',
@@ -188,10 +191,10 @@ def do_image_download(gc, args):
                  ' the Glance server should immediately copy the data and'
                  ' store it in its configured image store.'))
 @utils.arg('--is-public',
-           type=strutils.bool_from_string, metavar='{True,False}',
+           type=_bool_strict, metavar='{True,False}',
            help='Make image accessible to the public.')
 @utils.arg('--is-protected',
-           type=strutils.bool_from_string, metavar='{True,False}',
+           type=_bool_strict, metavar='{True,False}',
            help='Prevent image from being deleted.')
 @utils.arg('--property', metavar="<key=value>", action='append', default=[],
            help=("Arbitrary property to associate with image. "
@@ -265,10 +268,10 @@ def do_image_create(gc, args):
                  ' the Glance server should immediately copy the data and'
                  ' store it in its configured image store.'))
 @utils.arg('--is-public',
-           type=strutils.bool_from_string, metavar='{True,False}',
+           type=_bool_strict, metavar='{True,False}',
            help='Make image accessible to the public.')
 @utils.arg('--is-protected',
-           type=strutils.bool_from_string, metavar='{True,False}',
+           type=_bool_strict, metavar='{True,False}',
            help='Prevent image from being deleted.')
 @utils.arg('--property', metavar="<key=value>", action='append', default=[],
            help=("Arbitrary property to associate with image. "
