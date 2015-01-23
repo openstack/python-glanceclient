@@ -226,7 +226,7 @@ class HTTPClient(object):
 
         if not resp.ok:
             LOG.debug("Request returned failure status %s." % resp.status_code)
-            raise exc.from_response(resp, resp.content)
+            raise exc.from_response(resp, resp.text)
         elif resp.status_code == requests.codes.MULTIPLE_CHOICES:
             raise exc.from_response(resp)
 
@@ -239,7 +239,7 @@ class HTTPClient(object):
             body_iter = resp.iter_content(chunk_size=CHUNKSIZE)
             self.log_http_response(resp)
         else:
-            content = resp.content
+            content = resp.text
             self.log_http_response(resp, content)
             if content_type and content_type.startswith('application/json'):
                 # Let's use requests json method,

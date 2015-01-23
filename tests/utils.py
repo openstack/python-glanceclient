@@ -132,8 +132,15 @@ class FakeResponse(object):
             return self.body.read()
         return self.body
 
+    @property
+    def text(self):
+        if isinstance(self.content, six.binary_type):
+            return self.content.decode('utf-8')
+
+        return self.content
+
     def json(self, **kwargs):
-        return self.body and json.loads(self.content) or ""
+        return self.body and json.loads(self.text) or ""
 
     def iter_content(self, chunk_size=1, decode_unicode=False):
         while True:

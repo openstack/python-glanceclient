@@ -221,7 +221,7 @@ class TestClient(testtools.TestCase):
 
     def test_http_json(self):
         data = {"test": "json_request"}
-        fake = utils.FakeResponse({}, "OK")
+        fake = utils.FakeResponse({}, b"OK")
 
         def test_json(passed_data):
             """
