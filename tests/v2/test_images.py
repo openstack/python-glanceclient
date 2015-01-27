@@ -78,6 +78,25 @@ data_fixtures = {
             ]},
         ),
     },
+    '/v2/images?limit=2': {
+        'GET': (
+            {},
+            {
+                'images': [
+                    {
+                        'id': '3a4560a1-e585-443e-9b39-553b46ec92d1',
+                        'name': 'image-1',
+                    },
+                    {
+                        'id': '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810',
+                        'name': 'image-2',
+                    },
+                ],
+                'next': ('/v2/images?limit=2&'
+                         'marker=6f99bf80-2ee6-47cf-acfe-1f1fabb7e810'),
+            },
+        ),
+    },
     '/v2/images?limit=1': {
         'GET': (
             {},
@@ -100,6 +119,17 @@ data_fixtures = {
                 {
                     'id': '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810',
                     'name': 'image-2',
+                },
+            ]},
+        ),
+    },
+    ('/v2/images?limit=1&marker=6f99bf80-2ee6-47cf-acfe-1f1fabb7e810'): {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': '3f99bf80-2ee6-47cf-acfe-1f1fabb7e811',
+                    'name': 'image-3',
                 },
             ]},
         ),
@@ -419,6 +449,17 @@ class TestController(testtools.TestCase):
         self.assertEqual('image-1', images[0].name)
         self.assertEqual('6f99bf80-2ee6-47cf-acfe-1f1fabb7e810', images[1].id)
         self.assertEqual('image-2', images[1].name)
+
+    def test_list_images_paginated_with_limit(self):
+        # NOTE(bcwaldon):cast to list since the controller returns a generator
+        images = list(self.controller.list(limit=3, page_size=2))
+        self.assertEqual('3a4560a1-e585-443e-9b39-553b46ec92d1', images[0].id)
+        self.assertEqual('image-1', images[0].name)
+        self.assertEqual('6f99bf80-2ee6-47cf-acfe-1f1fabb7e810', images[1].id)
+        self.assertEqual('image-2', images[1].name)
+        self.assertEqual('3f99bf80-2ee6-47cf-acfe-1f1fabb7e811', images[2].id)
+        self.assertEqual('image-3', images[2].name)
+        self.assertEqual(3, len(images))
 
     def test_list_images_visibility_public(self):
         filters = {'filters': {'visibility': 'public'}}

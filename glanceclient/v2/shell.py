@@ -107,6 +107,8 @@ def do_image_update(gc, args):
     utils.print_image(image)
 
 
+@utils.arg('--limit', metavar='<LIMIT>', default=None, type=int,
+           help='Maximum number of images to get.')
 @utils.arg('--page-size', metavar='<SIZE>', default=None, type=int,
            help='Number of images to request in each paginated request.')
 @utils.arg('--visibility', metavar='<VISIBILITY>',
@@ -135,6 +137,8 @@ def do_image_list(gc, args):
     filters = dict([item for item in filter_items if item[1] is not None])
 
     kwargs = {'filters': filters}
+    if args.limit is not None:
+        kwargs['limit'] = args.page_size
     if args.page_size is not None:
         kwargs['page_size'] = args.page_size
 

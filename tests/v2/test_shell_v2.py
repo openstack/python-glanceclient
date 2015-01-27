@@ -61,6 +61,7 @@ class ShellV2Test(testtools.TestCase):
 
     def test_do_image_list(self):
         input = {
+            'limit': None,
             'page_size': 18,
             'visibility': True,
             'member_status': 'Fake',
@@ -88,6 +89,7 @@ class ShellV2Test(testtools.TestCase):
 
     def test_do_image_list_with_property_filter(self):
         input = {
+            'limit': None,
             'page_size': 1,
             'visibility': True,
             'member_status': 'Fake',

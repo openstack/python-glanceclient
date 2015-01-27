@@ -46,7 +46,19 @@ class Controller(object):
         ori_validate_fun = self.model.validate
         empty_fun = lambda *args, **kwargs: None
 
-        def paginate(url):
+        limit = kwargs.get('limit')
+        # NOTE(flaper87): Don't use `get('page_size', DEFAULT_SIZE)` otherwise,
+        # it could be possible to send invalid data to the server by passing
+        # page_size=None.
+        page_size = kwargs.get('page_size') or DEFAULT_PAGE_SIZE
+
+        def paginate(url, page_size, limit=None):
+
+            if limit and page_size > limit:
+                # NOTE(flaper87): Avoid requesting 2000 images when limit is 1
+                url = url.replace("limit=%s" % page_size,
+                                  "limit=%s" % limit)
+
             resp, body = self.http_client.get(url)
             for image in body['images']:
                 # NOTE(bcwaldon): remove 'self' for now until we have
@@ -60,6 +72,11 @@ class Controller(object):
                 # image entry for each page.
                 self.model.validate = empty_fun
 
+                if limit:
+                    limit -= 1
+                    if limit <= 0:
+                        raise StopIteration
+
             # NOTE(zhiyan); Reset validation function.
             self.model.validate = ori_validate_fun
 
@@ -68,15 +85,13 @@ class Controller(object):
             except KeyError:
                 return
             else:
-                for image in paginate(next_url):
+                for image in paginate(next_url, page_size, limit):
                     yield image
 
         filters = kwargs.get('filters', {})
-
-        if not kwargs.get('page_size'):
-            filters['limit'] = DEFAULT_PAGE_SIZE
-        else:
-            filters['limit'] = kwargs['page_size']
+        # NOTE(flaper87): We paginate in the client, hence we use
+        # the page_size as Glance's limit.
+        filters['limit'] = page_size
 
         tags = filters.pop('tag', [])
         tags_url_params = []
@@ -94,7 +109,7 @@ class Controller(object):
         for param in tags_url_params:
             url = '%s&%s' % (url, parse.urlencode(param))
 
-        for image in paginate(url):
+        for image in paginate(url, page_size, limit):
             yield image
 
     def get(self, image_id):
