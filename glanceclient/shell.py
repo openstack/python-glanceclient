@@ -670,7 +670,8 @@ class OpenStackImagesShell(object):
             self.parser.print_help()
 
     def do_bash_completion(self, _args):
-        """
+        """Prints arguments for bash_completion.
+
         Prints all of the commands and options to stdout so that the
         glance.bash_completion script doesn't have to hard code them.
         """
