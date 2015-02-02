@@ -36,11 +36,12 @@ if not hasattr(parse, 'parse_qsl'):
     import cgi
     parse.parse_qsl = cgi.parse_qsl
 
+from oslo.utils import encodeutils
+
 from glanceclient.common import https
 from glanceclient.common.utils import safe_header
 from glanceclient import exc
 from glanceclient.openstack.common import importutils
-from glanceclient.openstack.common import strutils
 
 osprofiler_web = importutils.try_import("osprofiler.web")
 
@@ -117,7 +118,7 @@ class HTTPClient(object):
 
         curl.append(url)
 
-        msg = ' '.join([strutils.safe_encode(item, errors='ignore')
+        msg = ' '.join([encodeutils.safe_decode(item, errors='ignore')
                         for item in curl])
         LOG.debug(msg)
 
@@ -129,9 +130,9 @@ class HTTPClient(object):
         dump.extend(['%s: %s' % safe_header(k, v) for k, v in headers])
         dump.append('')
         if body:
-            body = strutils.safe_decode(body)
+            body = encodeutils.safe_decode(body)
             dump.extend([body, ''])
-        LOG.debug('\n'.join([strutils.safe_encode(x, errors='ignore')
+        LOG.debug('\n'.join([encodeutils.safe_decode(x, errors='ignore')
                              for x in dump]))
 
     @staticmethod
@@ -145,7 +146,7 @@ class HTTPClient(object):
         :returns: Dictionary with encoded headers'
                   names and values
         """
-        return dict((strutils.safe_encode(h), strutils.safe_encode(v))
+        return dict((encodeutils.safe_encode(h), encodeutils.safe_encode(v))
                     for h, v in six.iteritems(headers))
 
     def _request(self, method, url, **kwargs):

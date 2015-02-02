@@ -15,12 +15,13 @@
 
 import copy
 
+from oslo.utils import encodeutils
+from oslo.utils import strutils
 import six
 import six.moves.urllib.parse as urlparse
 
 from glanceclient.common import utils
 from glanceclient.openstack.common.apiclient import base
-from glanceclient.openstack.common import strutils
 
 UPDATE_PARAMS = ('name', 'disk_format', 'container_format', 'min_disk',
                  'min_ram', 'owner', 'size', 'is_public', 'protected',
@@ -70,7 +71,7 @@ class ImageManager(base.ManagerWithFind):
 
     def _image_meta_from_headers(self, headers):
         meta = {'properties': {}}
-        safe_decode = strutils.safe_decode
+        safe_decode = encodeutils.safe_decode
         for key, value in six.iteritems(headers):
             value = safe_decode(value, incoming='utf-8')
             if key.startswith('x-image-meta-property-'):
@@ -191,7 +192,7 @@ class ImageManager(base.ManagerWithFind):
                     #
                     # Making sure all params are str before
                     # trying to encode them
-                    qp[param] = strutils.safe_encode(value)
+                    qp[param] = encodeutils.safe_decode(value)
 
             url = '/v1/images/detail?%s' % urlparse.urlencode(qp)
             images, resp = self._list(url, "images")

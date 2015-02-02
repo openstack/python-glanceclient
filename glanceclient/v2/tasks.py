@@ -14,12 +14,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo.utils import encodeutils
 import six
-
 import warlock
 
 from glanceclient.common import utils
-from glanceclient.openstack.common import strutils
 from glanceclient.v2 import schemas
 
 DEFAULT_PAGE_SIZE = 20
@@ -84,7 +83,7 @@ class Controller(object):
 
         for param, value in filters.items():
             if isinstance(value, six.string_types):
-                filters[param] = strutils.safe_encode(value)
+                filters[param] = encodeutils.safe_encode(value)
 
         url = '/v2/tasks?%s' % six.moves.urllib.parse.urlencode(filters)
         for task in paginate(url):

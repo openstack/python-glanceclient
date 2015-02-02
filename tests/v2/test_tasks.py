@@ -14,7 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import six
 import testtools
 
 from glanceclient.v2 import tasks
@@ -260,10 +259,7 @@ class TestController(testtools.TestCase):
             # We just want to make sure filters are correctly encoded.
             pass
 
-        if six.PY2:
-            self.assertEqual("ni\xc3\xb1o", filters["owner"])
-        else:
-            self.assertEqual("ni\xf1o", filters["owner"])
+        self.assertEqual(b"ni\xc3\xb1o", filters["owner"])
 
     def test_get_task(self):
         task = self.controller.get('3a4560a1-e585-443e-9b39-553b46ec92d1')

@@ -13,12 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo.utils import encodeutils
 import six
 from six.moves.urllib import parse
 import warlock
 
 from glanceclient.common import utils
-from glanceclient.openstack.common import strutils
 from glanceclient.v2 import schemas
 
 DEFAULT_PAGE_SIZE = 20
@@ -161,9 +161,9 @@ class NamespaceController(object):
 
         for param, value in six.iteritems(filters):
             if isinstance(value, list):
-                filters[param] = strutils.safe_encode(','.join(value))
+                filters[param] = encodeutils.safe_encode(','.join(value))
             elif isinstance(value, six.string_types):
-                filters[param] = strutils.safe_encode(value)
+                filters[param] = encodeutils.safe_encode(value)
 
         url = '/v2/metadefs/namespaces?%s' % parse.urlencode(filters)
 
