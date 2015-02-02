@@ -163,9 +163,10 @@ class TestClient(testtools.TestCase):
 
     def test_headers_encoding(self):
         value = u'ni\xf1o'
-        headers = {"test": value}
+        headers = {"test": value, "none-val": None}
         encoded = self.client.encode_headers(headers)
         self.assertEqual(b"ni\xc3\xb1o", encoded[b"test"])
+        self.assertNotIn("none-val", encoded)
 
     def test_raw_request(self):
         " Verify the path being used for HTTP requests reflects accurately. "
