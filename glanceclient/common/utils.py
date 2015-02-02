@@ -24,6 +24,7 @@ import sys
 import threading
 import uuid
 
+from oslo.utils import importutils
 import six
 
 if os.name == 'nt':
@@ -36,7 +37,6 @@ from oslo.utils import strutils
 import prettytable
 
 from glanceclient import exc
-from glanceclient.openstack.common import importutils
 
 _memoized_property_lock = threading.Lock()
 

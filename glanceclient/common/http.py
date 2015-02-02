@@ -17,6 +17,7 @@ import copy
 import logging
 import socket
 
+from oslo.utils import importutils
 from oslo.utils import netutils
 import requests
 try:
@@ -41,7 +42,6 @@ from oslo.utils import encodeutils
 from glanceclient.common import https
 from glanceclient.common.utils import safe_header
 from glanceclient import exc
-from glanceclient.openstack.common import importutils
 
 osprofiler_web = importutils.try_import("osprofiler.web")
 
