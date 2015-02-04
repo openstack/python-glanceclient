@@ -85,6 +85,10 @@ def do_image_list(gc, args):
 
     if args.properties:
         property_filter_items = [p.split('=', 1) for p in args.properties]
+        if any(len(pair) != 2 for pair in property_filter_items):
+            utils.exit('Argument --property-filter requires properties in the'
+                       ' format KEY=VALUE')
+
         filters['properties'] = dict(property_filter_items)
 
     kwargs = {'filters': filters}
