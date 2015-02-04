@@ -234,9 +234,12 @@ def do_image_create(gc, args):
     # Only show progress bar for local image files
     if fields.get('data') and args.progress:
         filesize = utils.get_file_size(fields['data'])
-        fields['data'] = progressbar.VerboseFileWrapper(
-            fields['data'], filesize
-        )
+        if filesize is not None:
+            # NOTE(kragniz): do not show a progress bar if the size of the
+            # input is unknown (most likely a piped input)
+            fields['data'] = progressbar.VerboseFileWrapper(
+                fields['data'], filesize
+            )
 
     image = gc.images.create(**fields)
     _image_show(image, args.human_readable)

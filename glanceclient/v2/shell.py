@@ -258,7 +258,10 @@ def do_image_upload(gc, args):
     image_data = utils.get_data_file(args)
     if args.progress:
         filesize = utils.get_file_size(image_data)
-        image_data = progressbar.VerboseFileWrapper(image_data, filesize)
+        if filesize is not None:
+            # NOTE(kragniz): do not show a progress bar if the size of the
+            # input is unknown (most likely a piped input)
+            image_data = progressbar.VerboseFileWrapper(image_data, filesize)
     gc.images.upload(args.id, image_data, args.size)
 
 
