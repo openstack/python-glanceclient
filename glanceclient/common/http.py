@@ -147,7 +147,7 @@ class HTTPClient(object):
                   names and values
         """
         return dict((encodeutils.safe_encode(h), encodeutils.safe_encode(v))
-                    for h, v in six.iteritems(headers))
+                    for h, v in six.iteritems(headers) if v is not None)
 
     def _request(self, method, url, **kwargs):
         """Send an http request with the specified characteristics.
