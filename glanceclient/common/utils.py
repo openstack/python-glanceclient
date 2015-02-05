@@ -24,7 +24,7 @@ import sys
 import threading
 import uuid
 
-from oslo.utils import importutils
+from oslo_utils import importutils
 import six
 
 if os.name == 'nt':
@@ -32,8 +32,8 @@ if os.name == 'nt':
 else:
     msvcrt = None
 
-from oslo.utils import encodeutils
-from oslo.utils import strutils
+from oslo_utils import encodeutils
+from oslo_utils import strutils
 import prettytable
 
 from glanceclient import exc

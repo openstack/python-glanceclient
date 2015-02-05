@@ -29,8 +29,8 @@ from os.path import expanduser
 import sys
 import traceback
 
-from oslo.utils import encodeutils
-from oslo.utils import importutils
+from oslo_utils import encodeutils
+from oslo_utils import importutils
 import six.moves.urllib.parse as urlparse
 
 import glanceclient

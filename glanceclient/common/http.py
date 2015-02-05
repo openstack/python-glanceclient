@@ -17,8 +17,8 @@ import copy
 import logging
 import socket
 
-from oslo.utils import importutils
-from oslo.utils import netutils
+from oslo_utils import importutils
+from oslo_utils import netutils
 import requests
 try:
     from requests.packages.urllib3.exceptions import ProtocolError
@@ -37,7 +37,7 @@ if not hasattr(parse, 'parse_qsl'):
     import cgi
     parse.parse_qsl = cgi.parse_qsl
 
-from oslo.utils import encodeutils
+from oslo_utils import encodeutils
 
 from glanceclient.common import https
 from glanceclient.common.utils import safe_header
