@@ -66,9 +66,6 @@ class FakeAPI(object):
 
 
 class FakeSchemaAPI(FakeAPI):
-    def __init__(cls, *args):
-        super(FakeSchemaAPI, cls).__init__(*args)
-
     def get(self, *args, **kwargs):
         _, raw_schema = self._request('GET', *args, **kwargs)
         return Schema(raw_schema)
