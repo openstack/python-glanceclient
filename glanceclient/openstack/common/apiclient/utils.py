@@ -24,8 +24,8 @@
 #
 ########################################################################
 
-from oslo.utils import encodeutils
-from oslo.utils import uuidutils
+from oslo_utils import encodeutils
+from oslo_utils import uuidutils
 import six
 
 from glanceclient.openstack.common._i18n import _

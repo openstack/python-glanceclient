@@ -26,7 +26,7 @@ except ImportError:
     from urllib3 import connectionpool
     from urllib3 import poolmanager
 
-from oslo.utils import encodeutils
+from oslo_utils import encodeutils
 import six
 
 from glanceclient.common import utils
