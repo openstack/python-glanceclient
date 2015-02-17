@@ -53,6 +53,82 @@ except ImportError:
 from glanceclient import exc
 
 
+def verify_callback(host=None):
+    """
+    We use a partial around the 'real' verify_callback function
+    so that we can stash the host value without holding a
+    reference on the VerifiedHTTPSConnection.
+    """
+    def wrapper(connection, x509, errnum,
+                depth, preverify_ok, host=host):
+        return do_verify_callback(connection, x509, errnum,
+                                  depth, preverify_ok, host=host)
+    return wrapper
+
+
+def do_verify_callback(connection, x509, errnum,
+                       depth, preverify_ok, host=None):
+    """
+    Verify the server's SSL certificate.
+
+    This is a standalone function rather than a method to avoid
+    issues around closing sockets if a reference is held on
+    a VerifiedHTTPSConnection by the callback function.
+    """
+    if x509.has_expired():
+        msg = "SSL Certificate expired on '%s'" % x509.get_notAfter()
+        raise exc.SSLCertificateError(msg)
+
+    if depth == 0 and preverify_ok:
+        # We verify that the host matches against the last
+        # certificate in the chain
+        return host_matches_cert(host, x509)
+    else:
+        # Pass through OpenSSL's default result
+        return preverify_ok
+
+
+def host_matches_cert(host, x509):
+    """
+    Verify that the x509 certificate we have received
+    from 'host' correctly identifies the server we are
+    connecting to, ie that the certificate's Common Name
+    or a Subject Alternative Name matches 'host'.
+    """
+    def check_match(name):
+        # Directly match the name
+        if name == host:
+            return True
+
+        # Support single wildcard matching
+        if name.startswith('*.') and host.find('.') > 0:
+            if name[2:] == host.split('.', 1)[1]:
+                return True
+
+    common_name = x509.get_subject().commonName
+
+    # First see if we can match the CN
+    if check_match(common_name):
+        return True
+        # Also try Subject Alternative Names for a match
+    san_list = None
+    for i in range(x509.get_extension_count()):
+        ext = x509.get_extension(i)
+        if ext.get_short_name() == b'subjectAltName':
+            san_list = str(ext)
+            for san in ''.join(san_list.split()).split(','):
+                if san.startswith('DNS:'):
+                    if check_match(san.split(':', 1)[1]):
+                        return True
+
+    # Server certificate does not match host
+    msg = ('Host "%s" does not match x509 certificate contents: '
+           'CommonName "%s"' % (host, common_name))
+    if san_list is not None:
+        msg = msg + ', subjectAltName "%s"' % san_list
+    raise exc.SSLCertificateError(msg)
+
+
 def to_bytes(s):
     if isinstance(s, six.string_types):
         return six.b(s)
@@ -171,61 +247,6 @@ class VerifiedHTTPSConnection(HTTPSConnection):
         except excp_lst as e:
             raise exc.SSLConfigurationError(str(e))
 
-    @staticmethod
-    def host_matches_cert(host, x509):
-        """
-        Verify that the x509 certificate we have received
-        from 'host' correctly identifies the server we are
-        connecting to, ie that the certificate's Common Name
-        or a Subject Alternative Name matches 'host'.
-        """
-        def check_match(name):
-            # Directly match the name
-            if name == host:
-                return True
-
-            # Support single wildcard matching
-            if name.startswith('*.') and host.find('.') > 0:
-                if name[2:] == host.split('.', 1)[1]:
-                    return True
-
-        common_name = x509.get_subject().commonName
-
-        # First see if we can match the CN
-        if check_match(common_name):
-            return True
-            # Also try Subject Alternative Names for a match
-        san_list = None
-        for i in range(x509.get_extension_count()):
-            ext = x509.get_extension(i)
-            if ext.get_short_name() == b'subjectAltName':
-                san_list = str(ext)
-                for san in ''.join(san_list.split()).split(','):
-                    if san.startswith('DNS:'):
-                        if check_match(san.split(':', 1)[1]):
-                            return True
-
-        # Server certificate does not match host
-        msg = ('Host "%s" does not match x509 certificate contents: '
-               'CommonName "%s"' % (host, common_name))
-        if san_list is not None:
-            msg = msg + ', subjectAltName "%s"' % san_list
-        raise exc.SSLCertificateError(msg)
-
-    def verify_callback(self, connection, x509, errnum,
-                        depth, preverify_ok):
-        if x509.has_expired():
-            msg = "SSL Certificate expired on '%s'" % x509.get_notAfter()
-            raise exc.SSLCertificateError(msg)
-
-        if depth == 0 and preverify_ok:
-            # We verify that the host matches against the last
-            # certificate in the chain
-            return self.host_matches_cert(self.host, x509)
-        else:
-            # Pass through OpenSSL's default result
-            return preverify_ok
-
     def set_context(self):
         """
         Set up the OpenSSL context.
@@ -237,7 +258,7 @@ class VerifiedHTTPSConnection(HTTPSConnection):
 
         if self.insecure is not True:
             self.context.set_verify(OpenSSL.SSL.VERIFY_PEER,
-                                    self.verify_callback)
+                                    verify_callback(host=self.host))
         else:
             self.context.set_verify(OpenSSL.SSL.VERIFY_NONE,
                                     lambda *args: True)
