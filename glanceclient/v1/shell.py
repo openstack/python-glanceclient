@@ -264,7 +264,8 @@ def do_image_create(gc, args):
                  'example, if the image data is stored in swift, you could '
                  'specify \'swift+http://tenant%%3Aaccount:key@auth_url/'
                  'v2.0/container/obj\'. '
-                 '(Note: \'%%3A\' is \':\' URL encoded.)'))
+                 '(Note: \'%%3A\' is \':\' URL encoded.) '
+                 'This option only works for images in \'queued\' status.'))
 @utils.arg('--file', metavar='<FILE>',
            help=('Local file that contains disk image to be uploaded during'
                  ' update. Alternatively, images can be passed to the client'
@@ -274,7 +275,8 @@ def do_image_create(gc, args):
 @utils.arg('--copy-from', metavar='<IMAGE_URL>',
            help=('Similar to \'--location\' in usage, but this indicates that'
                  ' the Glance server should immediately copy the data and'
-                 ' store it in its configured image store.'))
+                 ' store it in its configured image store.'
+                 ' This option only works for images in \'queued\' status.'))
 @utils.arg('--is-public',
            type=_bool_strict, metavar='{True,False}',
            help='Make image accessible to the public.')
