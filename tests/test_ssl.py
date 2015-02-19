@@ -109,8 +109,10 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
         """
         cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
         cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
+        key_file = os.path.join(TEST_VAR_DIR, 'badkey.key')
         try:
             https.VerifiedHTTPSConnection('127.0.0.1', 0,
+                                          key_file=key_file,
                                           cert_file=cert_file,
                                           cacert=cacert)
             self.fail('Failed to raise assertion.')

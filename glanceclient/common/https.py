@@ -149,7 +149,11 @@ class VerifiedHTTPSConnection(HTTPSConnection):
         if six.PY3:
             excp_lst = (TypeError, FileNotFoundError, ssl.SSLError)
         else:
-            excp_lst = ()
+            # NOTE(jamespage)
+            # Accomodate changes in behaviour for pep-0467, introduced
+            # in python 2.7.9.
+            # https://github.com/python/peps/blob/master/pep-0476.txt
+            excp_lst = (TypeError, IOError, ssl.SSLError)
         try:
             HTTPSConnection.__init__(self, host, port,
                                      key_file=key_file,
