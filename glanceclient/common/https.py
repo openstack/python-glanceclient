@@ -141,6 +141,11 @@ class VerifiedHTTPSConnection(HTTPSConnection):
     Note: Much of this functionality can eventually be replaced
           with native Python 3.3 code.
     """
+    # Restrict the set of client supported cipher suites
+    CIPHERS = 'ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:'\
+              'eCDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:'\
+              'RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS'
+
     def __init__(self, host, port=None, key_file=None, cert_file=None,
                  cacert=None, timeout=None, insecure=False,
                  ssl_compression=True):
@@ -235,6 +240,7 @@ class VerifiedHTTPSConnection(HTTPSConnection):
         Set up the OpenSSL context.
         """
         self.context = OpenSSL.SSL.Context(OpenSSL.SSL.SSLv23_METHOD)
+        self.context.set_cipher_list(self.CIPHERS)
 
         if self.ssl_compression is False:
             self.context.set_options(0x20000)  # SSL_OP_NO_COMPRESSION
