@@ -477,14 +477,16 @@ class OpenStackImagesShell(object):
                           "or prompted response"))
 
             # Validate password flow auth
-            project_info = (args.os_tenant_name or
-                            args.os_tenant_id or
-                            (args.os_project_name and
-                            (args.os_project_domain_name or
-                                args.os_project_domain_id)) or
-                            args.os_project_id)
+            project_info = (
+                args.os_tenant_name or args.os_tenant_id or (
+                    args.os_project_name and (
+                        args.os_project_domain_name or
+                        args.os_project_domain_id
+                    )
+                ) or args.os_project_id
+            )
 
-            if (not project_info):
+            if not project_info:
                 # tenant is deprecated in Keystone v3. Use the latest
                 # terminology instead.
                 raise exc.CommandError(
@@ -571,14 +573,14 @@ class OpenStackImagesShell(object):
                     with open(schema_file_path, 'w') as f:
                         f.write(json.dumps(schema.raw()))
                 except Exception:
-                    #NOTE(esheffield) do nothing here, we'll get a message
-                    #later if the schema is missing
+                    # NOTE(esheffield) do nothing here, we'll get a message
+                    # later if the schema is missing
                     pass
 
     def main(self, argv):
         # Parse args once to find version
 
-        #NOTE(flepied) Under Python3, parsed arguments are removed
+        # NOTE(flepied) Under Python3, parsed arguments are removed
         # from the list so make a copy for the first parsing
         base_argv = copy.deepcopy(argv)
         parser = self.get_base_parser()
@@ -642,8 +644,8 @@ class OpenStackImagesShell(object):
         except exc.Unauthorized:
             raise exc.CommandError("Invalid OpenStack Identity credentials.")
         except Exception:
-            #NOTE(kragniz) Print any exceptions raised to stderr if the --debug
-            # flag is set
+            # NOTE(kragniz) Print any exceptions raised to stderr if the
+            # --debug flag is set
             if args.debug:
                 traceback.print_exc()
             raise
