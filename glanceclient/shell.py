@@ -34,9 +34,9 @@ from oslo_utils import importutils
 import six.moves.urllib.parse as urlparse
 
 import glanceclient
+from glanceclient import _i18n
 from glanceclient.common import utils
 from glanceclient import exc
-from glanceclient.openstack.common.gettextutils import _
 
 from keystoneclient.auth.identity import v2 as v2_auth
 from keystoneclient.auth.identity import v3 as v3_auth
@@ -45,6 +45,7 @@ from keystoneclient.openstack.common.apiclient import exceptions as ks_exc
 from keystoneclient import session
 
 osprofiler_profiler = importutils.try_import("osprofiler.profiler")
+_ = _i18n._
 
 
 class OpenStackImagesShell(object):
