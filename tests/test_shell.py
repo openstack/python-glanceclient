@@ -254,10 +254,12 @@ class ShellTest(utils.TestCase):
 
     @mock.patch('sys.stdin', side_effect=mock.MagicMock)
     @mock.patch('getpass.getpass', return_value='password')
-    def test_password_prompted_with_v2(self, mock_getpass, mock_stdin):
+    @mock.patch('keystoneclient.session.Session.get_token',
+                side_effect=ks_exc.ConnectionRefused)
+    def test_password_prompted_with_v2(self, mock_session, mock_getpass,
+                                       mock_stdin):
         glance_shell = openstack_shell.OpenStackImagesShell()
         self.make_env(exclude='OS_PASSWORD')
-        # We will get a Connection Refused because there is no keystone.
         self.assertRaises(ks_exc.ConnectionRefused,
                           glance_shell.main, ['image-list'])
         # Make sure we are actually prompted.
