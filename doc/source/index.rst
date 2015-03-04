@@ -38,6 +38,19 @@ See also :doc:`/man/glance`.
 Release Notes
 =============
 
+0.16.1
+------
+
+* 1423165_: Fix sockets leaking for a subset of operations (show, delete and update)
+* 1395084_: Show error when trying to upload image data to non-queued image
+* 1398838_: Stop showing JSON and HTML in error messages returned from the glance service
+* 1396550_: More reliably register connection pools in cases where urllib3 is both vendored and installed system-wide
+
+.. _1423165: https://bugs.launchpad.net/python-glanceclient/+bug/1423165
+.. _1395084: https://bugs.launchpad.net/python-glanceclient/+bug/1395084
+.. _1398838: https://bugs.launchpad.net/python-glanceclient/+bug/1398838
+.. _1396550: https://bugs.launchpad.net/python-glanceclient/+bug/1396550
+
 0.16.0
 ------
 
