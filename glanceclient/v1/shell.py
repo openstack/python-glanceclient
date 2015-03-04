@@ -17,6 +17,7 @@ from __future__ import print_function
 
 import copy
 import functools
+import os
 import six
 
 from oslo_utils import encodeutils
@@ -244,6 +245,17 @@ def do_image_create(gc, args):
     _image_show(image, args.human_readable)
 
 
+def _is_image_data_provided(args):
+    """Return True if some image data has probably been provided by the user"""
+    # NOTE(kragniz): Check stdin works, then check is there is any data
+    # on stdin or a filename has been provided with --file
+    try:
+        os.fstat(0)
+    except OSError:
+        return False
+    return not sys.stdin.isatty() or args.file or args.copy_from
+
+
 @utils.arg('image', metavar='<IMAGE>', help='Name or ID of image to modify.')
 @utils.arg('--name', metavar='<NAME>',
            help='Name of image.')
@@ -321,6 +333,12 @@ def do_image_update(gc, args):
             fields['data'] = progressbar.VerboseFileWrapper(
                 fields['data'], filesize
             )
+
+    elif _is_image_data_provided(args):
+        # NOTE(kragniz): Exit with an error if the status is not queued
+        # and image data was provided
+        utils.exit('Unable to upload image data to an image which '
+                   'is %s.' % image.status)
 
     image = gc.images.update(image, purge_props=args.purge_props, **fields)
     _image_show(image, args.human_readable)
