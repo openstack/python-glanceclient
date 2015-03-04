@@ -16,6 +16,8 @@
 import sys
 
 import six
+# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
+from six.moves import range
 import testtools
 
 from glanceclient.common import utils
