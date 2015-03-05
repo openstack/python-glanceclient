@@ -28,7 +28,7 @@ def get_image_schema():
     global IMAGE_SCHEMA
     if IMAGE_SCHEMA is None:
         schema_path = expanduser("~/.glanceclient/image_schema.json")
-        if os.path.exists(schema_path) and os.path.isfile(schema_path):
+        if os.path.isfile(schema_path):
             with open(schema_path, "r") as f:
                 schema_raw = f.read()
                 IMAGE_SCHEMA = json.loads(schema_raw)
@@ -356,7 +356,7 @@ def get_namespace_schema():
     global NAMESPACE_SCHEMA
     if NAMESPACE_SCHEMA is None:
         schema_path = expanduser("~/.glanceclient/namespace_schema.json")
-        if os.path.exists(schema_path) and os.path.isfile(schema_path):
+        if os.path.isfile(schema_path):
             with open(schema_path, "r") as f:
                 schema_raw = f.read()
                 NAMESPACE_SCHEMA = json.loads(schema_raw)
@@ -495,7 +495,7 @@ def get_resource_type_schema():
     global RESOURCE_TYPE_SCHEMA
     if RESOURCE_TYPE_SCHEMA is None:
         schema_path = expanduser("~/.glanceclient/resource_type_schema.json")
-        if os.path.exists(schema_path) and os.path.isfile(schema_path):
+        if os.path.isfile(schema_path):
             with open(schema_path, "r") as f:
                 schema_raw = f.read()
                 RESOURCE_TYPE_SCHEMA = json.loads(schema_raw)
