@@ -42,9 +42,8 @@ def get_image_schema():
            default=[], help=('Arbitrary property to associate with image.'
                              ' May be used multiple times.'))
 @utils.arg('--file', metavar='<FILE>',
-           help='Local file to save downloaded image data to. '
-                'If this is not specified the image data will be '
-                'written to stdout.')
+           help='Local file that contains disk image to be uploaded '
+                'during creation.')
 @utils.arg('--progress', action='store_true', default=False,
            help='Show upload progress bar.')
 def do_image_create(gc, args):
