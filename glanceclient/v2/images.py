@@ -54,40 +54,40 @@ class Controller(object):
         page_size = kwargs.get('page_size') or DEFAULT_PAGE_SIZE
 
         def paginate(url, page_size, limit=None):
+            next_url = url
 
-            if limit and page_size > limit:
-                # NOTE(flaper87): Avoid requesting 2000 images when limit is 1
-                url = url.replace("limit=%s" % page_size,
-                                  "limit=%s" % limit)
+            while True:
+                if limit and page_size > limit:
+                    # NOTE(flaper87): Avoid requesting 2000 images when limit
+                    # is 1
+                    next_url = next_url.replace("limit=%s" % page_size,
+                                                "limit=%s" % limit)
 
-            resp, body = self.http_client.get(url)
-            for image in body['images']:
-                # NOTE(bcwaldon): remove 'self' for now until we have
-                # an elegant way to pass it into the model constructor
-                # without conflict.
-                image.pop('self', None)
-                yield self.model(**image)
-                # NOTE(zhiyan): In order to resolve the performance issue
-                # of JSON schema validation for image listing case, we
-                # don't validate each image entry but do it only on first
-                # image entry for each page.
-                self.model.validate = empty_fun
+                resp, body = self.http_client.get(next_url)
+                for image in body['images']:
+                    # NOTE(bcwaldon): remove 'self' for now until we have
+                    # an elegant way to pass it into the model constructor
+                    # without conflict.
+                    image.pop('self', None)
+                    yield self.model(**image)
+                    # NOTE(zhiyan): In order to resolve the performance issue
+                    # of JSON schema validation for image listing case, we
+                    # don't validate each image entry but do it only on first
+                    # image entry for each page.
+                    self.model.validate = empty_fun
 
-                if limit:
-                    limit -= 1
-                    if limit <= 0:
-                        raise StopIteration
+                    if limit:
+                        limit -= 1
+                        if limit <= 0:
+                            raise StopIteration
 
-            # NOTE(zhiyan); Reset validation function.
-            self.model.validate = ori_validate_fun
+                # NOTE(zhiyan); Reset validation function.
+                self.model.validate = ori_validate_fun
 
-            try:
-                next_url = body['next']
-            except KeyError:
-                return
-            else:
-                for image in paginate(next_url, page_size, limit):
-                    yield image
+                try:
+                    next_url = body['next']
+                except KeyError:
+                    return
 
         filters = kwargs.get('filters', {})
         # NOTE(flaper87): We paginate in the client, hence we use
