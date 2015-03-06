@@ -138,7 +138,7 @@ def do_image_list(gc, args):
 
     kwargs = {'filters': filters}
     if args.limit is not None:
-        kwargs['limit'] = args.page_size
+        kwargs['limit'] = args.limit
     if args.page_size is not None:
         kwargs['page_size'] = args.page_size
 
