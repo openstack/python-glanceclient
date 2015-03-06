@@ -133,9 +133,11 @@ class ShellV2Test(testtools.TestCase):
             utils.print_dict.assert_called_once_with({'id': 'pass'},
                                                      max_column_width=120)
 
-    def test_do_image_create_no_user_props(self):
+    @mock.patch('sys.stdin', autospec=True)
+    def test_do_image_create_no_user_props(self, mock_stdin):
         args = self._make_args({'name': 'IMG-01', 'disk_format': 'vhd',
-                                'container_format': 'bare'})
+                                'container_format': 'bare',
+                                'file': None})
         with mock.patch.object(self.gc.images, 'create') as mocked_create:
             ignore_fields = ['self', 'access', 'file', 'schema']
             expect_image = dict([(field, field) for field in ignore_fields])
@@ -145,6 +147,9 @@ class ShellV2Test(testtools.TestCase):
             expect_image['container_format'] = 'bare'
             mocked_create.return_value = expect_image
 
+            # Ensure that the test stdin is not considered
+            # to be supplying image data
+            mock_stdin.isatty = lambda: True
             test_shell.do_image_create(self.gc, args)
 
             mocked_create.assert_called_once_with(name='IMG-01',
@@ -195,9 +200,11 @@ class ShellV2Test(testtools.TestCase):
             except Exception:
                 pass
 
-    def test_do_image_create_with_user_props(self):
+    @mock.patch('sys.stdin', autospec=True)
+    def test_do_image_create_with_user_props(self, mock_stdin):
         args = self._make_args({'name': 'IMG-01',
-                                'property': ['myprop=myval']})
+                                'property': ['myprop=myval'],
+                                'file': None})
         with mock.patch.object(self.gc.images, 'create') as mocked_create:
             ignore_fields = ['self', 'access', 'file', 'schema']
             expect_image = dict([(field, field) for field in ignore_fields])
@@ -206,6 +213,9 @@ class ShellV2Test(testtools.TestCase):
             expect_image['myprop'] = 'myval'
             mocked_create.return_value = expect_image
 
+            # Ensure that the test stdin is not considered
+            # to be supplying image data
+            mock_stdin.isatty = lambda: True
             test_shell.do_image_create(self.gc, args)
 
             mocked_create.assert_called_once_with(name='IMG-01',

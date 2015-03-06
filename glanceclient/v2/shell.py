@@ -43,7 +43,8 @@ def get_image_schema():
                              ' May be used multiple times.'))
 @utils.arg('--file', metavar='<FILE>',
            help='Local file that contains disk image to be uploaded '
-                'during creation.')
+                'during creation. Alternatively, images can be passed '
+                'to the client via stdin.')
 @utils.arg('--progress', action='store_true', default=False,
            help='Show upload progress bar.')
 def do_image_create(gc, args):
@@ -66,7 +67,7 @@ def do_image_create(gc, args):
                    "privileges to it" % file_name)
     image = gc.images.create(**fields)
     try:
-        if file_name is not None:
+        if utils.get_data_file(args) is not None:
             args.id = image['id']
             args.size = None
             do_image_upload(gc, args)
