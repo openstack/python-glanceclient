@@ -250,7 +250,7 @@ class OpenStackImagesShell(object):
         parser.add_argument('--os-image-url',
                             default=utils.env('OS_IMAGE_URL'),
                             help=('Defaults to env[OS_IMAGE_URL]. '
-                                  'If the provided image url contains a '
+                                  'If the provided image url contains '
                                   'a version number and '
                                   '`--os-image-api-version` is omitted '
                                   'the version of the URL will be picked as '
