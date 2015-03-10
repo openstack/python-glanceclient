@@ -37,8 +37,11 @@ fixtures = {
             {
                 'name': 'image',
                 'properties': {
-                    'name': {'type': 'string', 'description': 'Name of image'},
+                    'name': {'type': 'string',
+                             'description': 'Name of image'},
+                    'tags': {'type': 'array'}
                 },
+
             },
         ),
     },
@@ -51,6 +54,7 @@ _SCHEMA = schemas.Schema({
         'name': {'type': 'string'},
         'color': {'type': 'string'},
         'shape': {'type': 'string', 'is_base': False},
+        'tags': {'type': 'array'}
     },
 })
 
@@ -99,7 +103,8 @@ class TestController(testtools.TestCase):
     def test_get_schema(self):
         schema = self.controller.get('image')
         self.assertEqual('image', schema.name)
-        self.assertEqual(['name'], [p.name for p in schema.properties])
+        self.assertEqual(['name', 'tags'],
+                         [p.name for p in schema.properties])
 
 
 class TestSchemaBasedModel(testtools.TestCase):
@@ -194,4 +199,15 @@ class TestSchemaBasedModel(testtools.TestCase):
 
         patch = original.patch
         expected = '[{"path": "/shape", "value": "square", "op": "replace"}]'
+        self.assertTrue(compare_json_patches(patch, expected))
+
+    def test_patch_should_replace_tags(self):
+        obj = {'name': 'fred', }
+
+        original = self.model(obj)
+        original['tags'] = ['tag1', 'tag2']
+
+        patch = original.patch
+        expected = '[{"path": "/tags", "value": ["tag1", "tag2"], ' \
+            '"op": "replace"}]'
         self.assertTrue(compare_json_patches(patch, expected))
