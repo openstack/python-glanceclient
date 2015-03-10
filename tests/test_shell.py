@@ -69,8 +69,8 @@ class ShellTest(utils.TestCase):
     auth_plugin = 'keystoneclient.auth.identity.v2.Password'
 
     # Patch os.environ to avoid required auth info
-    def make_env(self, exclude=None, fake_env=FAKE_V2_ENV):
-        env = dict((k, v) for k, v in fake_env.items() if k != exclude)
+    def make_env(self, exclude=None):
+        env = dict((k, v) for k, v in self.auth_env.items() if k != exclude)
         self.useFixture(fixtures.MonkeyPatch('os.environ', env))
 
     def setUp(self):
@@ -299,6 +299,54 @@ class ShellTest(utils.TestCase):
             openstack_shell.main()
         except SystemExit as ex:
             self.assertEqual(130, ex.code)
+
+    @mock.patch('glanceclient.v1.client.Client')
+    def test_auth_plugin_invocation_without_username_with_v1(self, v1_client):
+        self.make_env(exclude='OS_USERNAME')
+        args = 'image-list'
+        glance_shell = openstack_shell.OpenStackImagesShell()
+        self.assertRaises(exc.CommandError, glance_shell.main, args.split())
+
+    @mock.patch('glanceclient.v2.client.Client')
+    def test_auth_plugin_invocation_without_username_with_v2(self, v2_client):
+        self.make_env(exclude='OS_USERNAME')
+        args = '--os-image-api-version 2 image-list'
+        glance_shell = openstack_shell.OpenStackImagesShell()
+        self.assertRaises(exc.CommandError, glance_shell.main, args.split())
+
+    @mock.patch('glanceclient.v1.client.Client')
+    def test_auth_plugin_invocation_without_auth_url_with_v1(self, v1_client):
+        self.make_env(exclude='OS_AUTH_URL')
+        args = 'image-list'
+        glance_shell = openstack_shell.OpenStackImagesShell()
+        self.assertRaises(exc.CommandError, glance_shell.main, args.split())
+
+    @mock.patch('glanceclient.v2.client.Client')
+    def test_auth_plugin_invocation_without_auth_url_with_v2(self, v2_client):
+        self.make_env(exclude='OS_AUTH_URL')
+        args = '--os-image-api-version 2 image-list'
+        glance_shell = openstack_shell.OpenStackImagesShell()
+        self.assertRaises(exc.CommandError, glance_shell.main, args.split())
+
+    @mock.patch('glanceclient.v1.client.Client')
+    def test_auth_plugin_invocation_without_tenant_with_v1(self, v1_client):
+        if 'OS_TENANT_NAME' in os.environ:
+            self.make_env(exclude='OS_TENANT_NAME')
+        if 'OS_PROJECT_ID' in os.environ:
+            self.make_env(exclude='OS_PROJECT_ID')
+        args = 'image-list'
+        glance_shell = openstack_shell.OpenStackImagesShell()
+        self.assertRaises(exc.CommandError, glance_shell.main, args.split())
+
+    @mock.patch('glanceclient.v2.client.Client')
+    def test_auth_plugin_invocation_without_tenant_with_v2(self, v2_client):
+        if 'OS_TENANT_NAME' in os.environ:
+            self.make_env(exclude='OS_TENANT_NAME')
+        if 'OS_PROJECT_ID' in os.environ:
+            self.make_env(exclude='OS_PROJECT_ID')
+        args = '--os-image-api-version 2 image-list'
+        glance_shell = openstack_shell.OpenStackImagesShell()
+        self.assertRaises(exc.CommandError, glance_shell.main, args.split())
 
 
 class ShellTestWithKeystoneV3Auth(ShellTest):
