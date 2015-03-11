@@ -151,6 +151,40 @@ class ImageManager(base.ManagerWithFind):
 
         return utils.IterableWithLength(body, content_length)
 
+    def _build_params(self, parameters):
+        params = {'limit': parameters.get('page_size', DEFAULT_PAGE_SIZE)}
+
+        if 'marker' in parameters:
+            params['marker'] = parameters['marker']
+
+        sort_key = parameters.get('sort_key')
+        if sort_key is not None:
+            if sort_key in SORT_KEY_VALUES:
+                params['sort_key'] = sort_key
+            else:
+                raise ValueError('sort_key must be one of the following: %s.'
+                                 % ', '.join(SORT_KEY_VALUES))
+
+        sort_dir = parameters.get('sort_dir')
+        if sort_dir is not None:
+            if sort_dir in SORT_DIR_VALUES:
+                params['sort_dir'] = sort_dir
+            else:
+                raise ValueError('sort_dir must be one of the following: %s.'
+                                 % ', '.join(SORT_DIR_VALUES))
+
+        filters = parameters.get('filters', {})
+        properties = filters.pop('properties', {})
+        for key, value in properties.items():
+            params['property-%s' % key] = value
+        params.update(filters)
+        if parameters.get('owner') is not None:
+            params['is_public'] = None
+        if 'is_public' in parameters:
+            params['is_public'] = parameters['is_public']
+
+        return params
+
     def list(self, **kwargs):
         """Get a list of images.
 
@@ -169,21 +203,22 @@ class ImageManager(base.ManagerWithFind):
         :rtype: list of :class:`Image`
         """
         absolute_limit = kwargs.get('limit')
+        page_size = kwargs.get('page_size', DEFAULT_PAGE_SIZE)
+        owner = kwargs.get('owner', None)
 
-        def paginate(qp, seen=0, return_request_id=None):
-            def filter_owner(owner, image):
-                # If client side owner 'filter' is specified
-                # only return images that match 'owner'.
-                if owner is None:
-                    # Do not filter based on owner
-                    return False
-                if (not hasattr(image, 'owner')) or image.owner is None:
-                    # ownerless image
-                    return not (owner == '')
-                else:
-                    return not (image.owner == owner)
+        def filter_owner(owner, image):
+            # If client side owner 'filter' is specified
+            # only return images that match 'owner'.
+            if owner is None:
+                # Do not filter based on owner
+                return False
+            if (not hasattr(image, 'owner')) or image.owner is None:
+                # ownerless image
+                return not (owner == '')
+            else:
+                return not (image.owner == owner)
 
-            owner = qp.pop('owner', None)
+        def paginate(qp, return_request_id=None):
             for param, value in six.iteritems(qp):
                 if isinstance(value, six.string_types):
                     # Note(flaper87) Url encoding should
@@ -201,55 +236,49 @@ class ImageManager(base.ManagerWithFind):
                 return_request_id.append(resp.headers.get(OS_REQ_ID_HDR, None))
 
             for image in images:
-                if filter_owner(owner, image):
-                    continue
-                seen += 1
-                if absolute_limit is not None and seen > absolute_limit:
-                    return
                 yield image
-
-            page_size = qp.get('limit')
-            if (page_size and len(images) == page_size and
-                    (absolute_limit is None or 0 < seen < absolute_limit)):
-                qp['marker'] = image.id
-                for image in paginate(qp, seen, return_request_id):
-                    yield image
-
-        params = {'limit': kwargs.get('page_size', DEFAULT_PAGE_SIZE)}
-
-        if 'marker' in kwargs:
-            params['marker'] = kwargs['marker']
-
-        sort_key = kwargs.get('sort_key')
-        if sort_key is not None:
-            if sort_key in SORT_KEY_VALUES:
-                params['sort_key'] = sort_key
-            else:
-                raise ValueError('sort_key must be one of the following: %s.'
-                                 % ', '.join(SORT_KEY_VALUES))
-
-        sort_dir = kwargs.get('sort_dir')
-        if sort_dir is not None:
-            if sort_dir in SORT_DIR_VALUES:
-                params['sort_dir'] = sort_dir
-            else:
-                raise ValueError('sort_dir must be one of the following: %s.'
-                                 % ', '.join(SORT_DIR_VALUES))
-
-        filters = kwargs.get('filters', {})
-        properties = filters.pop('properties', {})
-        for key, value in properties.items():
-            params['property-%s' % key] = value
-        params.update(filters)
-        if kwargs.get('owner') is not None:
-            params['owner'] = kwargs['owner']
-            params['is_public'] = None
-        if 'is_public' in kwargs:
-            params['is_public'] = kwargs['is_public']
 
         return_request_id = kwargs.get('return_req_id', None)
 
-        return paginate(params, 0, return_request_id)
+        params = self._build_params(kwargs)
+
+        seen = 0
+        while True:
+            seen_last_page = 0
+            filtered = 0
+            for image in paginate(params, return_request_id):
+                last_image = image.id
+
+                if filter_owner(owner, image):
+                    # Note(kragniz): ignore this image
+                    filtered += 1
+                    continue
+
+                if (absolute_limit is not None and
+                        seen + seen_last_page >= absolute_limit):
+                    # Note(kragniz): we've seen enough images
+                    return
+                else:
+                    seen_last_page += 1
+                    yield image
+
+            seen += seen_last_page
+
+            if seen_last_page + filtered == 0:
+                # Note(kragniz): we didn't get any images in the last page
+                return
+
+            if absolute_limit is not None and seen >= absolute_limit:
+                # Note(kragniz): reached the limit of images to return
+                return
+
+            if page_size and seen_last_page + filtered < page_size:
+                # Note(kragniz): we've reached the last page of the images
+                return
+
+            # Note(kragniz): there are more images to come
+            params['marker'] = last_image
+            seen_last_page = 0
 
     def delete(self, image, **kwargs):
         """Delete an image."""
