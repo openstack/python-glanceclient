@@ -38,6 +38,18 @@ Update a specific image::
    # update with a list of image attribute names and their new values
    glance.images.update(image.id, name="myNewImageName")
 
+Custom Properties
+-----------------
+Set a custom property on an image::
+
+   # set an arbitrary property on an image
+   glance.images.update(image.id, my_custom_property='value')
+
+Remove a custom property from an image::
+
+   # remove the custom property 'my_custom_property'
+   glance.images.update(image.id, remove_props=['my_custom_property'])
+
 Delete
 ------
 Delete specified image(s)::
