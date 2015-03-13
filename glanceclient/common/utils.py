@@ -36,11 +36,15 @@ from oslo_utils import encodeutils
 from oslo_utils import strutils
 import prettytable
 
+from glanceclient import _i18n
 from glanceclient import exc
+
+_ = _i18n._
 
 _memoized_property_lock = threading.Lock()
 
 SENSITIVE_HEADERS = ('X-Auth-Token', )
+REQUIRED_FIELDS_ON_DATA = ('disk_format', 'container_format')
 
 
 # Decorator for cli-args
@@ -51,6 +55,47 @@ def arg(*args, **kwargs):
         func.__dict__.setdefault('arguments', []).insert(0, (args, kwargs))
         return func
     return _decorator
+
+
+def on_data_require_fields(data_fields, required=REQUIRED_FIELDS_ON_DATA):
+    """Decorator to check commands' validity
+
+    This decorator checks that required fields are present when image
+    data has been supplied via command line arguments or via stdin
+
+    On error throws CommandError exception with meaningful message.
+
+    :param data_fields: Which fields' presence imply image data
+    :type data_fields: iter
+    :param required: Required fields
+    :type required: iter
+    :return: function decorator
+    """
+
+    def args_decorator(func):
+        def prepare_fields(fields):
+            args = ('--' + x.replace('_', '-') for x in fields)
+            return ', '.join(args)
+
+        def func_wrapper(gc, args):
+            # Set of arguments with data
+            fields = set(a[0] for a in vars(args).items() if a[1])
+
+            # Fields the conditional requirements depend on
+            present = fields.intersection(data_fields)
+
+            # How many conditional requirements are missing
+            missing = set(required) - fields
+
+            # We use get_data_file to check if data is provided in stdin
+            if (present or get_data_file(args)) and missing:
+                msg = (_("error: Must provide %(req)s when using %(opt)s.") %
+                       {'req': prepare_fields(missing),
+                        'opt': prepare_fields(present) or 'stdin'})
+                raise exc.CommandError(msg)
+            return func(gc, args)
+        return func_wrapper
+    return args_decorator
 
 
 def schema_args(schema_getter, omit=None):

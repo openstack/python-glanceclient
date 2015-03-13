@@ -16,11 +16,47 @@
 import json
 import mock
 import os
+import six
 import tempfile
 import testtools
 
 from glanceclient.common import utils
+from glanceclient import exc
+from glanceclient import shell
+
+# NOTE(geguileo): This is very nasty, but I can't find a better way to set
+# command line arguments in glanceclient.v2.shell.do_image_create that are
+# set by decorator utils.schema_args while preserving the spirits of the test
+
+# Backup original decorator
+original_schema_args = utils.schema_args
+
+
+# Set our own decorator that calls the original but with simulated schema
+def schema_args(schema_getter, omit=None):
+    global original_schema_args
+    # We only add the 2 arguments that are required by image-create
+    my_schema_getter = lambda: {
+        'properties': {
+            'container_format': {
+                'enum': [None, 'ami', 'ari', 'aki', 'bare', 'ovf', 'ova'],
+                'type': 'string',
+                'description': 'Format of the container'},
+            'disk_format': {
+                'enum': [None, 'ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw',
+                         'qcow2', 'vdi', 'iso'],
+                'type': 'string',
+                'description': 'Format of the disk'},
+            'location': {'type': 'string'},
+            'locations': {'type': 'string'},
+            'copy_from': {'type': 'string'}}}
+    return original_schema_args(my_schema_getter, omit)
+utils.schema_args = schema_args
+
 from glanceclient.v2 import shell as test_shell
+
+# Return original decorator.
+utils.schema_args = original_schema_args
 
 
 class ShellV2Test(testtools.TestCase):
@@ -28,6 +64,25 @@ class ShellV2Test(testtools.TestCase):
         super(ShellV2Test, self).setUp()
         self._mock_utils()
         self.gc = self._mock_glance_client()
+        self.shell = shell.OpenStackImagesShell()
+        os.environ = {
+            'OS_USERNAME': 'username',
+            'OS_PASSWORD': 'password',
+            'OS_TENANT_ID': 'tenant_id',
+            'OS_TOKEN_ID': 'test',
+            'OS_AUTH_URL': 'http://127.0.0.1:5000/v2.0/',
+            'OS_AUTH_TOKEN': 'pass',
+            'OS_IMAGE_API_VERSION': '1',
+            'OS_REGION_NAME': 'test',
+            'OS_IMAGE_URL': 'http://is.invalid'}
+        self.shell = shell.OpenStackImagesShell()
+        self.patched = mock.patch('glanceclient.common.utils.get_data_file',
+                                  autospec=True, return_value=None)
+        self.mock_get_data_file = self.patched.start()
+
+    def tearDown(self):
+        super(ShellV2Test, self).tearDown()
+        self.patched.stop()
 
     def _make_args(self, args):
         # NOTE(venkatesh): this conversion from a dict to an object
@@ -58,6 +113,49 @@ class ShellV2Test(testtools.TestCase):
             func(self.gc, func_args)
 
             mocked_utils_exit.assert_called_once_with(err_msg)
+
+    def _run_command(self, cmd):
+        self.shell.main(cmd.split())
+
+    @mock.patch('sys.stderr')
+    def test_image_create_missing_disk_format(self, __):
+        # We test for all possible sources
+        for origin in ('--file', '--location', '--copy-from'):
+            e = self.assertRaises(exc.CommandError, self._run_command,
+                                  '--os-image-api-version 2 image-create ' +
+                                  origin + ' fake_src --container-format bare')
+            self.assertEqual('error: Must provide --disk-format when using '
+                             + origin + '.', e.message)
+
+    @mock.patch('sys.stderr')
+    def test_image_create_missing_container_format(self, __):
+        # We test for all possible sources
+        for origin in ('--file', '--location', '--copy-from'):
+            e = self.assertRaises(exc.CommandError, self._run_command,
+                                  '--os-image-api-version 2 image-create ' +
+                                  origin + ' fake_src --disk-format qcow2')
+            self.assertEqual('error: Must provide --container-format when '
+                             'using ' + origin + '.', e.message)
+
+    @mock.patch('sys.stderr')
+    def test_image_create_missing_container_format_stdin_data(self, __):
+        # Fake that get_data_file method returns data
+        self.mock_get_data_file.return_value = six.StringIO()
+        e = self.assertRaises(exc.CommandError, self._run_command,
+                              '--os-image-api-version 2 image-create'
+                              ' --disk-format qcow2')
+        self.assertEqual('error: Must provide --container-format when '
+                         'using stdin.', e.message)
+
+    @mock.patch('sys.stderr')
+    def test_image_create_missing_disk_format_stdin_data(self, __):
+        # Fake that get_data_file method returns data
+        self.mock_get_data_file.return_value = six.StringIO()
+        e = self.assertRaises(exc.CommandError, self._run_command,
+                              '--os-image-api-version 2 image-create'
+                              ' --container-format bare')
+        self.assertEqual('error: Must provide --disk-format when using stdin.',
+                         e.message)
 
     def test_do_image_list(self):
         input = {
@@ -261,6 +359,7 @@ class ShellV2Test(testtools.TestCase):
                 'container_format': 'bare'})
 
     def test_do_image_create_with_file(self):
+        self.mock_get_data_file.return_value = six.StringIO()
         try:
             file_name = None
             with open(tempfile.mktemp(), 'w+') as f:
@@ -305,7 +404,9 @@ class ShellV2Test(testtools.TestCase):
     def test_do_image_create_with_user_props(self, mock_stdin):
         args = self._make_args({'name': 'IMG-01',
                                 'property': ['myprop=myval'],
-                                'file': None})
+                                'file': None,
+                                'container_format': 'bare',
+                                'disk_format': 'qcow2'})
         with mock.patch.object(self.gc.images, 'create') as mocked_create:
             ignore_fields = ['self', 'access', 'file', 'schema']
             expect_image = dict([(field, field) for field in ignore_fields])
@@ -320,7 +421,9 @@ class ShellV2Test(testtools.TestCase):
             test_shell.do_image_create(self.gc, args)
 
             mocked_create.assert_called_once_with(name='IMG-01',
-                                                  myprop='myval')
+                                                  myprop='myval',
+                                                  container_format='bare',
+                                                  disk_format='qcow2')
             utils.print_dict.assert_called_once_with({
                 'id': 'pass', 'name': 'IMG-01', 'myprop': 'myval'})
 

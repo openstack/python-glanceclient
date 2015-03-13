@@ -232,6 +232,9 @@ class ShellInvalidEndpointandParameterTest(utils.TestCase):
             'OS_IMAGE_URL': 'http://is.invalid'}
 
         self.shell = shell.OpenStackImagesShell()
+        self.patched = mock.patch('glanceclient.common.utils.get_data_file',
+                                  autospec=True, return_value=None)
+        self.mock_get_data_file = self.patched.start()
 
         self.gc = self._mock_glance_client()
 
@@ -254,6 +257,7 @@ class ShellInvalidEndpointandParameterTest(utils.TestCase):
     def tearDown(self):
         super(ShellInvalidEndpointandParameterTest, self).tearDown()
         os.environ = self.old_environment
+        self.patched.stop()
 
     def run_command(self, cmd):
         self.shell.main(cmd.split())
@@ -322,6 +326,46 @@ class ShellInvalidEndpointandParameterTest(utils.TestCase):
         self.assertRaises(
             SystemExit,
             self.run_command, 'image-create --min-disk 10gb')
+
+    @mock.patch('sys.stderr')
+    def test_image_create_missing_disk_format(self, __):
+        # We test for all possible sources
+        for origin in ('--file', '--location', '--copy-from'):
+            e = self.assertRaises(exc.CommandError, self.run_command,
+                                  '--os-image-api-version 1 image-create ' +
+                                  origin + ' fake_src --container-format bare')
+            self.assertEqual('error: Must provide --disk-format when using '
+                             + origin + '.', e.message)
+
+    @mock.patch('sys.stderr')
+    def test_image_create_missing_container_format(self, __):
+        # We test for all possible sources
+        for origin in ('--file', '--location', '--copy-from'):
+            e = self.assertRaises(exc.CommandError, self.run_command,
+                                  '--os-image-api-version 1 image-create ' +
+                                  origin + ' fake_src --disk-format qcow2')
+            self.assertEqual('error: Must provide --container-format when '
+                             'using ' + origin + '.', e.message)
+
+    @mock.patch('sys.stderr')
+    def test_image_create_missing_container_format_stdin_data(self, __):
+        # Fake that get_data_file method returns data
+        self.mock_get_data_file.return_value = six.StringIO()
+        e = self.assertRaises(exc.CommandError, self.run_command,
+                              '--os-image-api-version 1 image-create'
+                              ' --disk-format qcow2')
+        self.assertEqual('error: Must provide --container-format when '
+                         'using stdin.', e.message)
+
+    @mock.patch('sys.stderr')
+    def test_image_create_missing_disk_format_stdin_data(self, __):
+        # Fake that get_data_file method returns data
+        self.mock_get_data_file.return_value = six.StringIO()
+        e = self.assertRaises(exc.CommandError, self.run_command,
+                              '--os-image-api-version 1 image-create'
+                              ' --container-format bare')
+        self.assertEqual('error: Must provide --disk-format when using stdin.',
+                         e.message)
 
     @mock.patch('sys.stderr')
     def test_image_update_invalid_size_parameter(self, __):

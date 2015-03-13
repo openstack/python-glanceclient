@@ -27,6 +27,7 @@ import os
 
 MEMBER_STATUS_VALUES = image_members.MEMBER_STATUS_VALUES
 IMAGE_SCHEMA = None
+DATA_FIELDS = ('location', 'copy_from', 'file')
 
 
 def get_image_schema():
@@ -55,6 +56,7 @@ def get_image_schema():
                 'to the client via stdin.')
 @utils.arg('--progress', action='store_true', default=False,
            help='Show upload progress bar.')
+@utils.on_data_require_fields(DATA_FIELDS)
 def do_image_create(gc, args):
     """Create a new image."""
     schema = gc.schemas.get("image")

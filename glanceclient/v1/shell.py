@@ -32,6 +32,7 @@ import glanceclient.v1.images
 CONTAINER_FORMATS = 'Acceptable formats: ami, ari, aki, bare, and ovf.'
 DISK_FORMATS = ('Acceptable formats: ami, ari, aki, vhd, vmdk, raw, '
                 'qcow2, vdi, and iso.')
+DATA_FIELDS = ('location', 'copy_from', 'file')
 
 _bool_strict = functools.partial(strutils.bool_from_string, strict=True)
 
@@ -221,6 +222,7 @@ def do_image_download(gc, args):
            help='Print image size in a human-friendly format.')
 @utils.arg('--progress', action='store_true', default=False,
            help='Show upload progress bar.')
+@utils.on_data_require_fields(DATA_FIELDS)
 def do_image_create(gc, args):
     """Create a new image."""
     # Filter out None values
