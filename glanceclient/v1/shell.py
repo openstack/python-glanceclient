@@ -19,6 +19,7 @@ import copy
 import functools
 import os
 import six
+import sys
 
 from oslo_utils import encodeutils
 from oslo_utils import strutils
