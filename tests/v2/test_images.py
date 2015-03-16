@@ -394,8 +394,54 @@ data_fixtures = {
             {'images': []},
         ),
     },
+    '/v2/images?limit=%d&sort_key=name' % images.DEFAULT_PAGE_SIZE: {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': '2a4560b2-e585-443e-9b39-553b46ec92d1',
+                    'name': 'image-1',
+                },
+                {
+                    'id': '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810',
+                    'name': 'image-2',
+                },
+            ]},
+        ),
+    },
+    '/v2/images?limit=%d&sort_key=name&sort_key=id'
+    % images.DEFAULT_PAGE_SIZE: {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': '2a4560b2-e585-443e-9b39-553b46ec92d1',
+                    'name': 'image',
+                },
+                {
+                    'id': '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810',
+                    'name': 'image',
+                },
+            ]},
+        ),
+    },
+    '/v2/images?limit=%d&sort_dir=desc&sort_key=id'
+    % images.DEFAULT_PAGE_SIZE: {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810',
+                    'name': 'image-2',
+                },
+                {
+                    'id': '2a4560b2-e585-443e-9b39-553b46ec92d1',
+                    'name': 'image-1',
+                },
+            ]},
+        ),
+    }
 }
-
 
 schema_fixtures = {
     'image': {
@@ -559,6 +605,29 @@ class TestController(testtools.TestCase):
         filters = {'filters': {'tag': ['fake']}}
         images = list(self.controller.list(**filters))
         self.assertEqual(0, len(images))
+
+    def test_list_images_with_single_sort_key(self):
+        img_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
+        sort_key = 'name'
+        images = list(self.controller.list(sort_key=sort_key))
+        self.assertEqual(2, len(images))
+        self.assertEqual('%s' % img_id1, images[0].id)
+
+    def test_list_with_multiple_sort_keys(self):
+        img_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
+        sort_key = ['name', 'id']
+        images = list(self.controller.list(sort_key=sort_key))
+        self.assertEqual(2, len(images))
+        self.assertEqual('%s' % img_id1, images[0].id)
+
+    def test_list_images_with_desc_sort_dir(self):
+        img_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
+        sort_key = 'id'
+        sort_dir = 'desc'
+        images = list(self.controller.list(sort_key=sort_key,
+                                           sort_dir=sort_dir))
+        self.assertEqual(2, len(images))
+        self.assertEqual('%s' % img_id1, images[1].id)
 
     def test_list_images_for_property(self):
         filters = {'filters': dict([('os_distro', 'NixOS')])}
