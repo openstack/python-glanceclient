@@ -128,9 +128,9 @@ def do_image_update(gc, args):
 @utils.arg('--sort-key', default=[], action='append',
            choices=images.SORT_KEY_VALUES,
            help='Sort image list by specified fields.')
-@utils.arg('--sort-dir', default='asc',
+@utils.arg('--sort-dir', default=[], action='append',
            choices=images.SORT_DIR_VALUES,
-           help='Sort image list in specified direction.')
+           help='Sort image list in specified directions.')
 def do_image_list(gc, args):
     """List images you can access."""
     filter_keys = ['visibility', 'member_status', 'owner', 'checksum', 'tag']
@@ -152,7 +152,10 @@ def do_image_list(gc, args):
         kwargs['sort_key'] = args.sort_key
     else:
         kwargs['sort_key'] = ['name']
-    kwargs['sort_dir'] = args.sort_dir
+    if args.sort_dir:
+        kwargs['sort_dir'] = args.sort_dir
+    else:
+        kwargs['sort_dir'] = ['asc']
 
     images = gc.images.list(**kwargs)
     columns = ['ID', 'Name']

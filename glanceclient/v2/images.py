@@ -41,6 +41,12 @@ class Controller(object):
         schema = self.schema_client.get('image')
         return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
 
+    @staticmethod
+    def _wrap(value):
+        if isinstance(value, six.string_types):
+            return [value]
+        return value
+
     def list(self, **kwargs):
         """Retrieve a listing of Image objects
 
@@ -98,9 +104,15 @@ class Controller(object):
         # the page_size as Glance's limit.
         filters['limit'] = page_size
 
-        sort_dir = kwargs.get('sort_dir')
-        if sort_dir is not None:
-            filters['sort_dir'] = sort_dir
+        sort_dir = self._wrap(kwargs.get('sort_dir', []))
+        sort_key = self._wrap(kwargs.get('sort_key', []))
+
+        if len(sort_key) != len(sort_dir) and len(sort_dir) > 1:
+            raise exc.HTTPBadRequest("Unexpected number of sort directions: "
+                                     "provide only one default sorting "
+                                     "direction for each key or make sure "
+                                     "that sorting keys number matches with a "
+                                     "number of sorting directions.")
 
         tags = filters.pop('tag', [])
         tags_url_params = []
@@ -118,12 +130,11 @@ class Controller(object):
         for param in tags_url_params:
             url = '%s&%s' % (url, parse.urlencode(param))
 
-        sort_key = kwargs.get('sort_key')
-        if sort_key is not None:
-            if isinstance(sort_key, six.string_types):
-                sort_key = [sort_key]
-            for key in sort_key:
-                url = '%s&sort_key=%s' % (url, key)
+        for key in sort_key:
+            url = '%s&sort_key=%s' % (url, key)
+
+        for dir in sort_dir:
+            url = '%s&sort_dir=%s' % (url, dir)
 
         for image in paginate(url, page_size, limit):
             yield image
