@@ -58,7 +58,7 @@ data_fixtures = {
                     },
                     'color': {'type': 'string', 'is_base': False},
                 },
-                'additionalProperties': {'type': 'string'}
+                'additionalProperties': {'type': 'string'},
             },
         ),
     },
@@ -418,8 +418,9 @@ schema_fixtures = {
                         }
                     },
                     'color': {'type': 'string', 'is_base': False},
+                    'tags': {'type': 'array'},
                 },
-                'additionalProperties': {'type': 'string'}
+                'additionalProperties': {'type': 'string'},
             }
         )
     }
@@ -888,6 +889,22 @@ class TestController(testtools.TestCase):
             self._patch_req(image_id, mod_patch),
             self._empty_get(image_id)
         ])
+
+    def test_update_tags(self):
+        image_id = 'a2b83adc-888e-11e3-8872-78acc0b951d8'
+        tag_map = {'tags': ['tag01', 'tag02', 'tag03']}
+
+        image = self.controller.update(image_id, **tag_map)
+
+        expected_body = [{'path': '/tags', 'op': 'replace',
+                          'value': tag_map['tags']}]
+        expected = [
+            self._empty_get(image_id),
+            self._patch_req(image_id, expected_body),
+            self._empty_get(image_id)
+        ]
+        self.assertEqual(expected, self.api.calls)
+        self.assertEqual(image_id, image.id)
 
     def test_update_missing_location(self):
         image_id = 'a2b83adc-888e-11e3-8872-78acc0b951d8'
