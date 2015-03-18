@@ -39,6 +39,27 @@ See also :doc:`/man/glance`.
 Release Notes
 =============
 
+0.17.0
+------
+
+* 1420707_: Updated help for v2 member-update api
+* glance-sorting-enhancements_: Extend images CLI v2 with new sorting syntax
+* glance-sorting-enhancements_: Add the ability to specify the sort dir for each key
+* glance-sorting-enhancements_: Adds the ability to sort images with multiple keys
+* 1306774_: Apply expected patch format when updating tags in v2.images
+* 1429088_: v2: read limit for list from --limit in shell
+* 1428797_: Fix leaking sockets after v2 list operation
+* 1423939_: Fix leaking sockets after v1 list operation
+* 1408033_: v2: Allow upload from stdin on image-create
+
+.. _1420707: https://bugs.launchpad.net/python-glanceclient/+bug/1420707
+.. _glance-sorting-enhancements: https://blueprints.launchpad.net/glance/+spec/glance-sorting-enhancements
+.. _1306774: https://bugs.launchpad.net/python-glanceclient/+bug/1306774
+.. _1429088: https://bugs.launchpad.net/python-glanceclient/+bug/1429088
+.. _1428797: https://bugs.launchpad.net/python-glanceclient/+bug/1428797
+.. _1423939: https://bugs.launchpad.net/python-glanceclient/+bug/1423939
+.. _1408033: https://bugs.launchpad.net/python-glanceclient/+bug/1408033
+
 0.16.1
 ------
 
