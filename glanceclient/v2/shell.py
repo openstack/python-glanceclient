@@ -16,6 +16,7 @@
 from glanceclient.common import progressbar
 from glanceclient.common import utils
 from glanceclient import exc
+from glanceclient.v2.image_members import MEMBER_STATUS_VALUES
 from glanceclient.v2 import images
 from glanceclient.v2 import tasks
 import json
@@ -203,7 +204,10 @@ def do_member_delete(gc, args):
 @utils.arg('member_id', metavar='<MEMBER_ID>',
            help='Tenant to update.')
 @utils.arg('member_status', metavar='<MEMBER_STATUS>',
-           help='Updated status of member.')
+           choices=MEMBER_STATUS_VALUES,
+           help='Updated status of member.'
+                ' Valid Values: %s' %
+                ', '.join(str(val) for val in MEMBER_STATUS_VALUES))
 def do_member_update(gc, args):
     """Update the status of a member for a given image."""
     if not (args.image_id and args.member_id and args.member_status):

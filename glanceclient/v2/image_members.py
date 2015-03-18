@@ -19,6 +19,9 @@ from glanceclient.common import utils
 from glanceclient.v2 import schemas
 
 
+MEMBER_STATUS_VALUES = ('accepted', 'rejected', 'pending')
+
+
 class Controller(object):
     def __init__(self, http_client, schema_client):
         self.http_client = http_client
