@@ -554,7 +554,7 @@ class ImageManagerTest(testtools.TestCase):
         except IOError as e:
             self.assertEqual(errno.EPIPE, e.errno)
             msg = 'was fd7c5c4fdaa97163ee4ba8842baa537a expected wrong'
-            self.assertTrue(msg in str(e))
+            self.assertIn(msg, str(e))
 
     def test_data_req_id(self):
         params = {
@@ -897,7 +897,7 @@ class ImageTest(testtools.TestCase):
         except IOError as e:
             self.assertEqual(errno.EPIPE, e.errno)
             msg = 'was fd7c5c4fdaa97163ee4ba8842baa537a expected wrong'
-            self.assertTrue(msg in str(e))
+            self.assertIn(msg, str(e))
 
     def test_data_with_checksum(self):
         image = self.mgr.get('3')
@@ -959,5 +959,5 @@ class UrlParameterTest(testtools.TestCase):
         shell.do_image_list(self.gc, FakeArg({"is_public": "True"}))
         parts = parse.urlparse(self.api.url)
         qs_dict = parse.parse_qs(parts.query)
-        self.assertTrue('is_public' in qs_dict)
+        self.assertIn('is_public', qs_dict)
         self.assertTrue(qs_dict['is_public'][0].lower() == "true")
