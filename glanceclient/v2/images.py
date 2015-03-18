@@ -132,8 +132,10 @@ class Controller(object):
         tags_url_params = []
 
         for tag in tags:
-            if isinstance(tag, six.string_types):
-                tags_url_params.append({'tag': encodeutils.safe_encode(tag)})
+            if not isinstance(tag, six.string_types):
+                raise exc.HTTPBadRequest("Invalid tag value %s" % tag)
+
+            tags_url_params.append({'tag': encodeutils.safe_encode(tag)})
 
         for param, value in six.iteritems(filters):
             if isinstance(value, six.string_types):
