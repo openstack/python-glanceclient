@@ -23,6 +23,8 @@ from glanceclient.v2 import tasks
 _OWNED_TASK_ID = 'a4963502-acc7-42ba-ad60-5aa0962b7faf'
 _OWNER_ID = '6bd473f0-79ae-40ad-a927-e07ec37b642f'
 _FAKE_OWNER_ID = '63e7f218-29de-4477-abdc-8db7c9533188'
+_PENDING_ID = '3a4560a1-e585-443e-9b39-553b46ec92d1'
+_PROCESSING_ID = '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810'
 
 
 fixtures = {
@@ -31,12 +33,12 @@ fixtures = {
             {},
             {'tasks': [
                 {
-                    'id': '3a4560a1-e585-443e-9b39-553b46ec92d1',
+                    'id': _PENDING_ID,
                     'type': 'import',
                     'status': 'pending',
                 },
                 {
-                    'id': '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810',
+                    'id': _PROCESSING_ID,
                     'type': 'import',
                     'status': 'processing',
                 },
@@ -49,7 +51,7 @@ fixtures = {
             {
                 'tasks': [
                     {
-                        'id': '3a4560a1-e585-443e-9b39-553b46ec92d1',
+                        'id': _PENDING_ID,
                         'type': 'import',
                         'status': 'pending',
                     },
@@ -64,7 +66,7 @@ fixtures = {
             {},
             {'tasks': [
                 {
-                    'id': '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810',
+                    'id': _PROCESSING_ID,
                     'type': 'import',
                     'status': 'pending',
                 },
@@ -75,7 +77,7 @@ fixtures = {
         'GET': (
             {},
             {
-                'id': '3a4560a1-e585-443e-9b39-553b46ec92d1',
+                'id': _PENDING_ID,
                 'type': 'import',
                 'status': 'pending',
             },
@@ -103,7 +105,7 @@ fixtures = {
         'POST': (
             {},
             {
-                'id': '3a4560a1-e585-443e-9b39-553b46ec92d1',
+                'id': _PENDING_ID,
                 'type': 'import',
                 'status': 'pending',
                 'input': '{"import_from": "file:///", '
@@ -170,7 +172,58 @@ fixtures = {
         'GET': ({},
                 {'tasks': []},
                 ),
-    }
+    },
+    '/v2/tasks?limit=%d&sort_key=type' % tasks.DEFAULT_PAGE_SIZE: {
+        'GET': (
+            {},
+            {'tasks': [
+                {
+                    'id': _PENDING_ID,
+                    'type': 'import',
+                    'status': 'pending',
+                },
+                {
+                    'id': _PROCESSING_ID,
+                    'type': 'import',
+                    'status': 'processing',
+                },
+            ]},
+        ),
+    },
+    '/v2/tasks?limit=%d&sort_dir=asc&sort_key=id' % tasks.DEFAULT_PAGE_SIZE: {
+        'GET': (
+            {},
+            {'tasks': [
+                {
+                    'id': _PENDING_ID,
+                    'type': 'import',
+                    'status': 'pending',
+                },
+                {
+                    'id': _PROCESSING_ID,
+                    'type': 'import',
+                    'status': 'processing',
+                },
+            ]},
+        ),
+    },
+    '/v2/tasks?limit=%d&sort_dir=desc&sort_key=id' % tasks.DEFAULT_PAGE_SIZE: {
+        'GET': (
+            {},
+            {'tasks': [
+                {
+                    'id': _PROCESSING_ID,
+                    'type': 'import',
+                    'status': 'processing',
+                },
+                {
+                    'id': _PENDING_ID,
+                    'type': 'import',
+                    'status': 'pending',
+                },
+            ]},
+        ),
+    },
 }
 
 schema_fixtures = {
@@ -204,19 +257,19 @@ class TestController(testtools.TestCase):
     def test_list_tasks(self):
         #NOTE(flwang): cast to list since the controller returns a generator
         tasks = list(self.controller.list())
-        self.assertEqual(tasks[0].id, '3a4560a1-e585-443e-9b39-553b46ec92d1')
+        self.assertEqual(tasks[0].id, _PENDING_ID)
         self.assertEqual(tasks[0].type, 'import')
         self.assertEqual(tasks[0].status, 'pending')
-        self.assertEqual(tasks[1].id, '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810')
+        self.assertEqual(tasks[1].id, _PROCESSING_ID)
         self.assertEqual(tasks[1].type, 'import')
         self.assertEqual(tasks[1].status, 'processing')
 
     def test_list_tasks_paginated(self):
         #NOTE(flwang): cast to list since the controller returns a generator
         tasks = list(self.controller.list(page_size=1))
-        self.assertEqual(tasks[0].id, '3a4560a1-e585-443e-9b39-553b46ec92d1')
+        self.assertEqual(tasks[0].id, _PENDING_ID)
         self.assertEqual(tasks[0].type, 'import')
-        self.assertEqual(tasks[1].id, '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810')
+        self.assertEqual(tasks[1].id, _PROCESSING_ID)
         self.assertEqual(tasks[1].type, 'import')
 
     def test_list_tasks_with_status(self):
@@ -262,9 +315,39 @@ class TestController(testtools.TestCase):
 
         self.assertEqual(b"ni\xc3\xb1o", filters["owner"])
 
+    def test_list_tasks_with_marker(self):
+        tasks = list(self.controller.list(marker=_PENDING_ID, page_size=1))
+        self.assertEqual(1, len(tasks))
+        self.assertEqual(_PROCESSING_ID, tasks[0]['id'])
+
+    def test_list_tasks_with_single_sort_key(self):
+        tasks = list(self.controller.list(sort_key='type'))
+        self.assertEqual(2, len(tasks))
+        self.assertEqual(_PENDING_ID, tasks[0].id)
+
+    def test_list_tasks_with_invalid_sort_key(self):
+        self.assertRaises(ValueError,
+                          list,
+                          self.controller.list(sort_key='invalid'))
+
+    def test_list_tasks_with_desc_sort_dir(self):
+        tasks = list(self.controller.list(sort_key='id', sort_dir='desc'))
+        self.assertEqual(2, len(tasks))
+        self.assertEqual(_PENDING_ID, tasks[1].id)
+
+    def test_list_tasks_with_asc_sort_dir(self):
+        tasks = list(self.controller.list(sort_key='id', sort_dir='asc'))
+        self.assertEqual(2, len(tasks))
+        self.assertEqual(_PENDING_ID, tasks[0].id)
+
+    def test_list_tasks_with_invalid_sort_dir(self):
+        self.assertRaises(ValueError,
+                          list,
+                          self.controller.list(sort_dir='invalid'))
+
     def test_get_task(self):
-        task = self.controller.get('3a4560a1-e585-443e-9b39-553b46ec92d1')
-        self.assertEqual(task.id, '3a4560a1-e585-443e-9b39-553b46ec92d1')
+        task = self.controller.get(_PENDING_ID)
+        self.assertEqual(task.id, _PENDING_ID)
         self.assertEqual(task.type, 'import')
 
     def test_create_task(self):
@@ -274,7 +357,7 @@ class TestController(testtools.TestCase):
                       'swift://cloud.foo/myaccount/mycontainer/path'},
         }
         task = self.controller.create(**properties)
-        self.assertEqual(task.id, '3a4560a1-e585-443e-9b39-553b46ec92d1')
+        self.assertEqual(task.id, _PENDING_ID)
         self.assertEqual(task.type, 'import')
 
     def test_create_task_invalid_property(self):
