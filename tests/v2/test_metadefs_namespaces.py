@@ -664,6 +664,14 @@ class TestNamespaceController(testtools.TestCase):
         self.assertRaises(TypeError, self.controller.update, NAMESPACE1,
                           **properties)
 
+    def test_update_namespace_disallowed_fields(self):
+        properties = {'display_name': 'My Updated Name'}
+        self.controller.update(NAMESPACE1, **properties)
+        actual = self.api.calls
+        _disallowed_fields = ['self', 'schema', 'created_at', 'updated_at']
+        for key in actual[1][3]:
+            self.assertNotIn(key, _disallowed_fields)
+
     def test_delete_namespace(self):
         self.controller.delete(NAMESPACE1)
         expect = [
