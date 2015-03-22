@@ -169,12 +169,14 @@ def do_image_list(gc, args):
 
 
 @utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to describe.')
+@utils.arg('--human-readable', action='store_true', default=False,
+           help='Print image size in a human-friendly format.')
 @utils.arg('--max-column-width', metavar='<integer>', default=80,
            help='The max column width of the printed table.')
 def do_image_show(gc, args):
     """Describe a specific image."""
     image = gc.images.get(args.id)
-    utils.print_image(image, int(args.max_column_width))
+    utils.print_image(image, args.human_readable, int(args.max_column_width))
 
 
 @utils.arg('--image-id', metavar='<IMAGE_ID>', required=True,

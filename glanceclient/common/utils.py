@@ -372,10 +372,12 @@ def strip_version(endpoint):
     return endpoint, version
 
 
-def print_image(image_obj, max_col_width=None):
+def print_image(image_obj, human_readable=False, max_col_width=None):
     ignore = ['self', 'access', 'file', 'schema']
     image = dict([item for item in six.iteritems(image_obj)
                   if item[0] not in ignore])
+    if human_readable:
+        image['size'] = make_size_human_readable(image['size'])
     if str(max_col_width).isdigit():
         print_dict(image, max_column_width=max_col_width)
     else:
