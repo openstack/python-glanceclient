@@ -71,10 +71,11 @@ class Controller(object):
         return sort
 
     def list(self, **kwargs):
-        """Retrieve a listing of Image objects
+        """Retrieve a listing of Image objects.
 
-        :param page_size: Number of images to request in each paginated request
-        :returns generator over list of Images
+        :param page_size: Number of images to request in each
+                          paginated request.
+        :returns: generator over list of Images.
         """
 
         ori_validate_fun = self.model.validate
@@ -238,7 +239,7 @@ class Controller(object):
 
         :param image_id: ID of the image to modify.
         :param remove_props: List of property names to remove
-        :param **kwargs: Image attribute names and their new values.
+        :param \*\*kwargs: Image attribute names and their new values.
         """
         image = self.get(image_id)
         for (key, value) in kwargs.items():

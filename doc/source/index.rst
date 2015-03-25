@@ -1,5 +1,10 @@
+Python Bindings for the OpenStack Images API
+============================================
+
+This is a client for the OpenStack Images API. There's :doc:`a Python API <ref/index>` (the :mod:`glanceclient` module) and a :doc:`command-line script<man/glance>` (installed as :program:`glance`).
+
 Python API
-==========
+----------
 In order to use the python api directly, you must first obtain an auth token and identify which endpoint you wish to speak to. Once you have done so, you can use the API like so::
 
     >>> from glanceclient import Client
@@ -16,10 +21,19 @@ In order to use the python api directly, you must first obtain an auth token and
                 f.write(chunk)
     >>> image.delete()
 
-For an API v2 example see also :doc:`apiv2`.
+Python API Reference
+~~~~~~~~~~~~~~~~~~~~
+
+.. toctree::
+   :maxdepth: 2
+
+   ref/index
+   ref/v1/index
+   ref/v2/index
+
 
 Command-line Tool
-=================
+-----------------
 In order to use the CLI, you must provide your OpenStack username, password, tenant, and auth endpoint. Use the corresponding configuration options (``--os-username``, ``--os-password``, ``--os-tenant-id``, and ``--os-auth-url``) or set them in environment variables::
 
     export OS_USERNAME=user
