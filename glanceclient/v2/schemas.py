@@ -65,6 +65,7 @@ class SchemaProperty(object):
     def __init__(self, name, **kwargs):
         self.name = name
         self.description = kwargs.get('description')
+        self.is_base = kwargs.get('is_base', True)
 
 
 def translate_schema_properties(schema_properties):
@@ -86,9 +87,27 @@ class Schema(object):
         self.properties = translate_schema_properties(raw_properties)
 
     def is_core_property(self, property_name):
+        """Checks if a property with a given name is known to the schema,
+        i.e. is either a base property or a custom one registered in
+        schema-image.json file
+
+        :param property_name: name of the property
+        :returns: True if the property is known, False otherwise
+        """
+        return self._check_property(property_name, True)
+
+    def is_base_property(self, property_name):
+        """Checks if a property with a given name is a base property
+
+        :param property_name: name of the property
+        :returns: True if the property is base, False otherwise
+        """
+        return self._check_property(property_name, False)
+
+    def _check_property(self, property_name, allow_non_base):
         for prop in self.properties:
             if property_name == prop.name:
-                return True
+                return prop.is_base or allow_non_base
         return False
 
     def raw(self):

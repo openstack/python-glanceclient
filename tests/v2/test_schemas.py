@@ -74,6 +74,14 @@ class TestSchemaProperty(testtools.TestCase):
         self.assertEqual('size', prop.name)
         self.assertEqual('some quantity', prop.description)
 
+    def test_property_is_base(self):
+        prop1 = schemas.SchemaProperty('name')
+        prop2 = schemas.SchemaProperty('foo', is_base=False)
+        prop3 = schemas.SchemaProperty('foo', is_base=True)
+        self.assertTrue(prop1.is_base)
+        self.assertFalse(prop2.is_base)
+        self.assertTrue(prop3.is_base)
+
 
 class TestSchema(testtools.TestCase):
     def test_schema_minimum(self):
@@ -92,6 +100,16 @@ class TestSchema(testtools.TestCase):
         raw_schema = {'name': 'Country', 'properties': {}}
         schema = schemas.Schema(raw_schema)
         self.assertEqual(raw_schema, schema.raw())
+
+    def test_property_is_base(self):
+        raw_schema = {'name': 'Country',
+                      'properties': {
+                          'size': {},
+                          'population': {'is_base': False}}}
+        schema = schemas.Schema(raw_schema)
+        self.assertTrue(schema.is_base_property('size'))
+        self.assertFalse(schema.is_base_property('population'))
+        self.assertFalse(schema.is_base_property('foo'))
 
 
 class TestController(testtools.TestCase):
