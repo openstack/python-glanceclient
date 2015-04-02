@@ -187,6 +187,7 @@ schema_fixtures = {
                     'result': {},
                     'message': {},
                 },
+                'additionalProperties': False,
             }
         )
     }
@@ -275,3 +276,10 @@ class TestController(testtools.TestCase):
         task = self.controller.create(**properties)
         self.assertEqual(task.id, '3a4560a1-e585-443e-9b39-553b46ec92d1')
         self.assertEqual(task.type, 'import')
+
+    def test_create_task_invalid_property(self):
+        properties = {
+            'type': 'import',
+            'bad_prop': 'value',
+        }
+        self.assertRaises(TypeError, self.controller.create, **properties)
