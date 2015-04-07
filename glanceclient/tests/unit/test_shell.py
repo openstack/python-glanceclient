@@ -27,10 +27,11 @@ import requests
 from requests_mock.contrib import fixture as rm_fixture
 import six
 
+from glanceclient.common import utils
 from glanceclient import exc
 from glanceclient import shell as openstack_shell
+from glanceclient.tests import utils as testutils
 
-from glanceclient.tests import utils
 #NOTE (esheffield) Used for the schema caching tests
 from glanceclient.v2 import schemas as schemas
 import json
@@ -75,7 +76,7 @@ _s = V3_TOKEN.add_service('image', name='glance')
 _s.add_standard_endpoints(public=DEFAULT_IMAGE_URL)
 
 
-class ShellTest(utils.TestCase):
+class ShellTest(testutils.TestCase):
     # auth environment to use
     auth_env = FAKE_V2_ENV.copy()
     # expected auth plugin to invoke
@@ -311,6 +312,58 @@ class ShellTest(utils.TestCase):
         except SystemExit as ex:
             self.assertEqual(130, ex.code)
 
+    @mock.patch('glanceclient.common.utils.exit', side_effect=utils.exit)
+    def test_shell_illegal_version(self, mock_exit):
+        # Only int versions are allowed on cli
+        shell = openstack_shell.OpenStackImagesShell()
+        argstr = '--os-image-api-version 1.1 image-list'
+        try:
+            shell.main(argstr.split())
+        except SystemExit as ex:
+            self.assertEqual(1, ex.code)
+        msg = ("Invalid API version parameter. "
+               "Supported values are %s" % openstack_shell.SUPPORTED_VERSIONS)
+        mock_exit.assert_called_with(msg=msg)
+
+    @mock.patch('glanceclient.common.utils.exit', side_effect=utils.exit)
+    def test_shell_unsupported_version(self, mock_exit):
+        # Test an integer version which is not supported (-1)
+        shell = openstack_shell.OpenStackImagesShell()
+        argstr = '--os-image-api-version -1 image-list'
+        try:
+            shell.main(argstr.split())
+        except SystemExit as ex:
+            self.assertEqual(1, ex.code)
+        msg = ("Invalid API version parameter. "
+               "Supported values are %s" % openstack_shell.SUPPORTED_VERSIONS)
+        mock_exit.assert_called_with(msg=msg)
+
+    @mock.patch.object(openstack_shell.OpenStackImagesShell,
+                       'get_subcommand_parser')
+    def test_shell_import_error_with_mesage(self, mock_parser):
+        msg = 'Unable to import module xxx'
+        mock_parser.side_effect = ImportError('%s' % msg)
+        shell = openstack_shell.OpenStackImagesShell()
+        argstr = '--os-image-api-version 2 image-list'
+        try:
+            shell.main(argstr.split())
+            self.fail('No import error returned')
+        except ImportError as e:
+            self.assertEqual(msg, str(e))
+
+    @mock.patch.object(openstack_shell.OpenStackImagesShell,
+                       'get_subcommand_parser')
+    def test_shell_import_error_default_message(self, mock_parser):
+        mock_parser.side_effect = ImportError
+        shell = openstack_shell.OpenStackImagesShell()
+        argstr = '--os-image-api-version 2 image-list'
+        try:
+            shell.main(argstr.split())
+            self.fail('No import error returned')
+        except ImportError as e:
+            msg = 'Unable to import module. Re-run with --debug for more info.'
+            self.assertEqual(msg, str(e))
+
     @mock.patch('glanceclient.v1.client.Client')
     def test_auth_plugin_invocation_without_username_with_v1(self, v1_client):
         self.make_env(exclude='OS_USERNAME')
@@ -419,7 +472,7 @@ class ShellTestWithKeystoneV3Auth(ShellTest):
             self.assertNotIn(r, stdout.split())
 
 
-class ShellCacheSchemaTest(utils.TestCase):
+class ShellCacheSchemaTest(testutils.TestCase):
     def setUp(self):
         super(ShellCacheSchemaTest, self).setUp()
         self._mock_client_setup()
