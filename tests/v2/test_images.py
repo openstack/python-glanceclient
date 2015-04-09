@@ -631,7 +631,6 @@ class TestController(testtools.TestCase):
         images = list(self.controller.list(**filters))
         self.assertEqual(1, len(images))
         self.assertEqual('%s' % img_id, images[0].id)
-        pass
 
     def test_list_images_for_tag_multiple_images(self):
         img_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
@@ -653,6 +652,13 @@ class TestController(testtools.TestCase):
         filters = {'filters': {'tag': ['fake']}}
         images = list(self.controller.list(**filters))
         self.assertEqual(0, len(images))
+
+    def test_list_images_for_invalid_tag(self):
+        filters = {'filters': {'tag': [[]]}}
+
+        self.assertRaises(exc.HTTPBadRequest,
+                          list,
+                          self.controller.list(**filters))
 
     def test_list_images_with_single_sort_key(self):
         img_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
