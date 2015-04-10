@@ -16,6 +16,7 @@
 import os
 
 from OpenSSL import crypto
+from OpenSSL import SSL
 try:
     from requests.packages.urllib3 import poolmanager
 except ImportError:
@@ -83,6 +84,11 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         server_thread.daemon = True
         server_thread.start()
 
+    def _skip_python3(self):
+        if six.PY3:
+            msg = ("Skipping: python3 for now. Requires bugfix.")
+            self.skipTest(msg)
+
     def test_v1_requests_cert_verification(self):
         """v1 regression test for bug 115260."""
         port = self.port
@@ -100,6 +106,24 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         except Exception as e:
             self.fail('Unexpected exception raised')
 
+    def test_v1_requests_cert_verification_no_compression(self):
+        """v1 regression test for bug 115260."""
+        self._skip_python3()
+        port = self.port
+        url = 'https://0.0.0.0:%d' % port
+
+        try:
+            client = Client('1', url,
+                            insecure=False,
+                            ssl_compression=False)
+            client.images.get('image123')
+            self.fail('No SSL exception raised')
+        except SSL.Error as e:
+            if 'certificate verify failed' not in str(e):
+                self.fail('No certificate failure message received')
+        except Exception as e:
+            self.fail('Unexpected exception raised')
+
     def test_v2_requests_cert_verification(self):
         """v2 regression test for bug 115260."""
         port = self.port
@@ -113,6 +137,24 @@ class TestHTTPSVerifyCert(testtools.TestCase):
             self.fail('No SSL exception raised')
         except exc.CommunicationError as e:
             if 'certificate verify failed' not in e.message:
+                self.fail('No certificate failure message received')
+        except Exception as e:
+            self.fail('Unexpected exception raised')
+
+    def test_v2_requests_cert_verification_no_compression(self):
+        """v2 regression test for bug 115260."""
+        self._skip_python3()
+        port = self.port
+        url = 'https://0.0.0.0:%d' % port
+
+        try:
+            gc = Client('2', url,
+                        insecure=False,
+                        ssl_compression=False)
+            gc.images.get('image123')
+            self.fail('No SSL exception raised')
+        except SSL.Error as e:
+            if 'certificate verify failed' not in str(e):
                 self.fail('No certificate failure message received')
         except Exception as e:
             self.fail('Unexpected exception raised')

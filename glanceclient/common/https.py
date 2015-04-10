@@ -22,8 +22,11 @@ from requests import adapters
 from requests import compat
 try:
     from requests.packages.urllib3 import connectionpool
+    from requests.packages.urllib3 import poolmanager
 except ImportError:
     from urllib3 import connectionpool
+    from urllib3 import poolmanager
+
 
 from oslo_utils import encodeutils
 import six
@@ -146,6 +149,10 @@ class HTTPSAdapter(adapters.HTTPAdapter):
     https pool by setting glanceclient's
     one.
     """
+    def __init__(self, *args, **kwargs):
+        classes_by_scheme = poolmanager.pool_classes_by_scheme
+        classes_by_scheme["glance+https"] = HTTPSConnectionPool
+        super(HTTPSAdapter, self).__init__(*args, **kwargs)
 
     def request_url(self, request, proxies):
         # NOTE(flaper87): Make sure the url is encoded, otherwise
