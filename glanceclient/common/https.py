@@ -158,7 +158,9 @@ class HTTPSAdapter(adapters.HTTPAdapter):
         # NOTE(flaper87): Make sure the url is encoded, otherwise
         # python's standard httplib will fail with a TypeError.
         url = super(HTTPSAdapter, self).request_url(request, proxies)
-        return encodeutils.safe_encode(url)
+        if six.PY2:
+            url = encodeutils.safe_encode(url)
+        return url
 
     def _create_glance_httpsconnectionpool(self, url):
         kw = self.poolmanager.connection_kw
