@@ -436,6 +436,21 @@ class ShellStdinHandlingTests(testtools.TestCase):
             or self.collected_args[1]['data'] is None
         )
 
+    def test_image_update_opened_stdin(self):
+        """Supply glanceclient with a stdin, and perform an image
+        update to an active image. Glanceclient should not allow it.
+        """
+
+        self.assertRaises(
+            SystemExit,
+            v1shell.do_image_update,
+            self.gc,
+            argparse.Namespace(
+                image='96d2c7e1-de4e-4612-8aa2-ba26610c804e',
+                property={},
+            )
+        )
+
     def test_image_update_data_is_read_from_file(self):
         """Ensure that data is read from a file."""
 
