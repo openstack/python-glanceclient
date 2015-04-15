@@ -233,6 +233,24 @@ class ShellInvalidEndpointandParameterTest(utils.TestCase):
 
         self.shell = shell.OpenStackImagesShell()
 
+        self.gc = self._mock_glance_client()
+
+    def _make_args(self, args):
+        #NOTE(venkatesh): this conversion from a dict to an object
+        # is required because the test_shell.do_xxx(gc, args) methods
+        # expects the args to be attributes of an object. If passed as
+        # dict directly, it throws an AttributeError.
+        class Args():
+            def __init__(self, entries):
+                self.__dict__.update(entries)
+
+        return Args(args)
+
+    def _mock_glance_client(self):
+        my_mocked_gc = mock.Mock()
+        my_mocked_gc.get.return_value = {}
+        return my_mocked_gc
+
     def tearDown(self):
         super(ShellInvalidEndpointandParameterTest, self).tearDown()
         os.environ = self.old_environment
@@ -334,6 +352,45 @@ class ShellInvalidEndpointandParameterTest(utils.TestCase):
         self.assertRaises(
             SystemExit,
             self.run_command, 'image-list --size-max 10gb')
+
+    def test_do_image_list_with_changes_since(self):
+        input = {
+            'name': None,
+            'limit': None,
+            'status': None,
+            'container_format': 'bare',
+            'size_min': None,
+            'size_max': None,
+            'is_public': True,
+            'disk_format': 'raw',
+            'page_size': 20,
+            'visibility': True,
+            'member_status': 'Fake',
+            'owner': 'test',
+            'checksum': 'fake_checksum',
+            'tag': 'fake tag',
+            'properties': [],
+            'sort_key': None,
+            'sort_dir': None,
+            'all_tenants': False,
+            'human_readable': True,
+            'changes_since': '2011-1-1'
+        }
+        args = self._make_args(input)
+        with mock.patch.object(self.gc.images, 'list') as mocked_list:
+            mocked_list.return_value = {}
+
+            v1shell.do_image_list(self.gc, args)
+
+            exp_img_filters = {'container_format': 'bare',
+                               'changes-since': '2011-1-1',
+                               'disk_format': 'raw',
+                               'is_public': True}
+            mocked_list.assert_called_once_with(sort_dir=None,
+                                                sort_key=None,
+                                                owner='test',
+                                                page_size=20,
+                                                filters=exp_img_filters)
 
 
 class ShellStdinHandlingTests(testtools.TestCase):
