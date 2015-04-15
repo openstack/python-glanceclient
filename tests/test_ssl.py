@@ -84,11 +84,6 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         server_thread.daemon = True
         server_thread.start()
 
-    def _skip_python3(self):
-        if six.PY3:
-            msg = ("Skipping: python3 for now. Requires bugfix.")
-            self.skipTest(msg)
-
     def test_v1_requests_cert_verification(self):
         """v1 regression test for bug 115260."""
         port = self.port
@@ -108,7 +103,6 @@ class TestHTTPSVerifyCert(testtools.TestCase):
 
     def test_v1_requests_cert_verification_no_compression(self):
         """v1 regression test for bug 115260."""
-        self._skip_python3()
         port = self.port
         url = 'https://0.0.0.0:%d' % port
 
@@ -143,7 +137,6 @@ class TestHTTPSVerifyCert(testtools.TestCase):
 
     def test_v2_requests_cert_verification_no_compression(self):
         """v2 regression test for bug 115260."""
-        self._skip_python3()
         port = self.port
         url = 'https://0.0.0.0:%d' % port
 
