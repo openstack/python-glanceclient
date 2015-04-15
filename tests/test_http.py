@@ -14,11 +14,13 @@
 #    under the License.
 import json
 
+import mock
 import requests
 from requests_mock.contrib import fixture
 import six
 from six.moves.urllib import parse
 import testtools
+from testtools import matchers
 import types
 
 import glanceclient
@@ -35,6 +37,7 @@ class TestClient(testtools.TestCase):
         self.mock = self.useFixture(fixture.Fixture())
 
         self.endpoint = 'http://example.com:9292'
+        self.ssl_endpoint = 'https://example.com:9292'
         self.client = http.HTTPClient(self.endpoint, token=u'abc123')
 
     def test_identity_headers_and_token(self):
@@ -212,6 +215,98 @@ class TestClient(testtools.TestCase):
             self.client.log_http_response(fake)
         except UnicodeDecodeError as e:
             self.fail("Unexpected UnicodeDecodeError exception '%s'" % e)
+
+    def test_log_curl_request_with_non_ascii_char(self):
+        try:
+            headers = {'header1': 'value1\xa5\xa6'}
+            body = 'examplebody\xa5\xa6'
+            self.client.log_curl_request('GET', '/api/v1/\xa5', headers, body,
+                                         None)
+        except UnicodeDecodeError as e:
+            self.fail("Unexpected UnicodeDecodeError exception '%s'" % e)
+
+    @mock.patch('glanceclient.common.http.LOG.debug')
+    def test_log_curl_request_with_body_and_header(self, mock_log):
+        hd_name = 'header1'
+        hd_val = 'value1'
+        headers = {hd_name: hd_val}
+        body = 'examplebody'
+        self.client.log_curl_request('GET', '/api/v1/', headers, body, None)
+        self.assertTrue(mock_log.called, 'LOG.debug never called')
+        self.assertTrue(mock_log.call_args[0],
+                        'LOG.debug called with no arguments')
+        hd_regex = ".*\s-H\s+'\s*%s\s*:\s*%s\s*'.*" % (hd_name, hd_val)
+        self.assertThat(mock_log.call_args[0][0],
+                        matchers.MatchesRegex(hd_regex),
+                        'header not found in curl command')
+        body_regex = ".*\s-d\s+'%s'\s.*" % body
+        self.assertThat(mock_log.call_args[0][0],
+                        matchers.MatchesRegex(body_regex),
+                        'body not found in curl command')
+
+    def _test_log_curl_request_with_certs(self, mock_log, key, cert, cacert):
+        headers = {'header1': 'value1'}
+        http_client_object = http.HTTPClient(self.ssl_endpoint, key_file=key,
+                                             cert_file=cert, cacert=cacert,
+                                             token='fake-token')
+        http_client_object.log_curl_request('GET', '/api/v1/', headers, None,
+                                            None)
+        self.assertTrue(mock_log.called, 'LOG.debug never called')
+        self.assertTrue(mock_log.call_args[0],
+                        'LOG.debug called with no arguments')
+
+        needles = {'key': key, 'cert': cert, 'cacert': cacert}
+        for option, value in six.iteritems(needles):
+            if value:
+                regex = ".*\s--%s\s+('%s'|%s).*" % (option, value, value)
+                self.assertThat(mock_log.call_args[0][0],
+                                matchers.MatchesRegex(regex),
+                                'no --%s option in curl command' % option)
+            else:
+                regex = ".*\s--%s\s+.*" % option
+                self.assertThat(mock_log.call_args[0][0],
+                                matchers.Not(matchers.MatchesRegex(regex)),
+                                'unexpected --%s option in curl command' %
+                                option)
+
+    @mock.patch('glanceclient.common.http.LOG.debug')
+    def test_log_curl_request_with_all_certs(self, mock_log):
+        self._test_log_curl_request_with_certs(mock_log, 'key1', 'cert1',
+                                               'cacert2')
+
+    @mock.patch('glanceclient.common.http.LOG.debug')
+    def test_log_curl_request_with_some_certs(self, mock_log):
+        self._test_log_curl_request_with_certs(mock_log, 'key1', 'cert1', None)
+
+    @mock.patch('glanceclient.common.http.LOG.debug')
+    def test_log_curl_request_with_insecure_param(self, mock_log):
+        headers = {'header1': 'value1'}
+        http_client_object = http.HTTPClient(self.ssl_endpoint, insecure=True,
+                                             token='fake-token')
+        http_client_object.log_curl_request('GET', '/api/v1/', headers, None,
+                                            None)
+        self.assertTrue(mock_log.called, 'LOG.debug never called')
+        self.assertTrue(mock_log.call_args[0],
+                        'LOG.debug called with no arguments')
+        self.assertThat(mock_log.call_args[0][0],
+                        matchers.MatchesRegex('.*\s-k\s.*'),
+                        'no -k option in curl command')
+
+    @mock.patch('glanceclient.common.http.LOG.debug')
+    def test_log_curl_request_with_token_header(self, mock_log):
+        fake_token = 'fake-token'
+        headers = {'X-Auth-Token': fake_token}
+        http_client_object = http.HTTPClient(self.endpoint,
+                                             identity_headers=headers)
+        http_client_object.log_curl_request('GET', '/api/v1/', headers, None,
+                                            None)
+        self.assertTrue(mock_log.called, 'LOG.debug never called')
+        self.assertTrue(mock_log.call_args[0],
+                        'LOG.debug called with no arguments')
+        token_regex = '.*%s.*' % fake_token
+        self.assertThat(mock_log.call_args[0][0],
+                        matchers.Not(matchers.MatchesRegex(token_regex)),
+                        'token found in LOG.debug parameter')
 
 
 class TestVerifiedHTTPSConnection(testtools.TestCase):
