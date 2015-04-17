@@ -16,8 +16,8 @@
 
 import testtools
 
+from glanceclient.tests import utils
 from glanceclient.v2 import tasks
-from tests import utils
 
 
 _OWNED_TASK_ID = 'a4963502-acc7-42ba-ad60-5aa0962b7faf'

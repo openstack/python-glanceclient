@@ -18,8 +18,8 @@ import errno
 import testtools
 
 from glanceclient import exc
+from glanceclient.tests import utils
 from glanceclient.v2 import images
-from tests import utils
 
 _CHKSUM = '93264c3edf5972c9f1cb309543d38a5c'
 _CHKSUM1 = '54264c3edf5972c9f1cb309453d38a46'

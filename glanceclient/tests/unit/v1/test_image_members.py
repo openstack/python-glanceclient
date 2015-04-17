@@ -15,9 +15,9 @@
 
 import testtools
 
+from glanceclient.tests import utils
 import glanceclient.v1.image_members
 import glanceclient.v1.images
-from tests import utils
 
 
 fixtures = {

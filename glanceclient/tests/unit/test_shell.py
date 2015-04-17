@@ -30,10 +30,10 @@ import six
 from glanceclient import exc
 from glanceclient import shell as openstack_shell
 
+from glanceclient.tests import utils
 #NOTE (esheffield) Used for the schema caching tests
 from glanceclient.v2 import schemas as schemas
 import json
-from tests import utils
 
 
 DEFAULT_IMAGE_URL = 'http://127.0.0.1:5000/'

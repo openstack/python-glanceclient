@@ -15,8 +15,8 @@
 
 import testtools
 
+from glanceclient.tests import utils
 from glanceclient.v2 import image_members
-from tests import utils
 
 
 IMAGE = '3a4560a1-e585-443e-9b39-553b46ec92d1'

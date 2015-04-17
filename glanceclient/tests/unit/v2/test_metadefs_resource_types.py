@@ -15,8 +15,8 @@
 
 import testtools
 
+from glanceclient.tests import utils
 from glanceclient.v2 import metadefs
-from tests import utils
 
 NAMESPACE1 = 'Namespace1'
 RESOURCE_TYPE1 = 'ResourceType1'

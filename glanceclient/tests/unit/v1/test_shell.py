@@ -31,7 +31,7 @@ import glanceclient.v1.client as client
 import glanceclient.v1.images
 import glanceclient.v1.shell as v1shell
 
-from tests import utils
+from glanceclient.tests import utils
 
 if six.PY3:
     import io
