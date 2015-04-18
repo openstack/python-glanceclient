@@ -7,7 +7,7 @@ coverage>=3.6
 discover
 mox3>=0.7.0
 mock>=1.0
-oslosphinx>=2.2.0  # Apache-2.0
+oslosphinx>=2.5.0,<2.6.0  # Apache-2.0
 sphinx>=1.1.2,!=1.2.0,!=1.3b1,<1.3
 testrepository>=0.0.18
 testtools>=0.9.36,!=1.2.0
