@@ -39,6 +39,17 @@ See also :doc:`/man/glance`.
 Release Notes
 =============
 
+0.17.1
+------
+
+* 1357430_: Add SSL cert verification regression tests
+* 1442664_: Fix client when using no ssl compression
+* 1357430_: Fix client when using no ssl compression
+
+.. _1357430: https://bugs.launchpad.net/python-glanceclient/+bug/1357430
+.. _1442664: https://bugs.launchpad.net/python-glanceclient/+bug/1442664
+.. _1357430: https://bugs.launchpad.net/python-glanceclient/+bug/1357430
+
 0.17.0
 ------
 
