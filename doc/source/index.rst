@@ -53,6 +53,25 @@ See also :doc:`/man/glance`.
 Release Notes
 =============
 
+0.18.0
+------
+
+* 1442664_, 1442883_, 1357430_: Fix errors when SSL compression is disabled
+* 1399778_: Remove ``locations`` from image-create arguments
+* 1439513_: Fix error on python 3 when creating a task with and invalid property
+* Stop accepting ``*args`` in the main client interface
+* Expose ``is_base`` schema property attribute, allowing the client to differentiate between base and custom image properties
+* 1433962_: Validate whether a tag is valid when filtering for images. Invalid tags now raise an error rather than being ignored
+* 1434381_: Add ``--human-readable`` option to ``image-show``
+
+.. _1442664: https://bugs.launchpad.net/python-glanceclient/+bug/1442664
+.. _1442883: https://bugs.launchpad.net/python-glanceclient/+bug/1442883
+.. _1357430: https://bugs.launchpad.net/python-glanceclient/+bug/1357430
+.. _1399778: https://bugs.launchpad.net/python-glanceclient/+bug/1399778
+.. _1439513: https://bugs.launchpad.net/python-glanceclient/+bug/1439513
+.. _1433962: https://bugs.launchpad.net/python-glanceclient/+bug/1433962
+.. _1434381: https://bugs.launchpad.net/python-glanceclient/+bug/1434381
+
 0.17.0
 ------
 
