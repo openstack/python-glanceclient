@@ -168,7 +168,9 @@ class TestUtils(testtools.TestCase):
                          utils.safe_header('somekey', None))
 
         for sensitive_header in utils.SENSITIVE_HEADERS:
-            (name, value) = utils.safe_header(sensitive_header, 'somestring')
+            (name, value) = utils.safe_header(
+                sensitive_header,
+                encodeutils.safe_encode('somestring'))
             self.assertEqual(sensitive_header, name)
             self.assertTrue(value.startswith("{SHA1}"))
 

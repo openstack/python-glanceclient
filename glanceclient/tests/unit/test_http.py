@@ -210,6 +210,14 @@ class TestClient(testtools.TestCase):
         self.assertEqual(b"ni\xc3\xb1o", encoded[b"test"])
         self.assertNotIn("none-val", encoded)
 
+    def test_auth_token_header_encoding(self):
+        # Tests that X-Auth-Token header is converted to ascii string, as
+        # httplib in python 2.6 won't do the conversion
+        value = u'ni\xf1o'
+        http_client_object = http.HTTPClient(self.endpoint, token=value)
+        self.assertEqual(b'ni\xc3\xb1o',
+                         http_client_object.session.headers['X-Auth-Token'])
+
     def test_raw_request(self):
         """Verify the path being used for HTTP requests reflects accurately."""
         headers = {"Content-Type": "text/plain"}
