@@ -17,8 +17,8 @@ from jsonpatch import JsonPatch
 import testtools
 import warlock
 
+from glanceclient.tests import utils
 from glanceclient.v2 import schemas
-from tests import utils
 
 
 fixtures = {

@@ -19,7 +19,7 @@ import six
 import testtools
 
 from glanceclient.common import progressbar
-from tests import utils as test_utils
+from glanceclient.tests import utils as test_utils
 
 
 class TestProgressBarWrapper(testtools.TestCase):

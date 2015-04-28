@@ -27,7 +27,7 @@ import glanceclient
 from glanceclient.common import http
 from glanceclient.common import https
 from glanceclient import exc
-from tests import utils
+from glanceclient.tests import utils
 
 
 class TestClient(testtools.TestCase):
