@@ -27,16 +27,24 @@ class ClientTestBase(base.ClientTestBase):
     * initially just check return codes, and later test command outputs
 
     """
+
+    def __init__(self, *args, **kwargs):
+        super(ClientTestBase, self).__init__(*args, **kwargs)
+        self.username = os.environ.get('OS_USERNAME')
+        self.password = os.environ.get('OS_PASSWORD')
+        self.tenant_name = os.environ.get('OS_TENANT_NAME')
+        self.uri = os.environ.get('OS_AUTH_URL')
+
     def _get_clients(self):
         cli_dir = os.environ.get(
             'OS_GLANCECLIENT_EXEC_DIR',
             os.path.join(os.path.abspath('.'), '.tox/functional/bin'))
 
         return base.CLIClient(
-            username=os.environ.get('OS_USERNAME'),
-            password=os.environ.get('OS_PASSWORD'),
-            tenant_name=os.environ.get('OS_TENANT_NAME'),
-            uri=os.environ.get('OS_AUTH_URL'),
+            username=self.username,
+            password=self.password,
+            tenant_name=self.tenant_name,
+            uri=self.uri,
             cli_dir=cli_dir)
 
     def glance(self, *args, **kwargs):
