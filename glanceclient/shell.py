@@ -556,7 +556,15 @@ class OpenStackImagesShell(object):
     def _cache_schemas(self, options, home_dir='~/.glanceclient'):
         homedir = expanduser(home_dir)
         if not os.path.exists(homedir):
-            os.makedirs(homedir)
+            try:
+                os.makedirs(homedir)
+            except OSError as e:
+                # This avoids glanceclient to crash if it can't write to
+                # ~/.glanceclient, which may happen on some env (for me,
+                # it happens in Jenkins, as Glanceclient can't write to
+                # /var/lib/jenkins).
+                msg = '%s' % e
+                print(encodeutils.safe_decode(msg), file=sys.stderr)
 
         resources = ['image', 'metadefs/namespace', 'metadefs/resource_type']
         schema_file_paths = [homedir + os.sep + x + '_schema.json'
