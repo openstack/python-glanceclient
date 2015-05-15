@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import ConfigParser
 import os
 
 from tempest_lib.cli import base
@@ -30,10 +31,24 @@ class ClientTestBase(base.ClientTestBase):
 
     def __init__(self, *args, **kwargs):
         super(ClientTestBase, self).__init__(*args, **kwargs)
+
+        # Collecting of credentials:
+        #
+        # Support the existence of a functional_creds.conf for
+        # testing. This makes it possible to use a config file.
         self.username = os.environ.get('OS_USERNAME')
         self.password = os.environ.get('OS_PASSWORD')
         self.tenant_name = os.environ.get('OS_TENANT_NAME')
         self.uri = os.environ.get('OS_AUTH_URL')
+        config = ConfigParser.RawConfigParser()
+        if config.read('functional_creds.conf'):
+            # the OR pattern means the environment is preferred for
+            # override
+            self.username = self.username or config.get('admin', 'user')
+            self.password = self.password or config.get('admin', 'pass')
+            self.tenant_name = self.tenant_name or config.get('admin',
+                                                              'tenant')
+            self.uri = self.uri or config.get('auth', 'uri')
 
     def _get_clients(self):
         cli_dir = os.environ.get(
