@@ -47,11 +47,10 @@ try:
     else:
         raise ImportError
 except ImportError:
-    try:
-        from httplib import HTTPSConnection
-    except ImportError:
-        from http.client import HTTPSConnection
-    from OpenSSL.SSL import Connection as Connection
+    from OpenSSL import SSL
+    from six.moves import http_client
+    HTTPSConnection = http_client.HTTPSConnection
+    Connection = SSL.Connection
 
 
 from glanceclient import exc

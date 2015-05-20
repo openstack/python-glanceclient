@@ -29,8 +29,9 @@ import threading
 from glanceclient.common import http
 from glanceclient.common import https
 
-from glanceclient import Client
 from glanceclient import exc
+from glanceclient import v1
+from glanceclient import v2
 
 if six.PY3 is True:
     import socketserver
@@ -90,9 +91,9 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         url = 'https://0.0.0.0:%d' % port
 
         try:
-            client = Client('1', url,
-                            insecure=False,
-                            ssl_compression=True)
+            client = v1.client.Client(url,
+                                      insecure=False,
+                                      ssl_compression=True)
             client.images.get('image123')
             self.fail('No SSL exception raised')
         except exc.CommunicationError as e:
@@ -107,9 +108,9 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         url = 'https://0.0.0.0:%d' % port
 
         try:
-            client = Client('1', url,
-                            insecure=False,
-                            ssl_compression=False)
+            client = v1.client.Client(url,
+                                      insecure=False,
+                                      ssl_compression=False)
             client.images.get('image123')
             self.fail('No SSL exception raised')
         except SSL.Error as e:
@@ -124,9 +125,9 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         url = 'https://0.0.0.0:%d' % port
 
         try:
-            gc = Client('2', url,
-                        insecure=False,
-                        ssl_compression=True)
+            gc = v2.client.Client(url,
+                                  insecure=False,
+                                  ssl_compression=True)
             gc.images.get('image123')
             self.fail('No SSL exception raised')
         except exc.CommunicationError as e:
@@ -141,9 +142,9 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         url = 'https://0.0.0.0:%d' % port
 
         try:
-            gc = Client('2', url,
-                        insecure=False,
-                        ssl_compression=False)
+            gc = v2.client.Client(url,
+                                  insecure=False,
+                                  ssl_compression=False)
             gc.images.get('image123')
             self.fail('No SSL exception raised')
         except SSL.Error as e:

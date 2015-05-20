@@ -15,8 +15,8 @@
 
 from glanceclient.common import http
 from glanceclient.common import utils
-from glanceclient.v1.image_members import ImageMemberManager
-from glanceclient.v1.images import ImageManager
+from glanceclient.v1 import image_members
+from glanceclient.v1 import images
 
 
 class Client(object):
@@ -33,5 +33,5 @@ class Client(object):
         """Initialize a new client for the Images v1 API."""
         endpoint, self.version = utils.endpoint_version_from_url(endpoint, 1.0)
         self.http_client = http.get_http_client(endpoint=endpoint, **kwargs)
-        self.images = ImageManager(self.http_client)
-        self.image_members = ImageMemberManager(self.http_client)
+        self.images = images.ImageManager(self.http_client)
+        self.image_members = image_members.ImageMemberManager(self.http_client)

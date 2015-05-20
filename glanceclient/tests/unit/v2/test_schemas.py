@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from jsonpatch import JsonPatch
+import jsonpatch
 import testtools
 import warlock
 
@@ -61,7 +61,8 @@ _SCHEMA = schemas.Schema({
 
 def compare_json_patches(a, b):
     """Return 0 if a and b describe the same JSON patch."""
-    return JsonPatch.from_string(a) == JsonPatch.from_string(b)
+    return(jsonpatch.JsonPatch.from_string(a) ==
+           jsonpatch.JsonPatch.from_string(b))
 
 
 class TestSchemaProperty(testtools.TestCase):

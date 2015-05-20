@@ -16,8 +16,8 @@
 import testtools
 
 from glanceclient import client
-from glanceclient.v1 import client as v1
-from glanceclient.v2 import client as v2
+from glanceclient import v1
+from glanceclient import v2
 
 
 class ClientTest(testtools.TestCase):
@@ -28,19 +28,19 @@ class ClientTest(testtools.TestCase):
     def test_endpoint(self):
         gc = client.Client(1, "http://example.com")
         self.assertEqual("http://example.com", gc.http_client.endpoint)
-        self.assertIsInstance(gc, v1.Client)
+        self.assertIsInstance(gc, v1.client.Client)
 
     def test_versioned_endpoint(self):
         gc = client.Client(1, "http://example.com/v2")
         self.assertEqual("http://example.com", gc.http_client.endpoint)
-        self.assertIsInstance(gc, v1.Client)
+        self.assertIsInstance(gc, v1.client.Client)
 
     def test_versioned_endpoint_no_version(self):
         gc = client.Client(endpoint="http://example.com/v2")
         self.assertEqual("http://example.com", gc.http_client.endpoint)
-        self.assertIsInstance(gc, v2.Client)
+        self.assertIsInstance(gc, v2.client.Client)
 
     def test_versioned_endpoint_with_minor_revision(self):
         gc = client.Client(2.2, "http://example.com/v2.1")
         self.assertEqual("http://example.com", gc.http_client.endpoint)
-        self.assertIsInstance(gc, v2.Client)
+        self.assertIsInstance(gc, v2.client.Client)
