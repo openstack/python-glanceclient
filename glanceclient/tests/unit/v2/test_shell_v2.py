@@ -71,7 +71,8 @@ class ShellV2Test(testtools.TestCase):
             'properties': [],
             'sort_key': ['name', 'id'],
             'sort_dir': ['desc', 'asc'],
-            'sort': None
+            'sort': None,
+            'verbose': False
         }
         args = self._make_args(input)
         with mock.patch.object(self.gc.images, 'list') as mocked_list:
@@ -104,7 +105,8 @@ class ShellV2Test(testtools.TestCase):
             'properties': [],
             'sort_key': ['name'],
             'sort_dir': ['desc'],
-            'sort': None
+            'sort': None,
+            'verbose': False
         }
         args = self._make_args(input)
         with mock.patch.object(self.gc.images, 'list') as mocked_list:
@@ -137,7 +139,8 @@ class ShellV2Test(testtools.TestCase):
             'properties': [],
             'sort': 'name:desc,size:asc',
             'sort_key': [],
-            'sort_dir': []
+            'sort_dir': [],
+            'verbose': False
         }
         args = self._make_args(input)
         with mock.patch.object(self.gc.images, 'list') as mocked_list:
@@ -170,7 +173,8 @@ class ShellV2Test(testtools.TestCase):
             'properties': ['os_distro=NixOS', 'architecture=x86_64'],
             'sort_key': ['name'],
             'sort_dir': ['desc'],
-            'sort': None
+            'sort': None,
+            'verbose': False
         }
         args = self._make_args(input)
         with mock.patch.object(self.gc.images, 'list') as mocked_list:

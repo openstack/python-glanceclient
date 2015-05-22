@@ -164,8 +164,12 @@ def do_image_list(gc, args):
     elif not args.sort_dir and not args.sort_key:
         kwargs['sort'] = 'name:asc'
 
-    images = gc.images.list(**kwargs)
     columns = ['ID', 'Name']
+
+    if args.verbose:
+        columns += ['owner', 'status']
+
+    images = gc.images.list(**kwargs)
     utils.print_list(images, columns)
 
 
