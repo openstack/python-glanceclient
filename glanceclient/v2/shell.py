@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import sys
+
 from glanceclient.common import progressbar
 from glanceclient.common import utils
 from glanceclient import exc
@@ -46,7 +48,7 @@ def get_image_schema():
                              ' May be used multiple times.'))
 @utils.arg('--file', metavar='<FILE>',
            help='Local file that contains disk image to be uploaded '
-                'during creation. Alternatively, images can be passed '
+                'during creation. Must be present if images are not passed '
                 'to the client via stdin.')
 @utils.arg('--progress', action='store_true', default=False,
            help='Show upload progress bar.')
@@ -254,8 +256,8 @@ def do_explain(gc, args):
 
 @utils.arg('--file', metavar='<FILE>',
            help='Local file to save downloaded image data to. '
-                'If this is not specified the image data will be '
-                'written to stdout.')
+                'If this is not specified and there is no redirection '
+                'the image data will be not be saved.')
 @utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to download.')
 @utils.arg('--progress', action='store_true', default=False,
            help='Show download progress bar.')
@@ -264,7 +266,13 @@ def do_image_download(gc, args):
     body = gc.images.data(args.id)
     if args.progress:
         body = progressbar.VerboseIteratorWrapper(body, len(body))
-    utils.save_image(body, args.file)
+    if not (sys.stdout.isatty() and args.file is None):
+        utils.save_image(body, args.file)
+    else:
+        msg = ('No redirection or local file specified for downloaded image '
+               'data. Please specify a local file with --file to save '
+               'downloaded image or redirect output to another source.')
+        utils.exit(msg)
 
 
 @utils.arg('--file', metavar='<FILE>',

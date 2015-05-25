@@ -147,8 +147,8 @@ def do_image_show(gc, args):
 
 @utils.arg('--file', metavar='<FILE>',
            help='Local file to save downloaded image data to. '
-                'If this is not specified the image data will be '
-                'written to stdout.')
+                'If this is not specified and there is no redirection '
+                'the image data will be not be saved.')
 @utils.arg('image', metavar='<IMAGE>', help='Name or ID of image to download.')
 @utils.arg('--progress', action='store_true', default=False,
            help='Show download progress bar.')
@@ -158,7 +158,12 @@ def do_image_download(gc, args):
     body = image.data()
     if args.progress:
         body = progressbar.VerboseIteratorWrapper(body, len(body))
-    utils.save_image(body, args.file)
+    if not (sys.stdout.isatty() and args.file is None):
+        utils.save_image(body, args.file)
+    else:
+        print('No redirection or local file specified for downloaded image '
+              'data. Please specify a local file with --file to save '
+              'downloaded image or redirect output to another source.')
 
 
 @utils.arg('--id', metavar='<IMAGE_ID>',
