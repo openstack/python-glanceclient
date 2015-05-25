@@ -250,7 +250,7 @@ class Controller(object):
             except warlock.InvalidOperation as e:
                 raise TypeError(utils.exception_to_str(e))
 
-        if remove_props is not None:
+        if remove_props:
             cur_props = image.keys()
             new_props = kwargs.keys()
             #NOTE(esheffield): Only remove props that currently exist on the
