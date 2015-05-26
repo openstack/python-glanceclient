@@ -17,7 +17,7 @@ In order to use the python api directly, you must first obtain an auth token and
     'active'
     >>> image.update(properties=dict(my_custom_property='value'))
     >>> with open('/tmp/copyimage.iso', 'wb') as f:
-            for chunk in image.data:
+            for chunk in image.data():
                 f.write(chunk)
     >>> image.delete()
 
