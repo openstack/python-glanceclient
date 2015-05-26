@@ -466,7 +466,7 @@ class ShellStdinHandlingTests(testtools.TestCase):
 
             self._do_update('44d2c7e1-de4e-4612-8aa2-ba26610c444f')
 
-            self.assertTrue('data' in self.collected_args[1])
+            self.assertIn('data', self.collected_args[1])
             self.assertIsInstance(self.collected_args[1]['data'], file_type)
             self.assertEqual('Some Data',
                              self.collected_args[1]['data'].read())
@@ -491,7 +491,7 @@ class ShellStdinHandlingTests(testtools.TestCase):
 
             self._do_update('44d2c7e1-de4e-4612-8aa2-ba26610c444f')
 
-            self.assertTrue('data' in self.collected_args[1])
+            self.assertIn('data', self.collected_args[1])
             self.assertIsInstance(self.collected_args[1]['data'], file_type)
             self.assertEqual('Some Data\n',
                              self.collected_args[1]['data'].read())

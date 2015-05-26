@@ -826,7 +826,7 @@ class TestController(testtools.TestCase):
         except IOError as e:
             self.assertEqual(errno.EPIPE, e.errno)
             msg = 'was 9d3d9048db16a7eee539e93e3618cbe7 expected wrong'
-            self.assertTrue(msg in str(e))
+            self.assertIn(msg, str(e))
 
     def test_data_with_checksum(self):
         body = self.controller.data('1b1c6366-dd57-11e1-af0f-02163e68b1d8',
@@ -989,17 +989,17 @@ class TestController(testtools.TestCase):
         e = self.assertRaises(exc.HTTPBadRequest,
                               self.controller.add_location,
                               image_id, url, meta)
-        self.assertTrue(estr in str(e))
+        self.assertIn(estr, str(e))
 
         e = self.assertRaises(exc.HTTPBadRequest,
                               self.controller.delete_locations,
                               image_id, set([url]))
-        self.assertTrue(estr in str(e))
+        self.assertIn(estr, str(e))
 
         e = self.assertRaises(exc.HTTPBadRequest,
                               self.controller.update_location,
                               image_id, url, meta)
-        self.assertTrue(estr in str(e))
+        self.assertIn(estr, str(e))
 
     def _empty_get(self, image_id):
         return ('GET', '/v2/images/%s' % image_id, {}, None)
@@ -1052,7 +1052,7 @@ class TestController(testtools.TestCase):
         err = self.assertRaises(exc.HTTPNotFound,
                                 self.controller.delete_locations,
                                 image_id, url_set)
-        self.assertTrue(err_str in str(err))
+        self.assertIn(err_str, str(err))
 
     def test_update_location(self):
         image_id = 'a2b83adc-888e-11e3-8872-78acc0b951d8'
@@ -1095,4 +1095,4 @@ class TestController(testtools.TestCase):
         err = self.assertRaises(exc.HTTPNotFound,
                                 self.controller.update_location,
                                 image_id, **new_loc)
-        self.assertTrue(err_str in str(err))
+        self.assertIn(err_str, str(err))
