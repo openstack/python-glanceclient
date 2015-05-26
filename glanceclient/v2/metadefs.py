@@ -348,8 +348,8 @@ class ObjectController(object):
         # Remove read-only parameters.
         read_only = ['schema', 'updated_at', 'created_at']
         for elem in read_only:
-            if elem in namespace:
-                del namespace[elem]
+            if elem in obj:
+                del obj[elem]
 
         url = '/v2/metadefs/namespaces/{0}/objects/{1}'.format(namespace,
                                                                object_name)

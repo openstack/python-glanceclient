@@ -304,6 +304,24 @@ class TestObjectController(testtools.TestCase):
         self.assertRaises(TypeError, self.controller.update, NAMESPACE1,
                           OBJECT1, **properties)
 
+    def test_update_object_disallowed_fields(self):
+        properties = {
+            'description': 'UPDATED_DESCRIPTION'
+        }
+        self.controller.update(NAMESPACE1, OBJECT1, **properties)
+        actual = self.api.calls
+        # API makes three calls(GET, PUT, GET) for object update.
+        # PUT has the request body in the list
+        '''('PUT', '/v2/metadefs/namespaces/Namespace1/objects/Object1', {},
+        [('description', 'UPDATED_DESCRIPTION'),
+        ('name', 'Object1'),
+        ('properties', ...),
+        ('required', [])])'''
+
+        _disallowed_fields = ['self', 'schema', 'created_at', 'updated_at']
+        for key in actual[1][3]:
+            self.assertNotIn(key, _disallowed_fields)
+
     def test_delete_object(self):
         self.controller.delete(NAMESPACE1, OBJECT1)
         expect = [
