@@ -318,18 +318,6 @@ def make_size_human_readable(size):
     return '%s%s' % (stripped, suffix[index])
 
 
-def getsockopt(self, *args, **kwargs):
-    """
-
-    A function which allows us to monkey patch eventlet's
-    GreenSocket, adding a required 'getsockopt' method.
-    TODO: (mclaren) we can remove this once the eventlet fix
-    (https://bitbucket.org/eventlet/eventlet/commits/609f230)
-    lands in mainstream packages.
-    """
-    return self.fd.getsockopt(*args, **kwargs)
-
-
 def exception_to_str(exc):
     try:
         error = six.text_type(exc)

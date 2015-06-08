@@ -29,8 +29,6 @@ import types
 
 import glanceclient
 from glanceclient.common import http
-from glanceclient.common import https
-from glanceclient import exc
 from glanceclient.tests import utils
 
 
@@ -354,20 +352,3 @@ class TestClient(testtools.TestCase):
         self.assertThat(mock_log.call_args[0][0],
                         matchers.Not(matchers.MatchesRegex(token_regex)),
                         'token found in LOG.debug parameter')
-
-
-class TestVerifiedHTTPSConnection(testtools.TestCase):
-    """Test fixture for glanceclient.common.http.VerifiedHTTPSConnection."""
-
-    def test_setcontext_unable_to_load_cacert(self):
-        """Add this UT case with Bug#1265730."""
-        self.assertRaises(exc.SSLConfigurationError,
-                          https.VerifiedHTTPSConnection,
-                          "127.0.0.1",
-                          None,
-                          None,
-                          None,
-                          "gx_cacert",
-                          None,
-                          False,
-                          True)

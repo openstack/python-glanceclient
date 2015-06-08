@@ -241,7 +241,10 @@ class OpenStackImagesShell(object):
         parser.add_argument('--no-ssl-compression',
                             dest='ssl_compression',
                             default=True, action='store_false',
-                            help='Disable SSL compression when using https.')
+                            help='DEPRECATED! This option is deprecated '
+                                 'and not used anymore. SSL compression '
+                                 'should be disabled by default by the '
+                                 'system SSL library.')
 
         parser.add_argument('-f', '--force',
                             dest='force',
