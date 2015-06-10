@@ -53,6 +53,20 @@ See also :doc:`/man/glance`.
 Release Notes
 =============
 
+0.19.0
+------
+
+* 1381514_: Include ``owner`` in v2 image list
+* 1433884_: Fix ``md-object-update`` issue
+* 1446096_: Stop crashing if ``$HOME`` is not writable
+* 1402632_: Improve import related error handling
+
+.. _1381514: https://bugs.launchpad.net/python-glanceclient/+bug/1381514
+.. _1433884: https://bugs.launchpad.net/python-glanceclient/+bug/1433884
+.. _1455102: https://bugs.launchpad.net/python-glanceclient/+bug/1455102
+.. _1446096: https://bugs.launchpad.net/python-glanceclient/+bug/1446096
+.. _1402632: https://bugs.launchpad.net/python-glanceclient/+bug/1402632
+
 0.18.0
 ------
 
