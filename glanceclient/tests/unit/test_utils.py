@@ -15,6 +15,7 @@
 
 import sys
 
+import mock
 import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
@@ -163,3 +164,15 @@ class TestUtils(testtools.TestCase):
         self.assertIn('--test', arg)
         self.assertEqual(str, opts['type'])
         self.assertIn('None, opt-1, opt-2', opts['help'])
+
+    def test_iterable_closes(self):
+        # Regression test for bug 1461678.
+        def _iterate(i):
+            for chunk in i:
+                raise(IOError)
+
+        data = six.moves.StringIO('somestring')
+        data.close = mock.Mock()
+        i = utils.IterableWithLength(data, 10)
+        self.assertRaises(IOError, _iterate, i)
+        data.close.assert_called_with()

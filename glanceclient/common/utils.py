@@ -434,7 +434,11 @@ class IterableWithLength(object):
         self.length = length
 
     def __iter__(self):
-        return self.iterable
+        try:
+            for chunk in self.iterable:
+                yield chunk
+        finally:
+            self.iterable.close()
 
     def next(self):
         return next(self.iterable)
