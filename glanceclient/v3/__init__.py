@@ -22,6 +22,8 @@ class ArtifactType(object):
                           'version', 'visibility', 'description', 'tags',
                           'published_at', 'deleted_at')
 
+    supported_show_levels = ('none', 'basic', 'direct', 'transitive')
+
     def __init__(self, **kwargs):
         try:
             for prop in self.generic_properties:
