@@ -18,20 +18,20 @@ import sys
 from glanceclient.common import progressbar
 from glanceclient.common import utils
 from glanceclient import exc
-from glanceclient.v2.image_members import MEMBER_STATUS_VALUES
+from glanceclient.v2 import image_members
 from glanceclient.v2 import images
 from glanceclient.v2 import tasks
 import json
 import os
-from os.path import expanduser
 
+MEMBER_STATUS_VALUES = image_members.MEMBER_STATUS_VALUES
 IMAGE_SCHEMA = None
 
 
 def get_image_schema():
     global IMAGE_SCHEMA
     if IMAGE_SCHEMA is None:
-        schema_path = expanduser("~/.glanceclient/image_schema.json")
+        schema_path = os.path.expanduser("~/.glanceclient/image_schema.json")
         if os.path.isfile(schema_path):
             with open(schema_path, "r") as f:
                 schema_raw = f.read()
@@ -394,7 +394,8 @@ NAMESPACE_SCHEMA = None
 def get_namespace_schema():
     global NAMESPACE_SCHEMA
     if NAMESPACE_SCHEMA is None:
-        schema_path = expanduser("~/.glanceclient/namespace_schema.json")
+        schema_path = os.path.expanduser("~/.glanceclient/"
+                                         "namespace_schema.json")
         if os.path.isfile(schema_path):
             with open(schema_path, "r") as f:
                 schema_raw = f.read()
@@ -533,7 +534,8 @@ RESOURCE_TYPE_SCHEMA = None
 def get_resource_type_schema():
     global RESOURCE_TYPE_SCHEMA
     if RESOURCE_TYPE_SCHEMA is None:
-        schema_path = expanduser("~/.glanceclient/resource_type_schema.json")
+        schema_path = os.path.expanduser("~/.glanceclient/"
+                                         "resource_type_schema.json")
         if os.path.isfile(schema_path):
             with open(schema_path, "r") as f:
                 schema_raw = f.read()

@@ -19,7 +19,7 @@ import six
 import six.moves.urllib.parse as urlparse
 import testtools
 
-from glanceclient.v2.schemas import Schema
+from glanceclient.v2 import schemas
 
 
 class FakeAPI(object):
@@ -68,7 +68,7 @@ class FakeAPI(object):
 class FakeSchemaAPI(FakeAPI):
     def get(self, *args, **kwargs):
         _, raw_schema = self._request('GET', *args, **kwargs)
-        return Schema(raw_schema)
+        return schemas.Schema(raw_schema)
 
 
 class RawRequest(object):

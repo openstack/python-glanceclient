@@ -25,7 +25,6 @@ import getpass
 import json
 import logging
 import os
-from os.path import expanduser
 import sys
 import traceback
 
@@ -551,7 +550,7 @@ class OpenStackImagesShell(object):
         return client
 
     def _cache_schemas(self, options, home_dir='~/.glanceclient'):
-        homedir = expanduser(home_dir)
+        homedir = os.path.expanduser(home_dir)
         if not os.path.exists(homedir):
             try:
                 os.makedirs(homedir)

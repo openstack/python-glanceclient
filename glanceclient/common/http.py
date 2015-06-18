@@ -23,7 +23,7 @@ from oslo_utils import importutils
 from oslo_utils import netutils
 import requests
 try:
-    from requests.packages.urllib3.exceptions import ProtocolError
+    ProtocolError = requests.packages.urllib3.exceptions.ProtocolError
 except ImportError:
     ProtocolError = requests.exceptions.ConnectionError
 import six
@@ -42,7 +42,7 @@ if not hasattr(parse, 'parse_qsl'):
 from oslo_utils import encodeutils
 
 from glanceclient.common import https
-from glanceclient.common.utils import safe_header
+from glanceclient.common import utils
 from glanceclient import exc
 
 osprofiler_web = importutils.try_import("osprofiler.web")
@@ -167,7 +167,7 @@ class HTTPClient(_BaseHTTPClient):
         headers.update(self.session.headers)
 
         for (key, value) in six.iteritems(headers):
-            header = '-H \'%s: %s\'' % safe_header(key, value)
+            header = '-H \'%s: %s\'' % utils.safe_header(key, value)
             curl.append(header)
 
         if not self.session.verify:
@@ -193,7 +193,7 @@ class HTTPClient(_BaseHTTPClient):
         status = (resp.raw.version / 10.0, resp.status_code, resp.reason)
         dump = ['\nHTTP/%.1f %s %s' % status]
         headers = resp.headers.items()
-        dump.extend(['%s: %s' % safe_header(k, v) for k, v in headers])
+        dump.extend(['%s: %s' % utils.safe_header(k, v) for k, v in headers])
         dump.append('')
         content_type = resp.headers.get('Content-Type')
 
