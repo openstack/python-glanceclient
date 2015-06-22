@@ -575,6 +575,9 @@ class OpenStackImagesShell(object):
                     schema = client.schemas.get(resource)
                     with open(schema_file_path, 'w') as f:
                         f.write(json.dumps(schema.raw()))
+                except exc.Unauthorized:
+                    raise exc.CommandError(
+                        "Invalid OpenStack Identity credentials.")
                 except Exception:
                     # NOTE(esheffield) do nothing here, we'll get a message
                     # later if the schema is missing
