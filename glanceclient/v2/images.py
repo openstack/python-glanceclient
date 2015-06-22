@@ -168,6 +168,9 @@ class Controller(object):
             for dir in sort_dir:
                 url = '%s&sort_dir=%s' % (url, dir)
 
+        if isinstance(kwargs.get('marker'), six.string_types):
+            url = '%s&marker=%s' % (url, kwargs['marker'])
+
         for image in paginate(url, page_size, limit):
             yield image
 
