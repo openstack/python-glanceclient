@@ -24,25 +24,60 @@ class SimpleReadOnlyGlanceClientTest(base.ClientTestBase):
     This only exercises client commands that are read only.
     """
 
-    def test_list(self):
-        out = self.glance('image-list')
+    def test_list_v1(self):
+        out = self.glance('--os-image-api-version 1 image-list')
         endpoints = self.parser.listing(out)
         self.assertTableStruct(endpoints, [
             'ID', 'Name', 'Disk Format', 'Container Format',
             'Size', 'Status'])
+
+    def test_list_v2(self):
+        out = self.glance('--os-image-api-version 2 image-list')
+        endpoints = self.parser.listing(out)
+        self.assertTableStruct(endpoints, ['ID', 'Name'])
 
     def test_fake_action(self):
         self.assertRaises(exceptions.CommandFailed,
                           self.glance,
                           'this-does-not-exist')
 
-    def test_member_list(self):
+    def test_member_list_v1(self):
         tenant_name = '--tenant-id %s' % self.tenant_name
-        out = self.glance('member-list',
+        out = self.glance('--os-image-api-version 1 member-list',
                           params=tenant_name)
         endpoints = self.parser.listing(out)
         self.assertTableStruct(endpoints,
                                ['Image ID', 'Member ID', 'Can Share'])
+
+    def test_member_list_v2(self):
+        try:
+            # NOTE(flwang): If set disk-format and container-format, Jenkins
+            # will raise an error said can't recognize the params, thouhg it
+            # works fine at local. Without the two params, Glance will
+            # complain. So we just catch the exception can skip it.
+            self.glance('--os-image-api-version 2 image-create --name temp')
+        except Exception:
+            pass
+        out = self.glance('--os-image-api-version 2 image-list'
+                          ' --visibility private')
+        image_list = self.parser.listing(out)
+        # NOTE(flwang): Because the member-list command of v2 is using
+        # image-id as required parameter, so we have to get a valid image id
+        # based on current environment. If there is no valid image id, we will
+        # pass in a fake one and expect a 404 error.
+        if len(image_list) > 0:
+            param_image_id = '--image-id %s' % image_list[0]['ID']
+            out = self.glance('--os-image-api-version 2 member-list',
+                              params=param_image_id)
+            endpoints = self.parser.listing(out)
+            self.assertTableStruct(endpoints,
+                                   ['Image ID', 'Member ID', 'Status'])
+        else:
+            param_image_id = '--image-id fake_image_id'
+            self.assertRaises(exceptions.CommandFailed,
+                              self.glance,
+                              '--os-image-api-version 2 member-list',
+                              params=param_image_id)
 
     def test_help(self):
         help_text = self.glance('help')
