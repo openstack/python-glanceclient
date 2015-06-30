@@ -15,6 +15,10 @@
 #    under the License.
 
 import argparse
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 import os
 import sys
 import uuid
@@ -494,7 +498,8 @@ class ShellCacheSchemaTest(testutils.TestCase):
         }
 
         self.client = mock.Mock()
-        self.client.schemas.get.return_value = schemas.Schema(self.schema_dict)
+        schema_odict = OrderedDict(self.schema_dict)
+        self.client.schemas.get.return_value = schemas.Schema(schema_odict)
 
     def _mock_shell_setup(self):
         mocked_get_client = mock.MagicMock(return_value=self.client)
@@ -514,6 +519,7 @@ class ShellCacheSchemaTest(testutils.TestCase):
         options = {
             'get_schema': True
         }
+        schema_odict = OrderedDict(self.schema_dict)
 
         self.shell._cache_schemas(self._make_args(options),
                                   home_dir=self.cache_dir)
@@ -523,9 +529,9 @@ class ShellCacheSchemaTest(testutils.TestCase):
                          open.mock_calls[0])
         self.assertEqual(mock.call(self.cache_files[1], 'w'),
                          open.mock_calls[4])
-        self.assertEqual(mock.call().write(json.dumps(self.schema_dict)),
+        self.assertEqual(mock.call().write(json.dumps(schema_odict)),
                          open.mock_calls[2])
-        self.assertEqual(mock.call().write(json.dumps(self.schema_dict)),
+        self.assertEqual(mock.call().write(json.dumps(schema_odict)),
                          open.mock_calls[6])
 
     @mock.patch('six.moves.builtins.open', new=mock.mock_open(), create=True)
@@ -534,6 +540,7 @@ class ShellCacheSchemaTest(testutils.TestCase):
         options = {
             'get_schema': False
         }
+        schema_odict = OrderedDict(self.schema_dict)
 
         self.shell._cache_schemas(self._make_args(options),
                                   home_dir=self.cache_dir)
@@ -543,9 +550,9 @@ class ShellCacheSchemaTest(testutils.TestCase):
                          open.mock_calls[0])
         self.assertEqual(mock.call(self.cache_files[1], 'w'),
                          open.mock_calls[4])
-        self.assertEqual(mock.call().write(json.dumps(self.schema_dict)),
+        self.assertEqual(mock.call().write(json.dumps(schema_odict)),
                          open.mock_calls[2])
-        self.assertEqual(mock.call().write(json.dumps(self.schema_dict)),
+        self.assertEqual(mock.call().write(json.dumps(schema_odict)),
                          open.mock_calls[6])
 
     @mock.patch('six.moves.builtins.open', new=mock.mock_open(), create=True)
