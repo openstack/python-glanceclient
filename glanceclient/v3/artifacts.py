@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from glanceclient.common import utils
 from glanceclient import exc
 from glanceclient.v3 import ArtifactType
 
@@ -140,15 +141,68 @@ class Controller(object):
 
     def upload_blob(self, artifact_id, blob_property, data, position=None,
                     type_name=None, type_version=None):
-        raise NotImplementedError()
+        """Upload blob data.
+
+        :param artifact_id: ID of the artifact to download a blob
+        :param blob_property: blob property name
+        :param position: if blob_property is a list then the
+        position must be specified
+        """
+        type_name, type_version = self._check_type_params(type_name,
+                                                          type_version)
+        hdrs = {'Content-Type': 'application/octet-stream'}
+
+        url = '/v3/artifacts/%s/v%s/%s/%s' % (type_name, type_version,
+                                              artifact_id, blob_property)
+        if position:
+            url += "/%s" % position
+
+        self.http_client.put(url, headers=hdrs, data=data)
 
     def download_blob(self, artifact_id, blob_property, position=None,
                       type_name=None, type_version=None, do_checksum=True):
-        raise NotImplementedError()
+        """Get blob data.
+
+        :param artifact_id: ID of the artifact to download a blob
+        :param blob_property: blob property name
+        :param position: if blob_property is a list then the
+        position must be specified
+        :param do_checksum: Enable/disable checksum validation.
+        """
+        type_name, type_version = self._check_type_params(type_name,
+                                                          type_version)
+        url = '/v3/artifacts/%s/v%s/%s/%s' % (type_name, type_version,
+                                              artifact_id, blob_property)
+        if position:
+            url += '/%s' % position
+
+        url += '/download'
+
+        resp, body = self.http_client.get(url)
+        checksum = resp.headers.get('content-md5', None)
+        content_length = int(resp.headers.get('content-length', 0))
+
+        if checksum is not None and do_checksum:
+            body = utils.integrity_iter(body, checksum)
+
+        return utils.IterableWithLength(body, content_length)
 
     def delete_blob(self, artifact_id, blob_property, position=None,
                     type_name=None, type_version=None):
-        raise NotImplementedError()
+        """Delete blob and related data.
+
+        :param artifact_id: ID of the artifact to delete a blob
+        :param blob_property: blob property name
+        :param position: if blob_property is a list then the
+        position must be specified
+        """
+        type_name, type_version = self._check_type_params(type_name,
+                                                          type_version)
+        url = '/v3/artifacts/%s/v%s/%s/%s' % (type_name, type_version,
+                                              artifact_id, blob_property)
+        if position:
+            url += '/%s' % position
+        self.http_client.delete(url)
 
     def add_property(self, artifact_id, dependency_id, position=None,
                      type_name=None, type_version=None):

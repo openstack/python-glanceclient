@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+import errno
 import testtools
 
 from glanceclient import exc
@@ -124,6 +124,63 @@ data_fixtures = {
                                  finn='human', **type_fixture)
         ),
     },
+    '/v3/artifacts/adventure_time/v1.0.2/'
+    '18f67e12-88e0-4b13-86fb-5adc36d884b6/image_file': {
+        'PUT': (
+            {},
+            '',
+        ),
+
+        'DELETE': (
+            {},
+            '',
+        ),
+    },
+    '/v3/artifacts/adventure_time/v1.0.2/'
+    '18f67e12-88e0-4b13-86fb-5adc36d884b6/image_file/download': {
+        'GET': (
+            {},
+            'Princess Bubblegum rocks!!!',
+        ),
+    },
+    '/v3/artifacts/adventure_time/v1.0.2/'
+    '5cc4bebc-db27-11e1-a1eb-080027cbe205/image_file/download': {
+        'GET': (
+            {
+                'content-md5': '5a3c872ee92e2c58efd0d47862eb9c85'
+            },
+            'Princess Bubblegum rocks!!!',
+        ),
+    },
+    '/v3/artifacts/adventure_time/v1.0.2/'
+    '66fb18d6-db27-11e1-a1eb-080027cbe205/image_file/download': {
+        'GET': (
+            {
+                'content-md5': 'Lich was here!!!'
+            },
+            'Princess Bubblegum rocks!!!',
+        ),
+    },
+    '/v3/artifacts/adventure_time/v1.0.2/'
+    '18f67e12-88e0-4b13-86fb-5adc36d884b6/screenshots/1': {
+        'PUT': (
+            {},
+            '',
+        ),
+
+        'DELETE': (
+            {},
+            '',
+        ),
+    },
+    '/v3/artifacts/adventure_time/v1.0.2/'
+    '18f67e12-88e0-4b13-86fb-5adc36d884b6/screenshots/1/download': {
+        'GET': (
+            {},
+            'What time is it?',
+        ),
+    },
+
 }
 
 
@@ -300,3 +357,123 @@ class TestController(testtools.TestCase):
         self.assertEqual(artifact_id, artifact.id)
         self.assertEqual('Gunter The Penguin', artifact.name)
         self.assertEqual('human', artifact.type_specific_properties['finn'])
+
+    def test_upload_blob(self):
+        image_data = 'Adventure Time with Finn & Jake'
+
+        artifact_id = '18f67e12-88e0-4b13-86fb-5adc36d884b6'
+
+        params = {'blob_property': 'image_file', 'artifact_id': artifact_id,
+                  'data': image_data}
+        params.update(type_fixture)
+
+        self.controller.upload_blob(**params)
+        expect_hdrs = {'Content-Type': 'application/octet-stream'}
+        expect = [('PUT', '/v3/artifacts/adventure_time/v1.0.2/'
+                   '%s/image_file' % artifact_id, expect_hdrs, image_data)]
+
+        self.assertEqual(expect, self.api.calls)
+
+    def test_delete_blob(self):
+        artifact_id = '18f67e12-88e0-4b13-86fb-5adc36d884b6'
+
+        params = {'blob_property': 'image_file', 'artifact_id': artifact_id}
+        params.update(type_fixture)
+        self.controller.delete_blob(**params)
+        expect = [('DELETE', '/v3/artifacts/adventure_time/v1.0.2/'
+                   '%s/image_file' % artifact_id, {}, None)]
+
+        self.assertEqual(expect, self.api.calls)
+
+    def test_download_blob(self):
+        artifact_id = '18f67e12-88e0-4b13-86fb-5adc36d884b6'
+
+        params = {'blob_property': 'image_file', 'artifact_id': artifact_id}
+        params.update(type_fixture)
+        body = ''.join([b for b in self.controller.download_blob(**params)])
+
+        expect = [('GET', '/v3/artifacts/adventure_time/v1.0.2/'
+                   '%s/image_file/download' % artifact_id, {}, None)]
+
+        self.assertEqual(expect, self.api.calls)
+        self.assertEqual('Princess Bubblegum rocks!!!', body)
+
+    def test_download_blob_with_checksum(self):
+        artifact_id = '5cc4bebc-db27-11e1-a1eb-080027cbe205'
+        params = {'blob_property': 'image_file', 'artifact_id': artifact_id}
+        params.update(type_fixture)
+        body = ''.join([b for b in self.controller.download_blob(**params)])
+
+        self.assertEqual('Princess Bubblegum rocks!!!', body)
+
+        params['do_checksum'] = False
+        body = ''.join([b for b in self.controller.download_blob(**params)])
+
+        expect = [('GET', '/v3/artifacts/adventure_time/v1.0.2/'
+                   '%s/image_file/download' % artifact_id, {}, None)] * 2
+
+        self.assertEqual(expect, self.api.calls)
+        self.assertEqual('Princess Bubblegum rocks!!!', body)
+
+    def test_download_blob_with_wrong_checksum(self):
+        artifact_id = '66fb18d6-db27-11e1-a1eb-080027cbe205'
+
+        params = {'blob_property': 'image_file', 'artifact_id': artifact_id}
+        params.update(type_fixture)
+        try:
+            ''.join([b for b in self.controller.download_blob(**params)])
+            self.fail('data did not raise an error.')
+        except IOError as e:
+            self.assertEqual(errno.EPIPE, e.errno)
+            msg = 'was 5a3c872ee92e2c58efd0d47862eb9c85 expected Lich'
+            self.assertIn(msg, str(e))
+
+        params['do_checksum'] = False
+        body = ''.join([b for b in self.controller.download_blob(**params)])
+
+        expect = [('GET', '/v3/artifacts/adventure_time/v1.0.2/'
+                   '%s/image_file/download' % artifact_id, {}, None)] * 2
+
+        self.assertEqual(expect, self.api.calls)
+        self.assertEqual('Princess Bubblegum rocks!!!', body)
+
+    def test_data_upload_blob_with_position(self):
+        image_data = 'Adventure Time with Finn & Jake'
+
+        artifact_id = '18f67e12-88e0-4b13-86fb-5adc36d884b6'
+
+        params = {'blob_property': 'screenshots', 'artifact_id': artifact_id,
+                  'position': 1, 'data': image_data}
+        params.update(type_fixture)
+
+        self.controller.upload_blob(**params)
+        expect_hdrs = {'Content-Type': 'application/octet-stream'}
+        expect = [('PUT', '/v3/artifacts/adventure_time/v1.0.2/'
+                   '%s/screenshots/1' % artifact_id, expect_hdrs, image_data)]
+
+        self.assertEqual(expect, self.api.calls)
+
+    def test_delete_blob_with_position(self):
+        artifact_id = '18f67e12-88e0-4b13-86fb-5adc36d884b6'
+
+        params = {'blob_property': 'screenshots', 'artifact_id': artifact_id,
+                  'position': 1}
+        params.update(type_fixture)
+        self.controller.delete_blob(**params)
+        expect = [('DELETE', '/v3/artifacts/adventure_time/v1.0.2/'
+                   '%s/screenshots/1' % artifact_id, {}, None)]
+
+        self.assertEqual(expect, self.api.calls)
+
+    def test_download_blob_with_position(self):
+        artifact_id = '18f67e12-88e0-4b13-86fb-5adc36d884b6'
+
+        params = {'blob_property': 'screenshots', 'artifact_id': artifact_id,
+                  'position': 1}
+        params.update(type_fixture)
+        body = ''.join([b for b in self.controller.download_blob(**params)])
+        expect = [('GET', '/v3/artifacts/adventure_time/v1.0.2/'
+                   '%s/screenshots/1/download' % artifact_id, {}, None)]
+
+        self.assertEqual(expect, self.api.calls)
+        self.assertEqual('What time is it?', body)
