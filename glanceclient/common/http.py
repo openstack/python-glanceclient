@@ -251,7 +251,7 @@ class HTTPClient(_BaseHTTPClient):
                                         headers=headers,
                                         **kwargs)
         except requests.exceptions.Timeout as e:
-            message = ("Error communicating with %(endpoint)s: %(e)s" %
+            message = ("Error communicating with %(url)s: %(e)s" %
                        dict(url=conn_url, e=e))
             raise exc.InvalidEndpoint(message=message)
         except (requests.exceptions.ConnectionError, ProtocolError) as e:
@@ -321,7 +321,9 @@ class SessionClient(adapter.Adapter, _BaseHTTPClient):
                                                       data=data,
                                                       **kwargs)
         except ksc_exc.RequestTimeout as e:
-            message = ("Error communicating with %(endpoint)s %(e)s" %
+            conn_url = self.get_endpoint(auth=kwargs.get('auth'))
+            conn_url = "%s/%s" % (conn_url.rstrip('/'), url.lstrip('/'))
+            message = ("Error communicating with %(url)s %(e)s" %
                        dict(url=conn_url, e=e))
             raise exc.InvalidEndpoint(message=message)
         except ksc_exc.ConnectionRefused as e:
