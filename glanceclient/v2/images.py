@@ -14,8 +14,8 @@
 #    under the License.
 
 import json
-
 from oslo_utils import encodeutils
+from requests import codes
 import six
 from six.moves.urllib import parse
 import warlock
@@ -189,9 +189,13 @@ class Controller(object):
 
         :param image_id:    ID of the image to download.
         :param do_checksum: Enable/disable checksum validation.
+        :returns: An interable body or None
         """
         url = '/v2/images/%s/file' % image_id
         resp, body = self.http_client.get(url)
+        if resp.status_code == codes.no_content:
+            return None
+
         checksum = resp.headers.get('content-md5', None)
         content_length = int(resp.headers.get('content-length', 0))
 

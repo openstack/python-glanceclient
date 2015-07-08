@@ -14,7 +14,7 @@
 #    under the License.
 
 import errno
-
+import mock
 import testtools
 
 from glanceclient import exc
@@ -865,6 +865,12 @@ class TestController(testtools.TestCase):
         body = self.controller.data('1b1c6366-dd57-11e1-af0f-02163e68b1d8')
         body = ''.join([b for b in body])
         self.assertEqual('CCC', body)
+
+    def test_download_no_data(self):
+        resp = utils.FakeResponse(headers={}, status_code=204)
+        self.controller.http_client.get = mock.Mock(return_value=(resp, None))
+        body = self.controller.data('image_id')
+        self.assertEqual(None, body)
 
     def test_update_replace_prop(self):
         image_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
