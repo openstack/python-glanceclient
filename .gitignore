@@ -18,4 +18,5 @@ run_tests.err.log
 doc/source/api
 doc/build
 *.egg
+.eggs/*
 glanceclient/versioninfo
