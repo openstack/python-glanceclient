@@ -280,6 +280,16 @@ class TestPropertyController(testtools.TestCase):
         self.assertRaises(TypeError, self.controller.update, NAMESPACE1,
                           PROPERTY1, **properties)
 
+    def test_update_property_disallowed_fields(self):
+        properties = {
+            'description': 'UPDATED_DESCRIPTION'
+        }
+        self.controller.update(NAMESPACE1, PROPERTY1, **properties)
+        actual = self.api.calls
+        _disallowed_fields = ['created_at', 'updated_at']
+        for key in actual[1][3]:
+            self.assertNotIn(key, _disallowed_fields)
+
     def test_delete_property(self):
         self.controller.delete(NAMESPACE1, PROPERTY1)
         expect = [
