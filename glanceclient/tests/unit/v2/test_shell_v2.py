@@ -833,7 +833,7 @@ class ShellV2Test(testtools.TestCase):
 
             test_shell.do_md_resource_type_list(self.gc, args)
 
-            mocked_list.assert_called_once()
+            self.assertEqual(1, mocked_list.call_count)
 
     def test_do_md_namespace_resource_type_list(self):
         args = self._make_args({'namespace': 'MyNamespace'})
