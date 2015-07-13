@@ -91,16 +91,16 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         url = 'https://0.0.0.0:%d' % port
 
         try:
-            client = v1.client.Client(url,
-                                      insecure=False,
-                                      ssl_compression=True)
+            client = v1.Client(url,
+                               insecure=False,
+                               ssl_compression=True)
             client.images.get('image123')
-            self.fail('No SSL exception raised')
+            self.fail('No SSL exception has been raised')
         except exc.CommunicationError as e:
             if 'certificate verify failed' not in e.message:
-                self.fail('No certificate failure message received')
-        except Exception as e:
-            self.fail('Unexpected exception raised')
+                self.fail('No certificate failure message is received')
+        except Exception:
+            self.fail('Unexpected exception has been raised')
 
     def test_v1_requests_cert_verification_no_compression(self):
         """v1 regression test for bug 115260."""
@@ -108,16 +108,16 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         url = 'https://0.0.0.0:%d' % port
 
         try:
-            client = v1.client.Client(url,
-                                      insecure=False,
-                                      ssl_compression=False)
+            client = v1.Client(url,
+                               insecure=False,
+                               ssl_compression=False)
             client.images.get('image123')
-            self.fail('No SSL exception raised')
+            self.fail('No SSL exception has been raised')
         except SSL.Error as e:
             if 'certificate verify failed' not in str(e):
-                self.fail('No certificate failure message received')
-        except Exception as e:
-            self.fail('Unexpected exception raised')
+                self.fail('No certificate failure message is received')
+        except Exception:
+            self.fail('Unexpected exception has been raised')
 
     def test_v2_requests_cert_verification(self):
         """v2 regression test for bug 115260."""
@@ -125,16 +125,16 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         url = 'https://0.0.0.0:%d' % port
 
         try:
-            gc = v2.client.Client(url,
-                                  insecure=False,
-                                  ssl_compression=True)
+            gc = v2.Client(url,
+                           insecure=False,
+                           ssl_compression=True)
             gc.images.get('image123')
-            self.fail('No SSL exception raised')
+            self.fail('No SSL exception has been raised')
         except exc.CommunicationError as e:
             if 'certificate verify failed' not in e.message:
-                self.fail('No certificate failure message received')
-        except Exception as e:
-            self.fail('Unexpected exception raised')
+                self.fail('No certificate failure message is received')
+        except Exception:
+            self.fail('Unexpected exception has been raised')
 
     def test_v2_requests_cert_verification_no_compression(self):
         """v2 regression test for bug 115260."""
@@ -142,16 +142,16 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         url = 'https://0.0.0.0:%d' % port
 
         try:
-            gc = v2.client.Client(url,
-                                  insecure=False,
-                                  ssl_compression=False)
+            gc = v2.Client(url,
+                           insecure=False,
+                           ssl_compression=False)
             gc.images.get('image123')
-            self.fail('No SSL exception raised')
+            self.fail('No SSL exception has been raised')
         except SSL.Error as e:
             if 'certificate verify failed' not in str(e):
-                self.fail('No certificate failure message received')
-        except Exception as e:
-            self.fail('Unexpected exception raised')
+                self.fail('No certificate failure message is received')
+        except Exception:
+            self.fail('Unexpected exception has been raised')
 
 
 class TestVerifiedHTTPSConnection(testtools.TestCase):
