@@ -36,6 +36,28 @@ DISK_FORMATS = ('Acceptable formats: ami, ari, aki, vhd, vmdk, raw, '
 _bool_strict = functools.partial(strutils.bool_from_string, strict=True)
 
 
+
+def _image_ext_validation(file_name):
+     """Image extension validation"""
+    file_name = str(file_name).split(".")
+    file_name_ext = file_name[len(file_name)-1]
+
+    print ("\nChecking for file name and it's extension")
+    #ADD restricted file format. 
+    file_extension_list = ["png", "jpg", "jpeg","bmp","dib","gif","tif","jfif"]
+    fileNotMatched = False
+    for ext in file_extension_list:
+        if(file_name_ext.lower() == ext):
+            fileNotMatched = True
+                break
+
+                            
+    if(fileNotMatched):
+        return False
+                            
+                            
+
+
 @utils.arg('--name', metavar='<NAME>',
            help='Filter images to those that have this name.')
 @utils.arg('--status', metavar='<STATUS>',
@@ -226,6 +248,34 @@ def do_image_create(gc, args):
     # Filter out None values
     fields = dict(filter(lambda x: x[1] is not None, vars(args).items()))
 
+    
+    file_name=None
+    status = True
+    file_attr = fields.get('file')
+    location_attr = fields.get('location')
+    copy_from_attr = fields.get('copy_from')
+
+    if file_attr:
+        file_name=file_attr
+
+    elif location_attr:
+        file_name=location_attr
+
+    elif copy_from_attr:
+        file_name=copy_from_attr
+                                
+    elif (sys.stdin.isatty()== False ):
+        file_name = os.readlink('/proc/self/fd/0')
+
+    
+    if (file_name != None):
+        status = _image_ext_validation(file_name)
+                            
+    if(status == False):
+        print("You must provide valid image type (.png, .jpeg, .bmp are not valid)")
+        return False
+    
+        
     fields['is_public'] = fields.get('is_public')
 
     if 'is_protected' in fields:
