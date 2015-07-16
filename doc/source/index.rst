@@ -39,6 +39,22 @@ See also :doc:`/man/glance`.
 Release Notes
 =============
 
+0.17.2
+------
+
+* Updated from global requirements
+* 1220809_: Correct help messages for image-update command
+* 1439513_: Creating task with invalid property crashes in py3
+* 1399778_: Omit 'locations' as image-create parameter
+* 1433884_: Fix Metadef Object update issue with python-glanceclient
+* 1446096_: Do not crash on homedir mkdir
+
+.. _1220809: https://launchpad.net/bugs/1220809
+.. _1439513: https://launchpad.net/bugs/1439513
+.. _1399778: https://launchpad.net/bugs/1399778
+.. _1433884: https://launchpad.net/bugs/1433884
+.. _1446096: https://launchpad.net/bugs/1446096
+
 0.17.1
 ------
 
