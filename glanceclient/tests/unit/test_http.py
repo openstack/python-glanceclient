@@ -139,6 +139,20 @@ class TestClient(testtools.TestCase):
         for k, v in six.iteritems(identity_headers):
             self.assertEqual(v, headers[k])
 
+    def test_connection_timeout(self):
+        """
+        Should receive an InvalidEndpoint if connection timeout.
+        """
+        def cb(request, context):
+            raise requests.exceptions.Timeout
+
+        path = '/v1/images'
+        self.mock.get(self.endpoint + path, text=cb)
+        comm_err = self.assertRaises(glanceclient.exc.InvalidEndpoint,
+                                     self.client.get,
+                                     '/v1/images')
+        self.assertIn(self.endpoint, comm_err.message)
+
     def test_connection_refused(self):
         """
         Should receive a CommunicationError if connection refused.
