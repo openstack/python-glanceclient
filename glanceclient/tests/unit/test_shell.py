@@ -36,7 +36,7 @@ from glanceclient import exc
 from glanceclient import shell as openstack_shell
 from glanceclient.tests import utils as testutils
 
-#NOTE (esheffield) Used for the schema caching tests
+# NOTE (esheffield) Used for the schema caching tests
 from glanceclient.v2 import schemas as schemas
 import json
 
@@ -507,7 +507,7 @@ class ShellCacheSchemaTest(testutils.TestCase):
         self.shell._get_versioned_client = mocked_get_client
 
     def _make_args(self, args):
-        class Args():
+        class Args(object):
             def __init__(self, entries):
                 self.__dict__.update(entries)
 

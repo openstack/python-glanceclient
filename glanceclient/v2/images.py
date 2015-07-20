@@ -177,14 +177,13 @@ class Controller(object):
     def get(self, image_id):
         url = '/v2/images/%s' % image_id
         resp, body = self.http_client.get(url)
-        #NOTE(bcwaldon): remove 'self' for now until we have an elegant
+        # NOTE(bcwaldon): remove 'self' for now until we have an elegant
         # way to pass it into the model constructor without conflict
         body.pop('self', None)
         return self.model(**body)
 
     def data(self, image_id, do_checksum=True):
-        """
-        Retrieve data of an image.
+        """Retrieve data of an image.
 
         :param image_id:    ID of the image to download.
         :param do_checksum: Enable/disable checksum validation.
@@ -200,8 +199,7 @@ class Controller(object):
         return utils.IterableWithLength(body, content_length)
 
     def upload(self, image_id, image_data, image_size=None):
-        """
-        Upload the data for an image.
+        """Upload the data for an image.
 
         :param image_id: ID of the image to upload data for.
         :param image_data: File-like object supplying the data to upload.
@@ -233,14 +231,13 @@ class Controller(object):
                 raise TypeError(utils.exception_to_str(e))
 
         resp, body = self.http_client.post(url, data=image)
-        #NOTE(esheffield): remove 'self' for now until we have an elegant
+        # NOTE(esheffield): remove 'self' for now until we have an elegant
         # way to pass it into the model constructor without conflict
         body.pop('self', None)
         return self.model(**body)
 
     def update(self, image_id, remove_props=None, **kwargs):
-        """
-        Update attributes of an image.
+        """Update attributes of an image.
 
         :param image_id: ID of the image to modify.
         :param remove_props: List of property names to remove
@@ -256,7 +253,7 @@ class Controller(object):
         if remove_props is not None:
             cur_props = image.keys()
             new_props = kwargs.keys()
-            #NOTE(esheffield): Only remove props that currently exist on the
+            # NOTE(esheffield): Only remove props that currently exist on the
             # image and are NOT in the properties being updated / added
             props_to_remove = set(cur_props).intersection(
                 set(remove_props).difference(new_props))
@@ -268,7 +265,7 @@ class Controller(object):
         hdrs = {'Content-Type': 'application/openstack-images-v2.1-json-patch'}
         self.http_client.patch(url, headers=hdrs, data=image.patch)
 
-        #NOTE(bcwaldon): calling image.patch doesn't clear the changes, so
+        # NOTE(bcwaldon): calling image.patch doesn't clear the changes, so
         # we need to fetch the image again to get a clean history. This is
         # an obvious optimization for warlock
         return self.get(image_id)

@@ -368,7 +368,7 @@ class BaseClient(object):
 
     @staticmethod
     def get_class(api_name, version, version_map):
-        """Returns the client class for the requested API version
+        """Returns the client class for the requested API version.
 
         :param api_name: the name of the API, e.g. 'compute', 'image', etc
         :param version: the requested API version

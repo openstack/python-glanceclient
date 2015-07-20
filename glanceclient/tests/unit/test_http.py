@@ -77,7 +77,7 @@ class TestClient(testtools.TestCase):
             'X-Identity-Status': 'Confirmed',
             'X-Service-Catalog': 'service_catalog',
         }
-        #with token
+        # with token
         kwargs = {'token': u'fake-token',
                   'identity_headers': identity_headers}
         http_client_object = http.HTTPClient(self.endpoint, **kwargs)
@@ -93,7 +93,7 @@ class TestClient(testtools.TestCase):
             'X-Identity-Status': 'Confirmed',
             'X-Service-Catalog': 'service_catalog',
         }
-        #without X-Auth-Token in identity headers
+        # without X-Auth-Token in identity headers
         kwargs = {'token': u'fake-token',
                   'identity_headers': identity_headers}
         http_client_object = http.HTTPClient(self.endpoint, **kwargs)
@@ -140,9 +140,7 @@ class TestClient(testtools.TestCase):
             self.assertEqual(v, headers[k])
 
     def test_connection_timeout(self):
-        """
-        Should receive an InvalidEndpoint if connection timeout.
-        """
+        """Should receive an InvalidEndpoint if connection timeout."""
         def cb(request, context):
             raise requests.exceptions.Timeout
 
@@ -155,6 +153,7 @@ class TestClient(testtools.TestCase):
 
     def test_connection_refused(self):
         """
+
         Should receive a CommunicationError if connection refused.
         And the error should list the host and port that refused the
         connection
@@ -192,7 +191,7 @@ class TestClient(testtools.TestCase):
         self.assertNotIn("none-val", encoded)
 
     def test_raw_request(self):
-        " Verify the path being used for HTTP requests reflects accurately. "
+        """Verify the path being used for HTTP requests reflects accurately."""
         headers = {"Content-Type": "text/plain"}
         text = 'Ok'
         path = '/v1/images/detail'

@@ -255,7 +255,7 @@ class TestController(testtools.TestCase):
         self.controller = tasks.Controller(self.api, self.schema_api)
 
     def test_list_tasks(self):
-        #NOTE(flwang): cast to list since the controller returns a generator
+        # NOTE(flwang): cast to list since the controller returns a generator
         tasks = list(self.controller.list())
         self.assertEqual(tasks[0].id, _PENDING_ID)
         self.assertEqual(tasks[0].type, 'import')
@@ -265,7 +265,7 @@ class TestController(testtools.TestCase):
         self.assertEqual(tasks[1].status, 'processing')
 
     def test_list_tasks_paginated(self):
-        #NOTE(flwang): cast to list since the controller returns a generator
+        # NOTE(flwang): cast to list since the controller returns a generator
         tasks = list(self.controller.list(page_size=1))
         self.assertEqual(tasks[0].id, _PENDING_ID)
         self.assertEqual(tasks[0].type, 'import')

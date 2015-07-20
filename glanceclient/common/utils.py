@@ -215,7 +215,7 @@ def is_authentication_required(f):
 
 
 def env(*vars, **kwargs):
-    """Search for the first defined of possibly many env vars
+    """Search for the first defined of possibly many env vars.
 
     Returns the first environment variable defined in vars, or
     returns the default defined in kwargs.
@@ -241,8 +241,7 @@ def exit(msg='', exit_code=1):
 
 
 def save_image(data, path):
-    """
-    Save an image to the specified path.
+    """Save an image to the specified path.
 
     :param data: binary data of the image
     :param path: path to save the image to
@@ -276,6 +275,7 @@ def make_size_human_readable(size):
 
 def getsockopt(self, *args, **kwargs):
     """
+
     A function which allows us to monkey patch eventlet's
     GreenSocket, adding a required 'getsockopt' method.
     TODO: (mclaren) we can remove this once the eventlet fix
@@ -298,8 +298,7 @@ def exception_to_str(exc):
 
 
 def get_file_size(file_obj):
-    """
-    Analyze file-like object and attempt to determine its size.
+    """Analyze file-like object and attempt to determine its size.
 
     :param file_obj: file-like object.
     :retval The file's size or None if it cannot be determined.
@@ -385,8 +384,7 @@ def print_image(image_obj, human_readable=False, max_col_width=None):
 
 
 def integrity_iter(iter, checksum):
-    """
-    Check image data integrity.
+    """Check image data integrity.
 
     :raises: IOError
     """

@@ -218,6 +218,7 @@ class HTTPClient(_BaseHTTPClient):
 
     def _request(self, method, url, **kwargs):
         """Send an http request with the specified characteristics.
+
         Wrapper around httplib.HTTP(S)Connection.request to handle tasks such
         as setting headers and error handling.
         """

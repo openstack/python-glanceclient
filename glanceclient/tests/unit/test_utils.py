@@ -55,7 +55,7 @@ class TestUtils(testtools.TestCase):
             file_obj.close()
 
     def test_prettytable(self):
-        class Struct:
+        class Struct(object):
             def __init__(self, **entries):
                 self.__dict__.update(entries)
 

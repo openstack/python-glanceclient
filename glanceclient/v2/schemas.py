@@ -21,7 +21,7 @@ import warlock.model as warlock
 
 
 class SchemaBasedModel(warlock.Model):
-    """Glance specific subclass of the warlock Model
+    """Glance specific subclass of the warlock Model.
 
     This implementation alters the function of the patch property
     to take into account the schema's core properties. With this version
@@ -35,8 +35,8 @@ class SchemaBasedModel(warlock.Model):
             tags_patch = []
         else:
             tags_patch = [{"path": "/tags",
-                          "value": self.get('tags'),
-                          "op": "replace"}]
+                           "value": self.get('tags'),
+                           "op": "replace"}]
 
         patch_string = jsonpatch.make_patch(original, new).to_string()
         patch = json.loads(patch_string)
@@ -69,7 +69,7 @@ class SchemaProperty(object):
 
 
 def translate_schema_properties(schema_properties):
-    """Parse the properties dictionary of a schema document
+    """Parse the properties dictionary of a schema document.
 
     :returns list of SchemaProperty objects
     """
@@ -87,7 +87,9 @@ class Schema(object):
         self.properties = translate_schema_properties(raw_properties)
 
     def is_core_property(self, property_name):
-        """Checks if a property with a given name is known to the schema,
+        """
+
+        Checks if a property with a given name is known to the schema,
         i.e. is either a base property or a custom one registered in
         schema-image.json file
 
@@ -97,7 +99,7 @@ class Schema(object):
         return self._check_property(property_name, True)
 
     def is_base_property(self, property_name):
-        """Checks if a property with a given name is a base property
+        """Checks if a property with a given name is a base property.
 
         :param property_name: name of the property
         :returns: True if the property is base, False otherwise

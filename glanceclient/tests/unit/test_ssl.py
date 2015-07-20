@@ -66,7 +66,7 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
 
 class TestHTTPSVerifyCert(testtools.TestCase):
-    """Check 'requests' based ssl verification occurs
+    """Check 'requests' based ssl verification occurs.
 
     The requests library performs SSL certificate validation,
     however there is still a need to check that the glance
@@ -156,9 +156,7 @@ class TestHTTPSVerifyCert(testtools.TestCase):
 
 class TestVerifiedHTTPSConnection(testtools.TestCase):
     def test_ssl_init_ok(self):
-        """
-        Test VerifiedHTTPSConnection class init
-        """
+        """Test VerifiedHTTPSConnection class init."""
         key_file = os.path.join(TEST_VAR_DIR, 'privatekey.key')
         cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
         cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
@@ -171,9 +169,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
             self.fail('Failed to init VerifiedHTTPSConnection.')
 
     def test_ssl_init_cert_no_key(self):
-        """
-        Test VerifiedHTTPSConnection: absence of SSL key file.
-        """
+        """Test VerifiedHTTPSConnection: absence of SSL key file."""
         cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
         cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
         try:
@@ -185,9 +181,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
             pass
 
     def test_ssl_init_key_no_cert(self):
-        """
-        Test VerifiedHTTPSConnection: absence of SSL cert file.
-        """
+        """Test VerifiedHTTPSConnection: absence of SSL cert file."""
         key_file = os.path.join(TEST_VAR_DIR, 'privatekey.key')
         cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
         try:
@@ -200,9 +194,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
             self.fail('Failed to init VerifiedHTTPSConnection.')
 
     def test_ssl_init_bad_key(self):
-        """
-        Test VerifiedHTTPSConnection: bad key.
-        """
+        """Test VerifiedHTTPSConnection: bad key."""
         cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
         cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
         key_file = os.path.join(TEST_VAR_DIR, 'badkey.key')
@@ -216,9 +208,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
             pass
 
     def test_ssl_init_bad_cert(self):
-        """
-        Test VerifiedHTTPSConnection: bad cert.
-        """
+        """Test VerifiedHTTPSConnection: bad cert."""
         cert_file = os.path.join(TEST_VAR_DIR, 'badcert.crt')
         cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
         try:
@@ -230,9 +220,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
             pass
 
     def test_ssl_init_bad_ca(self):
-        """
-        Test VerifiedHTTPSConnection: bad CA.
-        """
+        """Test VerifiedHTTPSConnection: bad CA."""
         cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
         cacert = os.path.join(TEST_VAR_DIR, 'badca.crt')
         try:
@@ -244,9 +232,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
             pass
 
     def test_ssl_cert_cname(self):
-        """
-        Test certificate: CN match
-        """
+        """Test certificate: CN match."""
         cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
         cert = crypto.load_certificate(crypto.FILETYPE_PEM,
                                        open(cert_file).read())
@@ -259,9 +245,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
             self.fail('Unexpected exception.')
 
     def test_ssl_cert_cname_wildcard(self):
-        """
-        Test certificate: wildcard CN match
-        """
+        """Test certificate: wildcard CN match."""
         cert_file = os.path.join(TEST_VAR_DIR, 'wildcard-certificate.crt')
         cert = crypto.load_certificate(crypto.FILETYPE_PEM,
                                        open(cert_file).read())
@@ -274,9 +258,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
             self.fail('Unexpected exception.')
 
     def test_ssl_cert_subject_alt_name(self):
-        """
-        Test certificate: SAN match
-        """
+        """Test certificate: SAN match."""
         cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
         cert = crypto.load_certificate(crypto.FILETYPE_PEM,
                                        open(cert_file).read())
@@ -295,9 +277,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
             self.fail('Unexpected exception.')
 
     def test_ssl_cert_subject_alt_name_wildcard(self):
-        """
-        Test certificate: wildcard SAN match
-        """
+        """Test certificate: wildcard SAN match."""
         cert_file = os.path.join(TEST_VAR_DIR, 'wildcard-san-certificate.crt')
         cert = crypto.load_certificate(crypto.FILETYPE_PEM,
                                        open(cert_file).read())
@@ -323,9 +303,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
             pass
 
     def test_ssl_cert_mismatch(self):
-        """
-        Test certificate: bogus host
-        """
+        """Test certificate: bogus host."""
         cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
         cert = crypto.load_certificate(crypto.FILETYPE_PEM,
                                        open(cert_file).read())
@@ -341,9 +319,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
                           host=conn.host)
 
     def test_ssl_expired_cert(self):
-        """
-        Test certificate: out of date cert
-        """
+        """Test certificate: out of date cert."""
         cert_file = os.path.join(TEST_VAR_DIR, 'expired-cert.crt')
         cert = crypto.load_certificate(crypto.FILETYPE_PEM,
                                        open(cert_file).read())
@@ -360,9 +336,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
                           host=conn.host)
 
     def test_ssl_broken_key_file(self):
-        """
-        Test verify exception is raised.
-        """
+        """Test verify exception is raised."""
         cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
         cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
         key_file = 'fake.key'
@@ -373,9 +347,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
             cert_file=cert_file, cacert=cacert)
 
     def test_ssl_init_ok_with_insecure_true(self):
-        """
-        Test VerifiedHTTPSConnection class init
-        """
+        """Test VerifiedHTTPSConnection class init."""
         key_file = os.path.join(TEST_VAR_DIR, 'privatekey.key')
         cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
         cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
@@ -389,9 +361,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
             self.fail('Failed to init VerifiedHTTPSConnection.')
 
     def test_ssl_init_ok_with_ssl_compression_false(self):
-        """
-        Test VerifiedHTTPSConnection class init
-        """
+        """Test VerifiedHTTPSConnection class init."""
         key_file = os.path.join(TEST_VAR_DIR, 'privatekey.key')
         cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
         cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
@@ -405,8 +375,7 @@ class TestVerifiedHTTPSConnection(testtools.TestCase):
             self.fail('Failed to init VerifiedHTTPSConnection.')
 
     def test_ssl_init_non_byte_string(self):
-        """
-        Test VerifiedHTTPSConnection class non byte string
+        """Test VerifiedHTTPSConnection class non byte string.
 
         Reproduces bug #1301849
         """

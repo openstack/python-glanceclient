@@ -26,7 +26,7 @@ from glanceclient.openstack.common.apiclient import base
 UPDATE_PARAMS = ('name', 'disk_format', 'container_format', 'min_disk',
                  'min_ram', 'owner', 'size', 'is_public', 'protected',
                  'location', 'checksum', 'copy_from', 'properties',
-                 #NOTE(bcwaldon: an attempt to update 'deleted' will be
+                 # NOTE(bcwaldon: an attempt to update 'deleted' will be
                  # ignored, but we need to support it for backwards-
                  # compatibility with the legacy client library
                  'deleted')
@@ -289,7 +289,7 @@ class ImageManager(base.ManagerWithFind):
             return_request_id.append(resp.headers.get(OS_REQ_ID_HDR, None))
 
     def create(self, **kwargs):
-        """Create an image
+        """Create an image.
 
         TODO(bcwaldon): document accepted params
         """
@@ -324,7 +324,7 @@ class ImageManager(base.ManagerWithFind):
         return Image(self, self._format_image_meta_for_user(body['image']))
 
     def update(self, image, **kwargs):
-        """Update an image
+        """Update an image.
 
         TODO(bcwaldon): document accepted params
         """

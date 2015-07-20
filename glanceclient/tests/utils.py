@@ -75,6 +75,7 @@ class RawRequest(object):
     def __init__(self, headers, body=None,
                  version=1.0, status=200, reason="Ok"):
         """
+
         :param headers: dict representing HTTP response headers
         :param body: file-like object
         :param version: HTTP Version
@@ -101,6 +102,7 @@ class FakeResponse(object):
     def __init__(self, headers=None, body=None,
                  version=1.0, status_code=200, reason="Ok"):
         """
+
         :param headers: dict representing HTTP response headers
         :param body: file-like object
         :param version: HTTP Version
@@ -179,6 +181,7 @@ class FakeNoTTYStdout(FakeTTYStdout):
 
 def sort_url_by_query_keys(url):
     """A helper function which sorts the keys of the query string of a url.
+
        For example, an input of '/v2/tasks?sort_key=id&sort_dir=asc&limit=10'
        returns '/v2/tasks?limit=10&sort_dir=asc&sort_key=id'. This is to
        prevent non-deterministic ordering of the query string causing
@@ -200,8 +203,7 @@ def sort_url_by_query_keys(url):
 
 
 def build_call_record(method, url, headers, data):
-    """Key the request body be ordered if it's a dict type.
-    """
+    """Key the request body be ordered if it's a dict type."""
     if isinstance(data, dict):
         data = sorted(data.items())
     if isinstance(data, six.string_types):

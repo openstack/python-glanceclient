@@ -236,11 +236,11 @@ class ShellInvalidEndpointandParameterTest(utils.TestCase):
         self.gc = self._mock_glance_client()
 
     def _make_args(self, args):
-        #NOTE(venkatesh): this conversion from a dict to an object
+        # NOTE(venkatesh): this conversion from a dict to an object
         # is required because the test_shell.do_xxx(gc, args) methods
         # expects the args to be attributes of an object. If passed as
         # dict directly, it throws an AttributeError.
-        class Args():
+        class Args(object):
             def __init__(self, entries):
                 self.__dict__.update(entries)
 
@@ -396,10 +396,12 @@ class ShellInvalidEndpointandParameterTest(utils.TestCase):
 class ShellStdinHandlingTests(testtools.TestCase):
 
     def _fake_update_func(self, *args, **kwargs):
-        '''Function to replace glanceclient.images.update,
+        """
+
+        Function to replace glanceclient.images.update,
         to determine the parameters that would be supplied with the update
         request
-        '''
+        """
 
         # Store passed in args
         self.collected_args = (args, kwargs)
@@ -477,7 +479,9 @@ class ShellStdinHandlingTests(testtools.TestCase):
         )
 
     def test_image_update_closed_stdin(self):
-        """Supply glanceclient with a closed stdin, and perform an image
+        """
+
+        Supply glanceclient with a closed stdin, and perform an image
         update to an active image. Glanceclient should not attempt to read
         stdin.
         """
@@ -494,7 +498,9 @@ class ShellStdinHandlingTests(testtools.TestCase):
         )
 
     def test_image_update_opened_stdin(self):
-        """Supply glanceclient with a stdin, and perform an image
+        """
+
+        Supply glanceclient with a stdin, and perform an image
         update to an active image. Glanceclient should not allow it.
         """
 

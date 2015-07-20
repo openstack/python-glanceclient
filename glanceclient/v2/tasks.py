@@ -38,7 +38,7 @@ class Controller(object):
         return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
 
     def list(self, **kwargs):
-        """Retrieve a listing of Task objects
+        """Retrieve a listing of Task objects.
 
         :param page_size: Number of tasks to request in each paginated request
         :returns generator over list of Tasks
@@ -87,7 +87,7 @@ class Controller(object):
 
         url = '/v2/tasks?%s' % six.moves.urllib.parse.urlencode(filters)
         for task in paginate(url):
-            #NOTE(flwang): remove 'self' for now until we have an elegant
+            # NOTE(flwang): remove 'self' for now until we have an elegant
             # way to pass it into the model constructor without conflict
             task.pop('self', None)
             yield self.model(**task)
@@ -96,7 +96,7 @@ class Controller(object):
         """Get a task based on given task id."""
         url = '/v2/tasks/%s' % task_id
         resp, body = self.http_client.get(url)
-        #NOTE(flwang): remove 'self' for now until we have an elegant
+        # NOTE(flwang): remove 'self' for now until we have an elegant
         # way to pass it into the model constructor without conflict
         body.pop('self', None)
         return self.model(**body)
@@ -113,7 +113,7 @@ class Controller(object):
                 raise TypeError(utils.exception_to_str(e))
 
         resp, body = self.http_client.post(url, data=task)
-        #NOTE(flwang): remove 'self' for now until we have an elegant
+        # NOTE(flwang): remove 'self' for now until we have an elegant
         # way to pass it into the model constructor without conflict
         body.pop('self', None)
         return self.model(**body)

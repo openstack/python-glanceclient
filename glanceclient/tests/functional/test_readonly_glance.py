@@ -19,8 +19,7 @@ from glanceclient.tests.functional import base
 
 class SimpleReadOnlyGlanceClientTest(base.ClientTestBase):
 
-    """
-    read only functional python-glanceclient tests.
+    """Read only functional python-glanceclient tests.
 
     This only exercises client commands that are read only.
     """

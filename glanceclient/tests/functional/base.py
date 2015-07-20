@@ -17,10 +17,9 @@ from tempest_lib.cli import base
 
 
 class ClientTestBase(base.ClientTestBase):
-    """
-    This is a first pass at a simple read only python-glanceclient test. This
-    only exercises client commands that are read only.
+    """This is a first pass at a simple read only python-glanceclient test.
 
+    This only exercises client commands that are read only.
     This should test commands:
     * as a regular user
     * as an admin user

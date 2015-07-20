@@ -58,6 +58,7 @@ from glanceclient import exc
 
 def verify_callback(host=None):
     """
+
     We use a partial around the 'real' verify_callback function
     so that we can stash the host value without holding a
     reference on the VerifiedHTTPSConnection.
@@ -71,8 +72,7 @@ def verify_callback(host=None):
 
 def do_verify_callback(connection, x509, errnum,
                        depth, preverify_ok, host=None):
-    """
-    Verify the server's SSL certificate.
+    """Verify the server's SSL certificate.
 
     This is a standalone function rather than a method to avoid
     issues around closing sockets if a reference is held on
@@ -93,6 +93,7 @@ def do_verify_callback(connection, x509, errnum,
 
 def host_matches_cert(host, x509):
     """
+
     Verify that the x509 certificate we have received
     from 'host' correctly identifies the server we are
     connecting to, ie that the certificate's Common Name
@@ -140,13 +141,10 @@ def to_bytes(s):
 
 
 class HTTPSAdapter(adapters.HTTPAdapter):
-    """
-    This adapter will be used just when
-    ssl compression should be disabled.
+    """This adapter will be used just when ssl compression should be disabled.
 
-    The init method overwrites the default
-    https pool by setting glanceclient's
-    one.
+    The init method overwrites the default https pool by setting
+    glanceclient's one.
     """
     def __init__(self, *args, **kwargs):
         classes_by_scheme = poolmanager.pool_classes_by_scheme
@@ -194,8 +192,9 @@ class HTTPSAdapter(adapters.HTTPAdapter):
 
 class HTTPSConnectionPool(connectionpool.HTTPSConnectionPool):
     """
+
     HTTPSConnectionPool will be instantiated when a new
-    connection is requested to the HTTPSAdapter.This
+    connection is requested to the HTTPSAdapter. This
     implementation overwrites the _new_conn method and
     returns an instances of glanceclient's VerifiedHTTPSConnection
     which handles no compression.
@@ -218,8 +217,7 @@ class HTTPSConnectionPool(connectionpool.HTTPSConnectionPool):
 
 
 class OpenSSLConnectionDelegator(object):
-    """
-    An OpenSSL.SSL.Connection delegator.
+    """An OpenSSL.SSL.Connection delegator.
 
     Supplies an additional 'makefile' method which httplib requires
     and is not present in OpenSSL.SSL.Connection.
@@ -239,6 +237,7 @@ class OpenSSLConnectionDelegator(object):
 
 class VerifiedHTTPSConnection(HTTPSConnection):
     """
+
     Extended HTTPSConnection which uses the OpenSSL library
     for enhanced SSL support.
     Note: Much of this functionality can eventually be replaced
@@ -284,9 +283,7 @@ class VerifiedHTTPSConnection(HTTPSConnection):
             raise exc.SSLConfigurationError(str(e))
 
     def set_context(self):
-        """
-        Set up the OpenSSL context.
-        """
+        """Set up the OpenSSL context."""
         self.context = OpenSSL.SSL.Context(OpenSSL.SSL.SSLv23_METHOD)
         self.context.set_cipher_list(self.CIPHERS)
 
@@ -333,8 +330,9 @@ class VerifiedHTTPSConnection(HTTPSConnection):
 
     def connect(self):
         """
-        Connect to an SSL port using the OpenSSL library and apply
-        per-connection parameters.
+
+        Connect to an SSL port using the OpenSSL library
+        and apply per-connection parameters.
         """
         result = socket.getaddrinfo(self.host, self.port, 0,
                                     socket.SOCK_STREAM)

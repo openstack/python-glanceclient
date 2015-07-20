@@ -89,7 +89,8 @@ class NamespaceController(object):
         return self.model(**body)
 
     def list(self, **kwargs):
-        """Retrieve a listing of Namespace objects
+        """Retrieve a listing of Namespace objects.
+
         :param page_size: Number of items to request in each paginated request
         :param limit: Use to request a specific page size. Expect a response
                       to a limited request to return between zero and limit
@@ -206,7 +207,7 @@ class ResourceTypeController(object):
         self.http_client.delete(url)
 
     def list(self):
-        """Retrieve a listing of available resource types
+        """Retrieve a listing of available resource types.
 
         :returns generator over list of resource_types
         """
@@ -280,7 +281,7 @@ class PropertyController(object):
         return self.model(**body)
 
     def list(self, namespace, **kwargs):
-        """Retrieve a listing of metadata properties
+        """Retrieve a listing of metadata properties.
 
         :returns generator over list of objects
         """
@@ -365,7 +366,7 @@ class ObjectController(object):
         return self.model(**body)
 
     def list(self, namespace, **kwargs):
-        """Retrieve a listing of metadata objects
+        """Retrieve a listing of metadata objects.
 
         :returns generator over list of objects
         """
