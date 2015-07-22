@@ -451,3 +451,19 @@ class TestRequestsIntegration(testtools.TestCase):
 
         adapter = client.session.adapters.get("glance+https://")
         self.assertTrue(isinstance(adapter, https.HTTPSAdapter))
+
+
+class TestHTTPSAdapter(testtools.TestCase):
+
+    def test__create_glance_httpsconnectionpool(self):
+        """Regression test
+
+        Check that glanceclient's https pool is properly
+        configured without any weird exception.
+        """
+        url = 'https://127.0.0.1:8000'
+        adapter = https.HTTPSAdapter()
+        try:
+            adapter._create_glance_httpsconnectionpool(url)
+        except Exception:
+            self.fail('Unexpected exception has been raised')
