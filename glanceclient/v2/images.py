@@ -39,7 +39,18 @@ class Controller(object):
     @utils.memoized_property
     def model(self):
         schema = self.schema_client.get('image')
-        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
+        warlock_model = warlock.model_factory(schema.raw(),
+                                              schemas.SchemaBasedModel)
+        return warlock_model
+
+    @utils.memoized_property
+    def unvalidated_model(self):
+        """A model which does not validate the image against the v2 schema."""
+        schema = self.schema_client.get('image')
+        warlock_model = warlock.model_factory(schema.raw(),
+                                              schemas.SchemaBasedModel)
+        warlock_model.validate = lambda *args, **kwargs: None
+        return warlock_model
 
     @staticmethod
     def _wrap(value):
@@ -78,9 +89,6 @@ class Controller(object):
         :returns: generator over list of Images.
         """
 
-        ori_validate_fun = self.model.validate
-        empty_fun = lambda *args, **kwargs: None
-
         limit = kwargs.get('limit')
         # NOTE(flaper87): Don't use `get('page_size', DEFAULT_SIZE)` otherwise,
         # it could be possible to send invalid data to the server by passing
@@ -103,20 +111,14 @@ class Controller(object):
                     # an elegant way to pass it into the model constructor
                     # without conflict.
                     image.pop('self', None)
-                    yield self.model(**image)
-                    # NOTE(zhiyan): In order to resolve the performance issue
-                    # of JSON schema validation for image listing case, we
-                    # don't validate each image entry but do it only on first
-                    # image entry for each page.
-                    self.model.validate = empty_fun
-
+                    # We do not validate the model when listing.
+                    # This prevents side-effects of injecting invalid
+                    # schema values via v1.
+                    yield self.unvalidated_model(**image)
                     if limit:
                         limit -= 1
                         if limit <= 0:
                             raise StopIteration
-
-                # NOTE(zhiyan); Reset validation function.
-                self.model.validate = ori_validate_fun
 
                 try:
                     next_url = body['next']
