@@ -16,6 +16,7 @@
 import sys
 
 import mock
+from oslo_utils import encodeutils
 import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
@@ -152,7 +153,7 @@ class TestUtils(testtools.TestCase):
         decorated = utils.schema_args(schema_getter())(dummy_func)
         arg, opts = decorated.__dict__['arguments'][0]
         self.assertIn('--test', arg)
-        self.assertEqual(str, opts['type'])
+        self.assertEqual(encodeutils.safe_decode, opts['type'])
 
         decorated = utils.schema_args(schema_getter('integer'))(dummy_func)
         arg, opts = decorated.__dict__['arguments'][0]
@@ -162,7 +163,7 @@ class TestUtils(testtools.TestCase):
         decorated = utils.schema_args(schema_getter(enum=True))(dummy_func)
         arg, opts = decorated.__dict__['arguments'][0]
         self.assertIn('--test', arg)
-        self.assertEqual(str, opts['type'])
+        self.assertEqual(encodeutils.safe_decode, opts['type'])
         self.assertIn('None, opt-1, opt-2', opts['help'])
 
     def test_iterable_closes(self):

@@ -56,7 +56,7 @@ def arg(*args, **kwargs):
 def schema_args(schema_getter, omit=None):
     omit = omit or []
     typemap = {
-        'string': str,
+        'string': encodeutils.safe_decode,
         'integer': int,
         'boolean': strutils.bool_from_string,
         'array': list
