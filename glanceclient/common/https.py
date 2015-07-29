@@ -160,15 +160,16 @@ class HTTPSAdapter(adapters.HTTPAdapter):
         return url
 
     def _create_glance_httpsconnectionpool(self, url):
-        kw = self.poolmanager.connection_kw
+        kw = self.poolmanager.connection_pool_kw
         # Parse the url to get the scheme, host, and port
         parsed = compat.urlparse(url)
         # If there is no port specified, we should use the standard HTTPS port
         port = parsed.port or 443
-        pool = HTTPSConnectionPool(parsed.host, port, **kw)
+        host = parsed.netloc.rsplit(':', 1)[0]
+        pool = HTTPSConnectionPool(host, port, **kw)
 
         with self.poolmanager.pools.lock:
-            self.poolmanager.pools[(parsed.scheme, parsed.host, port)] = pool
+            self.poolmanager.pools[(parsed.scheme, host, port)] = pool
 
         return pool
 
