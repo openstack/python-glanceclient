@@ -121,6 +121,13 @@ class ShellTest(utils.TestCase):
     def test_help_on_subcommand_error(self):
         self.assertRaises(exc.CommandError, shell, 'help bad')
 
+    def test_help_v2_no_schema(self):
+        shell = openstack_shell.OpenStackImagesShell()
+        argstr = '--os-image-api-version 2 help image-create'
+        actual = shell.main(argstr.split())
+        self.assertEqual(0, actual)
+        self.assertNotIn('<unavailable>', actual)
+
     def test_get_base_parser(self):
         test_shell = openstack_shell.OpenStackImagesShell()
         actual_parser = test_shell.get_base_parser()
