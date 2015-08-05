@@ -19,6 +19,7 @@ from glanceclient.common import progressbar
 from glanceclient.common import utils
 from glanceclient import exc
 from glanceclient.v2 import image_members
+from glanceclient.v2 import image_schema
 from glanceclient.v2 import images
 from glanceclient.v2 import tasks
 import json
@@ -36,6 +37,8 @@ def get_image_schema():
             with open(schema_path, "r") as f:
                 schema_raw = f.read()
                 IMAGE_SCHEMA = json.loads(schema_raw)
+        else:
+            return image_schema._BASE_SCHEMA
     return IMAGE_SCHEMA
 
 
