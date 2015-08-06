@@ -386,3 +386,107 @@ class ObjectController(object):
         """Delete all objects in a namespace."""
         url = '/v2/metadefs/namespaces/{0}/objects'.format(namespace)
         self.http_client.delete(url)
+
+
+class TagController(object):
+    def __init__(self, http_client, schema_client):
+        self.http_client = http_client
+        self.schema_client = schema_client
+
+    @utils.memoized_property
+    def model(self):
+        schema = self.schema_client.get('metadefs/tag')
+        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
+
+    def create(self, namespace, tag_name):
+        """Create a tag.
+
+        :param namespace: Name of a namespace the Tag belongs.
+        :param tag_name: The name of the new tag to create.
+        """
+
+        url = ('/v2/metadefs/namespaces/{0}/tags/{1}'.format(namespace,
+                                                             tag_name))
+
+        resp, body = self.http_client.post(url)
+        body.pop('self', None)
+        return self.model(**body)
+
+    def create_multiple(self, namespace, **kwargs):
+        """Create the list of tags.
+
+        :param namespace: Name of a namespace to which the Tags belong.
+        :param kwargs: list of tags.
+        """
+
+        tag_names = kwargs.pop('tags', [])
+        md_tag_list = []
+
+        for tag_name in tag_names:
+            try:
+                md_tag_list.append(self.model(name=tag_name))
+            except (warlock.InvalidOperation) as e:
+                raise TypeError(utils.exception_to_str(e))
+        tags = {'tags': md_tag_list}
+
+        url = '/v2/metadefs/namespaces/{0}/tags'.format(namespace)
+
+        resp, body = self.http_client.post(url, data=tags)
+        body.pop('self', None)
+        for tag in body['tags']:
+            yield self.model(tag)
+
+    def update(self, namespace, tag_name, **kwargs):
+        """Update a tag.
+
+        :param namespace: Name of a namespace the Tag belongs.
+        :param prop_name: Name of the Tag (old one).
+        :param kwargs: Unpacked tag.
+        """
+        tag = self.get(namespace, tag_name)
+        for (key, value) in kwargs.items():
+            try:
+                setattr(tag, key, value)
+            except warlock.InvalidOperation as e:
+                raise TypeError(utils.exception_to_str(e))
+
+        # Remove read-only parameters.
+        read_only = ['updated_at', 'created_at']
+        for elem in read_only:
+            if elem in tag:
+                del tag[elem]
+
+        url = '/v2/metadefs/namespaces/{0}/tags/{1}'.format(namespace,
+                                                            tag_name)
+        self.http_client.put(url, data=tag)
+
+        return self.get(namespace, tag.name)
+
+    def get(self, namespace, tag_name):
+        url = '/v2/metadefs/namespaces/{0}/tags/{1}'.format(namespace,
+                                                            tag_name)
+        resp, body = self.http_client.get(url)
+        body.pop('self', None)
+        return self.model(**body)
+
+    def list(self, namespace, **kwargs):
+        """Retrieve a listing of metadata tags.
+
+        :returns generator over list of tags.
+        """
+        url = '/v2/metadefs/namespaces/{0}/tags'.format(namespace)
+        resp, body = self.http_client.get(url)
+
+        for tag in body['tags']:
+            yield self.model(tag)
+
+    def delete(self, namespace, tag_name):
+        """Delete a tag."""
+        url = '/v2/metadefs/namespaces/{0}/tags/{1}'.format(namespace,
+                                                            tag_name)
+        self.http_client.delete(url)
+
+    def delete_all(self, namespace):
+        """Delete all tags in a namespace."""
+        url = '/v2/metadefs/namespaces/{0}/tags'.format(namespace)
+        self.http_client.delete(url)

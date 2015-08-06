@@ -1096,3 +1096,107 @@ class ShellV2Test(testtools.TestCase):
                 ['name', 'description'],
                 field_settings={
                     'description': {'align': 'l', 'max_width': 50}})
+
+    def test_do_md_tag_create(self):
+        args = self._make_args({'namespace': 'MyNamespace',
+                                'name': 'MyTag'})
+        with mock.patch.object(self.gc.metadefs_tag,
+                               'create') as mocked_create:
+            expect_tag = {}
+            expect_tag['namespace'] = 'MyNamespace'
+            expect_tag['name'] = 'MyTag'
+
+            mocked_create.return_value = expect_tag
+
+            test_shell.do_md_tag_create(self.gc, args)
+
+            mocked_create.assert_called_once_with('MyNamespace', 'MyTag')
+            utils.print_dict.assert_called_once_with(expect_tag)
+
+    def test_do_md_tag_update(self):
+        args = self._make_args({'namespace': 'MyNamespace',
+                                'tag': 'MyTag',
+                                'name': 'NewTag'})
+        with mock.patch.object(self.gc.metadefs_tag,
+                               'update') as mocked_update:
+            expect_tag = {}
+            expect_tag['namespace'] = 'MyNamespace'
+            expect_tag['name'] = 'NewTag'
+
+            mocked_update.return_value = expect_tag
+
+            test_shell.do_md_tag_update(self.gc, args)
+
+            mocked_update.assert_called_once_with('MyNamespace', 'MyTag',
+                                                  name='NewTag')
+            utils.print_dict.assert_called_once_with(expect_tag)
+
+    def test_do_md_tag_show(self):
+        args = self._make_args({'namespace': 'MyNamespace',
+                                'tag': 'MyTag',
+                                'sort_dir': 'desc'})
+        with mock.patch.object(self.gc.metadefs_tag, 'get') as mocked_get:
+            expect_tag = {}
+            expect_tag['namespace'] = 'MyNamespace'
+            expect_tag['tag'] = 'MyTag'
+
+            mocked_get.return_value = expect_tag
+
+            test_shell.do_md_tag_show(self.gc, args)
+
+            mocked_get.assert_called_once_with('MyNamespace', 'MyTag')
+            utils.print_dict.assert_called_once_with(expect_tag)
+
+    def test_do_md_tag_delete(self):
+        args = self._make_args({'namespace': 'MyNamespace',
+                                'tag': 'MyTag'})
+        with mock.patch.object(self.gc.metadefs_tag,
+                               'delete') as mocked_delete:
+            test_shell.do_md_tag_delete(self.gc, args)
+
+            mocked_delete.assert_called_once_with('MyNamespace', 'MyTag')
+
+    def test_do_md_namespace_tags_delete(self):
+        args = self._make_args({'namespace': 'MyNamespace'})
+        with mock.patch.object(self.gc.metadefs_tag,
+                               'delete_all') as mocked_delete_all:
+            test_shell.do_md_namespace_tags_delete(self.gc, args)
+
+            mocked_delete_all.assert_called_once_with('MyNamespace')
+
+    def test_do_md_tag_list(self):
+        args = self._make_args({'namespace': 'MyNamespace'})
+        with mock.patch.object(self.gc.metadefs_tag, 'list') as mocked_list:
+            expect_tags = [{'namespace': 'MyNamespace',
+                            'tag': 'MyTag'}]
+
+            mocked_list.return_value = expect_tags
+
+            test_shell.do_md_tag_list(self.gc, args)
+
+            mocked_list.assert_called_once_with('MyNamespace')
+            utils.print_list.assert_called_once_with(
+                expect_tags,
+                ['name'],
+                field_settings={
+                    'description': {'align': 'l', 'max_width': 50}})
+
+    def test_do_md_tag_create_multiple(self):
+        args = self._make_args({'namespace': 'MyNamespace',
+                                'delim': ',',
+                                'names': 'MyTag1, MyTag2'})
+        with mock.patch.object(
+                self.gc.metadefs_tag, 'create_multiple') as mocked_create_tags:
+            expect_tags = [{'tags': [{'name': 'MyTag1'}, {'name': 'MyTag2'}]}]
+
+            mocked_create_tags.return_value = expect_tags
+
+            test_shell.do_md_tag_create_multiple(self.gc, args)
+
+            mocked_create_tags.assert_called_once_with(
+                'MyNamespace', tags=['MyTag1', 'MyTag2'])
+            utils.print_list.assert_called_once_with(
+                expect_tags,
+                ['name'],
+                field_settings={
+                    'description': {'align': 'l', 'max_width': 50}})

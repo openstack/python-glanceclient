@@ -56,5 +56,8 @@ class Client(object):
         self.metadefs_object = (
             metadefs.ObjectController(self.http_client, self.schemas))
 
+        self.metadefs_tag = (
+            metadefs.TagController(self.http_client, self.schemas))
+
         self.metadefs_namespace = (
             metadefs.NamespaceController(self.http_client, self.schemas))
