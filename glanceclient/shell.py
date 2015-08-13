@@ -22,6 +22,7 @@ from __future__ import print_function
 import argparse
 import copy
 import getpass
+import hashlib
 import json
 import logging
 import os
@@ -263,7 +264,7 @@ class OpenStackImagesShell(object):
         parser.add_argument('--os-image-api-version',
                             default=utils.env('OS_IMAGE_API_VERSION',
                                               default=None),
-                            help='Defaults to env[OS_IMAGE_API_VERSION] or 1.')
+                            help='Defaults to env[OS_IMAGE_API_VERSION] or 2.')
 
         parser.add_argument('--os_image_api_version',
                             help=argparse.SUPPRESS)
@@ -551,9 +552,13 @@ class OpenStackImagesShell(object):
 
     def _cache_schemas(self, options, home_dir='~/.glanceclient'):
         homedir = os.path.expanduser(home_dir)
-        if not os.path.exists(homedir):
+        path_prefix = homedir
+        if options.os_auth_url:
+            hash_host = hashlib.sha1(options.os_auth_url.encode('utf-8'))
+            path_prefix = os.path.join(path_prefix, hash_host.hexdigest())
+        if not os.path.exists(path_prefix):
             try:
-                os.makedirs(homedir)
+                os.makedirs(path_prefix)
             except OSError as e:
                 # This avoids glanceclient to crash if it can't write to
                 # ~/.glanceclient, which may happen on some env (for me,
@@ -561,12 +566,12 @@ class OpenStackImagesShell(object):
                 # /var/lib/jenkins).
                 msg = '%s' % e
                 print(encodeutils.safe_decode(msg), file=sys.stderr)
-
         resources = ['image', 'metadefs/namespace', 'metadefs/resource_type']
-        schema_file_paths = [homedir + os.sep + x + '_schema.json'
+        schema_file_paths = [os.path.join(path_prefix, x + '_schema.json')
                              for x in ['image', 'namespace', 'resource_type']]
 
         client = None
+        failed_download_schema = 0
         for resource, schema_file_path in zip(resources, schema_file_paths):
             if (not os.path.exists(schema_file_path)) or options.get_schema:
                 try:
@@ -580,7 +585,10 @@ class OpenStackImagesShell(object):
                 except Exception:
                     # NOTE(esheffield) do nothing here, we'll get a message
                     # later if the schema is missing
+                    failed_download_schema += 1
                     pass
+
+        return failed_download_schema >= len(resources)
 
     def main(self, argv):
         # Parse args once to find version
@@ -605,7 +613,7 @@ class OpenStackImagesShell(object):
 
         # build available subcommands based on version
         try:
-            api_version = int(options.os_image_api_version or url_version or 1)
+            api_version = int(options.os_image_api_version or url_version or 2)
             if api_version not in SUPPORTED_VERSIONS:
                 raise ValueError
         except ValueError:
@@ -614,7 +622,12 @@ class OpenStackImagesShell(object):
             utils.exit(msg=msg)
 
         if api_version == 2:
-            self._cache_schemas(options)
+            switch_version = self._cache_schemas(options)
+            if switch_version:
+                print('WARNING: The client is falling back to v1 because'
+                      ' the accessing to v2 failed. This behavior will'
+                      ' be removed in future versions')
+                api_version = 1
 
         try:
             subcommand_parser = self.get_subcommand_parser(api_version)

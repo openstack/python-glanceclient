@@ -19,6 +19,7 @@ try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
+import hashlib
 import os
 import sys
 import uuid
@@ -204,8 +205,8 @@ class ShellTest(testutils.TestCase):
     def test_no_auth_with_token_and_image_url_with_v1(self, v1_client):
         # test no authentication is required if both token and endpoint url
         # are specified
-        args = ('--os-auth-token mytoken --os-image-url https://image:1234/v1 '
-                'image-list')
+        args = ('--os-image-api-version 1 --os-auth-token mytoken'
+                ' --os-image-url https://image:1234/v1 image-list')
         glance_shell = openstack_shell.OpenStackImagesShell()
         glance_shell.main(args.split())
         assert v1_client.called
@@ -213,7 +214,8 @@ class ShellTest(testutils.TestCase):
         self.assertEqual('mytoken', kwargs['token'])
         self.assertEqual('https://image:1234', args[0])
 
-    @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas')
+    @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas',
+                       return_value=False)
     def test_no_auth_with_token_and_image_url_with_v2(self,
                                                       cache_schemas):
         with mock.patch('glanceclient.v2.client.Client') as v2_client:
@@ -244,13 +246,14 @@ class ShellTest(testutils.TestCase):
 
     @mock.patch('glanceclient.v1.client.Client')
     def test_auth_plugin_invocation_with_v1(self, v1_client):
-        args = 'image-list'
+        args = '--os-image-api-version 1 image-list'
         glance_shell = openstack_shell.OpenStackImagesShell()
         glance_shell.main(args.split())
         self._assert_auth_plugin_args()
 
     @mock.patch('glanceclient.v2.client.Client')
-    @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas')
+    @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas',
+                       return_value=False)
     def test_auth_plugin_invocation_with_v2(self,
                                             v2_client,
                                             cache_schemas):
@@ -262,13 +265,15 @@ class ShellTest(testutils.TestCase):
     @mock.patch('glanceclient.v1.client.Client')
     def test_auth_plugin_invocation_with_unversioned_auth_url_with_v1(
             self, v1_client):
-        args = '--os-auth-url %s image-list' % DEFAULT_UNVERSIONED_AUTH_URL
+        args = ('--os-image-api-version 1 --os-auth-url %s image-list' %
+                DEFAULT_UNVERSIONED_AUTH_URL)
         glance_shell = openstack_shell.OpenStackImagesShell()
         glance_shell.main(args.split())
         self._assert_auth_plugin_args()
 
     @mock.patch('glanceclient.v2.client.Client')
-    @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas')
+    @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas',
+                       return_value=False)
     def test_auth_plugin_invocation_with_unversioned_auth_url_with_v2(
             self, v2_client, cache_schemas):
         args = ('--os-auth-url %s --os-image-api-version 2 '
@@ -300,7 +305,8 @@ class ShellTest(testutils.TestCase):
 
     @mock.patch(
         'glanceclient.shell.OpenStackImagesShell._get_keystone_session')
-    @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas')
+    @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas',
+                       return_value=False)
     def test_no_auth_with_proj_name(self, cache_schemas, session):
         with mock.patch('glanceclient.v2.client.Client'):
             args = ('--os-project-name myname '
@@ -414,7 +420,10 @@ class ShellTest(testutils.TestCase):
         self.assertRaises(exc.CommandError, glance_shell.main, args.split())
 
     @mock.patch('glanceclient.v2.client.Client')
-    def test_auth_plugin_invocation_without_tenant_with_v2(self, v2_client):
+    @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas',
+                       return_value=False)
+    def test_auth_plugin_invocation_without_tenant_with_v2(self, v2_client,
+                                                           cache_schemas):
         if 'OS_TENANT_NAME' in os.environ:
             self.make_env(exclude='OS_TENANT_NAME')
         if 'OS_PROJECT_ID' in os.environ:
@@ -445,13 +454,14 @@ class ShellTestWithKeystoneV3Auth(ShellTest):
 
     @mock.patch('glanceclient.v1.client.Client')
     def test_auth_plugin_invocation_with_v1(self, v1_client):
-        args = 'image-list'
+        args = '--os-image-api-version 1 image-list'
         glance_shell = openstack_shell.OpenStackImagesShell()
         glance_shell.main(args.split())
         self._assert_auth_plugin_args()
 
     @mock.patch('glanceclient.v2.client.Client')
-    @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas')
+    @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas',
+                       return_value=False)
     def test_auth_plugin_invocation_with_v2(self, v2_client, cache_schemas):
         args = '--os-image-api-version 2 image-list'
         glance_shell = openstack_shell.OpenStackImagesShell()
@@ -489,9 +499,12 @@ class ShellCacheSchemaTest(testutils.TestCase):
         self._mock_client_setup()
         self._mock_shell_setup()
         self.cache_dir = '/dir_for_cached_schema'
-        self.cache_files = [self.cache_dir + '/image_schema.json',
-                            self.cache_dir + '/namespace_schema.json',
-                            self.cache_dir + '/resource_type_schema.json']
+        self.os_auth_url = 'http://localhost:5000/v2'
+        url_hex = hashlib.sha1(self.os_auth_url.encode('utf-8')).hexdigest()
+        self.prefix_path = (self.cache_dir + '/' + url_hex)
+        self.cache_files = [self.prefix_path + '/image_schema.json',
+                            self.prefix_path + '/namespace_schema.json',
+                            self.prefix_path + '/resource_type_schema.json']
 
     def tearDown(self):
         super(ShellCacheSchemaTest, self).tearDown()
@@ -524,7 +537,8 @@ class ShellCacheSchemaTest(testutils.TestCase):
     @mock.patch('os.path.exists', return_value=True)
     def test_cache_schemas_gets_when_forced(self, exists_mock):
         options = {
-            'get_schema': True
+            'get_schema': True,
+            'os_auth_url': self.os_auth_url
         }
         schema_odict = OrderedDict(self.schema_dict)
 
@@ -545,7 +559,8 @@ class ShellCacheSchemaTest(testutils.TestCase):
     @mock.patch('os.path.exists', side_effect=[True, False, False, False])
     def test_cache_schemas_gets_when_not_exists(self, exists_mock):
         options = {
-            'get_schema': False
+            'get_schema': False,
+            'os_auth_url': self.os_auth_url
         }
         schema_odict = OrderedDict(self.schema_dict)
 
@@ -566,14 +581,29 @@ class ShellCacheSchemaTest(testutils.TestCase):
     @mock.patch('os.path.exists', return_value=True)
     def test_cache_schemas_leaves_when_present_not_forced(self, exists_mock):
         options = {
-            'get_schema': False
+            'get_schema': False,
+            'os_auth_url': self.os_auth_url
         }
 
         self.shell._cache_schemas(self._make_args(options),
                                   home_dir=self.cache_dir)
 
-        os.path.exists.assert_any_call(self.cache_dir)
+        os.path.exists.assert_any_call(self.prefix_path)
         os.path.exists.assert_any_call(self.cache_files[0])
         os.path.exists.assert_any_call(self.cache_files[1])
         self.assertEqual(4, exists_mock.call_count)
         self.assertEqual(0, open.mock_calls.__len__())
+
+    @mock.patch('six.moves.builtins.open', new=mock.mock_open(), create=True)
+    @mock.patch('os.path.exists', return_value=True)
+    def test_cache_schemas_leaves_auto_switch(self, exists_mock):
+        options = {
+            'get_schema': True,
+            'os_auth_url': self.os_auth_url
+        }
+
+        self.client.schemas.get.return_value = Exception()
+
+        switch_version = self.shell._cache_schemas(self._make_args(options),
+                                                   home_dir=self.cache_dir)
+        self.assertEqual(switch_version, True)
