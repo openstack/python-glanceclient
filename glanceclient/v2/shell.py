@@ -174,7 +174,8 @@ def do_image_list(gc, args):
     columns = ['ID', 'Name']
 
     if args.verbose:
-        columns += ['owner', 'status']
+        columns += ['Disk_format', 'Container_format', 'Size', 'Status',
+                    'Owner']
 
     images = gc.images.list(**kwargs)
     utils.print_list(images, columns)
