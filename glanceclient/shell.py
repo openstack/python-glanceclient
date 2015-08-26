@@ -671,7 +671,7 @@ class OpenStackImagesShell(object):
             if switch_version:
                 print('WARNING: The client is falling back to v1 because'
                       ' the accessing to v2 failed. This behavior will'
-                      ' be removed in future versions')
+                      ' be removed in future versions', file=sys.stderr)
                 api_version = 1
 
         sub_parser = _get_subparser(api_version)
