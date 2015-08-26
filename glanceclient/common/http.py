@@ -28,6 +28,7 @@ except ImportError:
     ProtocolError = requests.exceptions.ConnectionError
 import six
 from six.moves.urllib import parse
+import warnings
 
 try:
     import json
@@ -41,7 +42,6 @@ if not hasattr(parse, 'parse_qsl'):
 
 from oslo_utils import encodeutils
 
-from glanceclient.common import https
 from glanceclient.common import utils
 from glanceclient import exc
 
@@ -138,20 +138,17 @@ class HTTPClient(_BaseHTTPClient):
         if self.endpoint.startswith("https"):
             compression = kwargs.get('ssl_compression', True)
 
-            if not compression:
-                self.session.mount("glance+https://", https.HTTPSAdapter())
-                self.endpoint = 'glance+' + self.endpoint
+            if compression is False:
+                # Note: This is not seen by default. (python must be
+                # run with -Wd)
+                warnings.warn('The "ssl_compression" argument has been '
+                              'deprecated.', DeprecationWarning)
 
-                self.session.verify = (
-                    kwargs.get('cacert', requests.certs.where()),
-                    kwargs.get('insecure', False))
-
+            if kwargs.get('insecure', False) is True:
+                self.session.verify = False
             else:
-                if kwargs.get('insecure', False) is True:
-                    self.session.verify = False
-                else:
-                    if kwargs.get('cacert', None) is not '':
-                        self.session.verify = kwargs.get('cacert', True)
+                if kwargs.get('cacert', None) is not '':
+                    self.session.verify = kwargs.get('cacert', True)
 
             self.session.cert = (kwargs.get('cert_file'),
                                  kwargs.get('key_file'))
