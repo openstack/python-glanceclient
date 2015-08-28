@@ -44,3 +44,23 @@ class ClientTest(testtools.TestCase):
         gc = client.Client(2.2, "http://example.com/v2.1")
         self.assertEqual("http://example.com", gc.http_client.endpoint)
         self.assertIsInstance(gc, v2.client.Client)
+
+    def test_endpoint_with_version_hostname(self):
+        gc = client.Client(2, "http://v1.example.com")
+        self.assertEqual("http://v1.example.com", gc.http_client.endpoint)
+        self.assertIsInstance(gc, v2.client.Client)
+
+    def test_versioned_endpoint_with_version_hostname_v2(self):
+        gc = client.Client(endpoint="http://v1.example.com/v2")
+        self.assertEqual("http://v1.example.com", gc.http_client.endpoint)
+        self.assertIsInstance(gc, v2.client.Client)
+
+    def test_versioned_endpoint_with_version_hostname_v1(self):
+        gc = client.Client(endpoint="http://v2.example.com/v1")
+        self.assertEqual("http://v2.example.com", gc.http_client.endpoint)
+        self.assertIsInstance(gc, v1.client.Client)
+
+    def test_versioned_endpoint_with_minor_revision_and_version_hostname(self):
+        gc = client.Client(endpoint="http://v1.example.com/v2.1")
+        self.assertEqual("http://v1.example.com", gc.http_client.endpoint)
+        self.assertIsInstance(gc, v2.client.Client)
