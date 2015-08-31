@@ -319,3 +319,68 @@ schema_fixture = {
         }
     }
 }
+
+image_versions_fixture = {
+    "versions": [
+        {
+            "id": "v2.3",
+            "links": [
+                {
+                    "href": "http://localhost:9292/v2/",
+                    "rel": "self"
+                }
+            ],
+            "status": "CURRENT"
+        },
+        {
+            "id": "v2.2",
+            "links": [
+                {
+                    "href": "http://localhost:9292/v2/",
+                    "rel": "self"
+                }
+            ],
+            "status": "SUPPORTED"
+        },
+        {
+            "id": "v2.1",
+            "links": [
+                {
+                    "href": "http://localhost:9292/v2/",
+                    "rel": "self"
+                }
+            ],
+            "status": "SUPPORTED"
+        },
+        {
+            "id": "v2.0",
+            "links": [
+                {
+                    "href": "http://localhost:9292/v2/",
+                    "rel": "self"
+                }
+            ],
+            "status": "SUPPORTED"
+        },
+        {
+            "id": "v1.1",
+            "links": [
+                {
+                    "href": "http://localhost:9292/v1/",
+                    "rel": "self"
+                }
+            ],
+            "status": "SUPPORTED"
+        },
+        {
+            "id": "v1.0",
+            "links": [
+                {
+                    "href": "http://localhost:9292/v1/",
+                    "rel": "self"
+                }
+            ],
+            "status": "SUPPORTED"
+        }
+    ]
+}
