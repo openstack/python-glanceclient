@@ -291,7 +291,7 @@ class ShellTest(testutils.TestCase):
         self.assertRaises(ks_exc.ConnectionRefused,
                           glance_shell.main, ['image-list'])
         # Make sure we are actually prompted.
-        mock_getpass.assert_called_with('OS Password: ')
+        mock_getpass.assert_called_once_with('OS Password: ')
 
     @mock.patch('sys.stdin', side_effect=mock.MagicMock)
     @mock.patch('getpass.getpass', side_effect=EOFError)

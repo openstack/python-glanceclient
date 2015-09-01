@@ -659,6 +659,13 @@ class OpenStackImagesShell(object):
         # Parse args again and call whatever callback was selected
         args = subcommand_parser.parse_args(argv)
 
+        # NOTE(flaper87): Make sure we re-use the password input if we
+        # have one. This may happen if the schemas were downloaded in
+        # this same command. Password will be asked to download the
+        # schemas and then for the operations below.
+        if not args.os_password and options.os_password:
+            args.os_password = options.os_password
+
         # Short-circuit and deal with help command right away.
         if args.func == self.do_help:
             self.do_help(args)
