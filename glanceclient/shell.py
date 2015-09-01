@@ -553,7 +553,7 @@ class OpenStackImagesShell(object):
         client = glanceclient.Client(api_version, endpoint, **kwargs)
         return client
 
-    def _cache_schemas(self, options, home_dir='~/.glanceclient'):
+    def _cache_schemas(self, options, client, home_dir='~/.glanceclient'):
         homedir = os.path.expanduser(home_dir)
         path_prefix = homedir
         if options.os_auth_url:
@@ -573,16 +573,11 @@ class OpenStackImagesShell(object):
         schema_file_paths = [os.path.join(path_prefix, x + '_schema.json')
                              for x in ['image', 'namespace', 'resource_type']]
 
-        client = None
         failed_download_schema = 0
         for resource, schema_file_path in zip(resources, schema_file_paths):
             if (not os.path.exists(schema_file_path)) or options.get_schema:
                 try:
-                    if not client:
-                        client = self._get_versioned_client('2', options,
-                                                            force_auth=True)
                     schema = client.schemas.get(resource)
-
                     with open(schema_file_path, 'w') as f:
                         f.write(json.dumps(schema.raw()))
                 except Exception:
@@ -624,8 +619,21 @@ class OpenStackImagesShell(object):
                    "Supported values are %s" % SUPPORTED_VERSIONS)
             utils.exit(msg=msg)
 
-        if api_version == 2:
-            switch_version = self._cache_schemas(options)
+        if not options.os_image_api_version and api_version == 2:
+            switch_version = True
+            client = self._get_versioned_client('2', options,
+                                                force_auth=True)
+
+            resp, body = client.http_client.get('/versions')
+
+            for version in body['versions']:
+                if version['id'].startswith('v2'):
+                    # NOTE(flaper87): We know v2 is enabled in the server,
+                    # which means we should be able to get the schemas and
+                    # move on.
+                    switch_version = self._cache_schemas(options, client)
+                    break
+
             if switch_version:
                 print('WARNING: The client is falling back to v1 because'
                       ' the accessing to v2 failed. This behavior will'

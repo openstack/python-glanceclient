@@ -91,7 +91,10 @@ class _BaseHTTPClient(object):
         if not resp.ok:
             LOG.debug("Request returned failure status %s." % resp.status_code)
             raise exc.from_response(resp, resp.content)
-        elif resp.status_code == requests.codes.MULTIPLE_CHOICES:
+        elif (resp.status_code == requests.codes.MULTIPLE_CHOICES and
+              resp.request.path_url != '/versions'):
+            # NOTE(flaper87): Eventually, we'll remove the check on `versions`
+            # which is a bug (1491350) on the server.
             raise exc.from_response(resp)
 
         content_type = resp.headers.get('Content-Type')

@@ -80,7 +80,7 @@ class SimpleReadOnlyGlanceClientTest(base.ClientTestBase):
                               params=param_image_id)
 
     def test_help(self):
-        help_text = self.glance('help')
+        help_text = self.glance('--os-image-api-version 2 help')
         lines = help_text.split('\n')
         self.assertFirstLineStartsWith(lines, 'usage: glance')
 

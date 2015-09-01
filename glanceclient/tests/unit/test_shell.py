@@ -147,17 +147,18 @@ class ShellTest(testutils.TestCase):
 
     def test_help_unknown_command(self):
         shell = openstack_shell.OpenStackImagesShell()
-        argstr = 'help foofoo'
+        argstr = '--os-image-api-version 2 help foofoo'
         self.assertRaises(exc.CommandError, shell.main, argstr.split())
 
     def test_help(self):
         shell = openstack_shell.OpenStackImagesShell()
-        argstr = 'help'
+        argstr = '--os-image-api-version 2 help'
         actual = shell.main(argstr.split())
         self.assertEqual(0, actual)
 
     def test_help_on_subcommand_error(self):
-        self.assertRaises(exc.CommandError, shell, 'help bad')
+        self.assertRaises(exc.CommandError, shell,
+                          '--os-image-api-version 2 help bad')
 
     def test_help_v2_no_schema(self):
         shell = openstack_shell.OpenStackImagesShell()
@@ -185,7 +186,9 @@ class ShellTest(testutils.TestCase):
     def test_cert_and_key_args_interchangeable(self,
                                                mock_versioned_client):
         # make sure --os-cert and --os-key are passed correctly
-        args = '--os-cert mycert --os-key mykey image-list'
+        args = ('--os-image-api-version 2 '
+                '--os-cert mycert '
+                '--os-key mykey image-list')
         shell(args)
         assert mock_versioned_client.called
         ((api_version, args), kwargs) = mock_versioned_client.call_args
@@ -193,7 +196,9 @@ class ShellTest(testutils.TestCase):
         self.assertEqual('mykey', args.os_key)
 
         # make sure we get the same thing with --cert-file and --key-file
-        args = '--cert-file mycertfile --key-file mykeyfile image-list'
+        args = ('--os-image-api-version 2 '
+                '--cert-file mycertfile '
+                '--key-file mykeyfile image-list')
         glance_shell = openstack_shell.OpenStackImagesShell()
         glance_shell.main(args.split())
         assert mock_versioned_client.called
@@ -381,6 +386,34 @@ class ShellTest(testutils.TestCase):
             msg = 'Unable to import module. Re-run with --debug for more info.'
             self.assertEqual(msg, str(e))
 
+    @mock.patch('glanceclient.v2.client.Client')
+    @mock.patch('glanceclient.v1.images.ImageManager.list')
+    def test_shell_v1_fallback_from_v2(self, v1_imgs, v2_client):
+        self.make_env()
+        cli2 = mock.MagicMock()
+        v2_client.return_value = cli2
+        cli2.http_client.get.return_value = (None, {'versions': []})
+        args = 'image-list'
+        glance_shell = openstack_shell.OpenStackImagesShell()
+        glance_shell.main(args.split())
+        self.assertFalse(cli2.schemas.get.called)
+        self.assertTrue(v1_imgs.called)
+
+    @mock.patch.object(openstack_shell.OpenStackImagesShell,
+                       '_cache_schemas')
+    @mock.patch('glanceclient.v2.client.Client')
+    def test_shell_no_fallback_from_v2(self, v2_client, cache_schemas):
+        self.make_env()
+        cli2 = mock.MagicMock()
+        v2_client.return_value = cli2
+        cli2.http_client.get.return_value = (None,
+                                             {'versions': [{'id': 'v2'}]})
+        cache_schemas.return_value = False
+        args = 'image-list'
+        glance_shell = openstack_shell.OpenStackImagesShell()
+        glance_shell.main(args.split())
+        self.assertTrue(cli2.images.list.called)
+
     @mock.patch('glanceclient.v1.client.Client')
     def test_auth_plugin_invocation_without_username_with_v1(self, v1_client):
         self.make_env(exclude='OS_USERNAME')
@@ -477,7 +510,7 @@ class ShellTestWithKeystoneV3Auth(ShellTest):
         self.assertRaises(exc.CommandError, glance_shell.main, args.split())
 
     def test_bash_completion(self):
-        stdout, stderr = self.shell('bash_completion')
+        stdout, stderr = self.shell('--os-image-api-version 2 bash_completion')
         # just check we have some output
         required = [
             '--status',
@@ -542,8 +575,9 @@ class ShellCacheSchemaTest(testutils.TestCase):
         }
         schema_odict = OrderedDict(self.schema_dict)
 
-        self.shell._cache_schemas(self._make_args(options),
-                                  home_dir=self.cache_dir)
+        args = self._make_args(options)
+        client = self.shell._get_versioned_client('2', args, force_auth=True)
+        self.shell._cache_schemas(args, client, home_dir=self.cache_dir)
 
         self.assertEqual(12, open.mock_calls.__len__())
         self.assertEqual(mock.call(self.cache_files[0], 'w'),
@@ -564,8 +598,9 @@ class ShellCacheSchemaTest(testutils.TestCase):
         }
         schema_odict = OrderedDict(self.schema_dict)
 
-        self.shell._cache_schemas(self._make_args(options),
-                                  home_dir=self.cache_dir)
+        args = self._make_args(options)
+        client = self.shell._get_versioned_client('2', args, force_auth=True)
+        self.shell._cache_schemas(args, client, home_dir=self.cache_dir)
 
         self.assertEqual(12, open.mock_calls.__len__())
         self.assertEqual(mock.call(self.cache_files[0], 'w'),
@@ -585,8 +620,9 @@ class ShellCacheSchemaTest(testutils.TestCase):
             'os_auth_url': self.os_auth_url
         }
 
+        client = mock.MagicMock()
         self.shell._cache_schemas(self._make_args(options),
-                                  home_dir=self.cache_dir)
+                                  client, home_dir=self.cache_dir)
 
         os.path.exists.assert_any_call(self.prefix_path)
         os.path.exists.assert_any_call(self.cache_files[0])
@@ -604,6 +640,8 @@ class ShellCacheSchemaTest(testutils.TestCase):
 
         self.client.schemas.get.return_value = Exception()
 
+        client = mock.MagicMock()
         switch_version = self.shell._cache_schemas(self._make_args(options),
+                                                   client,
                                                    home_dir=self.cache_dir)
         self.assertEqual(switch_version, True)
