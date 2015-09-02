@@ -73,6 +73,11 @@ class ImageManager(base.ManagerWithFind):
         meta = {'properties': {}}
         safe_decode = encodeutils.safe_decode
         for key, value in six.iteritems(headers):
+            # NOTE(flaper87): this is a compatibility fix
+            # for urllib3 >= 1.11. Please, refer to this
+            # bug for more info:
+            # https://bugs.launchpad.net/python-glanceclient/+bug/1487645
+            key = key.lower()
             value = safe_decode(value, incoming='utf-8')
             if key.startswith('x-image-meta-property-'):
                 _key = safe_decode(key[22:], incoming='utf-8')
