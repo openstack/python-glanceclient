@@ -219,21 +219,18 @@ class ShellTest(testutils.TestCase):
         self.assertEqual('mytoken', kwargs['token'])
         self.assertEqual('https://image:1234', args[0])
 
-    @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas',
-                       return_value=False)
-    def test_no_auth_with_token_and_image_url_with_v2(self,
-                                                      cache_schemas):
-        with mock.patch('glanceclient.v2.client.Client') as v2_client:
-            # test no authentication is required if both token and endpoint url
-            # are specified
-            args = ('--os-auth-token mytoken '
-                    '--os-image-url https://image:1234/v2 '
-                    '--os-image-api-version 2 image-list')
-            glance_shell = openstack_shell.OpenStackImagesShell()
-            glance_shell.main(args.split())
-            ((args), kwargs) = v2_client.call_args
-            self.assertEqual('https://image:1234', args[0])
-            self.assertEqual('mytoken', kwargs['token'])
+    @mock.patch('glanceclient.v2.client.Client')
+    def test_no_auth_with_token_and_image_url_with_v2(self, v2_client):
+        # test no authentication is required if both token and endpoint url
+        # are specified
+        args = ('--os-image-api-version 2 --os-auth-token mytoken '
+                '--os-image-url https://image:1234 image-list')
+        glance_shell = openstack_shell.OpenStackImagesShell()
+        glance_shell.main(args.split())
+        self.assertTrue(v2_client.called)
+        (args, kwargs) = v2_client.call_args
+        self.assertEqual('mytoken', kwargs['token'])
+        self.assertEqual('https://image:1234', args[0])
 
     def _assert_auth_plugin_args(self):
         # make sure our auth plugin is invoked with the correct args
@@ -289,8 +286,14 @@ class ShellTest(testutils.TestCase):
 
     @mock.patch('sys.stdin', side_effect=mock.MagicMock)
     @mock.patch('getpass.getpass', return_value='password')
-    def test_password_prompted_with_v2(self, mock_getpass, mock_stdin):
+    @mock.patch('glanceclient.v2.client.Client')
+    def test_password_prompted_with_v2(self, v2_client,
+                                       mock_getpass, mock_stdin):
         self.requests.post(self.token_url, exc=requests.ConnectionError)
+
+        cli2 = mock.MagicMock()
+        v2_client.return_value = cli2
+        cli2.http_client.get.return_value = (None, {'versions': []})
         glance_shell = openstack_shell.OpenStackImagesShell()
         self.make_env(exclude='OS_PASSWORD')
         self.assertRaises(ks_exc.ConnectionRefused,
@@ -300,7 +303,13 @@ class ShellTest(testutils.TestCase):
 
     @mock.patch('sys.stdin', side_effect=mock.MagicMock)
     @mock.patch('getpass.getpass', side_effect=EOFError)
-    def test_password_prompted_ctrlD_with_v2(self, mock_getpass, mock_stdin):
+    @mock.patch('glanceclient.v2.client.Client')
+    def test_password_prompted_ctrlD_with_v2(self, v2_client,
+                                             mock_getpass, mock_stdin):
+        cli2 = mock.MagicMock()
+        v2_client.return_value = cli2
+        cli2.http_client.get.return_value = (None, {'versions': []})
+
         glance_shell = openstack_shell.OpenStackImagesShell()
         self.make_env(exclude='OS_PASSWORD')
         # We should get Command Error because we mock Ctl-D.
@@ -417,7 +426,7 @@ class ShellTest(testutils.TestCase):
     @mock.patch('glanceclient.v1.client.Client')
     def test_auth_plugin_invocation_without_username_with_v1(self, v1_client):
         self.make_env(exclude='OS_USERNAME')
-        args = 'image-list'
+        args = '--os-image-api-version 2 image-list'
         glance_shell = openstack_shell.OpenStackImagesShell()
         self.assertRaises(exc.CommandError, glance_shell.main, args.split())
 
@@ -431,7 +440,7 @@ class ShellTest(testutils.TestCase):
     @mock.patch('glanceclient.v1.client.Client')
     def test_auth_plugin_invocation_without_auth_url_with_v1(self, v1_client):
         self.make_env(exclude='OS_AUTH_URL')
-        args = 'image-list'
+        args = '--os-image-api-version 1 image-list'
         glance_shell = openstack_shell.OpenStackImagesShell()
         self.assertRaises(exc.CommandError, glance_shell.main, args.split())
 
@@ -448,7 +457,7 @@ class ShellTest(testutils.TestCase):
             self.make_env(exclude='OS_TENANT_NAME')
         if 'OS_PROJECT_ID' in os.environ:
             self.make_env(exclude='OS_PROJECT_ID')
-        args = 'image-list'
+        args = '--os-image-api-version 1 image-list'
         glance_shell = openstack_shell.OpenStackImagesShell()
         self.assertRaises(exc.CommandError, glance_shell.main, args.split())
 
@@ -505,7 +514,8 @@ class ShellTestWithKeystoneV3Auth(ShellTest):
                 side_effect=ks_exc.ClientException())
     def test_api_discovery_failed_with_unversioned_auth_url(self,
                                                             discover):
-        args = '--os-auth-url %s image-list' % DEFAULT_UNVERSIONED_AUTH_URL
+        args = ('--os-image-api-version 2 --os-auth-url %s image-list'
+                % DEFAULT_UNVERSIONED_AUTH_URL)
         glance_shell = openstack_shell.OpenStackImagesShell()
         self.assertRaises(exc.CommandError, glance_shell.main, args.split())
 
