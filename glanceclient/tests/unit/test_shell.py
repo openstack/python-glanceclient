@@ -153,8 +153,10 @@ class ShellTest(testutils.TestCase):
     def test_help(self):
         shell = openstack_shell.OpenStackImagesShell()
         argstr = '--os-image-api-version 2 help'
-        actual = shell.main(argstr.split())
-        self.assertEqual(0, actual)
+        with mock.patch.object(shell, '_get_endpoint_and_token') as et_mock:
+            actual = shell.main(argstr.split())
+            self.assertEqual(0, actual)
+            self.assertFalse(et_mock.called)
 
     def test_help_on_subcommand_error(self):
         self.assertRaises(exc.CommandError, shell,
@@ -163,9 +165,11 @@ class ShellTest(testutils.TestCase):
     def test_help_v2_no_schema(self):
         shell = openstack_shell.OpenStackImagesShell()
         argstr = '--os-image-api-version 2 help image-create'
-        actual = shell.main(argstr.split())
-        self.assertEqual(0, actual)
-        self.assertNotIn('<unavailable>', actual)
+        with mock.patch.object(shell, '_get_endpoint_and_token') as et_mock:
+            actual = shell.main(argstr.split())
+            self.assertEqual(0, actual)
+            self.assertNotIn('<unavailable>', actual)
+            self.assertFalse(et_mock.called)
 
     def test_get_base_parser(self):
         test_shell = openstack_shell.OpenStackImagesShell()

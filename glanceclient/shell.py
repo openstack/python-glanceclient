@@ -589,6 +589,24 @@ class OpenStackImagesShell(object):
         return failed_download_schema >= len(resources)
 
     def main(self, argv):
+
+        def _get_subparser(api_version):
+            try:
+                return self.get_subcommand_parser(api_version)
+            except ImportError as e:
+                if options.debug:
+                    traceback.print_exc()
+                if not str(e):
+                    # Add a generic import error message if the raised
+                    # ImportError has none.
+                    raise ImportError('Unable to import module. Re-run '
+                                      'with --debug for more info.')
+                raise
+            except Exception:
+                if options.debug:
+                    traceback.print_exc()
+                raise
+
         # Parse args once to find version
 
         # NOTE(flepied) Under Python3, parsed arguments are removed
@@ -619,6 +637,23 @@ class OpenStackImagesShell(object):
                    "Supported values are %s" % SUPPORTED_VERSIONS)
             utils.exit(msg=msg)
 
+        # Handle top-level --help/-h before attempting to parse
+        # a command off the command line
+        if options.help or not argv:
+            self.do_help(options, parser=parser)
+            return 0
+
+        # Short-circuit and deal with help command right away.
+        sub_parser = _get_subparser(api_version)
+        args = sub_parser.parse_args(argv)
+
+        if args.func == self.do_help:
+            self.do_help(args, parser=sub_parser)
+            return 0
+        elif args.func == self.do_bash_completion:
+            self.do_bash_completion(args)
+            return 0
+
         if not options.os_image_api_version and api_version == 2:
             switch_version = True
             client = self._get_versioned_client('2', options)
@@ -639,32 +674,10 @@ class OpenStackImagesShell(object):
                       ' be removed in future versions')
                 api_version = 1
 
-        try:
-            subcommand_parser = self.get_subcommand_parser(api_version)
-        except ImportError as e:
-            if options.debug:
-                traceback.print_exc()
-            if not str(e):
-                # Add a generic import error message if the raised ImportError
-                # has none.
-                raise ImportError('Unable to import module. Re-run '
-                                  'with --debug for more info.')
-            raise
-        except Exception:
-            if options.debug:
-                traceback.print_exc()
-            raise
-
-        self.parser = subcommand_parser
-
-        # Handle top-level --help/-h before attempting to parse
-        # a command off the command line
-        if options.help or not argv:
-            self.do_help(options)
-            return 0
+        sub_parser = _get_subparser(api_version)
 
         # Parse args again and call whatever callback was selected
-        args = subcommand_parser.parse_args(argv)
+        args = sub_parser.parse_args(argv)
 
         # NOTE(flaper87): Make sure we re-use the password input if we
         # have one. This may happen if the schemas were downloaded in
@@ -672,14 +685,6 @@ class OpenStackImagesShell(object):
         # schemas and then for the operations below.
         if not args.os_password and options.os_password:
             args.os_password = options.os_password
-
-        # Short-circuit and deal with help command right away.
-        if args.func == self.do_help:
-            self.do_help(args)
-            return 0
-        elif args.func == self.do_bash_completion:
-            self.do_bash_completion(args)
-            return 0
 
         LOG = logging.getLogger('glanceclient')
         LOG.addHandler(logging.StreamHandler())
@@ -710,16 +715,23 @@ class OpenStackImagesShell(object):
 
     @utils.arg('command', metavar='<subcommand>', nargs='?',
                help='Display help for <subcommand>.')
-    def do_help(self, args):
+    def do_help(self, args, parser):
         """Display help about this program or one of its subcommands."""
-        if getattr(args, 'command', None):
+        command = getattr(args, 'command') or ''
+
+        if command:
             if args.command in self.subcommands:
                 self.subcommands[args.command].print_help()
             else:
                 raise exc.CommandError("'%s' is not a valid subcommand" %
                                        args.command)
         else:
-            self.parser.print_help()
+            parser.print_help()
+
+        if not args.os_image_api_version or args.os_image_api_version == '2':
+            print()
+            print(("Run `glance --os-image-api-version 1 help%s` "
+                   "for v1 help") % (' ' + command))
 
     def do_bash_completion(self, _args):
         """Prints arguments for bash_completion.
