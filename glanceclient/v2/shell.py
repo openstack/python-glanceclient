@@ -142,8 +142,8 @@ def do_image_update(gc, args):
            help='Sort image list in specified directions.')
 @utils.arg('--sort', metavar='<key>[:<direction>]', default=None,
            help=(("Comma-separated list of sort keys and directions in the "
-                  "form of <key>[:<asc|desc>]. Valid keys: %s. OPTIONAL: "
-                  "Default='name:asc'.") % ', '.join(images.SORT_KEY_VALUES)))
+                  "form of <key>[:<asc|desc>]. Valid keys: %s. OPTIONAL."
+                  ) % ', '.join(images.SORT_KEY_VALUES)))
 def do_image_list(gc, args):
     """List images you can access."""
     filter_keys = ['visibility', 'member_status', 'owner', 'checksum', 'tag']
@@ -169,7 +169,8 @@ def do_image_list(gc, args):
     if args.sort is not None:
         kwargs['sort'] = args.sort
     elif not args.sort_dir and not args.sort_key:
-        kwargs['sort'] = 'name:asc'
+        kwargs['sort_key'] = 'name'
+        kwargs['sort_dir'] = 'asc'
 
     columns = ['ID', 'Name']
 
