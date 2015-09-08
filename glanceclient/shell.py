@@ -442,12 +442,13 @@ class OpenStackImagesShell(object):
         ks_session.auth = auth
         return ks_session
 
-    def _get_endpoint_and_token(self, args, force_auth=False):
+    def _get_endpoint_and_token(self, args):
         image_url = self._get_image_url(args)
         auth_token = args.os_auth_token
 
-        auth_reqd = force_auth or (utils.is_authentication_required(args.func)
-                                   and not (auth_token and image_url))
+        auth_reqd = (not (auth_token and image_url) or
+                     (hasattr(args, 'func') and
+                      utils.is_authentication_required(args.func)))
 
         if not auth_reqd:
             endpoint = image_url
@@ -537,9 +538,8 @@ class OpenStackImagesShell(object):
 
         return endpoint, token
 
-    def _get_versioned_client(self, api_version, args, force_auth=False):
-        endpoint, token = self._get_endpoint_and_token(args,
-                                                       force_auth=force_auth)
+    def _get_versioned_client(self, api_version, args):
+        endpoint, token = self._get_endpoint_and_token(args)
 
         kwargs = {
             'token': token,
@@ -621,8 +621,7 @@ class OpenStackImagesShell(object):
 
         if not options.os_image_api_version and api_version == 2:
             switch_version = True
-            client = self._get_versioned_client('2', options,
-                                                force_auth=True)
+            client = self._get_versioned_client('2', options)
 
             resp, body = client.http_client.get('/versions')
 
@@ -690,8 +689,7 @@ class OpenStackImagesShell(object):
         if profile:
             osprofiler_profiler.init(options.profile)
 
-        client = self._get_versioned_client(api_version, args,
-                                            force_auth=False)
+        client = self._get_versioned_client(api_version, args)
 
         try:
             args.func(client, args)

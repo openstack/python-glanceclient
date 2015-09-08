@@ -103,7 +103,7 @@ class SimpleReadOnlyGlanceClientTest(base.ClientTestBase):
         self.glance('', flags='--version')
 
     def test_debug_list(self):
-        self.glance('image-list', flags='--debug')
+        self.glance('--os-image-api-version 2 image-list', flags='--debug')
 
     def test_no_ssl_compression(self):
         # Test deprecating this hasn't broken anything
