@@ -53,6 +53,32 @@ See also :doc:`/man/glance`.
 Release Notes
 =============
 
+1.0.1
+-----
+
+* This release provides mainly bugfixes for the bugs discovered after defaulting to v2 API on CLI. If you're using 1.0.0 client, it is highly recommended to upgrade.
+
+* 1494259_: Fixes CLI client called without subcommands
+* 1488914_: Print the reverting back to v1 to stderr
+* 1487645_: Invalid output running the command 'glance image-show <image_id>'
+* 1490457_: Don't make `help` require auth parameters
+* 1491311_: check for None value in utils.safe_header
+* f0b30f4 Updated from global requirements
+* 1490462_: Consider `--os-token` when using v2
+* 1489381_: Check if v2 is available and fallback
+* 1491646_: Update path to subunit2html in post_test_hook
+* 1488892_: Password should be prompted once
+
+.. _1494259: https://bugs.launchpad.net/python-glanceclient/+bug/1494259
+.. _1488914: https://bugs.launchpad.net/python-glanceclient/+bug/1488914
+.. _1487645: https://bugs.launchpad.net/python-glanceclient/+bug/1487645
+.. _1490457: https://bugs.launchpad.net/python-glanceclient/+bug/1490457
+.. _1491311: https://bugs.launchpad.net/python-glanceclient/+bug/1491311
+.. _1490462: https://bugs.launchpad.net/python-glanceclient/+bug/1490462
+.. _1489381: https://bugs.launchpad.net/python-glanceclient/+bug/1489381
+.. _1491646: https://bugs.launchpad.net/python-glanceclient/+bug/1491646
+.. _1488892: https://bugs.launchpad.net/python-glanceclient/+bug/1488892
+
 1.0.0
 -----
 
