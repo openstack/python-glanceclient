@@ -717,7 +717,7 @@ class OpenStackImagesShell(object):
                help='Display help for <subcommand>.')
     def do_help(self, args, parser):
         """Display help about this program or one of its subcommands."""
-        command = getattr(args, 'command') or ''
+        command = getattr(args, 'command', '')
 
         if command:
             if args.command in self.subcommands:
@@ -725,13 +725,14 @@ class OpenStackImagesShell(object):
             else:
                 raise exc.CommandError("'%s' is not a valid subcommand" %
                                        args.command)
+            command = ' ' + command
         else:
             parser.print_help()
 
         if not args.os_image_api_version or args.os_image_api_version == '2':
             print()
             print(("Run `glance --os-image-api-version 1 help%s` "
-                   "for v1 help") % (' ' + command))
+                   "for v1 help") % command)
 
     def do_bash_completion(self, _args):
         """Prints arguments for bash_completion.

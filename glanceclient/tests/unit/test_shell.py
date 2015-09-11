@@ -158,6 +158,13 @@ class ShellTest(testutils.TestCase):
             self.assertEqual(0, actual)
             self.assertFalse(et_mock.called)
 
+    def test_blank_call(self):
+        shell = openstack_shell.OpenStackImagesShell()
+        with mock.patch.object(shell, '_get_endpoint_and_token') as et_mock:
+            actual = shell.main('')
+            self.assertEqual(0, actual)
+            self.assertFalse(et_mock.called)
+
     def test_help_on_subcommand_error(self):
         self.assertRaises(exc.CommandError, shell,
                           '--os-image-api-version 2 help bad')
