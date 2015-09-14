@@ -53,7 +53,7 @@ See also :doc:`/man/glance`.
 Release Notes
 =============
 
-1.0.1
+1.1.0
 -----
 
 * This release provides mainly bugfixes for the bugs discovered after defaulting to v2 API on CLI. If you're using 1.0.0 client, it is highly recommended to upgrade.
