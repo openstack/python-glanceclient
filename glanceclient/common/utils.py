@@ -306,8 +306,10 @@ def save_image(data, path):
 def make_size_human_readable(size):
     suffix = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB']
     base = 1024.0
-
     index = 0
+
+    if size is None:
+        size = 0
     while size >= base:
         index = index + 1
         size = size / base
