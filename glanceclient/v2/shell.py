@@ -46,7 +46,7 @@ def get_image_schema():
 @utils.schema_args(get_image_schema, omit=['created_at', 'updated_at', 'file',
                                            'checksum', 'virtual_size', 'size',
                                            'status', 'schema', 'direct_url',
-                                           'locations'])
+                                           'locations', 'self'])
 @utils.arg('--property', metavar="<key=value>", action='append',
            default=[], help=('Arbitrary property to associate with image.'
                              ' May be used multiple times.'))
@@ -90,7 +90,8 @@ def do_image_create(gc, args):
 @utils.schema_args(get_image_schema, omit=['id', 'locations', 'created_at',
                                            'updated_at', 'file', 'checksum',
                                            'virtual_size', 'size', 'status',
-                                           'schema', 'direct_url', 'tags'])
+                                           'schema', 'direct_url', 'tags',
+                                           'self'])
 @utils.arg('--property', metavar="<key=value>", action='append',
            default=[], help=('Arbitrary property to associate with image.'
                              ' May be used multiple times.'))
