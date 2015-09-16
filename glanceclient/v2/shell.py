@@ -296,11 +296,11 @@ def do_image_upload(gc, args):
 @utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to delete.')
 def do_image_delete(gc, args):
     """Delete specified image."""
-    image = gc.images.get(args.id)
-    if image and image.status == "deleted":
-        msg = "No image with an ID of '%s' exists." % image.id
+    try:
+        gc.images.delete(args.id)
+    except exc.HTTPNotFound:
+        msg = "No image with an ID of '%s' exists." % args.id
         utils.exit(msg)
-    gc.images.delete(args.id)
 
 
 @utils.arg('image_id', metavar='<IMAGE_ID>',
