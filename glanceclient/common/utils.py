@@ -20,6 +20,7 @@ import hashlib
 import json
 import os
 import re
+import six.moves.urllib.parse as urlparse
 import sys
 import threading
 import uuid
@@ -396,11 +397,13 @@ def strip_version(endpoint):
     version = None
     # Get rid of trailing '/' if present
     endpoint = endpoint.rstrip('/')
-    url_bits = endpoint.split('/')
+    url_parts = urlparse.urlparse(endpoint)
+    (scheme, netloc, path, __, __, __) = url_parts
+    path = path.lstrip('/')
     # regex to match 'v1' or 'v2.0' etc
-    if re.match('v\d+\.?\d*', url_bits[-1]):
-        version = float(url_bits[-1].lstrip('v'))
-        endpoint = '/'.join(url_bits[:-1])
+    if re.match('v\d+\.?\d*', path):
+        version = float(path.lstrip('v'))
+        endpoint = scheme + '://' + netloc
     return endpoint, version
 
 
