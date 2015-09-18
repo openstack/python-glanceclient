@@ -582,9 +582,8 @@ class ShellV2Test(testtools.TestCase):
     def test_do_image_delete_deleted(self):
         image_id = 'deleted-img'
         args = self._make_args({'id': image_id})
-        with mock.patch.object(self.gc.images, 'get') as mocked_get:
-            mocked_get.return_value = self._make_args({'id': image_id,
-                                                       'status': 'deleted'})
+        with mock.patch.object(self.gc.images, 'delete') as mocked_get:
+            mocked_get.side_effect = exc.HTTPNotFound
 
             msg = "No image with an ID of '%s' exists." % image_id
             self.assert_exits_with_msg(func=test_shell.do_image_delete,
