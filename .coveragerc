@@ -4,4 +4,4 @@ source = glanceclient
 omit = glanceclient/openstack/*
 
 [report]
-ignore-errors = True
+ignore_errors = True
