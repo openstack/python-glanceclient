@@ -205,15 +205,11 @@ class Controller(object):
 
         :param image_id: ID of the image to upload data for.
         :param image_data: File-like object supplying the data to upload.
-        :param image_size: Total size in bytes of image to be uploaded.
+        :param image_size: Unused - present for backwards compatability
         """
         url = '/v2/images/%s/file' % image_id
         hdrs = {'Content-Type': 'application/octet-stream'}
-        if image_size:
-            body = {'image_data': image_data,
-                    'image_size': image_size}
-        else:
-            body = image_data
+        body = image_data
         self.http_client.put(url, headers=hdrs, data=body)
 
     def delete(self, image_id):
