@@ -110,7 +110,7 @@ class Controller(object):
             try:
                 setattr(task, key, value)
             except warlock.InvalidOperation as e:
-                raise TypeError(utils.exception_to_str(e))
+                raise TypeError(encodeutils.exception_to_unicode(e))
 
         resp, body = self.http_client.post(url, data=task)
         # NOTE(flwang): remove 'self' for now until we have an elegant

@@ -319,18 +319,6 @@ def make_size_human_readable(size):
     return '%s%s' % (stripped, suffix[index])
 
 
-def exception_to_str(exc):
-    try:
-        error = six.text_type(exc)
-    except UnicodeError:
-        try:
-            error = str(exc)
-        except UnicodeError:
-            error = ("Caught '%(exception)s' exception." %
-                     {"exception": exc.__class__.__name__})
-    return encodeutils.safe_decode(error, errors='ignore')
-
-
 def get_file_size(file_obj):
     """Analyze file-like object and attempt to determine its size.
 
