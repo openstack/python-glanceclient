@@ -295,6 +295,25 @@ class ShellTest(testutils.TestCase):
         glance_shell.main(args.split())
         self._assert_auth_plugin_args()
 
+    @mock.patch('glanceclient.Client')
+    def test_endpoint_token_no_auth_req(self, mock_client):
+
+        def verify_input(version=None, endpoint=None, *args, **kwargs):
+            self.assertIn('token', kwargs)
+            self.assertEqual(TOKEN_ID, kwargs['token'])
+            self.assertEqual(DEFAULT_IMAGE_URL, endpoint)
+            return mock.MagicMock()
+
+        mock_client.side_effect = verify_input
+        glance_shell = openstack_shell.OpenStackImagesShell()
+        args = ['--os-image-api-version', '2',
+                '--os-auth-token', TOKEN_ID,
+                '--os-image-url', DEFAULT_IMAGE_URL,
+                'image-list']
+
+        glance_shell.main(args)
+        self.assertEqual(1, mock_client.call_count)
+
     @mock.patch('sys.stdin', side_effect=mock.MagicMock)
     @mock.patch('getpass.getpass', return_value='password')
     @mock.patch('glanceclient.v2.client.Client')
