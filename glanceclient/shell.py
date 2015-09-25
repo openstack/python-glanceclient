@@ -225,7 +225,7 @@ class OpenStackImagesShell(object):
 
         parser.add_argument('-v', '--verbose',
                             default=False, action="store_true",
-                            help="Print more verbose output")
+                            help="Print more verbose output.")
 
         parser.add_argument('--get-schema',
                             default=False, action="store_true",
@@ -236,7 +236,7 @@ class OpenStackImagesShell(object):
 
         parser.add_argument('--timeout',
                             default=600,
-                            help='Number of seconds to wait for a response')
+                            help='Number of seconds to wait for a response.')
 
         parser.add_argument('--no-ssl-compression',
                             dest='ssl_compression',

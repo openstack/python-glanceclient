@@ -353,7 +353,7 @@ def do_image_tag_delete(gc, args):
            help='URL of location to add.')
 @utils.arg('--metadata', metavar='<STRING>', default='{}',
            help=('Metadata associated with the location. '
-                 'Must be a valid JSON object (default: %(default)s)'))
+                 'Must be a valid JSON object (default: %(default)s).'))
 @utils.arg('id', metavar='<ID>',
            help='ID of image to which the location is to be added.')
 def do_location_add(gc, args):
@@ -380,7 +380,7 @@ def do_location_delete(gc, args):
            help='URL of location to update.')
 @utils.arg('--metadata', metavar='<STRING>', default='{}',
            help=('Metadata associated with the location. '
-                 'Must be a valid JSON object (default: %(default)s)'))
+                 'Must be a valid JSON object (default: %(default)s).'))
 @utils.arg('id', metavar='<ID>',
            help='ID of image whose location is to be updated.')
 def do_location_update(gc, args):
@@ -940,7 +940,7 @@ def do_task_show(gc, args):
            help='Type of Task. Please refer to Glance schema or documentation'
            ' to see which tasks are supported.')
 @utils.arg('--input', metavar='<STRING>', default='{}',
-           help='Parameters of the task to be launched')
+           help='Parameters of the task to be launched.')
 def do_task_create(gc, args):
     """Create a new task."""
     if not (args.type and args.input):

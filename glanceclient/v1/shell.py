@@ -410,7 +410,7 @@ def do_member_list(gc, args):
 @utils.arg('image', metavar='<IMAGE>',
            help='Image to add member to.')
 @utils.arg('tenant_id', metavar='<TENANT_ID>',
-           help='Tenant to add as member')
+           help='Tenant to add as member.')
 @utils.arg('--can-share', action='store_true', default=False,
            help='Allow the specified tenant to share this image.')
 def do_member_create(gc, args):
