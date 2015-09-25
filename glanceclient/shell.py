@@ -443,18 +443,13 @@ class OpenStackImagesShell(object):
         return ks_session
 
     def _get_endpoint_and_token(self, args):
-        image_url = self._get_image_url(args)
+        endpoint = self._get_image_url(args)
         auth_token = args.os_auth_token
 
-        auth_reqd = (not (auth_token and image_url) or
-                     (hasattr(args, 'func') and
-                      utils.is_authentication_required(args.func)))
+        auth_req = (hasattr(args, 'func') and
+                    utils.is_authentication_required(args.func))
 
-        if not auth_reqd:
-            endpoint = image_url
-            token = args.os_auth_token
-        else:
-
+        if auth_req and not (endpoint and auth_token):
             if not args.os_username:
                 raise exc.CommandError(
                     _("You must provide a username via"
@@ -527,7 +522,7 @@ class OpenStackImagesShell(object):
                 'key': args.os_key
             }
             ks_session = self._get_keystone_session(**kwargs)
-            token = args.os_auth_token or ks_session.get_token()
+            auth_token = args.os_auth_token or ks_session.get_token()
 
             endpoint_type = args.os_endpoint_type or 'public'
             service_type = args.os_service_type or 'image'
@@ -536,7 +531,7 @@ class OpenStackImagesShell(object):
                 interface=endpoint_type,
                 region_name=args.os_region_name)
 
-        return endpoint, token
+        return endpoint, auth_token
 
     def _get_versioned_client(self, api_version, args):
         endpoint, token = self._get_endpoint_and_token(args)
