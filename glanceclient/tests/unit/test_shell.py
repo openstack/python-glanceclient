@@ -504,6 +504,20 @@ class ShellTest(testutils.TestCase):
         glance_shell = openstack_shell.OpenStackImagesShell()
         self.assertRaises(exc.CommandError, glance_shell.main, args.split())
 
+    @mock.patch('sys.argv', ['glance'])
+    @mock.patch('sys.stdout', six.StringIO())
+    @mock.patch('sys.stderr', six.StringIO())
+    def test_main_noargs(self):
+        # Ensure that main works with no command-line arguments
+        try:
+            openstack_shell.main()
+        except SystemExit:
+            self.fail('Unexpected SystemExit')
+
+        # We expect the normal usage as a result
+        self.assertIn('Command-line interface to the OpenStack Images API',
+                      sys.stdout.getvalue())
+
 
 class ShellTestWithKeystoneV3Auth(ShellTest):
     # auth environment to use
