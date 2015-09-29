@@ -33,6 +33,7 @@ class TestUtils(testtools.TestCase):
         self.assertEqual("1MB", utils.make_size_human_readable(1048576))
         self.assertEqual("1.4GB", utils.make_size_human_readable(1476395008))
         self.assertEqual("9.3MB", utils.make_size_human_readable(9761280))
+        self.assertEqual("0B", utils.make_size_human_readable(None))
 
     def test_get_new_file_size(self):
         size = 98304
