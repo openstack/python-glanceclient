@@ -34,7 +34,7 @@ from oslo_utils import importutils
 import six.moves.urllib.parse as urlparse
 
 import glanceclient
-from glanceclient import _i18n
+from glanceclient._i18n import _
 from glanceclient.common import utils
 from glanceclient import exc
 
@@ -45,7 +45,6 @@ from keystoneclient.openstack.common.apiclient import exceptions as ks_exc
 from keystoneclient import session
 
 osprofiler_profiler = importutils.try_import("osprofiler.profiler")
-_ = _i18n._
 
 SUPPORTED_VERSIONS = [1, 2]
 
