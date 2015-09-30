@@ -182,7 +182,7 @@ class Controller(object):
         # NOTE(bcwaldon): remove 'self' for now until we have an elegant
         # way to pass it into the model constructor without conflict
         body.pop('self', None)
-        return self.model(**body)
+        return self.unvalidated_model(**body)
 
     def data(self, image_id, do_checksum=True):
         """Retrieve data of an image.
@@ -245,7 +245,8 @@ class Controller(object):
         :param remove_props: List of property names to remove
         :param \*\*kwargs: Image attribute names and their new values.
         """
-        image = self.get(image_id)
+        unvalidated_image = self.get(image_id)
+        image = self.model(**unvalidated_image)
         for (key, value) in kwargs.items():
             try:
                 setattr(image, key, value)
