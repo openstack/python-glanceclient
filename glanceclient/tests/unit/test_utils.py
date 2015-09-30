@@ -105,24 +105,6 @@ class TestUtils(testtools.TestCase):
 ''',
                          output_dict.getvalue())
 
-    def test_exception_to_str(self):
-        class FakeException(Exception):
-            def __str__(self):
-                raise UnicodeError()
-
-        ret = utils.exception_to_str(Exception('error message'))
-        self.assertEqual('error message', ret)
-
-        ret = utils.exception_to_str(Exception('\xa5 error message'))
-        if six.PY2:
-            self.assertEqual(' error message', ret)
-        else:
-            self.assertEqual('\xa5 error message', ret)
-
-        ret = utils.exception_to_str(FakeException('\xa5 error message'))
-        self.assertEqual("Caught '%(exception)s' exception." %
-                         {'exception': 'FakeException'}, ret)
-
     def test_schema_args_with_list_types(self):
         # NOTE(flaper87): Regression for bug
         # https://bugs.launchpad.net/python-glanceclient/+bug/1401032

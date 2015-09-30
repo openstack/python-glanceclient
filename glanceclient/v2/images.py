@@ -230,7 +230,7 @@ class Controller(object):
             try:
                 setattr(image, key, value)
             except warlock.InvalidOperation as e:
-                raise TypeError(utils.exception_to_str(e))
+                raise TypeError(encodeutils.exception_to_unicode(e))
 
         resp, body = self.http_client.post(url, data=image)
         # NOTE(esheffield): remove 'self' for now until we have an elegant
@@ -250,7 +250,7 @@ class Controller(object):
             try:
                 setattr(image, key, value)
             except warlock.InvalidOperation as e:
-                raise TypeError(utils.exception_to_str(e))
+                raise TypeError(encodeutils.exception_to_unicode(e))
 
         if remove_props:
             cur_props = image.keys()

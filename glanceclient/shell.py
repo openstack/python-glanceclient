@@ -763,4 +763,4 @@ def main():
     except KeyboardInterrupt:
         utils.exit('... terminating glance client', exit_code=130)
     except Exception as e:
-        utils.exit(utils.exception_to_str(e))
+        utils.exit(encodeutils.exception_to_unicode(e))
