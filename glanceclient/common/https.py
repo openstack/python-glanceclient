@@ -258,7 +258,7 @@ class VerifiedHTTPSConnection(HTTPSConnection):
             excp_lst = (TypeError, FileNotFoundError, ssl.SSLError)
         else:
             # NOTE(jamespage)
-            # Accomodate changes in behaviour for pep-0467, introduced
+            # Accommodate changes in behaviour for pep-0467, introduced
             # in python 2.7.9.
             # https://github.com/python/peps/blob/master/pep-0476.txt
             excp_lst = (TypeError, IOError, ssl.SSLError)
