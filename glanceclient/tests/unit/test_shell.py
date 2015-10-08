@@ -245,7 +245,6 @@ class ShellTest(testutils.TestCase):
 
     def _assert_auth_plugin_args(self):
         # make sure our auth plugin is invoked with the correct args
-        self.assertEqual(1, self.v2_auth.call_count)
         self.assertFalse(self.v3_auth.called)
 
         body = json.loads(self.v2_auth.last_request.body)
@@ -257,22 +256,42 @@ class ShellTest(testutils.TestCase):
         self.assertEqual(self.auth_env['OS_PASSWORD'],
                          body['auth']['passwordCredentials']['password'])
 
+    @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas',
+                       return_value=False)
+    @mock.patch('glanceclient.v2.client.Client')
+    def test_auth_plugin_invocation_without_version(self,
+                                                    v2_client,
+                                                    cache_schemas):
+
+        cli2 = mock.MagicMock()
+        v2_client.return_value = cli2
+        cli2.http_client.get.return_value = (None, {'versions':
+                                                    [{'id': 'v2'}]})
+
+        args = 'image-list'
+        glance_shell = openstack_shell.OpenStackImagesShell()
+        glance_shell.main(args.split())
+        # NOTE(flaper87): this currently calls auth twice since it'll
+        # authenticate to get the verison list *and* to excuted the command.
+        # This is not the ideal behavior and it should be fixed in a follow
+        # up patch.
+        self._assert_auth_plugin_args()
+
     @mock.patch('glanceclient.v1.client.Client')
     def test_auth_plugin_invocation_with_v1(self, v1_client):
         args = '--os-image-api-version 1 image-list'
         glance_shell = openstack_shell.OpenStackImagesShell()
         glance_shell.main(args.split())
+        self.assertEqual(1, self.v2_auth.call_count)
         self._assert_auth_plugin_args()
 
     @mock.patch('glanceclient.v2.client.Client')
-    @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas',
-                       return_value=False)
     def test_auth_plugin_invocation_with_v2(self,
-                                            v2_client,
-                                            cache_schemas):
+                                            v2_client):
         args = '--os-image-api-version 2 image-list'
         glance_shell = openstack_shell.OpenStackImagesShell()
         glance_shell.main(args.split())
+        self.assertEqual(1, self.v2_auth.call_count)
         self._assert_auth_plugin_args()
 
     @mock.patch('glanceclient.v1.client.Client')
@@ -512,7 +531,6 @@ class ShellTestWithKeystoneV3Auth(ShellTest):
 
     def _assert_auth_plugin_args(self):
         self.assertFalse(self.v2_auth.called)
-        self.assertEqual(1, self.v3_auth.call_count)
 
         body = json.loads(self.v3_auth.last_request.body)
         user = body['auth']['identity']['password']['user']
@@ -529,15 +547,15 @@ class ShellTestWithKeystoneV3Auth(ShellTest):
         args = '--os-image-api-version 1 image-list'
         glance_shell = openstack_shell.OpenStackImagesShell()
         glance_shell.main(args.split())
+        self.assertEqual(1, self.v3_auth.call_count)
         self._assert_auth_plugin_args()
 
     @mock.patch('glanceclient.v2.client.Client')
-    @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas',
-                       return_value=False)
-    def test_auth_plugin_invocation_with_v2(self, v2_client, cache_schemas):
+    def test_auth_plugin_invocation_with_v2(self, v2_client):
         args = '--os-image-api-version 2 image-list'
         glance_shell = openstack_shell.OpenStackImagesShell()
         glance_shell.main(args.split())
+        self.assertEqual(1, self.v3_auth.call_count)
         self._assert_auth_plugin_args()
 
     @mock.patch('keystoneclient.discover.Discover',
