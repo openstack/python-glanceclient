@@ -725,9 +725,10 @@ class ShellV2Test(testtools.TestCase):
                                 'protected': True})
         with mock.patch.object(self.gc.metadefs_namespace,
                                'create') as mocked_create:
-            expect_namespace = {}
-            expect_namespace['namespace'] = 'MyNamespace'
-            expect_namespace['protected'] = True
+            expect_namespace = {
+                'namespace': 'MyNamespace',
+                'protected': True
+            }
 
             mocked_create.return_value = expect_namespace
 
@@ -740,9 +741,10 @@ class ShellV2Test(testtools.TestCase):
     def test_do_md_namespace_import(self):
         args = self._make_args({'file': 'test'})
 
-        expect_namespace = {}
-        expect_namespace['namespace'] = 'MyNamespace'
-        expect_namespace['protected'] = True
+        expect_namespace = {
+            'namespace': 'MyNamespace',
+            'protected': True
+        }
 
         with mock.patch.object(self.gc.metadefs_namespace,
                                'create') as mocked_create:
@@ -777,9 +779,10 @@ class ShellV2Test(testtools.TestCase):
                                 'protected': True})
         with mock.patch.object(self.gc.metadefs_namespace,
                                'update') as mocked_update:
-            expect_namespace = {}
-            expect_namespace['namespace'] = 'MyNamespace'
-            expect_namespace['protected'] = True
+            expect_namespace = {
+                'namespace': 'MyNamespace',
+                'protected': True
+            }
 
             mocked_update.return_value = expect_namespace
 
@@ -796,8 +799,7 @@ class ShellV2Test(testtools.TestCase):
                                 'resource_type': None})
         with mock.patch.object(self.gc.metadefs_namespace,
                                'get') as mocked_get:
-            expect_namespace = {}
-            expect_namespace['namespace'] = 'MyNamespace'
+            expect_namespace = {'namespace': 'MyNamespace'}
 
             mocked_get.return_value = expect_namespace
 
@@ -812,8 +814,7 @@ class ShellV2Test(testtools.TestCase):
                                 'resource_type': 'RESOURCE'})
         with mock.patch.object(self.gc.metadefs_namespace,
                                'get') as mocked_get:
-            expect_namespace = {}
-            expect_namespace['namespace'] = 'MyNamespace'
+            expect_namespace = {'namespace': 'MyNamespace'}
 
             mocked_get.return_value = expect_namespace
 
@@ -922,10 +923,11 @@ class ShellV2Test(testtools.TestCase):
                                 'prefix': 'PREFIX:'})
         with mock.patch.object(self.gc.metadefs_resource_type,
                                'associate') as mocked_associate:
-            expect_rt = {}
-            expect_rt['namespace'] = 'MyNamespace'
-            expect_rt['name'] = 'MyResourceType'
-            expect_rt['prefix'] = 'PREFIX:'
+            expect_rt = {
+                'namespace': 'MyNamespace',
+                'name': 'MyResourceType',
+                'prefix': 'PREFIX:'
+            }
 
             mocked_associate.return_value = expect_rt
 
@@ -980,10 +982,11 @@ class ShellV2Test(testtools.TestCase):
                                 'schema': '{}'})
         with mock.patch.object(self.gc.metadefs_property,
                                'create') as mocked_create:
-            expect_property = {}
-            expect_property['namespace'] = 'MyNamespace'
-            expect_property['name'] = 'MyProperty'
-            expect_property['title'] = 'Title'
+            expect_property = {
+                'namespace': 'MyNamespace',
+                'name': 'MyProperty',
+                'title': 'Title'
+            }
 
             mocked_create.return_value = expect_property
 
@@ -1010,10 +1013,11 @@ class ShellV2Test(testtools.TestCase):
                                 'schema': '{}'})
         with mock.patch.object(self.gc.metadefs_property,
                                'update') as mocked_update:
-            expect_property = {}
-            expect_property['namespace'] = 'MyNamespace'
-            expect_property['name'] = 'MyProperty'
-            expect_property['title'] = 'Title'
+            expect_property = {
+                'namespace': 'MyNamespace',
+                'name': 'MyProperty',
+                'title': 'Title'
+            }
 
             mocked_update.return_value = expect_property
 
@@ -1038,10 +1042,11 @@ class ShellV2Test(testtools.TestCase):
                                 'property': 'MyProperty',
                                 'max_column_width': 80})
         with mock.patch.object(self.gc.metadefs_property, 'get') as mocked_get:
-            expect_property = {}
-            expect_property['namespace'] = 'MyNamespace'
-            expect_property['property'] = 'MyProperty'
-            expect_property['title'] = 'Title'
+            expect_property = {
+                'namespace': 'MyNamespace',
+                'property': 'MyProperty',
+                'title': 'Title'
+            }
 
             mocked_get.return_value = expect_property
 
@@ -1089,9 +1094,10 @@ class ShellV2Test(testtools.TestCase):
                                 'schema': '{}'})
         with mock.patch.object(self.gc.metadefs_object,
                                'create') as mocked_create:
-            expect_object = {}
-            expect_object['namespace'] = 'MyNamespace'
-            expect_object['name'] = 'MyObject'
+            expect_object = {
+                'namespace': 'MyNamespace',
+                'name': 'MyObject'
+            }
 
             mocked_create.return_value = expect_object
 
@@ -1115,9 +1121,10 @@ class ShellV2Test(testtools.TestCase):
                                 'schema': '{}'})
         with mock.patch.object(self.gc.metadefs_object,
                                'update') as mocked_update:
-            expect_object = {}
-            expect_object['namespace'] = 'MyNamespace'
-            expect_object['name'] = 'MyObject'
+            expect_object = {
+                'namespace': 'MyNamespace',
+                'name': 'MyObject'
+            }
 
             mocked_update.return_value = expect_object
 
@@ -1140,9 +1147,10 @@ class ShellV2Test(testtools.TestCase):
                                 'object': 'MyObject',
                                 'max_column_width': 80})
         with mock.patch.object(self.gc.metadefs_object, 'get') as mocked_get:
-            expect_object = {}
-            expect_object['namespace'] = 'MyNamespace'
-            expect_object['object'] = 'MyObject'
+            expect_object = {
+                'namespace': 'MyNamespace',
+                'object': 'MyObject'
+            }
 
             mocked_get.return_value = expect_object
 
@@ -1224,9 +1232,10 @@ class ShellV2Test(testtools.TestCase):
                                 'name': 'MyTag'})
         with mock.patch.object(self.gc.metadefs_tag,
                                'create') as mocked_create:
-            expect_tag = {}
-            expect_tag['namespace'] = 'MyNamespace'
-            expect_tag['name'] = 'MyTag'
+            expect_tag = {
+                'namespace': 'MyNamespace',
+                'name': 'MyTag'
+            }
 
             mocked_create.return_value = expect_tag
 
@@ -1241,9 +1250,10 @@ class ShellV2Test(testtools.TestCase):
                                 'name': 'NewTag'})
         with mock.patch.object(self.gc.metadefs_tag,
                                'update') as mocked_update:
-            expect_tag = {}
-            expect_tag['namespace'] = 'MyNamespace'
-            expect_tag['name'] = 'NewTag'
+            expect_tag = {
+                'namespace': 'MyNamespace',
+                'name': 'NewTag'
+            }
 
             mocked_update.return_value = expect_tag
 
@@ -1258,9 +1268,10 @@ class ShellV2Test(testtools.TestCase):
                                 'tag': 'MyTag',
                                 'sort_dir': 'desc'})
         with mock.patch.object(self.gc.metadefs_tag, 'get') as mocked_get:
-            expect_tag = {}
-            expect_tag['namespace'] = 'MyNamespace'
-            expect_tag['tag'] = 'MyTag'
+            expect_tag = {
+                'namespace': 'MyNamespace',
+                'tag': 'MyTag'
+            }
 
             mocked_get.return_value = expect_tag
 
