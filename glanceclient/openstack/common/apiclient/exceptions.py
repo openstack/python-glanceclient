@@ -38,7 +38,7 @@ import sys
 
 import six
 
-from glanceclient.openstack.common._i18n import _
+from glanceclient._i18n import _
 
 
 class ClientException(Exception):
