@@ -311,14 +311,28 @@ def do_image_upload(gc, args):
     gc.images.upload(args.id, image_data, args.size)
 
 
-@utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to delete.')
+@utils.arg('id', metavar='<IMAGE_ID>', nargs='+',
+           help='ID of image(s) to delete.')
 def do_image_delete(gc, args):
     """Delete specified image."""
-    try:
-        gc.images.delete(args.id)
-    except exc.HTTPNotFound:
-        msg = "No image with an ID of '%s' exists." % args.id
-        utils.exit(msg)
+    failure_flag = False
+    for args_id in args.id:
+        try:
+            gc.images.delete(args_id)
+        except exc.HTTPForbidden:
+            msg = "You are not permitted to delete the image '%s'." % args_id
+            utils.print_err(msg)
+            failure_flag = True
+        except exc.HTTPNotFound:
+            msg = "No image with an ID of '%s' exists." % args_id
+            utils.print_err(msg)
+            failure_flag = True
+        except exc.HTTPException as e:
+            msg = "'%s': Unable to delete image '%s'" % (e, args_id)
+            utils.print_err(msg)
+            failure_flag = True
+    if failure_flag:
+        utils.exit()
 
 
 @utils.arg('image_id', metavar='<IMAGE_ID>',

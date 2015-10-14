@@ -286,6 +286,10 @@ def exit(msg='', exit_code=1):
     sys.exit(exit_code)
 
 
+def print_err(msg):
+    print(encodeutils.safe_decode(msg), file=sys.stderr)
+
+
 def save_image(data, path):
     """Save an image to the specified path.
 

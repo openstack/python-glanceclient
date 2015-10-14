@@ -13,6 +13,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import argparse
 import json
 import mock
 import os
@@ -106,13 +107,15 @@ class ShellV2Test(testtools.TestCase):
         utils.print_dict = mock.Mock()
         utils.save_image = mock.Mock()
 
-    def assert_exits_with_msg(self, func, func_args, err_msg):
+    def assert_exits_with_msg(self, func, func_args, err_msg=None):
         with mock.patch.object(utils, 'exit') as mocked_utils_exit:
             mocked_utils_exit.return_value = '%s' % err_msg
 
             func(self.gc, func_args)
-
-            mocked_utils_exit.assert_called_once_with(err_msg)
+            if err_msg:
+                mocked_utils_exit.assert_called_once_with(err_msg)
+            else:
+                mocked_utils_exit.assert_called_once_with()
 
     def _run_command(self, cmd):
         self.shell.main(cmd.split())
@@ -591,24 +594,49 @@ class ShellV2Test(testtools.TestCase):
             mocked_data.assert_called_once_with('IMG-01')
 
     def test_do_image_delete(self):
-        args = self._make_args({'id': 'pass', 'file': 'test'})
+        args = argparse.Namespace(id=['image1', 'image2'])
         with mock.patch.object(self.gc.images, 'delete') as mocked_delete:
             mocked_delete.return_value = 0
 
             test_shell.do_image_delete(self.gc, args)
+            self.assertEqual(2, mocked_delete.call_count)
 
-            mocked_delete.assert_called_once_with('pass')
+    @mock.patch.object(utils, 'exit')
+    @mock.patch.object(utils, 'print_err')
+    def test_do_image_delete_with_invalid_ids(self, mocked_print_err,
+                                              mocked_utils_exit):
+        args = argparse.Namespace(id=['image1', 'image2'])
+        with mock.patch.object(self.gc.images, 'delete') as mocked_delete:
+            mocked_delete.side_effect = exc.HTTPNotFound
+
+            test_shell.do_image_delete(self.gc, args)
+
+            self.assertEqual(2, mocked_delete.call_count)
+            self.assertEqual(2, mocked_print_err.call_count)
+            mocked_utils_exit.assert_called_once_with()
+
+    @mock.patch.object(utils, 'exit')
+    @mock.patch.object(utils, 'print_err')
+    def test_do_image_delete_with_forbidden_ids(self, mocked_print_err,
+                                                mocked_utils_exit):
+        args = argparse.Namespace(id=['image1', 'image2'])
+        with mock.patch.object(self.gc.images, 'delete') as mocked_delete:
+            mocked_delete.side_effect = exc.HTTPForbidden
+
+            test_shell.do_image_delete(self.gc, args)
+
+            self.assertEqual(2, mocked_delete.call_count)
+            self.assertEqual(2, mocked_print_err.call_count)
+            mocked_utils_exit.assert_called_once_with()
 
     def test_do_image_delete_deleted(self):
         image_id = 'deleted-img'
-        args = self._make_args({'id': image_id})
-        with mock.patch.object(self.gc.images, 'delete') as mocked_get:
-            mocked_get.side_effect = exc.HTTPNotFound
+        args = argparse.Namespace(id=[image_id])
+        with mock.patch.object(self.gc.images, 'delete') as mocked_delete:
+            mocked_delete.side_effect = exc.HTTPNotFound
 
-            msg = "No image with an ID of '%s' exists." % image_id
             self.assert_exits_with_msg(func=test_shell.do_image_delete,
-                                       func_args=args,
-                                       err_msg=msg)
+                                       func_args=args)
 
     def test_do_member_list(self):
         args = self._make_args({'image_id': 'IMG-01'})
