@@ -728,9 +728,8 @@ class OpenStackImagesShell(object):
             parser.print_help()
 
         if not args.os_image_api_version or args.os_image_api_version == '2':
-            print()
-            print(("Run `glance --os-image-api-version 1 help%s` "
-                   "for v1 help") % command)
+            print(("\nRun `glance --os-image-api-version 1 help%s`"
+                   " for v1 help") % (command or ''))
 
     def do_bash_completion(self, _args):
         """Prints arguments for bash_completion.
