@@ -27,6 +27,8 @@ class Client(object):
     :param string token: Token for authentication.
     :param integer timeout: Allows customization of the timeout for client
                             http requests. (optional)
+    :param string language_header: Set Accept-Language header to be sent in
+                                   requests to glance.
     """
 
     def __init__(self, endpoint=None, **kwargs):

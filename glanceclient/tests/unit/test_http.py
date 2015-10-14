@@ -137,6 +137,28 @@ class TestClient(testtools.TestCase):
         for k, v in six.iteritems(identity_headers):
             self.assertEqual(v, headers[k])
 
+    def test_language_header_passed(self):
+        kwargs = {'language_header': 'nb_NO'}
+        http_client = http.HTTPClient(self.endpoint, **kwargs)
+
+        path = '/v2/images/my-image'
+        self.mock.get(self.endpoint + path)
+        http_client.get(path)
+
+        headers = self.mock.last_request.headers
+        self.assertEqual(kwargs['language_header'], headers['Accept-Language'])
+
+    def test_language_header_not_passed_no_language(self):
+        kwargs = {}
+        http_client = http.HTTPClient(self.endpoint, **kwargs)
+
+        path = '/v2/images/my-image'
+        self.mock.get(self.endpoint + path)
+        http_client.get(path)
+
+        headers = self.mock.last_request.headers
+        self.assertTrue('Accept-Language' not in headers)
+
     def test_connection_timeout(self):
         """Should receive an InvalidEndpoint if connection timeout."""
         def cb(request, context):

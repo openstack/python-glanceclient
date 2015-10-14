@@ -125,6 +125,7 @@ class HTTPClient(_BaseHTTPClient):
         self.endpoint = endpoint
         self.identity_headers = kwargs.get('identity_headers')
         self.auth_token = kwargs.get('token')
+        self.language_header = kwargs.get('language_header')
         if self.identity_headers:
             if self.identity_headers.get('X-Auth-Token'):
                 self.auth_token = self.identity_headers.get('X-Auth-Token')
@@ -135,6 +136,9 @@ class HTTPClient(_BaseHTTPClient):
 
         if self.auth_token:
             self.session.headers["X-Auth-Token"] = self.auth_token
+
+        if self.language_header:
+            self.session.headers["Accept-Language"] = self.language_header
 
         self.timeout = float(kwargs.get('timeout', 600))
 
