@@ -759,7 +759,8 @@ class HelpFormatter(argparse.HelpFormatter):
 
 def main():
     try:
-        OpenStackImagesShell().main(map(encodeutils.safe_decode, sys.argv[1:]))
+        argv = [encodeutils.safe_decode(a) for a in sys.argv[1:]]
+        OpenStackImagesShell().main(argv)
     except KeyboardInterrupt:
         utils.exit('... terminating glance client', exit_code=130)
     except Exception as e:
