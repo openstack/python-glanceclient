@@ -654,7 +654,7 @@ class OpenStackImagesShell(object):
 
         if not options.os_image_api_version and api_version == 2:
             switch_version = True
-            client = self._get_versioned_client('2', options)
+            client = self._get_versioned_client('2', args)
 
             resp, body = client.http_client.get('/versions')
 
