@@ -10,10 +10,26 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import ConfigParser
 import os
 
+import os_client_config
 from tempest_lib.cli import base
+
+
+def credentials(cloud='devstack-admin'):
+    """Retrieves credentials to run functional tests
+
+    Credentials are either read via os-client-config from the environment
+    or from a config file ('clouds.yaml'). Environment variables override
+    those from the config file.
+
+    devstack produces a clouds.yaml with two named clouds - one named
+    'devstack' which has user privs and one named 'devstack-admin' which
+    has admin privs. This function will default to getting the devstack-admin
+    cloud as that is the current expected behavior.
+    """
+
+    return os_client_config.OpenStackConfig().get_one_cloud(cloud=cloud)
 
 
 class ClientTestBase(base.ClientTestBase):
@@ -28,37 +44,17 @@ class ClientTestBase(base.ClientTestBase):
 
     """
 
-    def __init__(self, *args, **kwargs):
-        super(ClientTestBase, self).__init__(*args, **kwargs)
-
-        # Collecting of credentials:
-        #
-        # Support the existence of a functional_creds.conf for
-        # testing. This makes it possible to use a config file.
-        self.username = os.environ.get('OS_USERNAME')
-        self.password = os.environ.get('OS_PASSWORD')
-        self.tenant_name = os.environ.get('OS_TENANT_NAME')
-        self.uri = os.environ.get('OS_AUTH_URL')
-        config = ConfigParser.RawConfigParser()
-        if config.read('functional_creds.conf'):
-            # the OR pattern means the environment is preferred for
-            # override
-            self.username = self.username or config.get('admin', 'user')
-            self.password = self.password or config.get('admin', 'pass')
-            self.tenant_name = self.tenant_name or config.get('admin',
-                                                              'tenant')
-            self.uri = self.uri or config.get('auth', 'uri')
-
     def _get_clients(self):
+        self.creds = credentials().get_auth_args()
         cli_dir = os.environ.get(
             'OS_GLANCECLIENT_EXEC_DIR',
             os.path.join(os.path.abspath('.'), '.tox/functional/bin'))
 
         return base.CLIClient(
-            username=self.username,
-            password=self.password,
-            tenant_name=self.tenant_name,
-            uri=self.uri,
+            username=self.creds['username'],
+            password=self.creds['password'],
+            tenant_name=self.creds['project_name'],
+            uri=self.creds['auth_url'],
             cli_dir=cli_dir)
 
     def glance(self, *args, **kwargs):

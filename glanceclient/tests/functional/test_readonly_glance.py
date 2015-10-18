@@ -42,7 +42,7 @@ class SimpleReadOnlyGlanceClientTest(base.ClientTestBase):
                           'this-does-not-exist')
 
     def test_member_list_v1(self):
-        tenant_name = '--tenant-id %s' % self.tenant_name
+        tenant_name = '--tenant-id %s' % self.creds['project_name']
         out = self.glance('--os-image-api-version 1 member-list',
                           params=tenant_name)
         endpoints = self.parser.listing(out)

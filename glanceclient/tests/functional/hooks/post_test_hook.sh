@@ -30,23 +30,6 @@ export GLANCECLIENT_DIR="$BASE/new/python-glanceclient"
 
 sudo chown -R jenkins:stack $GLANCECLIENT_DIR
 
-# Get admin credentials
-cd $BASE/new/devstack
-source openrc admin admin
-# pass the appropriate variables via a config file
-CREDS_FILE=$GLANCECLIENT_DIR/functional_creds.conf
-cat <<EOF > $CREDS_FILE
-# Credentials for functional testing
-[auth]
-uri = $OS_AUTH_URL
-
-[admin]
-user = $OS_USERNAME
-tenant = $OS_TENANT_NAME
-pass = $OS_PASSWORD
-
-EOF
-
 # Go to the glanceclient dir
 cd $GLANCECLIENT_DIR
 
