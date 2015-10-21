@@ -3,19 +3,19 @@ Python API v2
 
 To create a client::
 
-   from keystoneclient.auth.identity import v2 as identity
-   from keystoneclient import session
+   from keystoneauth1 import loading
+   from keystoneauth1 import session
    from glanceclient import Client
 
-   auth = identity.Password(auth_url=AUTH_URL,
-                            username=USERNAME,
-                            password=PASSWORD,
-                            tenant_name=PROJECT_ID)
+   loader = loading.get_plugin_loader('password')
+   auth = loader.load_from_options(
+       auth_url=AUTH_URL,
+       username=USERNAME,
+       password=PASSWORD,
+       project_id=PROJECT_ID)
+   session = session.Session(auth=auth)
 
-   sess = session.Session(auth=auth)
-   token = auth.get_token(sess)
-
-   glance = Client('2', endpoint=OS_IMAGE_ENDPOINT, token=token)
+   glance = Client('2', session=session)
 
 
 Create
