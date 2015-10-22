@@ -15,6 +15,7 @@
 
 import sys
 
+from glanceclient._i18n import _
 from glanceclient.common import progressbar
 from glanceclient.common import utils
 from glanceclient import exc
@@ -48,14 +49,14 @@ def get_image_schema():
                                            'status', 'schema', 'direct_url',
                                            'locations'])
 @utils.arg('--property', metavar="<key=value>", action='append',
-           default=[], help=('Arbitrary property to associate with image.'
-                             ' May be used multiple times.'))
+           default=[], help=_('Arbitrary property to associate with image.'
+                              ' May be used multiple times.'))
 @utils.arg('--file', metavar='<FILE>',
-           help='Local file that contains disk image to be uploaded '
-                'during creation. Must be present if images are not passed '
-                'to the client via stdin.')
+           help=_('Local file that contains disk image to be uploaded '
+                  'during creation. Must be present if images are not passed '
+                  'to the client via stdin.'))
 @utils.arg('--progress', action='store_true', default=False,
-           help='Show upload progress bar.')
+           help=_('Show upload progress bar.'))
 @utils.on_data_require_fields(DATA_FIELDS)
 def do_image_create(gc, args):
     """Create a new image."""
@@ -86,16 +87,16 @@ def do_image_create(gc, args):
         utils.print_image(image)
 
 
-@utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to update.')
+@utils.arg('id', metavar='<IMAGE_ID>', help=_('ID of image to update.'))
 @utils.schema_args(get_image_schema, omit=['id', 'locations', 'created_at',
                                            'updated_at', 'file', 'checksum',
                                            'virtual_size', 'size', 'status',
                                            'schema', 'direct_url', 'tags'])
 @utils.arg('--property', metavar="<key=value>", action='append',
-           default=[], help=('Arbitrary property to associate with image.'
-                             ' May be used multiple times.'))
+           default=[], help=_('Arbitrary property to associate with image.'
+                              ' May be used multiple times.'))
 @utils.arg('--remove-property', metavar="key", action='append', default=[],
-           help="Name of arbitrary property to remove from the image.")
+           help=_("Name of arbitrary property to remove from the image."))
 def do_image_update(gc, args):
     """Update an existing image."""
     schema = gc.schemas.get("image")
@@ -118,32 +119,32 @@ def do_image_update(gc, args):
 
 
 @utils.arg('--limit', metavar='<LIMIT>', default=None, type=int,
-           help='Maximum number of images to get.')
+           help=_('Maximum number of images to get.'))
 @utils.arg('--page-size', metavar='<SIZE>', default=None, type=int,
-           help='Number of images to request in each paginated request.')
+           help=_('Number of images to request in each paginated request.'))
 @utils.arg('--visibility', metavar='<VISIBILITY>',
-           help='The visibility of the images to display.')
+           help=_('The visibility of the images to display.'))
 @utils.arg('--member-status', metavar='<MEMBER_STATUS>',
-           help='The status of images to display.')
+           help=_('The status of images to display.'))
 @utils.arg('--owner', metavar='<OWNER>',
-           help='Display images owned by <OWNER>.')
+           help=_('Display images owned by <OWNER>.'))
 @utils.arg('--property-filter', metavar='<KEY=VALUE>',
-           help="Filter images by a user-defined image property.",
+           help=_("Filter images by a user-defined image property."),
            action='append', dest='properties', default=[])
 @utils.arg('--checksum', metavar='<CHECKSUM>',
-           help='Displays images that match the checksum.')
+           help=_('Displays images that match the checksum.'))
 @utils.arg('--tag', metavar='<TAG>', action='append',
-           help="Filter images by a user-defined tag.")
+           help=_("Filter images by a user-defined tag."))
 @utils.arg('--sort-key', default=[], action='append',
            choices=images.SORT_KEY_VALUES,
-           help='Sort image list by specified fields.')
+           help=_('Sort image list by specified fields.'))
 @utils.arg('--sort-dir', default=[], action='append',
            choices=images.SORT_DIR_VALUES,
-           help='Sort image list in specified directions.')
+           help=_('Sort image list in specified directions.'))
 @utils.arg('--sort', metavar='<key>[:<direction>]', default=None,
-           help=(("Comma-separated list of sort keys and directions in the "
-                  "form of <key>[:<asc|desc>]. Valid keys: %s. OPTIONAL."
-                  ) % ', '.join(images.SORT_KEY_VALUES)))
+           help=(_("Comma-separated list of sort keys and directions in the "
+                   "form of <key>[:<asc|desc>]. Valid keys: %s. OPTIONAL."
+                   ) % ', '.join(images.SORT_KEY_VALUES)))
 def do_image_list(gc, args):
     """List images you can access."""
     filter_keys = ['visibility', 'member_status', 'owner', 'checksum', 'tag']
@@ -182,11 +183,11 @@ def do_image_list(gc, args):
     utils.print_list(images, columns)
 
 
-@utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to describe.')
+@utils.arg('id', metavar='<IMAGE_ID>', help=_('ID of image to describe.'))
 @utils.arg('--human-readable', action='store_true', default=False,
-           help='Print image size in a human-friendly format.')
+           help=_('Print image size in a human-friendly format.'))
 @utils.arg('--max-column-width', metavar='<integer>', default=80,
-           help='The max column width of the printed table.')
+           help=_('The max column width of the printed table.'))
 def do_image_show(gc, args):
     """Describe a specific image."""
     image = gc.images.get(args.id)
@@ -194,7 +195,7 @@ def do_image_show(gc, args):
 
 
 @utils.arg('--image-id', metavar='<IMAGE_ID>', required=True,
-           help='Image to display members of.')
+           help=_('Image to display members of.'))
 def do_member_list(gc, args):
     """Describe sharing permissions by image."""
 
@@ -204,9 +205,9 @@ def do_member_list(gc, args):
 
 
 @utils.arg('image_id', metavar='<IMAGE_ID>',
-           help='Image from which to remove member.')
+           help=_('Image from which to remove member.'))
 @utils.arg('member_id', metavar='<MEMBER_ID>',
-           help='Tenant to remove as member.')
+           help=_('Tenant to remove as member.'))
 def do_member_delete(gc, args):
     """Delete image member."""
     if not (args.image_id and args.member_id):
@@ -216,14 +217,13 @@ def do_member_delete(gc, args):
 
 
 @utils.arg('image_id', metavar='<IMAGE_ID>',
-           help='Image from which to update member.')
+           help=_('Image from which to update member.'))
 @utils.arg('member_id', metavar='<MEMBER_ID>',
-           help='Tenant to update.')
+           help=_('Tenant to update.'))
 @utils.arg('member_status', metavar='<MEMBER_STATUS>',
            choices=MEMBER_STATUS_VALUES,
-           help='Updated status of member.'
-                ' Valid Values: %s' %
-                ', '.join(str(val) for val in MEMBER_STATUS_VALUES))
+           help=(_('Updated status of member. Valid Values: %s') %
+                 ', '.join(str(val) for val in MEMBER_STATUS_VALUES)))
 def do_member_update(gc, args):
     """Update the status of a member for a given image."""
     if not (args.image_id and args.member_id and args.member_status):
@@ -238,9 +238,9 @@ def do_member_update(gc, args):
 
 
 @utils.arg('image_id', metavar='<IMAGE_ID>',
-           help='Image with which to create member.')
+           help=_('Image with which to create member.'))
 @utils.arg('member_id', metavar='<MEMBER_ID>',
-           help='Tenant to add as member.')
+           help=_('Tenant to add as member.'))
 def do_member_create(gc, args):
     """Create member for a given image."""
     if not (args.image_id and args.member_id):
@@ -252,7 +252,7 @@ def do_member_create(gc, args):
         utils.print_list(member, columns)
 
 
-@utils.arg('model', metavar='<MODEL>', help='Name of model to describe.')
+@utils.arg('model', metavar='<MODEL>', help=_('Name of model to describe.'))
 def do_explain(gc, args):
     """Describe a specific model."""
     try:
@@ -266,12 +266,12 @@ def do_explain(gc, args):
 
 
 @utils.arg('--file', metavar='<FILE>',
-           help='Local file to save downloaded image data to. '
-                'If this is not specified and there is no redirection '
-                'the image data will be not be saved.')
-@utils.arg('id', metavar='<IMAGE_ID>', help='ID of image to download.')
+           help=_('Local file to save downloaded image data to. '
+                  'If this is not specified and there is no redirection '
+                  'the image data will be not be saved.'))
+@utils.arg('id', metavar='<IMAGE_ID>', help=_('ID of image to download.'))
 @utils.arg('--progress', action='store_true', default=False,
-           help='Show download progress bar.')
+           help=_('Show download progress bar.'))
 def do_image_download(gc, args):
     """Download a specific image."""
     body = gc.images.data(args.id)
@@ -287,18 +287,18 @@ def do_image_download(gc, args):
 
 
 @utils.arg('--file', metavar='<FILE>',
-           help=('Local file that contains disk image to be uploaded.'
-                 ' Alternatively, images can be passed'
-                 ' to the client via stdin.'))
+           help=_('Local file that contains disk image to be uploaded.'
+                  ' Alternatively, images can be passed'
+                  ' to the client via stdin.'))
 @utils.arg('--size', metavar='<IMAGE_SIZE>', type=int,
-           help='Size in bytes of image to be uploaded. Default is to get '
-                'size from provided data object but this is supported in case '
-                'where size cannot be inferred.',
+           help=_('Size in bytes of image to be uploaded. Default is to get '
+                  'size from provided data object but this is supported in '
+                  'case where size cannot be inferred.'),
            default=None)
 @utils.arg('--progress', action='store_true', default=False,
-           help='Show upload progress bar.')
+           help=_('Show upload progress bar.'))
 @utils.arg('id', metavar='<IMAGE_ID>',
-           help='ID of image to upload data to.')
+           help=_('ID of image to upload data to.'))
 def do_image_upload(gc, args):
     """Upload data for a specific image."""
     image_data = utils.get_data_file(args)
@@ -312,7 +312,7 @@ def do_image_upload(gc, args):
 
 
 @utils.arg('id', metavar='<IMAGE_ID>', nargs='+',
-           help='ID of image(s) to delete.')
+           help=_('ID of image(s) to delete.'))
 def do_image_delete(gc, args):
     """Delete specified image."""
     failure_flag = False
@@ -336,9 +336,9 @@ def do_image_delete(gc, args):
 
 
 @utils.arg('image_id', metavar='<IMAGE_ID>',
-           help='Image to be updated with the given tag.')
+           help=_('Image to be updated with the given tag.'))
 @utils.arg('tag_value', metavar='<TAG_VALUE>',
-           help='Value of the tag.')
+           help=_('Value of the tag.'))
 def do_image_tag_update(gc, args):
         """Update an image with the given tag."""
         if not (args.image_id and args.tag_value):
@@ -352,9 +352,9 @@ def do_image_tag_update(gc, args):
 
 
 @utils.arg('image_id', metavar='<IMAGE_ID>',
-           help='ID of the image from which to delete tag.')
+           help=_('ID of the image from which to delete tag.'))
 @utils.arg('tag_value', metavar='<TAG_VALUE>',
-           help='Value of the tag.')
+           help=_('Value of the tag.'))
 def do_image_tag_delete(gc, args):
     """Delete the tag associated with the given image."""
     if not (args.image_id and args.tag_value):
@@ -364,12 +364,12 @@ def do_image_tag_delete(gc, args):
 
 
 @utils.arg('--url', metavar='<URL>', required=True,
-           help='URL of location to add.')
+           help=_('URL of location to add.'))
 @utils.arg('--metadata', metavar='<STRING>', default='{}',
-           help=('Metadata associated with the location. '
-                 'Must be a valid JSON object (default: %(default)s).'))
+           help=_('Metadata associated with the location. '
+                  'Must be a valid JSON object (default: %(default)s)'))
 @utils.arg('id', metavar='<ID>',
-           help='ID of image to which the location is to be added.')
+           help=_('ID of image to which the location is to be added.'))
 def do_location_add(gc, args):
     """Add a location (and related metadata) to an image."""
     try:
@@ -382,21 +382,21 @@ def do_location_add(gc, args):
 
 
 @utils.arg('--url', metavar='<URL>', action='append', required=True,
-           help='URL of location to remove. May be used multiple times.')
+           help=_('URL of location to remove. May be used multiple times.'))
 @utils.arg('id', metavar='<ID>',
-           help='ID of image whose locations are to be removed.')
+           help=_('ID of image whose locations are to be removed.'))
 def do_location_delete(gc, args):
     """Remove locations (and related metadata) from an image."""
     gc.images.delete_locations(args.id, set(args.url))
 
 
 @utils.arg('--url', metavar='<URL>', required=True,
-           help='URL of location to update.')
+           help=_('URL of location to update.'))
 @utils.arg('--metadata', metavar='<STRING>', default='{}',
-           help=('Metadata associated with the location. '
-                 'Must be a valid JSON object (default: %(default)s).'))
+           help=_('Metadata associated with the location. '
+                  'Must be a valid JSON object (default: %(default)s)'))
 @utils.arg('id', metavar='<ID>',
-           help='ID of image whose location is to be updated.')
+           help=_('ID of image whose location is to be updated.'))
 def do_location_update(gc, args):
     """Update metadata of an image's location."""
     try:
@@ -448,7 +448,8 @@ def _namespace_show(namespace, max_column_width=None):
         utils.print_dict(namespace)
 
 
-@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of the namespace.')
+@utils.arg('namespace', metavar='<NAMESPACE>',
+           help=_('Name of the namespace.'))
 @utils.schema_args(get_namespace_schema, omit=['namespace', 'property_count',
                                                'properties', 'tag_count',
                                                'tags', 'object_count',
@@ -466,8 +467,9 @@ def do_md_namespace_create(gc, args):
 
 
 @utils.arg('--file', metavar='<FILEPATH>',
-           help='Path to file with namespace schema to import. Alternatively, '
-                'namespaces schema can be passed to the client via stdin.')
+           help=_('Path to file with namespace schema to import. '
+                  'Alternatively, namespaces schema can be passed to the '
+                  'client via stdin.'))
 def do_md_namespace_import(gc, args):
     """Import a metadata definitions namespace from file or standard input."""
     namespace_data = utils.get_data_file(args)
@@ -484,7 +486,7 @@ def do_md_namespace_import(gc, args):
         _namespace_show(namespace)
 
 
-@utils.arg('id', metavar='<NAMESPACE>', help='Name of namespace to update.')
+@utils.arg('id', metavar='<NAMESPACE>', help=_('Name of namespace to update.'))
 @utils.schema_args(get_namespace_schema, omit=['property_count', 'properties',
                                                'tag_count', 'tags',
                                                'object_count', 'objects',
@@ -504,12 +506,12 @@ def do_md_namespace_update(gc, args):
 
 
 @utils.arg('namespace', metavar='<NAMESPACE>',
-           help='Name of namespace to describe.')
+           help=_('Name of namespace to describe.'))
 @utils.arg('--resource-type', metavar='<RESOURCE_TYPE>',
-           help='Applies prefix of given resource type associated to a '
-                'namespace to all properties of a namespace.', default=None)
+           help=_('Applies prefix of given resource type associated to a '
+                  'namespace to all properties of a namespace.'), default=None)
 @utils.arg('--max-column-width', metavar='<integer>', default=80,
-           help='The max column width of the printed table.')
+           help=_('The max column width of the printed table.'))
 def do_md_namespace_show(gc, args):
     """Describe a specific metadata definitions namespace.
 
@@ -525,11 +527,12 @@ def do_md_namespace_show(gc, args):
 
 
 @utils.arg('--resource-types', metavar='<RESOURCE_TYPES>', action='append',
-           help='Resource type to filter namespaces.')
+           help=_('Resource type to filter namespaces.'))
 @utils.arg('--visibility', metavar='<VISIBILITY>',
-           help='Visibility parameter to filter namespaces.')
+           help=_('Visibility parameter to filter namespaces.'))
 @utils.arg('--page-size', metavar='<SIZE>', default=None, type=int,
-           help='Number of namespaces to request in each paginated request.')
+           help=_('Number of namespaces to request '
+                  'in each paginated request.'))
 def do_md_namespace_list(gc, args):
     """List metadata definitions namespaces."""
     filter_keys = ['resource_types', 'visibility']
@@ -546,7 +549,7 @@ def do_md_namespace_list(gc, args):
 
 
 @utils.arg('namespace', metavar='<NAMESPACE>',
-           help='Name of namespace to delete.')
+           help=_('Name of namespace to delete.'))
 def do_md_namespace_delete(gc, args):
     """Delete specified metadata definitions namespace with its contents."""
     gc.metadefs_namespace.delete(args.namespace)
@@ -568,7 +571,7 @@ def get_resource_type_schema():
     return RESOURCE_TYPE_SCHEMA
 
 
-@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of namespace.')
+@utils.arg('namespace', metavar='<NAMESPACE>', help=_('Name of namespace.'))
 @utils.schema_args(get_resource_type_schema)
 def do_md_resource_type_associate(gc, args):
     """Associate resource type with a metadata definitions namespace."""
@@ -582,9 +585,9 @@ def do_md_resource_type_associate(gc, args):
     utils.print_dict(resource_type)
 
 
-@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of namespace.')
+@utils.arg('namespace', metavar='<NAMESPACE>', help=_('Name of namespace.'))
 @utils.arg('resource_type', metavar='<RESOURCE_TYPE>',
-           help='Name of resource type.')
+           help=_('Name of resource type.'))
 def do_md_resource_type_deassociate(gc, args):
     """Deassociate resource type with a metadata definitions namespace."""
     gc.metadefs_resource_type.deassociate(args.namespace, args.resource_type)
@@ -596,7 +599,7 @@ def do_md_resource_type_list(gc, args):
     utils.print_list(resource_types, ['name'])
 
 
-@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of namespace.')
+@utils.arg('namespace', metavar='<NAMESPACE>', help=_('Name of namespace.'))
 def do_md_namespace_resource_type_list(gc, args):
     """List resource types associated to specific namespace."""
     resource_types = gc.metadefs_resource_type.get(args.namespace)
@@ -604,13 +607,13 @@ def do_md_namespace_resource_type_list(gc, args):
 
 
 @utils.arg('namespace', metavar='<NAMESPACE>',
-           help='Name of namespace the property will belong.')
+           help=_('Name of namespace the property will belong.'))
 @utils.arg('--name', metavar='<NAME>', required=True,
-           help='Internal name of a property.')
+           help=_('Internal name of a property.'))
 @utils.arg('--title', metavar='<TITLE>', required=True,
-           help='Property name displayed to the user.')
+           help=_('Property name displayed to the user.'))
 @utils.arg('--schema', metavar='<SCHEMA>', required=True,
-           help='Valid JSON schema of a property.')
+           help=_('Valid JSON schema of a property.'))
 def do_md_property_create(gc, args):
     """Create a new metadata definitions property inside a namespace."""
     try:
@@ -625,14 +628,14 @@ def do_md_property_create(gc, args):
 
 
 @utils.arg('namespace', metavar='<NAMESPACE>',
-           help='Name of namespace the property belongs.')
-@utils.arg('property', metavar='<PROPERTY>', help='Name of a property.')
+           help=_('Name of namespace the property belongs.'))
+@utils.arg('property', metavar='<PROPERTY>', help=_('Name of a property.'))
 @utils.arg('--name', metavar='<NAME>', default=None,
-           help='New name of a property.')
+           help=_('New name of a property.'))
 @utils.arg('--title', metavar='<TITLE>', default=None,
-           help='Property name displayed to the user.')
+           help=_('Property name displayed to the user.'))
 @utils.arg('--schema', metavar='<SCHEMA>', default=None,
-           help='Valid JSON schema of a property.')
+           help=_('Valid JSON schema of a property.'))
 def do_md_property_update(gc, args):
     """Update metadata definitions property inside a namespace."""
     fields = {}
@@ -654,10 +657,10 @@ def do_md_property_update(gc, args):
 
 
 @utils.arg('namespace', metavar='<NAMESPACE>',
-           help='Name of namespace the property belongs.')
-@utils.arg('property', metavar='<PROPERTY>', help='Name of a property.')
+           help=_('Name of namespace the property belongs.'))
+@utils.arg('property', metavar='<PROPERTY>', help=_('Name of a property.'))
 @utils.arg('--max-column-width', metavar='<integer>', default=80,
-           help='The max column width of the printed table.')
+           help=_('The max column width of the printed table.'))
 def do_md_property_show(gc, args):
     """Describe a specific metadata definitions property inside a namespace."""
     prop = gc.metadefs_property.get(args.namespace, args.property)
@@ -665,20 +668,20 @@ def do_md_property_show(gc, args):
 
 
 @utils.arg('namespace', metavar='<NAMESPACE>',
-           help='Name of namespace the property belongs.')
-@utils.arg('property', metavar='<PROPERTY>', help='Name of a property.')
+           help=_('Name of namespace the property belongs.'))
+@utils.arg('property', metavar='<PROPERTY>', help=_('Name of a property.'))
 def do_md_property_delete(gc, args):
     """Delete a specific metadata definitions property inside a namespace."""
     gc.metadefs_property.delete(args.namespace, args.property)
 
 
-@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of namespace.')
+@utils.arg('namespace', metavar='<NAMESPACE>', help=_('Name of namespace.'))
 def do_md_namespace_properties_delete(gc, args):
     """Delete all metadata definitions property inside a specific namespace."""
     gc.metadefs_property.delete_all(args.namespace)
 
 
-@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of namespace.')
+@utils.arg('namespace', metavar='<NAMESPACE>', help=_('Name of namespace.'))
 def do_md_property_list(gc, args):
     """List metadata definitions properties inside a specific namespace."""
     properties = gc.metadefs_property.list(args.namespace)
@@ -700,11 +703,11 @@ def _object_show(obj, max_column_width=None):
 
 
 @utils.arg('namespace', metavar='<NAMESPACE>',
-           help='Name of namespace the object will belong.')
+           help=_('Name of namespace the object will belong.'))
 @utils.arg('--name', metavar='<NAME>', required=True,
-           help='Internal name of an object.')
+           help=_('Internal name of an object.'))
 @utils.arg('--schema', metavar='<SCHEMA>', required=True,
-           help='Valid JSON schema of an object.')
+           help=_('Valid JSON schema of an object.'))
 def do_md_object_create(gc, args):
     """Create a new metadata definitions object inside a namespace."""
     try:
@@ -719,12 +722,12 @@ def do_md_object_create(gc, args):
 
 
 @utils.arg('namespace', metavar='<NAMESPACE>',
-           help='Name of namespace the object belongs.')
-@utils.arg('object', metavar='<OBJECT>', help='Name of an object.')
+           help=_('Name of namespace the object belongs.'))
+@utils.arg('object', metavar='<OBJECT>', help=_('Name of an object.'))
 @utils.arg('--name', metavar='<NAME>', default=None,
-           help='New name of an object.')
+           help=_('New name of an object.'))
 @utils.arg('--schema', metavar='<SCHEMA>', default=None,
-           help='Valid JSON schema of an object.')
+           help=_('Valid JSON schema of an object.'))
 def do_md_object_update(gc, args):
     """Update metadata definitions object inside a namespace."""
     fields = {}
@@ -744,10 +747,10 @@ def do_md_object_update(gc, args):
 
 
 @utils.arg('namespace', metavar='<NAMESPACE>',
-           help='Name of namespace the object belongs.')
-@utils.arg('object', metavar='<OBJECT>', help='Name of an object.')
+           help=_('Name of namespace the object belongs.'))
+@utils.arg('object', metavar='<OBJECT>', help=_('Name of an object.'))
 @utils.arg('--max-column-width', metavar='<integer>', default=80,
-           help='The max column width of the printed table.')
+           help=_('The max column width of the printed table.'))
 def do_md_object_show(gc, args):
     """Describe a specific metadata definitions object inside a namespace."""
     obj = gc.metadefs_object.get(args.namespace, args.object)
@@ -755,11 +758,11 @@ def do_md_object_show(gc, args):
 
 
 @utils.arg('namespace', metavar='<NAMESPACE>',
-           help='Name of namespace the object belongs.')
-@utils.arg('object', metavar='<OBJECT>', help='Name of an object.')
-@utils.arg('property', metavar='<PROPERTY>', help='Name of a property.')
+           help=_('Name of namespace the object belongs.'))
+@utils.arg('object', metavar='<OBJECT>', help=_('Name of an object.'))
+@utils.arg('property', metavar='<PROPERTY>', help=_('Name of a property.'))
 @utils.arg('--max-column-width', metavar='<integer>', default=80,
-           help='The max column width of the printed table.')
+           help=_('The max column width of the printed table.'))
 def do_md_object_property_show(gc, args):
     """Describe a specific metadata definitions property inside an object."""
     obj = gc.metadefs_object.get(args.namespace, args.object)
@@ -773,20 +776,20 @@ def do_md_object_property_show(gc, args):
 
 
 @utils.arg('namespace', metavar='<NAMESPACE>',
-           help='Name of namespace the object belongs.')
-@utils.arg('object', metavar='<OBJECT>', help='Name of an object.')
+           help=_('Name of namespace the object belongs.'))
+@utils.arg('object', metavar='<OBJECT>', help=_('Name of an object.'))
 def do_md_object_delete(gc, args):
     """Delete a specific metadata definitions object inside a namespace."""
     gc.metadefs_object.delete(args.namespace, args.object)
 
 
-@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of namespace.')
+@utils.arg('namespace', metavar='<NAMESPACE>', help=_('Name of namespace.'))
 def do_md_namespace_objects_delete(gc, args):
     """Delete all metadata definitions objects inside a specific namespace."""
     gc.metadefs_object.delete_all(args.namespace)
 
 
-@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of namespace.')
+@utils.arg('namespace', metavar='<NAMESPACE>', help=_('Name of namespace.'))
 def do_md_object_list(gc, args):
     """List metadata definitions objects inside a specific namespace."""
     objects = gc.metadefs_object.list(args.namespace)
@@ -809,9 +812,9 @@ def _tag_show(tag, max_column_width=None):
 
 
 @utils.arg('namespace', metavar='<NAMESPACE>',
-           help='Name of the namespace the tag will belong to.')
+           help=_('Name of the namespace the tag will belong to.'))
 @utils.arg('--name', metavar='<NAME>', required=True,
-           help='The name of the new tag to add.')
+           help=_('The name of the new tag to add.'))
 def do_md_tag_create(gc, args):
     """Add a new metadata definitions tag inside a namespace."""
     name = args.name.strip()
@@ -823,12 +826,12 @@ def do_md_tag_create(gc, args):
 
 
 @utils.arg('namespace', metavar='<NAMESPACE>',
-           help='Name of the namespace the tags will belong to.')
+           help=_('Name of the namespace the tags will belong to.'))
 @utils.arg('--names', metavar='<NAMES>', required=True,
-           help='A comma separated list of tag names.')
+           help=_('A comma separated list of tag names.'))
 @utils.arg('--delim', metavar='<DELIM>', required=False,
-           help='The delimiter used to separate the names'
-                ' (if none is provided then the default is a comma).')
+           help=_('The delimiter used to separate the names'
+                  ' (if none is provided then the default is a comma).'))
 def do_md_tag_create_multiple(gc, args):
     """Create new metadata definitions tags inside a namespace."""
     delim = args.delim or ','
@@ -857,10 +860,10 @@ def do_md_tag_create_multiple(gc, args):
 
 
 @utils.arg('namespace', metavar='<NAMESPACE>',
-           help='Name of the namespace to which the tag belongs.')
-@utils.arg('tag', metavar='<TAG>', help='Name of the old tag.')
+           help=_('Name of the namespace to which the tag belongs.'))
+@utils.arg('tag', metavar='<TAG>', help=_('Name of the old tag.'))
 @utils.arg('--name', metavar='<NAME>', default=None, required=True,
-           help='New name of the new tag.')
+           help=_('New name of the new tag.'))
 def do_md_tag_update(gc, args):
     """Rename a metadata definitions tag inside a namespace."""
     name = args.name.strip()
@@ -874,8 +877,8 @@ def do_md_tag_update(gc, args):
 
 
 @utils.arg('namespace', metavar='<NAMESPACE>',
-           help='Name of the namespace to which the tag belongs.')
-@utils.arg('tag', metavar='<TAG>', help='Name of the tag.')
+           help=_('Name of the namespace to which the tag belongs.'))
+@utils.arg('tag', metavar='<TAG>', help=_('Name of the tag.'))
 def do_md_tag_show(gc, args):
     """Describe a specific metadata definitions tag inside a namespace."""
     tag = gc.metadefs_tag.get(args.namespace, args.tag)
@@ -883,20 +886,20 @@ def do_md_tag_show(gc, args):
 
 
 @utils.arg('namespace', metavar='<NAMESPACE>',
-           help='Name of the namespace to which the tag belongs.')
-@utils.arg('tag', metavar='<TAG>', help='Name of the tag.')
+           help=_('Name of the namespace to which the tag belongs.'))
+@utils.arg('tag', metavar='<TAG>', help=_('Name of the tag.'))
 def do_md_tag_delete(gc, args):
     """Delete a specific metadata definitions tag inside a namespace."""
     gc.metadefs_tag.delete(args.namespace, args.tag)
 
 
-@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of namespace.')
+@utils.arg('namespace', metavar='<NAMESPACE>', help=_('Name of namespace.'))
 def do_md_namespace_tags_delete(gc, args):
     """Delete all metadata definitions tags inside a specific namespace."""
     gc.metadefs_tag.delete_all(args.namespace)
 
 
-@utils.arg('namespace', metavar='<NAMESPACE>', help='Name of namespace.')
+@utils.arg('namespace', metavar='<NAMESPACE>', help=_('Name of namespace.'))
 def do_md_tag_list(gc, args):
     """List metadata definitions tags inside a specific namespace."""
     tags = gc.metadefs_tag.list(args.namespace)
@@ -912,16 +915,16 @@ def do_md_tag_list(gc, args):
 
 @utils.arg('--sort-key', default='status',
            choices=tasks.SORT_KEY_VALUES,
-           help='Sort task list by specified field.')
+           help=_('Sort task list by specified field.'))
 @utils.arg('--sort-dir', default='desc',
            choices=tasks.SORT_DIR_VALUES,
-           help='Sort task list in specified direction.')
+           help=_('Sort task list in specified direction.'))
 @utils.arg('--page-size', metavar='<SIZE>', default=None, type=int,
-           help='Number of tasks to request in each paginated request.')
+           help=_('Number of tasks to request in each paginated request.'))
 @utils.arg('--type', metavar='<TYPE>',
-           help='Filter tasks to those that have this type.')
+           help=_('Filter tasks to those that have this type.'))
 @utils.arg('--status', metavar='<STATUS>',
-           help='Filter tasks to those that have this status.')
+           help=_('Filter tasks to those that have this status.'))
 def do_task_list(gc, args):
     """List tasks you can access."""
     filter_keys = ['type', 'status']
@@ -941,7 +944,7 @@ def do_task_list(gc, args):
     utils.print_list(tasks, columns)
 
 
-@utils.arg('id', metavar='<TASK_ID>', help='ID of task to describe.')
+@utils.arg('id', metavar='<TASK_ID>', help=_('ID of task to describe.'))
 def do_task_show(gc, args):
     """Describe a specific task."""
     task = gc.tasks.get(args.id)
@@ -951,10 +954,10 @@ def do_task_show(gc, args):
 
 
 @utils.arg('--type', metavar='<TYPE>',
-           help='Type of Task. Please refer to Glance schema or documentation'
-           ' to see which tasks are supported.')
+           help=_('Type of Task. Please refer to Glance schema or '
+                  'documentation to see which tasks are supported.'))
 @utils.arg('--input', metavar='<STRING>', default='{}',
-           help='Parameters of the task to be launched.')
+           help=_('Parameters of the task to be launched'))
 def do_task_create(gc, args):
     """Create a new task."""
     if not (args.type and args.input):
