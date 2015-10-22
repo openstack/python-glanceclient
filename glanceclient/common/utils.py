@@ -37,10 +37,9 @@ from oslo_utils import encodeutils
 from oslo_utils import strutils
 import prettytable
 
-from glanceclient import _i18n
+from glanceclient._i18n import _
 from glanceclient import exc
 
-_ = _i18n._
 
 _memoized_property_lock = threading.Lock()
 
