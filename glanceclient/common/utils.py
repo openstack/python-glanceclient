@@ -16,6 +16,7 @@
 from __future__ import print_function
 
 import errno
+import functools
 import hashlib
 import json
 import os
@@ -77,6 +78,7 @@ def on_data_require_fields(data_fields, required=REQUIRED_FIELDS_ON_DATA):
             args = ('--' + x.replace('_', '-') for x in fields)
             return ', '.join(args)
 
+        @functools.wraps(func)
         def func_wrapper(gc, args):
             # Set of arguments with data
             fields = set(a[0] for a in vars(args).items() if a[1])
