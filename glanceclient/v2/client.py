@@ -22,6 +22,7 @@ from glanceclient.v2 import images
 from glanceclient.v2 import metadefs
 from glanceclient.v2 import schemas
 from glanceclient.v2 import tasks
+from glanceclient.v2 import versions
 
 
 class Client(object):
@@ -63,3 +64,5 @@ class Client(object):
 
         self.metadefs_namespace = (
             metadefs.NamespaceController(self.http_client, self.schemas))
+
+        self.versions = versions.VersionController(self.http_client)
