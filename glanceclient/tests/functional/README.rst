@@ -25,11 +25,24 @@ would involve a non trivial amount of work.
 Functional Test Guidelines
 ---------------------------
 
-* Consume credentials via standard client environmental variables::
+The functional tests require:
 
-    OS_USERNAME
-    OS_PASSWORD
-    OS_TENANT_NAME
-    OS_AUTH_URL
+1) A working Glance/Keystone installation (eg devstack)
+2) A yaml file containing valid credentials
 
-* Try not to require an additional configuration file
+If you are using devstack a yaml file will have been created for you.
+
+If you are not using devstack you should create a yaml file
+with the following format:
+
+ clouds:
+   devstack-admin:
+     auth:
+       auth_url: http://10.0.0.1:35357/v2.0
+       password: example
+       project_name: admin
+       username: admin
+     identity_api_version: '2.0'
+     region_name: RegionOne
+
+and copy it to ~/.config/openstack/clouds.yaml
