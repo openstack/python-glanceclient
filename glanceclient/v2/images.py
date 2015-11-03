@@ -234,6 +234,16 @@ class Controller(object):
         body.pop('self', None)
         return self.model(**body)
 
+    def deactivate(self, image_id):
+        """Deactivate an image."""
+        url = '/v2/images/%s/actions/deactivate' % image_id
+        return self.http_client.post(url)
+
+    def reactivate(self, image_id):
+        """Reactivate an image."""
+        url = '/v2/images/%s/actions/reactivate' % image_id
+        return self.http_client.post(url)
+
     def update(self, image_id, remove_props=None, **kwargs):
         """Update attributes of an image.
 

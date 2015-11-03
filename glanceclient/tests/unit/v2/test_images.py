@@ -207,6 +207,12 @@ data_fixtures = {
             'CCC',
         ),
     },
+    '/v2/images/87b634c1-f893-33c9-28a9-e5673c99239a/actions/reactivate': {
+        'POST': ({}, None)
+    },
+    '/v2/images/87b634c1-f893-33c9-28a9-e5673c99239a/actions/deactivate': {
+        'POST': ({}, None)
+    },
     '/v2/images?limit=%d&visibility=public' % images.DEFAULT_PAGE_SIZE: {
         'GET': (
             {},
@@ -787,6 +793,24 @@ class TestController(testtools.TestCase):
                 '/v2/images/87b634c1-f893-33c9-28a9-e5673c99239a',
                 {},
                 None)]
+        self.assertEqual(expect, self.api.calls)
+
+    def test_deactivate_image(self):
+        id_image = '87b634c1-f893-33c9-28a9-e5673c99239a'
+        self.controller.deactivate(id_image)
+        expect = [('POST',
+                   '/v2/images/%s/actions/deactivate' % id_image,
+                   {},
+                   None)]
+        self.assertEqual(expect, self.api.calls)
+
+    def reactivate_image(self):
+        id_image = '87b634c1-f893-33c9-28a9-e5673c99239a'
+        self.controller.reactivate(id_image)
+        expect = [('POST',
+                   '/v2/images/%s/actions/reactivate' % id_image,
+                   {},
+                   None)]
         self.assertEqual(expect, self.api.calls)
 
     def test_data_upload(self):

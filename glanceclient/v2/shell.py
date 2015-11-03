@@ -335,6 +335,20 @@ def do_image_delete(gc, args):
         utils.exit()
 
 
+@utils.arg('id', metavar='<IMAGE_ID>',
+           help=_('ID of image to deactivate.'))
+def do_image_deactivate(gc, args):
+    """Deactivate specified image."""
+    gc.images.deactivate(args.id)
+
+
+@utils.arg('id', metavar='<IMAGE_ID>',
+           help=_('ID of image to reactivate.'))
+def do_image_reactivate(gc, args):
+    """Reactivate specified image."""
+    gc.images.reactivate(args.id)
+
+
 @utils.arg('image_id', metavar='<IMAGE_ID>',
            help=_('Image to be updated with the given tag.'))
 @utils.arg('tag_value', metavar='<TAG_VALUE>',

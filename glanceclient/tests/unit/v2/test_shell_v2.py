@@ -601,6 +601,24 @@ class ShellV2Test(testtools.TestCase):
             test_shell.do_image_delete(self.gc, args)
             self.assertEqual(2, mocked_delete.call_count)
 
+    def test_do_image_deactivate(self):
+        args = argparse.Namespace(id='image1')
+        with mock.patch.object(self.gc.images,
+                               'deactivate') as mocked_deactivate:
+            mocked_deactivate.return_value = 0
+
+            test_shell.do_image_deactivate(self.gc, args)
+            self.assertEqual(1, mocked_deactivate.call_count)
+
+    def test_do_image_reactivate(self):
+        args = argparse.Namespace(id='image1')
+        with mock.patch.object(self.gc.images,
+                               'reactivate') as mocked_reactivate:
+            mocked_reactivate.return_value = 0
+
+            test_shell.do_image_reactivate(self.gc, args)
+            self.assertEqual(1, mocked_reactivate.call_count)
+
     @mock.patch.object(utils, 'exit')
     @mock.patch.object(utils, 'print_err')
     def test_do_image_delete_with_invalid_ids(self, mocked_print_err,
