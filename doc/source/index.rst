@@ -53,6 +53,50 @@ See also :doc:`/man/glance`.
 Release Notes
 =============
 
+1.2.0
+-----
+
+* This release consists mainly bugfixes since Liberty release.
+* Some functionality has been added, documentation improved.
+* Trivial & typo fixed and requirement changes not included below.
+
+* 1511180_:  Add versions list function
+* 1508356_: Added reactivate/deactivate image using CLI
+* 1510340_: Fix the missing help descripiton of "image-create"
+* 8a4cd79 Add documentation for running the functional tests
+* 5a24705 Update docs to recommend KSA instead of KSC
+* 1507386_: Use clouds.yaml from devstack for functional tests
+* 4fb3092 Add translation to v2 shell
+* b51634a improve readme contents
+* 1480529_: Add support for setting Accept-Language header
+* 1504058_: Use the subcomand parsed args instead of the base
+* afd1810 Stop trying to send image_size to the server
+* 1485407_: Support image deletion in batches in v2
+* 1295356_: print usage when no argument is specified for python3
+* df0f664 Do not use openstack.common.i18n in glance client
+* 1f2fefb Use common identity parameters fro keystone client
+* 1499540_: No auth when token and endpoint are passed
+* 557acb1 Use dictionary literal for dictionary creation
+* c6addc7 Replace exception_to_str with oslo.utils function
+* 1496305_: Don't get the image before deleting it
+* 1495632_: Fix human readable when size is None
+* 1489727_: Add parsing the endpoint URL
+* 1467719_: Add check Identity validate when get schemas
+
+.. _1511180: https://bugs.launchpad.net/python-glanceclient/+bug/1511180
+.. _1508356: https://bugs.launchpad.net/python-glanceclient/+bug/1508356
+.. _1510340: https://bugs.launchpad.net/python-glanceclient/+bug/1510340
+.. _1507386: https://bugs.launchpad.net/python-neutronclient/+bug/1507386
+.. _1480529: https://bugs.launchpad.net/python-glanceclient/+bug/1480529
+.. _1504058: https://bugs.launchpad.net/python-glanceclient/+bug/1504058
+.. _1485407: https://bugs.launchpad.net/python-glanceclient/+bug/1485407
+.. _1295356: https://bugs.launchpad.net/python-novaclient/+bug/1295356
+.. _1499540: https://bugs.launchpad.net/python-glanceclient/+bug/1499540
+.. _1496305: https://bugs.launchpad.net/python-glanceclient/+bug/1496305
+.. _1495632: https://bugs.launchpad.net/python-glanceclient/+bug/1495632
+.. _1489727: https://bugs.launchpad.net/python-glanceclient/+bug/1489727
+.. _1467719: https://bugs.launchpad.net/glance/+bug/1467719
+
 1.1.0
 -----
 
