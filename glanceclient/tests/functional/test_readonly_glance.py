@@ -96,7 +96,8 @@ class SimpleReadOnlyGlanceClientTest(base.ClientTestBase):
         wanted_commands = set(('image-create', 'image-delete', 'help',
                                'image-download', 'image-show', 'image-update',
                                'member-create', 'member-delete',
-                               'member-list', 'image-list'))
+                               'member-list', 'image-list', 'image-deactivate',
+                               'image-reactivate'))
         self.assertFalse(wanted_commands - commands)
 
     def test_version(self):
