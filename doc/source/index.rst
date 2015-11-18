@@ -39,6 +39,20 @@ See also :doc:`/man/glance`.
 Release Notes
 =============
 
+0.17.3
+------
+
+* Updated from global requirements
+* 1496305_: Don't get the image before deleting it
+* 1481729_: Ship the default image schema in the client
+* 1477910_: V2: Do not validate image schema when listing
+* 1323660_: Expose 'is_base' schema property attribute
+
+.. _1496305: https://bugs.launchpad.net/python-glanceclient/+bug/1496305
+.. _1481729: https://bugs.launchpad.net/python-glanceclient/+bug/1481729
+.. _1477910: https://bugs.launchpad.net/python-glanceclient/+bug/1477910
+.. _1323660: https://bugs.launchpad.net/python-glanceclient/+bug/1323660
+
 0.17.2
 ------
 
