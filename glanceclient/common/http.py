@@ -135,7 +135,8 @@ class HTTPClient(_BaseHTTPClient):
         self.session.headers["User-Agent"] = USER_AGENT
 
         if self.auth_token:
-            self.session.headers["X-Auth-Token"] = self.auth_token
+            self.session.headers["X-Auth-Token"] = encodeutils.safe_encode(
+                self.auth_token)
 
         if self.language_header:
             self.session.headers["Accept-Language"] = self.language_header

@@ -449,8 +449,7 @@ def memoized_property(fn):
 
 def safe_header(name, value):
     if value is not None and name in SENSITIVE_HEADERS:
-        v = value.encode('utf-8')
-        h = hashlib.sha1(v)
+        h = hashlib.sha1(value)
         d = h.hexdigest()
         return name, "{SHA1}%s" % d
     else:
