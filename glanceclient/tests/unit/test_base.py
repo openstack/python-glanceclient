@@ -32,9 +32,15 @@ class TestBase(testtools.TestCase):
             id = 4
         self.assertEqual(4, base.getid(TmpObject))
 
-    def test_two_resources_with_same_id_are_equal(self):
-        # Two resources of the same type with the same id: equal
+    def test_two_resources_with_same_id_are_not_equal(self):
+        # Two resources with same ID: never equal if their info is not equal
         r1 = base.Resource(None, {'id': 1, 'name': 'hi'})
+        r2 = base.Resource(None, {'id': 1, 'name': 'hello'})
+        self.assertNotEqual(r1, r2)
+
+    def test_two_resources_with_same_id_and_info_are_equal(self):
+        # Two resources with same ID: equal if their info is equal
+        r1 = base.Resource(None, {'id': 1, 'name': 'hello'})
         r2 = base.Resource(None, {'id': 1, 'name': 'hello'})
         self.assertEqual(r1, r2)
 
