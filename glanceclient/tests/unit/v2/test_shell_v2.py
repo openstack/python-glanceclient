@@ -122,23 +122,19 @@ class ShellV2Test(testtools.TestCase):
 
     @mock.patch('sys.stderr')
     def test_image_create_missing_disk_format(self, __):
-        # We test for all possible sources
-        for origin in ('--file', '--location', '--copy-from'):
-            e = self.assertRaises(exc.CommandError, self._run_command,
-                                  '--os-image-api-version 2 image-create ' +
-                                  origin + ' fake_src --container-format bare')
-            self.assertEqual('error: Must provide --disk-format when using '
-                             + origin + '.', e.message)
+        e = self.assertRaises(exc.CommandError, self._run_command,
+                              '--os-image-api-version 2 image-create ' +
+                              '--file fake_src --container-format bare')
+        self.assertEqual('error: Must provide --disk-format when using '
+                         '--file.', e.message)
 
     @mock.patch('sys.stderr')
     def test_image_create_missing_container_format(self, __):
-        # We test for all possible sources
-        for origin in ('--file', '--location', '--copy-from'):
-            e = self.assertRaises(exc.CommandError, self._run_command,
-                                  '--os-image-api-version 2 image-create ' +
-                                  origin + ' fake_src --disk-format qcow2')
-            self.assertEqual('error: Must provide --container-format when '
-                             'using ' + origin + '.', e.message)
+        e = self.assertRaises(exc.CommandError, self._run_command,
+                              '--os-image-api-version 2 image-create ' +
+                              '--file fake_src --disk-format qcow2')
+        self.assertEqual('error: Must provide --container-format when '
+                         'using --file.', e.message)
 
     @mock.patch('sys.stderr')
     def test_image_create_missing_container_format_stdin_data(self, __):
