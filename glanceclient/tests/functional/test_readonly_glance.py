@@ -93,11 +93,15 @@ class SimpleReadOnlyGlanceClientTest(base.ClientTestBase):
             if match:
                 commands.append(match.group(1))
         commands = set(commands)
-        wanted_commands = set(('image-create', 'image-delete', 'help',
-                               'image-download', 'image-show', 'image-update',
-                               'member-create', 'member-delete',
-                               'member-list', 'image-list', 'image-deactivate',
-                               'image-reactivate'))
+        wanted_commands = {'bash-completion', 'help',
+                           'image-create', 'image-deactivate', 'image-delete',
+                           'image-download', 'image-list', 'image-reactivate',
+                           'image-show', 'image-tag-delete',
+                           'image-tag-update', 'image-update', 'image-upload',
+                           'location-add', 'location-delete',
+                           'location-update', 'member-create', 'member-delete',
+                           'member-list', 'member-update', 'task-create',
+                           'task-list', 'task-show'}
         self.assertFalse(wanted_commands - commands)
 
     def test_version(self):
