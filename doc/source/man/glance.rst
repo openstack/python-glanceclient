@@ -44,7 +44,9 @@ supplying an auth token using :option:`--os-image-url` and
 You can select an API version to use by :option:`--os-image-api-version`
 option or by setting corresponding environment variable::
 
-    export OS_IMAGE_API_VERSION=2
+    export OS_IMAGE_API_VERSION=1
+
+Default Images API used is v2.
 
 OPTIONS
 =======
@@ -72,12 +74,12 @@ See available images::
 Create new image::
 
     glance image-create --name foo --disk-format=qcow2 \
-                        --container-format=bare --is-public=True \
-                        --copy-from http://somewhere.net/foo.img
+                        --container-format=bare --visibility=public \
+                        --file /tmp/foo.img
 
 Describe a specific image::
 
-    glance image-show foo
+    glance image-show <Image-ID>
 
 
 BUGS
