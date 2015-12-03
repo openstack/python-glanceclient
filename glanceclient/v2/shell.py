@@ -53,8 +53,8 @@ def get_image_schema():
                               ' May be used multiple times.'))
 @utils.arg('--file', metavar='<FILE>',
            help=_('Local file that contains disk image to be uploaded '
-                  'during creation. Must be present if images are not passed '
-                  'to the client via stdin.'))
+                  'during creation. Alternatively, the image data can be '
+                  'passed to the client via stdin.'))
 @utils.arg('--progress', action='store_true', default=False,
            help=_('Show upload progress bar.'))
 @utils.on_data_require_fields(DATA_FIELDS)
