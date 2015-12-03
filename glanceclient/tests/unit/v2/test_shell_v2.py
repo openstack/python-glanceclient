@@ -40,7 +40,8 @@ def schema_args(schema_getter, omit=None):
     my_schema_getter = lambda: {
         'properties': {
             'container_format': {
-                'enum': [None, 'ami', 'ari', 'aki', 'bare', 'ovf', 'ova'],
+                'enum': [None, 'ami', 'ari', 'aki', 'bare', 'ovf', 'ova',
+                         'docker'],
                 'type': 'string',
                 'description': 'Format of the container'},
             'disk_format': {

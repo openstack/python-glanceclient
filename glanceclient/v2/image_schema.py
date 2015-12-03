@@ -44,7 +44,8 @@ _BASE_SCHEMA = {
                 "aki",
                 "bare",
                 "ovf",
-                "ova"
+                "ova",
+                "docker"
             ],
             "type": "string",
             "description": "Format of the container"

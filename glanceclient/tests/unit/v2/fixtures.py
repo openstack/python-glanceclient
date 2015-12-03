@@ -112,7 +112,8 @@ schema_fixture = {
                 "aki",
                 "bare",
                 "ovf",
-                "ova"
+                "ova",
+                "docker"
             ],
             "type": [
                 "null",
