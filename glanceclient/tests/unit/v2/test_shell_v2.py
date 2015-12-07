@@ -652,6 +652,36 @@ class ShellV2Test(testtools.TestCase):
             self.assert_exits_with_msg(func=test_shell.do_image_delete,
                                        func_args=args)
 
+    @mock.patch.object(utils, 'print_err')
+    def test_do_image_download_with_forbidden_id(self, mocked_print_err):
+        args = self._make_args({'id': 'IMG-01', 'file': None,
+                                'progress': False})
+        with mock.patch.object(self.gc.images, 'data') as mocked_data:
+            mocked_data.side_effect = exc.HTTPForbidden
+            try:
+                test_shell.do_image_download(self.gc, args)
+                self.fail('Exit not called')
+            except SystemExit:
+                pass
+
+            self.assertEqual(1, mocked_data.call_count)
+            self.assertEqual(1, mocked_print_err.call_count)
+
+    @mock.patch.object(utils, 'print_err')
+    def test_do_image_download_with_500(self, mocked_print_err):
+        args = self._make_args({'id': 'IMG-01', 'file': None,
+                                'progress': False})
+        with mock.patch.object(self.gc.images, 'data') as mocked_data:
+            mocked_data.side_effect = exc.HTTPInternalServerError
+            try:
+                test_shell.do_image_download(self.gc, args)
+                self.fail('Exit not called')
+            except SystemExit:
+                pass
+
+            self.assertEqual(1, mocked_data.call_count)
+            self.assertEqual(1, mocked_print_err.call_count)
+
     def test_do_member_list(self):
         args = self._make_args({'image_id': 'IMG-01'})
         with mock.patch.object(self.gc.image_members, 'list') as mocked_list:

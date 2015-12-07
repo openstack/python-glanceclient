@@ -283,7 +283,7 @@ def import_versioned_module(version, submodule=None):
 
 def exit(msg='', exit_code=1):
     if msg:
-        print(encodeutils.safe_decode(msg), file=sys.stderr)
+        print_err(msg)
     sys.exit(exit_code)
 
 
