@@ -276,6 +276,10 @@ def do_explain(gc, args):
 def do_image_download(gc, args):
     """Download a specific image."""
     body = gc.images.data(args.id)
+    if body is None:
+        msg = ('Image %s has no data.' % args.id)
+        utils.exit(msg)
+
     if args.progress:
         body = progressbar.VerboseIteratorWrapper(body, len(body))
     if not (sys.stdout.isatty() and args.file is None):
