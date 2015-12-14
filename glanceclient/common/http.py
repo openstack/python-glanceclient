@@ -22,10 +22,6 @@ from keystoneclient import exceptions as ksc_exc
 from oslo_utils import importutils
 from oslo_utils import netutils
 import requests
-try:
-    ProtocolError = requests.packages.urllib3.exceptions.ProtocolError
-except ImportError:
-    ProtocolError = requests.exceptions.ConnectionError
 import six
 from six.moves.urllib import parse
 import warnings
@@ -255,7 +251,7 @@ class HTTPClient(_BaseHTTPClient):
             message = ("Error communicating with %(url)s: %(e)s" %
                        dict(url=conn_url, e=e))
             raise exc.InvalidEndpoint(message=message)
-        except (requests.exceptions.ConnectionError, ProtocolError) as e:
+        except requests.exceptions.ConnectionError as e:
             message = ("Error finding address for %(url)s: %(e)s" %
                        dict(url=conn_url, e=e))
             raise exc.CommunicationError(message=message)
