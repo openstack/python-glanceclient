@@ -870,7 +870,7 @@ class TestController(testtools.TestCase):
         resp = utils.FakeResponse(headers={}, status_code=204)
         self.controller.http_client.get = mock.Mock(return_value=(resp, None))
         body = self.controller.data('image_id')
-        self.assertEqual(None, body)
+        self.assertIsNone(body)
 
     def test_update_replace_prop(self):
         image_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
