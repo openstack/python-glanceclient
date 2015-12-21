@@ -294,7 +294,10 @@ def save_image(data, path):
     :param path: path to save the image to
     """
     if path is None:
-        image = sys.stdout
+        if six.PY3:
+            image = sys.stdout.buffer
+        else:
+            image = sys.stdout
     else:
         image = open(path, 'wb')
     try:
