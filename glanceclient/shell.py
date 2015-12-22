@@ -630,13 +630,24 @@ class OpenStackImagesShell(object):
             else:
                 raise exc.CommandError("'%s' is not a valid subcommand" %
                                        args.command)
-            command = ' ' + command
         else:
             parser.print_help()
 
         if not args.os_image_api_version or args.os_image_api_version == '2':
-            print(("\nRun `glance --os-image-api-version 1 help%s`"
-                   " for v1 help") % (command or ''))
+            # NOTE(NiallBunting) This currently assumes that the only versions
+            # are one and two.
+            try:
+                if command is None:
+                    print("\nRun `glance --os-image-api-version 1 help`"
+                          " for v1 help")
+                else:
+                    self.get_subcommand_parser(1)
+                    if command in self.subcommands:
+                        command = ' ' + command
+                        print(("\nRun `glance --os-image-api-version 1 help%s`"
+                               " for v1 help") % (command or ''))
+            except ImportError:
+                pass
 
     def do_bash_completion(self, _args):
         """Prints arguments for bash_completion.
