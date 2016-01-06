@@ -275,7 +275,7 @@ class TestClient(testtools.TestCase):
                       headers={"Content-Type": "application/octet-stream"})
 
         resp, body = self.client.get(path)
-        self.assertTrue(isinstance(body, types.GeneratorType))
+        self.assertIsInstance(body, types.GeneratorType)
         self.assertEqual([data], list(body))
 
     @original_only
