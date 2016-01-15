@@ -306,12 +306,6 @@ class Controller(object):
         :param metadata: Metadata associated with the location.
         :returns: The updated image
         """
-        image = self._get_image_with_locations_or_fail(image_id)
-        url_list = [l['url'] for l in image.locations]
-        if url in url_list:
-            err_str = 'A location entry at %s already exists' % url
-            raise exc.HTTPConflict(err_str)
-
         add_patch = [{'op': 'add', 'path': '/locations/-',
                       'value': {'url': url, 'metadata': metadata}}]
         self._send_image_update_request(image_id, add_patch)
