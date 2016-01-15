@@ -159,7 +159,10 @@ schema_fixture = {
             "type": "string"
         },
         "instance_uuid": {
-            "description": "ID of instance used to create this image.",
+            "description": ("Metadata which can be used to record which "
+                            "instance this image is associated with. "
+                            "(Informational only, does not create an instance "
+                            "snapshot.)"),
             "is_base": "false",
             "type": "string"
         },

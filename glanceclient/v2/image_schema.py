@@ -195,7 +195,10 @@ _BASE_SCHEMA = {
         },
         "instance_uuid": {
             "type": "string",
-            "description": "ID of instance used to create this image."
+            "description": ("Metadata which can be used to record which "
+                            "instance this image is associated with. "
+                            "(Informational only, does not create an instance "
+                            "snapshot.)")
         },
         "name": {
             "type": "string",
