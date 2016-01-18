@@ -138,7 +138,8 @@ def do_image_update(gc, args):
            help=_("Filter images by a user-defined tag."))
 @utils.arg('--sort-key', default=[], action='append',
            choices=images.SORT_KEY_VALUES,
-           help=_('Sort image list by specified fields.'))
+           help=_('Sort image list by specified fields.'
+                  ' May be used multiple times.'))
 @utils.arg('--sort-dir', default=[], action='append',
            choices=images.SORT_DIR_VALUES,
            help=_('Sort image list in specified directions.'))
