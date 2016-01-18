@@ -111,14 +111,15 @@ schema_fixtures = {
                 },
                 "created_at": {
                     "type": "string",
-                    "description": ("Date and time of tag creation"
-                                    " (READ-ONLY)"),
+                    "readOnly": True,
+                    "description": ("Date and time of tag creation"),
                     "format": "date-time"
                 },
                 "updated_at": {
                     "type": "string",
+                    "readOnly": True,
                     "description": ("Date and time of the last tag"
-                                    "  modification (READ-ONLY)"),
+                                    "  modification"),
                     "format": "date-time"
                 },
                 'properties': {}

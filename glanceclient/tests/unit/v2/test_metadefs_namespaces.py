@@ -444,8 +444,9 @@ schema_fixtures = {
                     },
                     "updated_at": {
                         "type": "string",
+                        "readOnly": True,
                         "description": "Date and time of the last namespace "
-                                       "modification (READ-ONLY)",
+                                       "modification",
                         "format": "date-time"
                     },
                     "visibility": {
@@ -512,8 +513,8 @@ schema_fixtures = {
                     },
                     "created_at": {
                         "type": "string",
-                        "description": "Date and time of namespace creation "
-                                       "(READ-ONLY)",
+                        "readOnly": True,
+                        "description": "Date and time of namespace creation ",
                         "format": "date-time"
                     },
                     "namespace": {

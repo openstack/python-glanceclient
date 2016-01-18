@@ -112,7 +112,8 @@ class TestUtils(testtools.TestCase):
         def schema_getter(_type='string', enum=False):
             prop = {
                 'type': ['null', _type],
-                'description': 'Test schema (READ-ONLY)',
+                'readOnly': True,
+                'description': 'Test schema',
             }
 
             if enum:

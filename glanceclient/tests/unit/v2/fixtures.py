@@ -96,7 +96,8 @@ schema_fixture = {
             "type": "string"
         },
         "checksum": {
-            "description": "md5 hash of image contents. (READ-ONLY)",
+            "readOnly": True,
+            "description": "md5 hash of image contents.",
             "maxLength": 32,
             "type": [
                 "null",
@@ -121,12 +122,14 @@ schema_fixture = {
             ]
         },
         "created_at": {
-            "description": "Date and time of image registration (READ-ONLY)",
+            "readOnly": True,
+            "description": "Date and time of image registration",
             "type": "string"
         },
         "direct_url": {
+            "readOnly": True,
             "description": "URL to access the image file kept in external "
-                           "store (READ-ONLY)",
+                           "store",
             "type": "string"
         },
         "disk_format": {
@@ -149,7 +152,8 @@ schema_fixture = {
             ]
         },
         "file": {
-            "description": "(READ-ONLY)",
+            "readOnly": True,
+            "description": "An image file url",
             "type": "string"
         },
         "id": {
@@ -253,22 +257,26 @@ schema_fixture = {
             ]
         },
         "schema": {
-            "description": "(READ-ONLY)",
+            "readOnly": True,
+            "description": "An image schema url",
             "type": "string"
         },
         "self": {
-            "description": "(READ-ONLY)",
+            "readOnly": True,
+            "description": "An image self url",
             "type": "string"
         },
         "size": {
-            "description": "Size of image file in bytes (READ-ONLY)",
+            "readOnly": True,
+            "description": "Size of image file in bytes",
             "type": [
                 "null",
                 "integer"
             ]
         },
         "status": {
-            "description": "Status of the image (READ-ONLY)",
+            "readOnly": True,
+            "description": "Status of the image",
             "enum": [
                 "queued",
                 "saving",
@@ -288,12 +296,14 @@ schema_fixture = {
             "type": "array"
         },
         "updated_at": {
+            "readOnly": True,
             "description": "Date and time of the last image "
-                           "modification (READ-ONLY)",
+                           "modification",
             "type": "string"
         },
         "virtual_size": {
-            "description": "Virtual size of image in bytes (READ-ONLY)",
+            "readOnly": True,
+            "description": "Virtual size of image in bytes",
             "type": [
                 "null",
                 "integer"

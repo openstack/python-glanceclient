@@ -222,8 +222,8 @@ schema_fixtures = {
                 "properties": {
                     "created_at": {
                         "type": "string",
-                        "description": "Date and time of object creation "
-                                       "(READ-ONLY)",
+                        "readOnly": True,
+                        "description": "Date and time of object creation ",
                         "format": "date-time"
                     },
                     "description": {
@@ -246,8 +246,9 @@ schema_fixtures = {
                     },
                     "updated_at": {
                         "type": "string",
+                        "readOnly": True,
                         "description": "Date and time of the last object "
-                                       "modification (READ-ONLY)",
+                                       "modification",
                         "format": "date-time"
                     },
                 }
