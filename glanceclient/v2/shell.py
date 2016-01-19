@@ -22,6 +22,8 @@ from glanceclient import exc
 from glanceclient.v2 import image_members
 from glanceclient.v2 import image_schema
 from glanceclient.v2 import images
+from glanceclient.v2 import namespace_schema
+from glanceclient.v2 import resource_type_schema
 from glanceclient.v2 import tasks
 import json
 import os
@@ -454,6 +456,8 @@ def get_namespace_schema():
             with open(schema_path, "r") as f:
                 schema_raw = f.read()
                 NAMESPACE_SCHEMA = json.loads(schema_raw)
+        else:
+            return namespace_schema.BASE_SCHEMA
     return NAMESPACE_SCHEMA
 
 
@@ -601,6 +605,8 @@ def get_resource_type_schema():
             with open(schema_path, "r") as f:
                 schema_raw = f.read()
                 RESOURCE_TYPE_SCHEMA = json.loads(schema_raw)
+        else:
+            return resource_type_schema.BASE_SCHEMA
     return RESOURCE_TYPE_SCHEMA
 
 
