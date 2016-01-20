@@ -388,7 +388,7 @@ def do_image_tag_delete(gc, args):
 @utils.arg('--metadata', metavar='<STRING>', default='{}',
            help=_('Metadata associated with the location. '
                   'Must be a valid JSON object (default: %(default)s)'))
-@utils.arg('id', metavar='<ID>',
+@utils.arg('id', metavar='<IMAGE_ID>',
            help=_('ID of image to which the location is to be added.'))
 def do_location_add(gc, args):
     """Add a location (and related metadata) to an image."""
@@ -403,7 +403,7 @@ def do_location_add(gc, args):
 
 @utils.arg('--url', metavar='<URL>', action='append', required=True,
            help=_('URL of location to remove. May be used multiple times.'))
-@utils.arg('id', metavar='<ID>',
+@utils.arg('id', metavar='<IMAGE_ID>',
            help=_('ID of image whose locations are to be removed.'))
 def do_location_delete(gc, args):
     """Remove locations (and related metadata) from an image."""
@@ -415,7 +415,7 @@ def do_location_delete(gc, args):
 @utils.arg('--metadata', metavar='<STRING>', default='{}',
            help=_('Metadata associated with the location. '
                   'Must be a valid JSON object (default: %(default)s)'))
-@utils.arg('id', metavar='<ID>',
+@utils.arg('id', metavar='<IMAGE_ID>',
            help=_('ID of image whose location is to be updated.'))
 def do_location_update(gc, args):
     """Update metadata of an image's location."""
