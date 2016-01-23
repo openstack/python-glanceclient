@@ -33,17 +33,12 @@ import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 
-from glanceclient.common import utils
-
 try:
     from eventlet import patcher
     # Handle case where we are running in a monkey patched environment
     if patcher.is_monkey_patched('socket'):
         from eventlet.green.httplib import HTTPSConnection
         from eventlet.green.OpenSSL.SSL import GreenConnection as Connection
-        from eventlet.greenio import GreenSocket
-        # TODO(mclaren): A getsockopt workaround: see 'getsockopt' doc string
-        GreenSocket.getsockopt = utils.getsockopt
     else:
         raise ImportError
 except ImportError:
