@@ -285,9 +285,7 @@ class OpenStackImagesShell(object):
 
         return (v2_auth_url, v3_auth_url)
 
-    def _get_keystone_session(self, **kwargs):
-        ks_session = session.Session.construct(kwargs)
-
+    def _get_keystone_auth_plugin(self, ks_session, **kwargs):
         # discover the supported keystone versions using the given auth url
         auth_url = kwargs.pop('auth_url', None)
         (v2_auth_url, v3_auth_url) = self._discover_auth_versions(
@@ -347,10 +345,9 @@ class OpenStackImagesShell(object):
                              "may not able to handle Keystone V3 credentials. "
                              "Please provide a correct Keystone V3 auth_url.")
 
-        ks_session.auth = auth
-        return ks_session
+        return auth
 
-    def _get_kwargs_for_create_session(self, args):
+    def _get_kwargs_to_create_auth_plugin(self, args):
         if not args.os_username:
             raise exc.CommandError(
                 _("You must provide a username via"
@@ -417,10 +414,6 @@ class OpenStackImagesShell(object):
             'project_id': args.os_project_id,
             'project_domain_name': args.os_project_domain_name,
             'project_domain_id': args.os_project_domain_id,
-            'insecure': args.insecure,
-            'cacert': args.os_cacert,
-            'cert': args.os_cert,
-            'key': args.os_key
         }
         return kwargs
 
@@ -441,17 +434,19 @@ class OpenStackImagesShell(object):
                 'ssl_compression': args.ssl_compression
             }
         else:
-            kwargs = self._get_kwargs_for_create_session(args)
-            ks_session = self._get_keystone_session(**kwargs)
+            ks_session = session.Session.load_from_cli_options(args)
+            auth_plugin_kwargs = self._get_kwargs_to_create_auth_plugin(args)
+            ks_session.auth = self._get_keystone_auth_plugin(
+                ks_session=ks_session, **auth_plugin_kwargs)
             kwargs = {'session': ks_session}
 
-        if endpoint is None:
-            endpoint_type = args.os_endpoint_type or 'public'
-            service_type = args.os_service_type or 'image'
-            endpoint = ks_session.get_endpoint(
-                service_type=service_type,
-                interface=endpoint_type,
-                region_name=args.os_region_name)
+            if endpoint is None:
+                endpoint_type = args.os_endpoint_type or 'public'
+                service_type = args.os_service_type or 'image'
+                endpoint = ks_session.get_endpoint(
+                    service_type=service_type,
+                    interface=endpoint_type,
+                    region_name=args.os_region_name)
 
         return glanceclient.Client(api_version, endpoint, **kwargs)
 

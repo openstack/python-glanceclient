@@ -207,14 +207,14 @@ class ShellTest(testutils.TestCase):
     def test_help(self):
         shell = openstack_shell.OpenStackImagesShell()
         argstr = '--os-image-api-version 2 help'
-        with mock.patch.object(shell, '_get_keystone_session') as et_mock:
+        with mock.patch.object(shell, '_get_keystone_auth_plugin') as et_mock:
             actual = shell.main(argstr.split())
             self.assertEqual(0, actual)
             self.assertFalse(et_mock.called)
 
     def test_blank_call(self):
         shell = openstack_shell.OpenStackImagesShell()
-        with mock.patch.object(shell, '_get_keystone_session') as et_mock:
+        with mock.patch.object(shell, '_get_keystone_auth_plugin') as et_mock:
             actual = shell.main('')
             self.assertEqual(0, actual)
             self.assertFalse(et_mock.called)
@@ -226,21 +226,21 @@ class ShellTest(testutils.TestCase):
     def test_help_v2_no_schema(self):
         shell = openstack_shell.OpenStackImagesShell()
         argstr = '--os-image-api-version 2 help image-create'
-        with mock.patch.object(shell, '_get_keystone_session') as et_mock:
+        with mock.patch.object(shell, '_get_keystone_auth_plugin') as et_mock:
             actual = shell.main(argstr.split())
             self.assertEqual(0, actual)
             self.assertNotIn('<unavailable>', actual)
             self.assertFalse(et_mock.called)
 
         argstr = '--os-image-api-version 2 help md-namespace-create'
-        with mock.patch.object(shell, '_get_keystone_session') as et_mock:
+        with mock.patch.object(shell, '_get_keystone_auth_plugin') as et_mock:
             actual = shell.main(argstr.split())
             self.assertEqual(0, actual)
             self.assertNotIn('<unavailable>', actual)
             self.assertFalse(et_mock.called)
 
         argstr = '--os-image-api-version 2 help md-resource-type-associate'
-        with mock.patch.object(shell, '_get_keystone_session') as et_mock:
+        with mock.patch.object(shell, '_get_keystone_auth_plugin') as et_mock:
             actual = shell.main(argstr.split())
             self.assertEqual(0, actual)
             self.assertNotIn('<unavailable>', actual)
@@ -413,7 +413,7 @@ class ShellTest(testutils.TestCase):
         mock_getpass.assert_called_with('OS Password: ')
 
     @mock.patch(
-        'glanceclient.shell.OpenStackImagesShell._get_keystone_session')
+        'glanceclient.shell.OpenStackImagesShell._get_keystone_auth_plugin')
     @mock.patch.object(openstack_shell.OpenStackImagesShell, '_cache_schemas',
                        return_value=False)
     def test_no_auth_with_proj_name(self, cache_schemas, session):
