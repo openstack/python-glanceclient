@@ -349,111 +349,101 @@ class OpenStackImagesShell(object):
         ks_session.auth = auth
         return ks_session
 
-    def _get_endpoint_and_token(self, args):
+    def _get_kwargs_for_create_session(self, args):
+        if not args.os_username:
+            raise exc.CommandError(
+                _("You must provide a username via"
+                  " either --os-username or "
+                  "env[OS_USERNAME]"))
+
+        if not args.os_password:
+            # No password, If we've got a tty, try prompting for it
+            if hasattr(sys.stdin, 'isatty') and sys.stdin.isatty():
+                # Check for Ctl-D
+                try:
+                    args.os_password = getpass.getpass('OS Password: ')
+                except EOFError:
+                    pass
+            # No password because we didn't have a tty or the
+            # user Ctl-D when prompted.
+            if not args.os_password:
+                raise exc.CommandError(
+                    _("You must provide a password via "
+                      "either --os-password, "
+                      "env[OS_PASSWORD], "
+                      "or prompted response"))
+
+        # Validate password flow auth
+        project_info = (
+            args.os_tenant_name or args.os_tenant_id or (
+                args.os_project_name and (
+                    args.os_project_domain_name or
+                    args.os_project_domain_id
+                )
+            ) or args.os_project_id
+        )
+
+        if not project_info:
+            # tenant is deprecated in Keystone v3. Use the latest
+            # terminology instead.
+            raise exc.CommandError(
+                _("You must provide a project_id or project_name ("
+                  "with project_domain_name or project_domain_id) "
+                  "via "
+                  "  --os-project-id (env[OS_PROJECT_ID])"
+                  "  --os-project-name (env[OS_PROJECT_NAME]),"
+                  "  --os-project-domain-id "
+                  "(env[OS_PROJECT_DOMAIN_ID])"
+                  "  --os-project-domain-name "
+                  "(env[OS_PROJECT_DOMAIN_NAME])"))
+
+        if not args.os_auth_url:
+            raise exc.CommandError(
+                _("You must provide an auth url via"
+                  " either --os-auth-url or "
+                  "via env[OS_AUTH_URL]"))
+
+        kwargs = {
+            'auth_url': args.os_auth_url,
+            'username': args.os_username,
+            'user_id': args.os_user_id,
+            'user_domain_id': args.os_user_domain_id,
+            'user_domain_name': args.os_user_domain_name,
+            'password': args.os_password,
+            'tenant_name': args.os_tenant_name,
+            'tenant_id': args.os_tenant_id,
+            'project_name': args.os_project_name,
+            'project_id': args.os_project_id,
+            'project_domain_name': args.os_project_domain_name,
+            'project_domain_id': args.os_project_domain_id,
+            'insecure': args.insecure,
+            'cacert': args.os_cacert,
+            'cert': args.os_cert,
+            'key': args.os_key
+        }
+        return kwargs
+
+    def _get_versioned_client(self, api_version, args):
         endpoint = self._get_image_url(args)
         auth_token = args.os_auth_token
 
         auth_req = (hasattr(args, 'func') and
                     utils.is_authentication_required(args.func))
-
-        if auth_req and not (endpoint and auth_token):
-            if not args.os_username:
-                raise exc.CommandError(
-                    _("You must provide a username via"
-                      " either --os-username or "
-                      "env[OS_USERNAME]"))
-
-            if not args.os_password:
-                # No password, If we've got a tty, try prompting for it
-                if hasattr(sys.stdin, 'isatty') and sys.stdin.isatty():
-                    # Check for Ctl-D
-                    try:
-                        args.os_password = getpass.getpass('OS Password: ')
-                    except EOFError:
-                        pass
-                # No password because we didn't have a tty or the
-                # user Ctl-D when prompted.
-                if not args.os_password:
-                    raise exc.CommandError(
-                        _("You must provide a password via "
-                          "either --os-password, "
-                          "env[OS_PASSWORD], "
-                          "or prompted response"))
-
-            # Validate password flow auth
-            project_info = (
-                args.os_tenant_name or args.os_tenant_id or (
-                    args.os_project_name and (
-                        args.os_project_domain_name or
-                        args.os_project_domain_id
-                    )
-                ) or args.os_project_id
-            )
-
-            if not project_info:
-                # tenant is deprecated in Keystone v3. Use the latest
-                # terminology instead.
-                raise exc.CommandError(
-                    _("You must provide a project_id or project_name ("
-                      "with project_domain_name or project_domain_id) "
-                      "via "
-                      "  --os-project-id (env[OS_PROJECT_ID])"
-                      "  --os-project-name (env[OS_PROJECT_NAME]),"
-                      "  --os-project-domain-id "
-                      "(env[OS_PROJECT_DOMAIN_ID])"
-                      "  --os-project-domain-name "
-                      "(env[OS_PROJECT_DOMAIN_NAME])"))
-
-            if not args.os_auth_url:
-                raise exc.CommandError(
-                    _("You must provide an auth url via"
-                      " either --os-auth-url or "
-                      "via env[OS_AUTH_URL]"))
-
+        if not auth_req or (endpoint and auth_token):
             kwargs = {
-                'auth_url': args.os_auth_url,
-                'username': args.os_username,
-                'user_id': args.os_user_id,
-                'user_domain_id': args.os_user_domain_id,
-                'user_domain_name': args.os_user_domain_name,
-                'password': args.os_password,
-                'tenant_name': args.os_tenant_name,
-                'tenant_id': args.os_tenant_id,
-                'project_name': args.os_project_name,
-                'project_id': args.os_project_id,
-                'project_domain_name': args.os_project_domain_name,
-                'project_domain_id': args.os_project_domain_id,
+                'token': auth_token,
                 'insecure': args.insecure,
+                'timeout': args.timeout,
                 'cacert': args.os_cacert,
                 'cert': args.os_cert,
-                'key': args.os_key
+                'key': args.os_key,
+                'ssl_compression': args.ssl_compression
             }
-            ks_session = self._get_keystone_session(**kwargs)
-            auth_token = args.os_auth_token or ks_session.get_token()
+        else:
+            kwargs = self._get_kwargs_for_create_session(args)
+            kwargs = {'session': self._get_keystone_session(**kwargs)}
 
-            endpoint_type = args.os_endpoint_type or 'public'
-            service_type = args.os_service_type or 'image'
-            endpoint = args.os_image_url or ks_session.get_endpoint(
-                service_type=service_type,
-                interface=endpoint_type,
-                region_name=args.os_region_name)
-
-        return endpoint, auth_token
-
-    def _get_versioned_client(self, api_version, args):
-        endpoint, token = self._get_endpoint_and_token(args)
-
-        kwargs = {
-            'token': token,
-            'insecure': args.insecure,
-            'timeout': args.timeout,
-            'cacert': args.os_cacert,
-            'cert': args.os_cert,
-            'key': args.os_key,
-            'ssl_compression': args.ssl_compression
-        }
-        client = glanceclient.Client(api_version, endpoint, **kwargs)
-        return client
+        return glanceclient.Client(api_version, endpoint, **kwargs)
 
     def _cache_schemas(self, options, client, home_dir='~/.glanceclient'):
         homedir = os.path.expanduser(home_dir)
