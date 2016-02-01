@@ -206,8 +206,7 @@ class TestHTTPSVerifyCert(testtools.TestCase):
                         cacert=cacert)
             gc.images.get('image123')
         except exc.CommunicationError as e:
-            if (six.PY2 and 'PrivateKey' not in e.message or
-                    six.PY3 and 'PEM lib' not in e.message):
+            if ('PEM lib' not in e.message):
                 self.fail('No appropriate failure message is received')
         except Exception as e:
             self.fail('Unexpected exception has been raised')
@@ -228,8 +227,13 @@ class TestHTTPSVerifyCert(testtools.TestCase):
                         cacert=cacert)
             gc.images.get('image123')
         except exc.CommunicationError as e:
-            if (six.PY2 and 'PrivateKey' not in e.message or
-                    six.PY3 and 'No such file' not in e.message):
+            # NOTE(dsariel)
+            # starting from python 2.7.8 the way to handle loading private
+            # keys into the SSL_CTX was changed and error message become
+            # similar to the one in 3.X
+            if (six.PY2 and 'PrivateKey' not in e.message and
+                    'PEM lib' not in e.message or
+                    six.PY3 and 'PEM lib' not in e.message):
                 self.fail('No appropriate failure message is received')
         except Exception as e:
             self.fail('Unexpected exception has been raised')
@@ -248,7 +252,12 @@ class TestHTTPSVerifyCert(testtools.TestCase):
                         cacert=cacert)
             gc.images.get('image123')
         except exc.CommunicationError as e:
-            if (six.PY2 and 'certificate' not in e.message or
+            # NOTE(dsariel)
+            # starting from python 2.7.8 the way of handling x509 certificates
+            # was changed (github.com/python/peps/blob/master/pep-0476.txt#L28)
+            # and error message become similar to the one in 3.X
+            if (six.PY2 and 'certificate' not in e.message and
+                    'No such file' not in e.message or
                     six.PY3 and 'No such file' not in e.message):
                 self.fail('No appropriate failure message is received')
         except Exception as e:
