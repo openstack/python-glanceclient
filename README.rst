@@ -1,5 +1,5 @@
 Python bindings to the OpenStack Images API
-=============================================
+===========================================
 
 .. image:: https://img.shields.io/pypi/v/python-glanceclient.svg
     :target: https://pypi.python.org/pypi/python-glanceclient/

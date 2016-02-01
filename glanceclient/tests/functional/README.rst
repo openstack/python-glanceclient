@@ -1,9 +1,9 @@
-=====================================
+======================================
 python-glanceclient functional testing
-=====================================
+======================================
 
 Idea
-------
+----
 
 Run real client/server requests in the gate to catch issues which
 are difficult to catch with a purely unit test approach.
@@ -13,7 +13,7 @@ the gate.
 
 
 Testing Theory
-----------------
+--------------
 
 Since python-glanceclient has two uses, CLI and python API, we should
 have two sets of functional tests. CLI and python API. The python API
@@ -23,7 +23,7 @@ would involve a non trivial amount of work.
 
 
 Functional Test Guidelines
----------------------------
+--------------------------
 
 The functional tests require:
 
@@ -39,10 +39,15 @@ with the following format:
    devstack-admin:
      auth:
        auth_url: http://10.0.0.1:35357/v2.0
+
        password: example
+
        project_name: admin
+
        username: admin
+
      identity_api_version: '2.0'
+
      region_name: RegionOne
 
 and copy it to ~/.config/openstack/clouds.yaml
