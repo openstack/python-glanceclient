@@ -23,18 +23,12 @@ from oslo_utils import importutils
 from oslo_utils import netutils
 import requests
 import six
-from six.moves.urllib import parse
 import warnings
 
 try:
     import json
 except ImportError:
     import simplejson as json
-
-# Python 2.5 compat fix
-if not hasattr(parse, 'parse_qsl'):
-    import cgi
-    parse.parse_qsl = cgi.parse_qsl
 
 from oslo_utils import encodeutils
 
