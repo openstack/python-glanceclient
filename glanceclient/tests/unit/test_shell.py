@@ -615,9 +615,11 @@ class ShellCacheSchemaTest(testutils.TestCase):
         self.client.schemas.get.return_value = schemas.Schema(schema_odict)
 
     def _mock_shell_setup(self):
-        mocked_get_client = mock.MagicMock(return_value=self.client)
         self.shell = openstack_shell.OpenStackImagesShell()
-        self.shell._get_versioned_client = mocked_get_client
+        self.shell._get_versioned_client = mock.create_autospec(
+            self.shell._get_versioned_client, return_value=self.client,
+            spec_set=True
+        )
 
     def _make_args(self, args):
         class Args(object):
@@ -636,7 +638,7 @@ class ShellCacheSchemaTest(testutils.TestCase):
         schema_odict = OrderedDict(self.schema_dict)
 
         args = self._make_args(options)
-        client = self.shell._get_versioned_client('2', args, force_auth=True)
+        client = self.shell._get_versioned_client('2', args)
         self.shell._cache_schemas(args, client, home_dir=self.cache_dir)
 
         self.assertEqual(12, open.mock_calls.__len__())
@@ -659,7 +661,7 @@ class ShellCacheSchemaTest(testutils.TestCase):
         schema_odict = OrderedDict(self.schema_dict)
 
         args = self._make_args(options)
-        client = self.shell._get_versioned_client('2', args, force_auth=True)
+        client = self.shell._get_versioned_client('2', args)
         self.shell._cache_schemas(args, client, home_dir=self.cache_dir)
 
         self.assertEqual(12, open.mock_calls.__len__())
