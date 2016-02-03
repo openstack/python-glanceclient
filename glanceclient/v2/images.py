@@ -189,7 +189,7 @@ class Controller(object):
 
         :param image_id:    ID of the image to download.
         :param do_checksum: Enable/disable checksum validation.
-        :returns: An interable body or None
+        :returns: An iterable body or None
         """
         url = '/v2/images/%s/file' % image_id
         resp, body = self.http_client.get(url)
@@ -209,7 +209,7 @@ class Controller(object):
 
         :param image_id: ID of the image to upload data for.
         :param image_data: File-like object supplying the data to upload.
-        :param image_size: Unused - present for backwards compatability
+        :param image_size: Unused - present for backwards compatibility
         """
         url = '/v2/images/%s/file' % image_id
         hdrs = {'Content-Type': 'application/octet-stream'}

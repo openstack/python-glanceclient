@@ -272,7 +272,7 @@ class ShellTest(testutils.TestCase):
         glance_shell = openstack_shell.OpenStackImagesShell()
         glance_shell.main(args.split())
         # NOTE(flaper87): this currently calls auth twice since it'll
-        # authenticate to get the verison list *and* to excuted the command.
+        # authenticate to get the version list *and* to execute the command.
         # This is not the ideal behavior and it should be fixed in a follow
         # up patch.
         self._assert_auth_plugin_args()
