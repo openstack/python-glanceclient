@@ -86,7 +86,8 @@ _BASE_SCHEMA = {
         },
         "file": {
             "type": "string",
-            "description": "(READ-ONLY)"
+            "readOnly": True,
+            "description": ("An image file url")
         },
         "owner": {
             "type": "string",
@@ -102,7 +103,8 @@ _BASE_SCHEMA = {
         },
         "size": {
             "type": "integer",
-            "description": "Size of image file in bytes (READ-ONLY)"
+            "readOnly": True,
+            "description": "Size of image file in bytes"
         },
         "os_distro": {
             "type": "string",
@@ -111,7 +113,8 @@ _BASE_SCHEMA = {
         },
         "self": {
             "type": "string",
-            "description": "(READ-ONLY)"
+            "readOnly": True,
+            "description": ("An image self url")
         },
         "disk_format": {
             "enum": [
@@ -135,12 +138,14 @@ _BASE_SCHEMA = {
         },
         "direct_url": {
             "type": "string",
+            "readOnly": True,
             "description": ("URL to access the image file kept in "
-                            "external store (READ-ONLY)")
+                            "external store")
         },
         "schema": {
             "type": "string",
-            "description": "(READ-ONLY)"
+            "readOnly": True,
+            "description": ("An image schema url")
         },
         "status": {
             "enum": [
@@ -152,7 +157,8 @@ _BASE_SCHEMA = {
                 "pending_delete"
             ],
             "type": "string",
-            "description": "Status of the image (READ-ONLY)"
+            "readOnly": True,
+            "description": "Status of the image"
         },
         "tags": {
             "items": {
@@ -181,8 +187,9 @@ _BASE_SCHEMA = {
         },
         "updated_at": {
             "type": "string",
+            "readOnly": True,
             "description": ("Date and time of the last "
-                            "image modification (READ-ONLY)")
+                            "image modification")
         },
         "min_disk": {
             "type": "integer",
@@ -191,7 +198,8 @@ _BASE_SCHEMA = {
         },
         "virtual_size": {
             "type": "integer",
-            "description": "Virtual size of image in bytes (READ-ONLY)"
+            "readOnly": True,
+            "description": "Virtual size of image in bytes"
         },
         "instance_uuid": {
             "type": "string",
@@ -207,12 +215,14 @@ _BASE_SCHEMA = {
         },
         "checksum": {
             "type": "string",
-            "description": "md5 hash of image contents. (READ-ONLY)",
+            "readOnly": True,
+            "description": "md5 hash of image contents.",
             "maxLength": 32
         },
         "created_at": {
             "type": "string",
-            "description": "Date and time of image registration (READ-ONLY)"
+            "readOnly": True,
+            "description": "Date and time of image registration "
         },
         "protected": {
             "type": "boolean",
