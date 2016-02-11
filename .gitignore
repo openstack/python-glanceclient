@@ -20,3 +20,5 @@ doc/build
 *.egg
 .eggs/*
 glanceclient/versioninfo
+# Files created by releasenotes build
+releasenotes/build
