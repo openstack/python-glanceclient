@@ -421,6 +421,10 @@ def do_location_update(gc, args):
     """Update metadata of an image's location."""
     try:
         metadata = json.loads(args.metadata)
+
+        if metadata == {}:
+            print("WARNING -- The location's metadata will be updated to "
+                  "an empty JSON object.")
     except ValueError:
         utils.exit('Metadata is not a valid JSON object.')
     else:
