@@ -686,9 +686,12 @@ class ShellCacheSchemaTest(testutils.TestCase):
         self.shell._cache_schemas(self._make_args(options),
                                   client, home_dir=self.cache_dir)
 
-        os.path.exists.assert_any_call(self.prefix_path)
-        os.path.exists.assert_any_call(self.cache_files[0])
-        os.path.exists.assert_any_call(self.cache_files[1])
+        exists_mock.assert_has_calls([
+            mock.call(self.prefix_path),
+            mock.call(self.cache_files[0]),
+            mock.call(self.cache_files[1]),
+            mock.call(self.cache_files[2])
+        ])
         self.assertEqual(4, exists_mock.call_count)
         self.assertEqual(0, open.mock_calls.__len__())
 
