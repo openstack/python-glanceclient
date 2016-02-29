@@ -872,6 +872,15 @@ class TestController(testtools.TestCase):
         body = self.controller.data('image_id')
         self.assertIsNone(body)
 
+    def test_download_forbidden(self):
+        self.controller.http_client.get = mock.Mock(
+            side_effect=exc.HTTPForbidden())
+        try:
+            self.controller.data('image_id')
+            self.fail('No forbidden exception raised.')
+        except exc.HTTPForbidden:
+            pass
+
     def test_update_replace_prop(self):
         image_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
         params = {'name': 'pong'}

@@ -276,7 +276,12 @@ def do_explain(gc, args):
            help=_('Show download progress bar.'))
 def do_image_download(gc, args):
     """Download a specific image."""
-    body = gc.images.data(args.id)
+    try:
+        body = gc.images.data(args.id)
+    except (exc.HTTPForbidden, exc.HTTPException) as e:
+        msg = "Unable to download image '%s'. (%s)" % (args.id, e)
+        utils.exit(msg)
+
     if body is None:
         msg = ('Image %s has no data.' % args.id)
         utils.exit(msg)
