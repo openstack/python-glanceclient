@@ -116,6 +116,7 @@ class HTTPClient(_BaseHTTPClient):
         self.identity_headers = kwargs.get('identity_headers')
         self.auth_token = kwargs.get('token')
         self.language_header = kwargs.get('language_header')
+        self.last_request_id = None
         if self.identity_headers:
             if self.identity_headers.get('X-Auth-Token'):
                 self.auth_token = self.identity_headers.get('X-Auth-Token')
@@ -264,6 +265,7 @@ class HTTPClient(_BaseHTTPClient):
                        {'endpoint': endpoint, 'e': e})
             raise exc.CommunicationError(message=message)
 
+        self.last_request_id = resp.headers.get('x-openstack-request-id')
         resp, body_iter = self._handle_response(resp)
         self.log_http_response(resp)
         return resp, body_iter
@@ -303,6 +305,7 @@ class SessionClient(adapter.Adapter, _BaseHTTPClient):
     def __init__(self, session, **kwargs):
         kwargs.setdefault('user_agent', USER_AGENT)
         kwargs.setdefault('service_type', 'image')
+        self.last_request_id = None
         super(SessionClient, self).__init__(session, **kwargs)
 
     def request(self, url, method, **kwargs):
@@ -329,6 +332,7 @@ class SessionClient(adapter.Adapter, _BaseHTTPClient):
                        dict(url=conn_url, e=e))
             raise exc.CommunicationError(message=message)
 
+        self.last_request_id = resp.headers.get('x-openstack-request-id')
         return self._handle_response(resp)
 
 
