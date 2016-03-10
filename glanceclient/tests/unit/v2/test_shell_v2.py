@@ -644,6 +644,20 @@ class ShellV2Test(testtools.TestCase):
             self.assertEqual(2, mocked_print_err.call_count)
             mocked_utils_exit.assert_called_once_with()
 
+    @mock.patch.object(utils, 'exit')
+    @mock.patch.object(utils, 'print_err')
+    def test_do_image_delete_with_image_in_use(self, mocked_print_err,
+                                               mocked_utils_exit):
+        args = argparse.Namespace(id=['image1', 'image2'])
+        with mock.patch.object(self.gc.images, 'delete') as mocked_delete:
+            mocked_delete.side_effect = exc.HTTPConflict
+
+            test_shell.do_image_delete(self.gc, args)
+
+            self.assertEqual(2, mocked_delete.call_count)
+            self.assertEqual(2, mocked_print_err.call_count)
+            mocked_utils_exit.assert_called_once_with()
+
     def test_do_image_delete_deleted(self):
         image_id = 'deleted-img'
         args = argparse.Namespace(id=[image_id])

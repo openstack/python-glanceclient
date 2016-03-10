@@ -338,6 +338,10 @@ def do_image_delete(gc, args):
             msg = "No image with an ID of '%s' exists." % args_id
             utils.print_err(msg)
             failure_flag = True
+        except exc.HTTPConflict:
+            msg = "Unable to delete image '%s' because it is in use." % args_id
+            utils.print_err(msg)
+            failure_flag = True
         except exc.HTTPException as e:
             msg = "'%s': Unable to delete image '%s'" % (e, args_id)
             utils.print_err(msg)
