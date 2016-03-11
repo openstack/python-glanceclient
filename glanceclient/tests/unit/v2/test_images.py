@@ -1100,8 +1100,6 @@ class TestController(testtools.TestCase):
         loc_map = dict([(l['url'], l) for l in orig_locations])
         loc_map[new_loc['url']] = new_loc
         mod_patch = [{'path': '/locations', 'op': 'replace',
-                      'value': []},
-                     {'path': '/locations', 'op': 'replace',
                       'value': list(loc_map.values())}]
         self.controller.update_location(image_id, **new_loc)
         self.assertEqual(self.api.calls, [

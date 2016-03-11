@@ -348,20 +348,17 @@ class Controller(object):
         image = self._get_image_with_locations_or_fail(image_id)
         url_map = dict([(l['url'], l) for l in image.locations])
         if url not in url_map:
-            raise exc.HTTPNotFound('Unknown URL: %s' % url)
+            raise exc.HTTPNotFound('Unknown URL: %s, the URL must be one of'
+                                   ' existing locations of current image' %
+                                   url)
 
         if url_map[url]['metadata'] == metadata:
             return image
 
-        # NOTE: The server (as of now) doesn't support modifying individual
-        # location entries. So we must:
-        #   1. Empty existing list of locations.
-        #   2. Send another request to set 'locations' to the new list
-        #      of locations.
         url_map[url]['metadata'] = metadata
         patches = [{'op': 'replace',
                     'path': '/locations',
-                    'value': p} for p in ([], list(url_map.values()))]
+                    'value': list(url_map.values())}]
         self._send_image_update_request(image_id, patches)
 
         return self.get(image_id)
