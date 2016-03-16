@@ -23,7 +23,6 @@ In order to use the python api directly, you must first obtain an auth token and
 
 Python API Reference
 ~~~~~~~~~~~~~~~~~~~~
-
 .. toctree::
    :maxdepth: 2
 
@@ -31,6 +30,17 @@ Python API Reference
    ref/v1/index
    ref/v2/index
 
+.. toctree::
+   :maxdepth: 1
+
+   How to use the v2 API <apiv2>
+
+Command-line Tool Reference
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. toctree::
+   :maxdepth: 1
+
+   man/glance
 
 Command-line Tool
 -----------------
