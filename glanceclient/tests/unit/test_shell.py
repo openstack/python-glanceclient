@@ -523,9 +523,14 @@ class ShellTest(testutils.TestCase):
         except SystemExit:
             self.fail('Unexpected SystemExit')
 
-        # We expect the normal usage as a result
-        self.assertIn('Command-line interface to the OpenStack Images API',
-                      sys.stdout.getvalue())
+        # We expect the normal v2 usage as a result
+        expected = ['Command-line interface to the OpenStack Images API',
+                    'image-list',
+                    'image-deactivate',
+                    'location-add']
+        for output in expected:
+            self.assertIn(output,
+                          sys.stdout.getvalue())
 
 
 class ShellTestWithKeystoneV3Auth(ShellTest):
