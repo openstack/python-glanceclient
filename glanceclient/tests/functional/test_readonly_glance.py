@@ -52,7 +52,7 @@ class SimpleReadOnlyGlanceClientTest(base.ClientTestBase):
     def test_member_list_v2(self):
         try:
             # NOTE(flwang): If set disk-format and container-format, Jenkins
-            # will raise an error said can't recognize the params, thouhg it
+            # will raise an error said can't recognize the params, though it
             # works fine at local. Without the two params, Glance will
             # complain. So we just catch the exception can skip it.
             self.glance('--os-image-api-version 2 image-create --name temp')
