@@ -71,7 +71,7 @@ class SchemaProperty(object):
 def translate_schema_properties(schema_properties):
     """Parse the properties dictionary of a schema document.
 
-    :returns list of SchemaProperty objects
+    :returns: list of SchemaProperty objects
     """
     properties = []
     for (name, prop) in schema_properties.items():

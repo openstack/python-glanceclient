@@ -41,7 +41,8 @@ class Controller(object):
         """Retrieve a listing of Task objects.
 
         :param page_size: Number of tasks to request in each paginated request
-        :returns generator over list of Tasks
+        :returns: generator over list of Tasks
+
         """
         def paginate(url):
             resp, body = self.http_client.get(url)
