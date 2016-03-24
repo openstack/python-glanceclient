@@ -178,6 +178,20 @@ class ShellTest(testutils.TestCase):
             self.assertNotIn('<unavailable>', actual)
             self.assertFalse(et_mock.called)
 
+        argstr = '--os-image-api-version 2 help md-namespace-create'
+        with mock.patch.object(shell, '_get_keystone_session') as et_mock:
+            actual = shell.main(argstr.split())
+            self.assertEqual(0, actual)
+            self.assertNotIn('<unavailable>', actual)
+            self.assertFalse(et_mock.called)
+
+        argstr = '--os-image-api-version 2 help md-resource-type-associate'
+        with mock.patch.object(shell, '_get_keystone_session') as et_mock:
+            actual = shell.main(argstr.split())
+            self.assertEqual(0, actual)
+            self.assertNotIn('<unavailable>', actual)
+            self.assertFalse(et_mock.called)
+
     def test_get_base_parser(self):
         test_shell = openstack_shell.OpenStackImagesShell()
         actual_parser = test_shell.get_base_parser()
