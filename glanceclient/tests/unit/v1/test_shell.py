@@ -440,11 +440,10 @@ class ShellInvalidEndpointandParameterTest(utils.TestCase):
 class ShellStdinHandlingTests(testtools.TestCase):
 
     def _fake_update_func(self, *args, **kwargs):
-        """
+        """Replace glanceclient.images.update with a fake.
 
-        Function to replace glanceclient.images.update,
-        to determine the parameters that would be supplied with the update
-        request
+        To determine the parameters that would be supplied with the update
+        request.
         """
 
         # Store passed in args
@@ -523,7 +522,7 @@ class ShellStdinHandlingTests(testtools.TestCase):
         )
 
     def test_image_update_closed_stdin(self):
-        """
+        """Test image update with a closed stdin.
 
         Supply glanceclient with a closed stdin, and perform an image
         update to an active image. Glanceclient should not attempt to read
@@ -542,7 +541,7 @@ class ShellStdinHandlingTests(testtools.TestCase):
         )
 
     def test_image_update_opened_stdin(self):
-        """
+        """Test image update with an opened stdin.
 
         Supply glanceclient with a stdin, and perform an image
         update to an active image. Glanceclient should not allow it.

@@ -87,11 +87,10 @@ class Schema(object):
         self.properties = translate_schema_properties(raw_properties)
 
     def is_core_property(self, property_name):
-        """
+        """Check if a property with a given name is known to the schema.
 
-        Checks if a property with a given name is known to the schema,
-        i.e. is either a base property or a custom one registered in
-        schema-image.json file
+        Determines if it is either a base property or a custom one
+        registered in schema-image.json file
 
         :param property_name: name of the property
         :returns: True if the property is known, False otherwise

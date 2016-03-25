@@ -74,7 +74,7 @@ class FakeSchemaAPI(FakeAPI):
 class RawRequest(object):
     def __init__(self, headers, body=None,
                  version=1.0, status=200, reason="Ok"):
-        """
+        """A crafted request object used for testing.
 
         :param headers: dict representing HTTP response headers
         :param body: file-like object
@@ -101,7 +101,7 @@ class RawRequest(object):
 class FakeResponse(object):
     def __init__(self, headers=None, body=None,
                  version=1.0, status_code=200, reason="Ok"):
-        """
+        """A crafted response object used for testing.
 
         :param headers: dict representing HTTP response headers
         :param body: file-like object
