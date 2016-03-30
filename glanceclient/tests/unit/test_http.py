@@ -210,14 +210,6 @@ class TestClient(testtools.TestCase):
         self.assertEqual(b"ni\xc3\xb1o", encoded[b"test"])
         self.assertNotIn("none-val", encoded)
 
-    def test_auth_token_header_encoding(self):
-        # Tests that X-Auth-Token header is converted to ascii string, as
-        # httplib in python 2.6 won't do the conversion
-        value = u'ni\xf1o'
-        http_client_object = http.HTTPClient(self.endpoint, token=value)
-        self.assertEqual(b'ni\xc3\xb1o',
-                         http_client_object.session.headers['X-Auth-Token'])
-
     def test_raw_request(self):
         """Verify the path being used for HTTP requests reflects accurately."""
         headers = {"Content-Type": "text/plain"}
@@ -382,3 +374,26 @@ class TestClient(testtools.TestCase):
         self.assertThat(mock_log.call_args[0][0],
                         matchers.Not(matchers.MatchesRegex(token_regex)),
                         'token found in LOG.debug parameter')
+
+    def test_expired_token_has_changed(self):
+        # instantiate client with some token
+        fake_token = b'fake-token'
+        http_client = http.HTTPClient(self.endpoint,
+                                      token=fake_token)
+        path = '/v1/images/my-image'
+        self.mock.get(self.endpoint + path)
+        http_client.get(path)
+        headers = self.mock.last_request.headers
+        self.assertEqual(fake_token, headers['X-Auth-Token'])
+        # refresh the token
+        refreshed_token = b'refreshed-token'
+        http_client.auth_token = refreshed_token
+        http_client.get(path)
+        headers = self.mock.last_request.headers
+        self.assertEqual(refreshed_token, headers['X-Auth-Token'])
+        # regression check for bug 1448080
+        unicode_token = u'ni\xf1o'
+        http_client.auth_token = unicode_token
+        http_client.get(path)
+        headers = self.mock.last_request.headers
+        self.assertEqual(b'ni\xc3\xb1o', headers['X-Auth-Token'])
