@@ -467,6 +467,14 @@ def endpoint_version_from_url(endpoint, default_version=None):
         return None, default_version
 
 
+def debug_enabled(argv):
+    if bool(env('GLANCECLIENT_DEBUG')) is True:
+        return True
+    if '--debug' in argv or '-d' in argv:
+        return True
+    return False
+
+
 class IterableWithLength(object):
     def __init__(self, iterable, length):
         self.iterable = iterable
