@@ -246,21 +246,6 @@ def find_resource(manager, name_or_id):
         return matches[0]
 
 
-def skip_authentication(f):
-    """Function decorator used to indicate a caller may be unauthenticated."""
-    f.require_authentication = False
-    return f
-
-
-def is_authentication_required(f):
-    """Checks to see if the function requires authentication.
-
-    Use the skip_authentication decorator to indicate a caller may
-    skip the authentication step.
-    """
-    return getattr(f, 'require_authentication', True)
-
-
 def env(*vars, **kwargs):
     """Search for the first defined of possibly many env vars.
 
