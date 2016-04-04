@@ -538,9 +538,14 @@ class ShellTest(testutils.TestCase):
         except SystemExit:
             self.fail('Unexpected SystemExit')
 
-        # We expect the normal usage as a result
-        self.assertIn('Command-line interface to the OpenStack Images API',
-                      sys.stdout.getvalue())
+        # We expect the normal v2 usage as a result
+        expected = ['Command-line interface to the OpenStack Images API',
+                    'image-list',
+                    'image-deactivate',
+                    'location-add']
+        for output in expected:
+            self.assertIn(output,
+                          sys.stdout.getvalue())
 
     @mock.patch('glanceclient.v2.client.Client')
     @mock.patch('glanceclient.v1.shell.do_image_list')

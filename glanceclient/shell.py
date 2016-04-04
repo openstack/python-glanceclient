@@ -535,6 +535,7 @@ class OpenStackImagesShell(object):
         # Handle top-level --help/-h before attempting to parse
         # a command off the command line
         if options.help or not argv:
+            parser = _get_subparser(api_version)
             self.do_help(options, parser=parser)
             return 0
 
