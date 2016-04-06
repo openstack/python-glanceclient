@@ -253,7 +253,7 @@ class Controller(object):
 
         :param image_id: ID of the image to modify.
         :param remove_props: List of property names to remove
-        :param \*\*kwargs: Image attribute names and their new values.
+        :param kwargs: Image attribute names and their new values.
         """
         unvalidated_image = self.get(image_id)
         image = self.model(**unvalidated_image)

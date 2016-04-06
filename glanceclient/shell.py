@@ -214,7 +214,8 @@ class OpenStackImagesShell(object):
 
     def _find_actions(self, subparsers, actions_module):
         for attr in (a for a in dir(actions_module) if a.startswith('do_')):
-            # I prefer to be hypen-separated instead of underscores.
+            # Replace underscores with hyphens in the commands
+            # displayed to the user
             command = attr[3:].replace('_', '-')
             callback = getattr(actions_module, attr)
             desc = callback.__doc__ or ''
@@ -457,7 +458,7 @@ class OpenStackImagesShell(object):
             except OSError as e:
                 # This avoids glanceclient to crash if it can't write to
                 # ~/.glanceclient, which may happen on some env (for me,
-                # it happens in Jenkins, as Glanceclient can't write to
+                # it happens in Jenkins, as glanceclient can't write to
                 # /var/lib/jenkins).
                 msg = '%s' % e
                 print(encodeutils.safe_decode(msg), file=sys.stderr)
@@ -519,7 +520,7 @@ class OpenStackImagesShell(object):
             endpoint = self._get_image_url(options)
             endpoint, url_version = utils.strip_version(endpoint)
         except ValueError:
-            # NOTE(flaper87): ValueError is raised if no endpoint is povided
+            # NOTE(flaper87): ValueError is raised if no endpoint is provided
             url_version = None
 
         # build available subcommands based on version
