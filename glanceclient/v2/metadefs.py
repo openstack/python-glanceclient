@@ -202,7 +202,7 @@ class ResourceTypeController(object):
         return self.model(**body)
 
     def deassociate(self, namespace, resource):
-        """Deasociate a resource type with a namespace."""
+        """Deassociate a resource type with a namespace."""
         url = '/v2/metadefs/namespaces/{0}/resource_types/{1}'. \
             format(namespace, resource)
         self.http_client.delete(url)
@@ -337,7 +337,7 @@ class ObjectController(object):
         """Update an object.
 
         :param namespace: Name of a namespace the object belongs.
-        :param prop_name: Name of an object (old one).
+        :param object_name: Name of an object (old one).
         :param kwargs: Unpacked object.
         """
         obj = self.get(namespace, object_name)
@@ -441,7 +441,7 @@ class TagController(object):
         """Update a tag.
 
         :param namespace: Name of a namespace the Tag belongs.
-        :param prop_name: Name of the Tag (old one).
+        :param tag_name: Name of the Tag (old one).
         :param kwargs: Unpacked tag.
         """
         tag = self.get(namespace, tag_name)

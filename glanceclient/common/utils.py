@@ -51,7 +51,7 @@ REQUIRED_FIELDS_ON_DATA = ('disk_format', 'container_format')
 # Decorator for cli-args
 def arg(*args, **kwargs):
     def _decorator(func):
-        # Because of the sematics of decorator composition if we just append
+        # Because of the semantics of decorator composition if we just append
         # to the options list positional options will appear to be backwards.
         func.__dict__.setdefault('arguments', []).insert(0, (args, kwargs))
         return func
@@ -133,7 +133,7 @@ def schema_args(schema_getter, omit=None):
                 if isinstance(type_str, list):
                     # NOTE(flaper87): This means the server has
                     # returned something like `['null', 'string']`,
-                    # therfore we use the first non-`null` type as
+                    # therefore we use the first non-`null` type as
                     # the valid type.
                     for t in type_str:
                         if t != 'null':
@@ -159,7 +159,7 @@ def schema_args(schema_getter, omit=None):
 
                     # NOTE(flaper87): Make sure all values are `str/unicode`
                     # for the `join` to succeed. Enum types can also be `None`
-                    # therfore, join's call would fail without the following
+                    # therefore, join's call would fail without the following
                     # list comprehension
                     vals = [six.text_type(val) for val in property.get('enum')]
                     description += ('Valid values: ' + ', '.join(vals))
