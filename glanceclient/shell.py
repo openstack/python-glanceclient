@@ -490,17 +490,11 @@ class OpenStackImagesShell(object):
             try:
                 return self.get_subcommand_parser(api_version)
             except ImportError as e:
-                if options.debug:
-                    traceback.print_exc()
                 if not str(e):
                     # Add a generic import error message if the raised
                     # ImportError has none.
                     raise ImportError('Unable to import module. Re-run '
                                       'with --debug for more info.')
-                raise
-            except Exception:
-                if options.debug:
-                    traceback.print_exc()
                 raise
 
         # Parse args once to find version
@@ -603,12 +597,6 @@ class OpenStackImagesShell(object):
             args.func(client, args)
         except exc.Unauthorized:
             raise exc.CommandError("Invalid OpenStack Identity credentials.")
-        except Exception:
-            # NOTE(kragniz) Print any exceptions raised to stderr if the
-            # --debug flag is set
-            if args.debug:
-                traceback.print_exc()
-            raise
         finally:
             if profile:
                 trace_id = osprofiler_profiler.get().get_base_id()
@@ -679,4 +667,6 @@ def main():
     except KeyboardInterrupt:
         utils.exit('... terminating glance client', exit_code=130)
     except Exception as e:
+        if utils.debug_enabled(argv) is True:
+            traceback.print_exc()
         utils.exit(encodeutils.exception_to_unicode(e))
