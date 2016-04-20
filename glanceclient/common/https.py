@@ -52,7 +52,7 @@ from glanceclient import exc
 
 
 def verify_callback(host=None):
-    """
+    """Provide wrapper for do_verify_callback.
 
     We use a partial around the 'real' verify_callback function
     so that we can stash the host value without holding a
@@ -87,7 +87,7 @@ def do_verify_callback(connection, x509, errnum,
 
 
 def host_matches_cert(host, x509):
-    """
+    """Verify the certificate identifies the host.
 
     Verify that the x509 certificate we have received
     from 'host' correctly identifies the server we are
@@ -187,7 +187,7 @@ class HTTPSAdapter(adapters.HTTPAdapter):
 
 
 class HTTPSConnectionPool(connectionpool.HTTPSConnectionPool):
-    """
+    """A replacement for the default HTTPSConnectionPool.
 
     HTTPSConnectionPool will be instantiated when a new
     connection is requested to the HTTPSAdapter. This
@@ -232,10 +232,8 @@ class OpenSSLConnectionDelegator(object):
 
 
 class VerifiedHTTPSConnection(HTTPSConnection):
-    """
+    """Extended OpenSSL HTTPSConnection for enhanced SSL support.
 
-    Extended HTTPSConnection which uses the OpenSSL library
-    for enhanced SSL support.
     Note: Much of this functionality can eventually be replaced
           with native Python 3.3 code.
     """
@@ -325,10 +323,9 @@ class VerifiedHTTPSConnection(HTTPSConnection):
             self.context.set_default_verify_paths()
 
     def connect(self):
-        """
+        """Connect to an SSL port using the OpenSSL library.
 
-        Connect to an SSL port using the OpenSSL library
-        and apply per-connection parameters.
+        This method also applies per-connection parameters to the connection.
         """
         result = socket.getaddrinfo(self.host, self.port, 0,
                                     socket.SOCK_STREAM)

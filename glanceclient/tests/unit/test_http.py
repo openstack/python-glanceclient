@@ -160,7 +160,7 @@ class TestClient(testtools.TestCase):
         self.assertTrue('Accept-Language' not in headers)
 
     def test_connection_timeout(self):
-        """Should receive an InvalidEndpoint if connection timeout."""
+        """Verify a InvalidEndpoint is received if connection times out."""
         def cb(request, context):
             raise requests.exceptions.Timeout
 
@@ -172,11 +172,9 @@ class TestClient(testtools.TestCase):
         self.assertIn(self.endpoint, comm_err.message)
 
     def test_connection_refused(self):
-        """
+        """Verify a CommunicationError is received if connection is refused.
 
-        Should receive a CommunicationError if connection refused.
-        And the error should list the host and port that refused the
-        connection
+        The error should list the host and port that refused the connection.
         """
         def cb(request, context):
             raise requests.exceptions.ConnectionError()
