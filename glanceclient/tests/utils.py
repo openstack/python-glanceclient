@@ -113,6 +113,7 @@ class FakeResponse(object):
         self.reason = reason
         self.version = version
         self.headers = headers
+        self.headers['x-openstack-request-id'] = 'req-1234'
         self.status_code = status_code
         self.raw = RawRequest(headers, body=body, reason=reason,
                               version=version, status=status_code)

@@ -1,0 +1,10 @@
+---
+features:
+  - Added support to return "x-openstack-request-id" header in request_ids attribute
+    for better tracing.
+
+    | For ex.
+    | >>> from glanceclient import Client
+    | >>> glance = Client('2', endpoint='OS_IMAGE_ENDPOINT', token='OS_AUTH_TOKEN')
+    | >>> res = glance.images.get('<image_id>')
+    | >>> res.request_ids

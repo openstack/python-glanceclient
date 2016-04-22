@@ -37,6 +37,7 @@ class NamespaceController(object):
         return warlock.model_factory(schema.raw(),
                                      base_class=schemas.SchemaBasedModel)
 
+    @utils.add_req_id_to_object()
     def create(self, **kwargs):
         """Create a namespace.
 
@@ -50,7 +51,7 @@ class NamespaceController(object):
 
         resp, body = self.http_client.post(url, data=namespace)
         body.pop('self', None)
-        return self.model(**body)
+        return self.model(**body), resp
 
     def update(self, namespace_name, **kwargs):
         """Update a namespace.
@@ -72,23 +73,34 @@ class NamespaceController(object):
                 del namespace[elem]
 
         url = '/v2/metadefs/namespaces/{0}'.format(namespace_name)
-        self.http_client.put(url, data=namespace)
-
-        return self.get(namespace.namespace)
+        # Pass the original wrapped value to http client.
+        resp, _ = self.http_client.put(url, data=namespace.wrapped)
+        # Get request id from `put` request so it can be passed to the
+        #  following `get` call
+        req_id_hdr = {
+            'x-openstack-request-id': utils._extract_request_id(resp)
+        }
+        return self._get(namespace.namespace, header=req_id_hdr)
 
     def get(self, namespace, **kwargs):
+        return self._get(namespace, **kwargs)
+
+    @utils.add_req_id_to_object()
+    def _get(self, namespace, header=None, **kwargs):
         """Get one namespace."""
         query_params = parse.urlencode(kwargs)
         if kwargs:
             query_params = '?%s' % query_params
 
         url = '/v2/metadefs/namespaces/{0}{1}'.format(namespace, query_params)
-        resp, body = self.http_client.get(url)
+        header = header or {}
+        resp, body = self.http_client.get(url, headers=header)
         # NOTE(bcwaldon): remove 'self' for now until we have an elegant
         # way to pass it into the model constructor without conflict
         body.pop('self', None)
-        return self.model(**body)
+        return self.model(**body), resp
 
+    @utils.add_req_id_to_generator()
     def list(self, **kwargs):
         """Retrieve a listing of Namespace objects.
 
@@ -117,7 +129,7 @@ class NamespaceController(object):
                 # an elegant way to pass it into the model constructor
                 # without conflict.
                 namespace.pop('self', None)
-                yield self.model(**namespace)
+                yield self.model(**namespace), resp
                 # NOTE(zhiyan): In order to resolve the performance issue
                 # of JSON schema validation for image listing case, we
                 # don't validate each image entry but do it only on first
@@ -132,8 +144,8 @@ class NamespaceController(object):
             except KeyError:
                 return
             else:
-                for namespace in paginate(next_url):
-                    yield namespace
+                for namespace, resp in paginate(next_url):
+                    yield namespace, resp
 
         filters = kwargs.get('filters', {})
         filters = {} if filters is None else filters
@@ -170,13 +182,15 @@ class NamespaceController(object):
 
         url = '/v2/metadefs/namespaces?%s' % parse.urlencode(filters)
 
-        for namespace in paginate(url):
-            yield namespace
+        for namespace, resp in paginate(url):
+            yield namespace, resp
 
+    @utils.add_req_id_to_object()
     def delete(self, namespace):
         """Delete a namespace."""
         url = '/v2/metadefs/namespaces/{0}'.format(namespace)
-        self.http_client.delete(url)
+        resp, body = self.http_client.delete(url)
+        return (resp, body), resp
 
 
 class ResourceTypeController(object):
@@ -190,6 +204,7 @@ class ResourceTypeController(object):
         return warlock.model_factory(schema.raw(),
                                      base_class=schemas.SchemaBasedModel)
 
+    @utils.add_req_id_to_object()
     def associate(self, namespace, **kwargs):
         """Associate a resource type with a namespace."""
         try:
@@ -201,14 +216,17 @@ class ResourceTypeController(object):
                                                                   res_type)
         resp, body = self.http_client.post(url, data=res_type)
         body.pop('self', None)
-        return self.model(**body)
+        return self.model(**body), resp
 
+    @utils.add_req_id_to_object()
     def deassociate(self, namespace, resource):
         """Deassociate a resource type with a namespace."""
         url = '/v2/metadefs/namespaces/{0}/resource_types/{1}'. \
             format(namespace, resource)
-        self.http_client.delete(url)
+        resp, body = self.http_client.delete(url)
+        return (resp, body), resp
 
+    @utils.add_req_id_to_generator()
     def list(self):
         """Retrieve a listing of available resource types.
 
@@ -218,14 +236,15 @@ class ResourceTypeController(object):
         url = '/v2/metadefs/resource_types'
         resp, body = self.http_client.get(url)
         for resource_type in body['resource_types']:
-            yield self.model(**resource_type)
+            yield self.model(**resource_type), resp
 
+    @utils.add_req_id_to_generator()
     def get(self, namespace):
         url = '/v2/metadefs/namespaces/{0}/resource_types'.format(namespace)
         resp, body = self.http_client.get(url)
         body.pop('self', None)
         for resource_type in body['resource_type_associations']:
-            yield self.model(**resource_type)
+            yield self.model(**resource_type), resp
 
 
 class PropertyController(object):
@@ -239,6 +258,7 @@ class PropertyController(object):
         return warlock.model_factory(schema.raw(),
                                      base_class=schemas.SchemaBasedModel)
 
+    @utils.add_req_id_to_object()
     def create(self, namespace, **kwargs):
         """Create a property.
 
@@ -254,7 +274,7 @@ class PropertyController(object):
 
         resp, body = self.http_client.post(url, data=prop)
         body.pop('self', None)
-        return self.model(**body)
+        return self.model(**body), resp
 
     def update(self, namespace, prop_name, **kwargs):
         """Update a property.
@@ -272,18 +292,29 @@ class PropertyController(object):
 
         url = '/v2/metadefs/namespaces/{0}/properties/{1}'.format(namespace,
                                                                   prop_name)
-        self.http_client.put(url, data=prop)
+        # Pass the original wrapped value to http client.
+        resp, _ = self.http_client.put(url, data=prop.wrapped)
+        # Get request id from `put` request so it can be passed to the
+        #  following `get` call
+        req_id_hdr = {
+            'x-openstack-request-id': utils._extract_request_id(resp)}
 
-        return self.get(namespace, prop.name)
+        return self._get(namespace, prop.name, req_id_hdr)
 
     def get(self, namespace, prop_name):
+        return self._get(namespace, prop_name)
+
+    @utils.add_req_id_to_object()
+    def _get(self, namespace, prop_name, header=None):
         url = '/v2/metadefs/namespaces/{0}/properties/{1}'.format(namespace,
                                                                   prop_name)
-        resp, body = self.http_client.get(url)
+        header = header or {}
+        resp, body = self.http_client.get(url, headers=header)
         body.pop('self', None)
         body['name'] = prop_name
-        return self.model(**body)
+        return self.model(**body), resp
 
+    @utils.add_req_id_to_generator()
     def list(self, namespace, **kwargs):
         """Retrieve a listing of metadata properties.
 
@@ -295,18 +326,22 @@ class PropertyController(object):
 
         for key, value in body['properties'].items():
             value['name'] = key
-            yield self.model(value)
+            yield self.model(value), resp
 
+    @utils.add_req_id_to_object()
     def delete(self, namespace, prop_name):
         """Delete a property."""
         url = '/v2/metadefs/namespaces/{0}/properties/{1}'.format(namespace,
                                                                   prop_name)
-        self.http_client.delete(url)
+        resp, body = self.http_client.delete(url)
+        return (resp, body), resp
 
+    @utils.add_req_id_to_object()
     def delete_all(self, namespace):
         """Delete all properties in a namespace."""
         url = '/v2/metadefs/namespaces/{0}/properties'.format(namespace)
-        self.http_client.delete(url)
+        resp, body = self.http_client.delete(url)
+        return (resp, body), resp
 
 
 class ObjectController(object):
@@ -320,6 +355,7 @@ class ObjectController(object):
         return warlock.model_factory(schema.raw(),
                                      base_class=schemas.SchemaBasedModel)
 
+    @utils.add_req_id_to_object()
     def create(self, namespace, **kwargs):
         """Create an object.
 
@@ -335,7 +371,7 @@ class ObjectController(object):
 
         resp, body = self.http_client.post(url, data=obj)
         body.pop('self', None)
-        return self.model(**body)
+        return self.model(**body), resp
 
     def update(self, namespace, object_name, **kwargs):
         """Update an object.
@@ -359,17 +395,28 @@ class ObjectController(object):
 
         url = '/v2/metadefs/namespaces/{0}/objects/{1}'.format(namespace,
                                                                object_name)
-        self.http_client.put(url, data=obj)
+        # Pass the original wrapped value to http client.
+        resp, _ = self.http_client.put(url, data=obj.wrapped)
+        # Get request id from `put` request so it can be passed to the
+        #  following `get` call
+        req_id_hdr = {
+            'x-openstack-request-id': utils._extract_request_id(resp)}
 
-        return self.get(namespace, obj.name)
+        return self._get(namespace, obj.name, req_id_hdr)
 
     def get(self, namespace, object_name):
+        return self._get(namespace, object_name)
+
+    @utils.add_req_id_to_object()
+    def _get(self, namespace, object_name, header=None):
         url = '/v2/metadefs/namespaces/{0}/objects/{1}'.format(namespace,
                                                                object_name)
-        resp, body = self.http_client.get(url)
+        header = header or {}
+        resp, body = self.http_client.get(url, headers=header)
         body.pop('self', None)
-        return self.model(**body)
+        return self.model(**body), resp
 
+    @utils.add_req_id_to_generator()
     def list(self, namespace, **kwargs):
         """Retrieve a listing of metadata objects.
 
@@ -379,18 +426,22 @@ class ObjectController(object):
         resp, body = self.http_client.get(url)
 
         for obj in body['objects']:
-            yield self.model(obj)
+            yield self.model(obj), resp
 
+    @utils.add_req_id_to_object()
     def delete(self, namespace, object_name):
         """Delete an object."""
         url = '/v2/metadefs/namespaces/{0}/objects/{1}'.format(namespace,
                                                                object_name)
-        self.http_client.delete(url)
+        resp, body = self.http_client.delete(url)
+        return (resp, body), resp
 
+    @utils.add_req_id_to_object()
     def delete_all(self, namespace):
         """Delete all objects in a namespace."""
         url = '/v2/metadefs/namespaces/{0}/objects'.format(namespace)
-        self.http_client.delete(url)
+        resp, body = self.http_client.delete(url)
+        return (resp, body), resp
 
 
 class TagController(object):
@@ -404,6 +455,7 @@ class TagController(object):
         return warlock.model_factory(schema.raw(),
                                      base_class=schemas.SchemaBasedModel)
 
+    @utils.add_req_id_to_object()
     def create(self, namespace, tag_name):
         """Create a tag.
 
@@ -416,8 +468,9 @@ class TagController(object):
 
         resp, body = self.http_client.post(url)
         body.pop('self', None)
-        return self.model(**body)
+        return self.model(**body), resp
 
+    @utils.add_req_id_to_generator()
     def create_multiple(self, namespace, **kwargs):
         """Create the list of tags.
 
@@ -440,7 +493,7 @@ class TagController(object):
         resp, body = self.http_client.post(url, data=tags)
         body.pop('self', None)
         for tag in body['tags']:
-            yield self.model(tag)
+            yield self.model(tag), resp
 
     def update(self, namespace, tag_name, **kwargs):
         """Update a tag.
@@ -464,17 +517,28 @@ class TagController(object):
 
         url = '/v2/metadefs/namespaces/{0}/tags/{1}'.format(namespace,
                                                             tag_name)
-        self.http_client.put(url, data=tag)
+        # Pass the original wrapped value to http client.
+        resp, _ = self.http_client.put(url, data=tag.wrapped)
+        # Get request id from `put` request so it can be passed to the
+        #  following `get` call
+        req_id_hdr = {
+            'x-openstack-request-id': utils._extract_request_id(resp)}
 
-        return self.get(namespace, tag.name)
+        return self._get(namespace, tag.name, req_id_hdr)
 
     def get(self, namespace, tag_name):
+        return self._get(namespace, tag_name)
+
+    @utils.add_req_id_to_object()
+    def _get(self, namespace, tag_name, header=None):
         url = '/v2/metadefs/namespaces/{0}/tags/{1}'.format(namespace,
                                                             tag_name)
-        resp, body = self.http_client.get(url)
+        header = header or {}
+        resp, body = self.http_client.get(url, headers=header)
         body.pop('self', None)
-        return self.model(**body)
+        return self.model(**body), resp
 
+    @utils.add_req_id_to_generator()
     def list(self, namespace, **kwargs):
         """Retrieve a listing of metadata tags.
 
@@ -484,15 +548,19 @@ class TagController(object):
         resp, body = self.http_client.get(url)
 
         for tag in body['tags']:
-            yield self.model(tag)
+            yield self.model(tag), resp
 
+    @utils.add_req_id_to_object()
     def delete(self, namespace, tag_name):
         """Delete a tag."""
         url = '/v2/metadefs/namespaces/{0}/tags/{1}'.format(namespace,
                                                             tag_name)
-        self.http_client.delete(url)
+        resp, body = self.http_client.delete(url)
+        return (resp, body), resp
 
+    @utils.add_req_id_to_object()
     def delete_all(self, namespace):
         """Delete all tags in a namespace."""
         url = '/v2/metadefs/namespaces/{0}/tags'.format(namespace)
-        self.http_client.delete(url)
+        resp, body = self.http_client.delete(url)
+        return (resp, body), resp

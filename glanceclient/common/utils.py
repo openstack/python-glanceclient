@@ -36,6 +36,7 @@ else:
 from oslo_utils import encodeutils
 from oslo_utils import strutils
 import prettytable
+import wrapt
 
 from glanceclient._i18n import _
 from glanceclient import exc
@@ -472,3 +473,76 @@ class IterableWithLength(object):
 
     def __len__(self):
         return self.length
+
+
+class RequestIdProxy(wrapt.ObjectProxy):
+    def __init__(self, wrapped):
+        # `wrapped` is a tuple: (original_obj, response_obj)
+        super(RequestIdProxy, self).__init__(wrapped[0])
+        self._self_wrapped = wrapped[0]
+        req_id = _extract_request_id(wrapped[1])
+        self._self_request_ids = [req_id]
+
+    @property
+    def request_ids(self):
+        return self._self_request_ids
+
+    @property
+    def wrapped(self):
+        return self._self_wrapped
+
+
+class GeneratorProxy(wrapt.ObjectProxy):
+    def __init__(self, wrapped):
+        super(GeneratorProxy, self).__init__(wrapped)
+        self._self_wrapped = wrapped
+        self._self_request_ids = []
+
+    def _set_request_ids(self, resp):
+        if self._self_request_ids == []:
+            req_id = _extract_request_id(resp)
+            self._self_request_ids = [req_id]
+
+    def _next(self):
+        obj, resp = next(self._self_wrapped)
+        self._set_request_ids(resp)
+        return obj
+
+    # Override generator's next method to add
+    # request id on each iteration
+    def next(self):
+        return self._next()
+
+    # For Python 3 compatibility
+    def __next__(self):
+        return self._next()
+
+    def __iter__(self):
+        return self
+
+    @property
+    def request_ids(self):
+        return self._self_request_ids
+
+    @property
+    def wrapped(self):
+        return self._self_wrapped
+
+
+def add_req_id_to_object():
+    @wrapt.decorator
+    def inner(wrapped, instance, args, kwargs):
+        return RequestIdProxy(wrapped(*args, **kwargs))
+    return inner
+
+
+def add_req_id_to_generator():
+    @wrapt.decorator
+    def inner(wrapped, instance, args, kwargs):
+        return GeneratorProxy(wrapped(*args, **kwargs))
+    return inner
+
+
+def _extract_request_id(resp):
+    # TODO(rsjethani): Do we need more checks here?
+    return resp.headers.get('x-openstack-request-id')

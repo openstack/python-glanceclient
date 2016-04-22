@@ -16,6 +16,7 @@
 
 import testtools
 
+from glanceclient.tests.unit.v2 import base
 from glanceclient.tests import utils
 from glanceclient.v2 import tasks
 
@@ -252,11 +253,11 @@ class TestController(testtools.TestCase):
         super(TestController, self).setUp()
         self.api = utils.FakeAPI(fixtures)
         self.schema_api = utils.FakeSchemaAPI(schema_fixtures)
-        self.controller = tasks.Controller(self.api, self.schema_api)
+        self.controller = base.BaseController(self.api, self.schema_api,
+                                              tasks.Controller)
 
     def test_list_tasks(self):
-        # NOTE(flwang): cast to list since the controller returns a generator
-        tasks = list(self.controller.list())
+        tasks = self.controller.list()
         self.assertEqual(_PENDING_ID, tasks[0].id)
         self.assertEqual('import', tasks[0].type)
         self.assertEqual('pending', tasks[0].status)
@@ -265,8 +266,7 @@ class TestController(testtools.TestCase):
         self.assertEqual('processing', tasks[1].status)
 
     def test_list_tasks_paginated(self):
-        # NOTE(flwang): cast to list since the controller returns a generator
-        tasks = list(self.controller.list(page_size=1))
+        tasks = self.controller.list(page_size=1)
         self.assertEqual(_PENDING_ID, tasks[0].id)
         self.assertEqual('import', tasks[0].type)
         self.assertEqual(_PROCESSING_ID, tasks[1].id)
@@ -274,38 +274,38 @@ class TestController(testtools.TestCase):
 
     def test_list_tasks_with_status(self):
         filters = {'filters': {'status': 'processing'}}
-        tasks = list(self.controller.list(**filters))
+        tasks = self.controller.list(**filters)
         self.assertEqual(_OWNED_TASK_ID, tasks[0].id)
 
     def test_list_tasks_with_wrong_status(self):
         filters = {'filters': {'status': 'fake'}}
-        tasks = list(self.controller.list(**filters))
+        tasks = self.controller.list(**filters)
         self.assertEqual(0, len(tasks))
 
     def test_list_tasks_with_type(self):
         filters = {'filters': {'type': 'import'}}
-        tasks = list(self.controller.list(**filters))
+        tasks = self.controller.list(**filters)
         self.assertEqual(_OWNED_TASK_ID, tasks[0].id)
 
     def test_list_tasks_with_wrong_type(self):
         filters = {'filters': {'type': 'fake'}}
-        tasks = list(self.controller.list(**filters))
+        tasks = self.controller.list(**filters)
         self.assertEqual(0, len(tasks))
 
     def test_list_tasks_for_owner(self):
         filters = {'filters': {'owner': _OWNER_ID}}
-        tasks = list(self.controller.list(**filters))
+        tasks = self.controller.list(**filters)
         self.assertEqual(_OWNED_TASK_ID, tasks[0].id)
 
     def test_list_tasks_for_fake_owner(self):
         filters = {'filters': {'owner': _FAKE_OWNER_ID}}
-        tasks = list(self.controller.list(**filters))
+        tasks = self.controller.list(**filters)
         self.assertEqual(tasks, [])
 
     def test_list_tasks_filters_encoding(self):
         filters = {"owner": u"ni\xf1o"}
         try:
-            list(self.controller.list(filters=filters))
+            self.controller.list(filters=filters)
         except KeyError:
             # NOTE(flaper87): It raises KeyError because there's
             # no fixture supporting this query:
@@ -316,34 +316,33 @@ class TestController(testtools.TestCase):
         self.assertEqual(b"ni\xc3\xb1o", filters["owner"])
 
     def test_list_tasks_with_marker(self):
-        tasks = list(self.controller.list(marker=_PENDING_ID, page_size=1))
+        tasks = self.controller.list(marker=_PENDING_ID, page_size=1)
         self.assertEqual(1, len(tasks))
         self.assertEqual(_PROCESSING_ID, tasks[0]['id'])
 
     def test_list_tasks_with_single_sort_key(self):
-        tasks = list(self.controller.list(sort_key='type'))
+        tasks = self.controller.list(sort_key='type')
         self.assertEqual(2, len(tasks))
         self.assertEqual(_PENDING_ID, tasks[0].id)
 
     def test_list_tasks_with_invalid_sort_key(self):
         self.assertRaises(ValueError,
-                          list,
-                          self.controller.list(sort_key='invalid'))
+                          self.controller.list, sort_key='invalid')
 
     def test_list_tasks_with_desc_sort_dir(self):
-        tasks = list(self.controller.list(sort_key='id', sort_dir='desc'))
+        tasks = self.controller.list(sort_key='id', sort_dir='desc')
         self.assertEqual(2, len(tasks))
         self.assertEqual(_PENDING_ID, tasks[1].id)
 
     def test_list_tasks_with_asc_sort_dir(self):
-        tasks = list(self.controller.list(sort_key='id', sort_dir='asc'))
+        tasks = self.controller.list(sort_key='id', sort_dir='asc')
         self.assertEqual(2, len(tasks))
         self.assertEqual(_PENDING_ID, tasks[0].id)
 
     def test_list_tasks_with_invalid_sort_dir(self):
         self.assertRaises(ValueError,
-                          list,
-                          self.controller.list(sort_dir='invalid'))
+                          self.controller.list,
+                          sort_dir='invalid')
 
     def test_get_task(self):
         task = self.controller.get(_PENDING_ID)

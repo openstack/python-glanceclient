@@ -18,6 +18,7 @@ import mock
 import testtools
 
 from glanceclient import exc
+from glanceclient.tests.unit.v2 import base
 from glanceclient.tests import utils
 from glanceclient.v2 import images
 
@@ -532,27 +533,25 @@ class TestController(testtools.TestCase):
         super(TestController, self).setUp()
         self.api = utils.FakeAPI(data_fixtures)
         self.schema_api = utils.FakeSchemaAPI(schema_fixtures)
-        self.controller = images.Controller(self.api, self.schema_api)
+        self.controller = base.BaseController(self.api, self.schema_api,
+                                              images.Controller)
 
     def test_list_images(self):
-        # NOTE(bcwaldon):cast to list since the controller returns a generator
-        images = list(self.controller.list())
+        images = self.controller.list()
         self.assertEqual('3a4560a1-e585-443e-9b39-553b46ec92d1', images[0].id)
         self.assertEqual('image-1', images[0].name)
         self.assertEqual('6f99bf80-2ee6-47cf-acfe-1f1fabb7e810', images[1].id)
         self.assertEqual('image-2', images[1].name)
 
     def test_list_images_paginated(self):
-        # NOTE(bcwaldon):cast to list since the controller returns a generator
-        images = list(self.controller.list(page_size=1))
+        images = self.controller.list(page_size=1)
         self.assertEqual('3a4560a1-e585-443e-9b39-553b46ec92d1', images[0].id)
         self.assertEqual('image-1', images[0].name)
         self.assertEqual('6f99bf80-2ee6-47cf-acfe-1f1fabb7e810', images[1].id)
         self.assertEqual('image-2', images[1].name)
 
     def test_list_images_paginated_with_limit(self):
-        # NOTE(bcwaldon):cast to list since the controller returns a generator
-        images = list(self.controller.list(limit=3, page_size=2))
+        images = self.controller.list(limit=3, page_size=2)
         self.assertEqual('3a4560a1-e585-443e-9b39-553b46ec92d1', images[0].id)
         self.assertEqual('image-1', images[0].name)
         self.assertEqual('6f99bf80-2ee6-47cf-acfe-1f1fabb7e810', images[1].id)
@@ -562,40 +561,40 @@ class TestController(testtools.TestCase):
         self.assertEqual(3, len(images))
 
     def test_list_images_with_marker(self):
-        images = list(self.controller.list(limit=1,
-                      marker='3a4560a1-e585-443e-9b39-553b46ec92d1'))
+        images = self.controller.list(
+            limit=1, marker='3a4560a1-e585-443e-9b39-553b46ec92d1')
         self.assertEqual('6f99bf80-2ee6-47cf-acfe-1f1fabb7e810', images[0].id)
         self.assertEqual('image-2', images[0].name)
 
     def test_list_images_visibility_public(self):
         filters = {'filters': {'visibility': 'public'}}
-        images = list(self.controller.list(**filters))
+        images = self.controller.list(**filters)
         self.assertEqual(_PUBLIC_ID, images[0].id)
 
     def test_list_images_visibility_private(self):
         filters = {'filters': {'visibility': 'private'}}
-        images = list(self.controller.list(**filters))
+        images = self.controller.list(**filters)
         self.assertEqual(_PRIVATE_ID, images[0].id)
 
     def test_list_images_visibility_shared(self):
         filters = {'filters': {'visibility': 'shared'}}
-        images = list(self.controller.list(**filters))
+        images = self.controller.list(**filters)
         self.assertEqual(_SHARED_ID, images[0].id)
 
     def test_list_images_member_status_rejected(self):
         filters = {'filters': {'member_status': 'rejected'}}
-        images = list(self.controller.list(**filters))
+        images = self.controller.list(**filters)
         self.assertEqual(_STATUS_REJECTED_ID, images[0].id)
 
     def test_list_images_for_owner(self):
         filters = {'filters': {'owner': _OWNER_ID}}
-        images = list(self.controller.list(**filters))
+        images = self.controller.list(**filters)
         self.assertEqual(_OWNED_IMAGE_ID, images[0].id)
 
     def test_list_images_for_checksum_single_image(self):
         fake_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
         filters = {'filters': {'checksum': _CHKSUM}}
-        images = list(self.controller.list(**filters))
+        images = self.controller.list(**filters)
         self.assertEqual(1, len(images))
         self.assertEqual('%s' % fake_id, images[0].id)
 
@@ -603,32 +602,32 @@ class TestController(testtools.TestCase):
         fake_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
         fake_id2 = '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810'
         filters = {'filters': {'checksum': _CHKSUM1}}
-        images = list(self.controller.list(**filters))
+        images = self.controller.list(**filters)
         self.assertEqual(2, len(images))
         self.assertEqual('%s' % fake_id1, images[0].id)
         self.assertEqual('%s' % fake_id2, images[1].id)
 
     def test_list_images_for_wrong_checksum(self):
         filters = {'filters': {'checksum': 'wrong'}}
-        images = list(self.controller.list(**filters))
+        images = self.controller.list(**filters)
         self.assertEqual(0, len(images))
 
     def test_list_images_for_bogus_owner(self):
         filters = {'filters': {'owner': _BOGUS_ID}}
-        images = list(self.controller.list(**filters))
+        images = self.controller.list(**filters)
         self.assertEqual([], images)
 
     def test_list_images_for_bunch_of_filters(self):
         filters = {'filters': {'owner': _BOGUS_ID,
                                'visibility': 'shared',
                                'member_status': 'pending'}}
-        images = list(self.controller.list(**filters))
+        images = self.controller.list(**filters)
         self.assertEqual(_EVERYTHING_ID, images[0].id)
 
     def test_list_images_filters_encoding(self):
         filters = {"owner": u"ni\xf1o"}
         try:
-            list(self.controller.list(filters=filters))
+            self.controller.list(filters=filters)
         except KeyError:
             # NOTE(flaper87): It raises KeyError because there's
             # no fixture supporting this query:
@@ -640,7 +639,7 @@ class TestController(testtools.TestCase):
     def test_list_images_for_tag_single_image(self):
         img_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
         filters = {'filters': {'tag': [_TAG1]}}
-        images = list(self.controller.list(**filters))
+        images = self.controller.list(**filters)
         self.assertEqual(1, len(images))
         self.assertEqual('%s' % img_id, images[0].id)
 
@@ -648,7 +647,7 @@ class TestController(testtools.TestCase):
         img_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
         img_id2 = '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810'
         filters = {'filters': {'tag': [_TAG2]}}
-        images = list(self.controller.list(**filters))
+        images = self.controller.list(**filters)
         self.assertEqual(2, len(images))
         self.assertEqual('%s' % img_id1, images[0].id)
         self.assertEqual('%s' % img_id2, images[1].id)
@@ -656,33 +655,32 @@ class TestController(testtools.TestCase):
     def test_list_images_for_multi_tags(self):
         img_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
         filters = {'filters': {'tag': [_TAG1, _TAG2]}}
-        images = list(self.controller.list(**filters))
+        images = self.controller.list(**filters)
         self.assertEqual(1, len(images))
         self.assertEqual('%s' % img_id1, images[0].id)
 
     def test_list_images_for_non_existent_tag(self):
         filters = {'filters': {'tag': ['fake']}}
-        images = list(self.controller.list(**filters))
+        images = self.controller.list(**filters)
         self.assertEqual(0, len(images))
 
     def test_list_images_for_invalid_tag(self):
         filters = {'filters': {'tag': [[]]}}
 
         self.assertRaises(exc.HTTPBadRequest,
-                          list,
-                          self.controller.list(**filters))
+                          self.controller.list, **filters)
 
     def test_list_images_with_single_sort_key(self):
         img_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
         sort_key = 'name'
-        images = list(self.controller.list(sort_key=sort_key))
+        images = self.controller.list(sort_key=sort_key)
         self.assertEqual(2, len(images))
         self.assertEqual('%s' % img_id1, images[0].id)
 
     def test_list_with_multiple_sort_keys(self):
         img_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
         sort_key = ['name', 'id']
-        images = list(self.controller.list(sort_key=sort_key))
+        images = self.controller.list(sort_key=sort_key)
         self.assertEqual(2, len(images))
         self.assertEqual('%s' % img_id1, images[0].id)
 
@@ -690,8 +688,7 @@ class TestController(testtools.TestCase):
         img_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
         sort_key = 'id'
         sort_dir = 'desc'
-        images = list(self.controller.list(sort_key=sort_key,
-                                           sort_dir=sort_dir))
+        images = self.controller.list(sort_key=sort_key, sort_dir=sort_dir)
         self.assertEqual(2, len(images))
         self.assertEqual('%s' % img_id1, images[1].id)
 
@@ -699,8 +696,7 @@ class TestController(testtools.TestCase):
         img_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
         sort_key = ['name', 'id']
         sort_dir = 'desc'
-        images = list(self.controller.list(sort_key=sort_key,
-                                           sort_dir=sort_dir))
+        images = self.controller.list(sort_key=sort_key, sort_dir=sort_dir)
         self.assertEqual(2, len(images))
         self.assertEqual('%s' % img_id1, images[1].id)
 
@@ -708,61 +704,50 @@ class TestController(testtools.TestCase):
         img_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
         sort_key = ['name', 'id']
         sort_dir = ['desc', 'asc']
-        images = list(self.controller.list(sort_key=sort_key,
-                                           sort_dir=sort_dir))
+        images = self.controller.list(sort_key=sort_key, sort_dir=sort_dir)
         self.assertEqual(2, len(images))
         self.assertEqual('%s' % img_id1, images[1].id)
 
     def test_list_images_with_new_sorting_syntax(self):
         img_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
         sort = 'name:desc,size:asc'
-        images = list(self.controller.list(sort=sort))
+        images = self.controller.list(sort=sort)
         self.assertEqual(2, len(images))
         self.assertEqual('%s' % img_id1, images[1].id)
 
     def test_list_images_sort_dirs_fewer_than_keys(self):
         sort_key = ['name', 'id', 'created_at']
         sort_dir = ['desc', 'asc']
-        self.assertRaises(exc.HTTPBadRequest,
-                          list,
-                          self.controller.list(
-                              sort_key=sort_key,
-                              sort_dir=sort_dir))
+        self.assertRaises(exc.HTTPBadRequest, self.controller.list,
+                          sort_key=sort_key, sort_dir=sort_dir)
 
     def test_list_images_combined_syntax(self):
         sort_key = ['name', 'id']
         sort_dir = ['desc', 'asc']
         sort = 'name:asc'
         self.assertRaises(exc.HTTPBadRequest,
-                          list,
-                          self.controller.list(
-                              sort=sort,
-                              sort_key=sort_key,
-                              sort_dir=sort_dir))
+                          self.controller.list, sort=sort, sort_key=sort_key,
+                          sort_dir=sort_dir)
 
     def test_list_images_new_sorting_syntax_invalid_key(self):
         sort = 'INVALID:asc'
-        self.assertRaises(exc.HTTPBadRequest,
-                          list,
-                          self.controller.list(
-                              sort=sort))
+        self.assertRaises(exc.HTTPBadRequest, self.controller.list,
+                          sort=sort)
 
     def test_list_images_new_sorting_syntax_invalid_direction(self):
         sort = 'name:INVALID'
-        self.assertRaises(exc.HTTPBadRequest,
-                          list,
-                          self.controller.list(
-                              sort=sort))
+        self.assertRaises(exc.HTTPBadRequest, self.controller.list,
+                          sort=sort)
 
     def test_list_images_for_property(self):
         filters = {'filters': dict([('os_distro', 'NixOS')])}
-        images = list(self.controller.list(**filters))
+        images = self.controller.list(**filters)
         self.assertEqual(1, len(images))
 
     def test_list_images_for_non_existent_property(self):
         filters = {'filters': dict([('my_little_property',
                                      'cant_be_this_cute')])}
-        images = list(self.controller.list(**filters))
+        images = self.controller.list(**filters)
         self.assertEqual(0, len(images))
 
     def test_get_image(self):
@@ -804,7 +789,7 @@ class TestController(testtools.TestCase):
                    None)]
         self.assertEqual(expect, self.api.calls)
 
-    def reactivate_image(self):
+    def test_reactivate_image(self):
         id_image = '87b634c1-f893-33c9-28a9-e5673c99239a'
         self.controller.reactivate(id_image)
         expect = [('POST',
@@ -868,12 +853,12 @@ class TestController(testtools.TestCase):
 
     def test_download_no_data(self):
         resp = utils.FakeResponse(headers={}, status_code=204)
-        self.controller.http_client.get = mock.Mock(return_value=(resp, None))
-        body = self.controller.data('image_id')
-        self.assertIsNone(body)
+        self.controller.controller.http_client.get = mock.Mock(
+            return_value=(resp, None))
+        self.controller.data('image_id')
 
     def test_download_forbidden(self):
-        self.controller.http_client.get = mock.Mock(
+        self.controller.controller.http_client.get = mock.Mock(
             side_effect=exc.HTTPForbidden())
         try:
             self.controller.data('image_id')
@@ -893,7 +878,8 @@ class TestController(testtools.TestCase):
         expect = [
             ('GET', '/v2/images/%s' % image_id, {}, None),
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
-            ('GET', '/v2/images/%s' % image_id, {}, None),
+            ('GET', '/v2/images/%s' % image_id,
+             {'x-openstack-request-id': 'req-1234'}, None),
         ]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual(image_id, image.id)
@@ -912,7 +898,8 @@ class TestController(testtools.TestCase):
         expect = [
             ('GET', '/v2/images/%s' % image_id, {}, None),
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
-            ('GET', '/v2/images/%s' % image_id, {}, None),
+            ('GET', '/v2/images/%s' % image_id,
+             {'x-openstack-request-id': 'req-1234'}, None),
         ]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual(image_id, image.id)
@@ -931,7 +918,8 @@ class TestController(testtools.TestCase):
         expect = [
             ('GET', '/v2/images/%s' % image_id, {}, None),
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
-            ('GET', '/v2/images/%s' % image_id, {}, None),
+            ('GET', '/v2/images/%s' % image_id,
+             {'x-openstack-request-id': 'req-1234'}, None),
         ]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual(image_id, image.id)
@@ -953,7 +941,8 @@ class TestController(testtools.TestCase):
         expect = [
             ('GET', '/v2/images/%s' % image_id, {}, None),
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
-            ('GET', '/v2/images/%s' % image_id, {}, None),
+            ('GET', '/v2/images/%s' % image_id,
+             {'x-openstack-request-id': 'req-1234'}, None),
         ]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual(image_id, image.id)
@@ -974,7 +963,8 @@ class TestController(testtools.TestCase):
         expect = [
             ('GET', '/v2/images/%s' % image_id, {}, None),
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
-            ('GET', '/v2/images/%s' % image_id, {}, None),
+            ('GET', '/v2/images/%s' % image_id,
+             {'x-openstack-request-id': 'req-1234'}, None),
         ]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual(image_id, image.id)
@@ -999,7 +989,8 @@ class TestController(testtools.TestCase):
         expect = [
             ('GET', '/v2/images/%s' % image_id, {}, None),
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
-            ('GET', '/v2/images/%s' % image_id, {}, None),
+            ('GET', '/v2/images/%s' % image_id,
+             {'x-openstack-request-id': 'req-1234'}, None),
         ]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual(image_id, image.id)
@@ -1016,7 +1007,8 @@ class TestController(testtools.TestCase):
         expect = [
             ('GET', '/v2/images/%s' % image_id, {}, None),
             ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
-            ('GET', '/v2/images/%s' % image_id, {}, None),
+            ('GET', '/v2/images/%s' % image_id,
+             {'x-openstack-request-id': 'req-1234'}, None),
         ]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual(image_id, image.id)
@@ -1040,8 +1032,9 @@ class TestController(testtools.TestCase):
                               image_id, url, meta)
         self.assertIn(estr, str(e))
 
-    def _empty_get(self, image_id):
-        return ('GET', '/v2/images/%s' % image_id, {}, None)
+    def _empty_get(self, image_id, headers=None):
+        return ('GET', '/v2/images/%s' % image_id,
+                headers or {}, None)
 
     def _patch_req(self, image_id, patch_body):
         c_type = 'application/openstack-images-v2.1-json-patch'
@@ -1055,9 +1048,11 @@ class TestController(testtools.TestCase):
         image_id = 'a2b83adc-888e-11e3-8872-78acc0b951d8'
         new_loc = {'url': 'http://spam.com/', 'metadata': {'spam': 'ham'}}
         add_patch = {'path': '/locations/-', 'value': new_loc, 'op': 'add'}
+        headers = {'x-openstack-request-id': 'req-1234'}
         self.controller.add_location(image_id, **new_loc)
         self.assertEqual([self._patch_req(image_id, [add_patch]),
-                          self._empty_get(image_id)], self.api.calls)
+                          self._empty_get(image_id, headers=headers)],
+                         self.api.calls)
 
     @mock.patch.object(images.Controller, '_send_image_update_request',
                        side_effect=exc.HTTPBadRequest)
@@ -1092,6 +1087,7 @@ class TestController(testtools.TestCase):
     def test_update_location(self):
         image_id = 'a2b83adc-888e-11e3-8872-78acc0b951d8'
         new_loc = {'url': 'http://foo.com/', 'metadata': {'spam': 'ham'}}
+        headers = {'x-openstack-request-id': 'req-1234'}
         fixture_idx = '/v2/images/%s' % (image_id)
         orig_locations = data_fixtures[fixture_idx]['GET'][1]['locations']
         loc_map = dict([(l['url'], l) for l in orig_locations])
@@ -1101,12 +1097,13 @@ class TestController(testtools.TestCase):
         self.controller.update_location(image_id, **new_loc)
         self.assertEqual([self._empty_get(image_id),
                           self._patch_req(image_id, mod_patch),
-                          self._empty_get(image_id)],
+                          self._empty_get(image_id, headers=headers)],
                          self.api.calls)
 
     def test_update_tags(self):
         image_id = 'a2b83adc-888e-11e3-8872-78acc0b951d8'
         tag_map = {'tags': ['tag01', 'tag02', 'tag03']}
+        headers = {'x-openstack-request-id': 'req-1234'}
 
         image = self.controller.update(image_id, **tag_map)
 
@@ -1115,7 +1112,7 @@ class TestController(testtools.TestCase):
         expected = [
             self._empty_get(image_id),
             self._patch_req(image_id, expected_body),
-            self._empty_get(image_id)
+            self._empty_get(image_id, headers=headers)
         ]
         self.assertEqual(expected, self.api.calls)
         self.assertEqual(image_id, image.id)

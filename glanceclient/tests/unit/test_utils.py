@@ -17,12 +17,22 @@ import sys
 
 import mock
 from oslo_utils import encodeutils
+from requests import Response
 import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
 import testtools
 
 from glanceclient.common import utils
+
+
+REQUEST_ID = 'req-1234'
+
+
+def create_response_obj_with_req_id(req_id):
+    resp = Response()
+    resp.headers['x-openstack-request-id'] = req_id
+    return resp
 
 
 class TestUtils(testtools.TestCase):
@@ -178,3 +188,43 @@ class TestUtils(testtools.TestCase):
             (name, value) = utils.safe_header(sensitive_header, None)
             self.assertEqual(sensitive_header, name)
             self.assertIsNone(value)
+
+    def test_generator_proxy(self):
+        def _test_decorator():
+            i = 1
+            resp = create_response_obj_with_req_id(REQUEST_ID)
+            while True:
+                yield i, resp
+                i += 1
+
+        gen_obj = _test_decorator()
+        proxy = utils.GeneratorProxy(gen_obj)
+
+        # Proxy object should succeed in behaving as the
+        # wrapped object
+        self.assertTrue(isinstance(proxy, type(gen_obj)))
+
+        # Initially request_ids should be empty
+        self.assertEqual([], proxy.request_ids)
+
+        # Only after we have started iterating we should
+        # see non-empty `request_ids` property
+        proxy.next()
+        self.assertEqual([REQUEST_ID], proxy.request_ids)
+
+        # Even after multiple iterations `request_ids` property
+        # should only contain one request id
+        proxy.next()
+        proxy.next()
+        self.assertEqual(1, len(proxy.request_ids))
+
+    def test_request_id_proxy(self):
+        def test_data(val):
+            resp = create_response_obj_with_req_id(REQUEST_ID)
+            return val, resp
+
+        # Object of any type except decorator can be passed to test_data
+        proxy = utils.RequestIdProxy(test_data(11))
+        # Verify that proxy object has a property `request_ids` and it is
+        # a list of one request id
+        self.assertEqual([REQUEST_ID], proxy.request_ids)

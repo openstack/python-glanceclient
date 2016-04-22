@@ -30,6 +30,7 @@ class Controller(object):
         return warlock.model_factory(schema.raw(),
                                      base_class=schemas.SchemaBasedModel)
 
+    @utils.add_req_id_to_object()
     def update(self, image_id, tag_value):
         """Update an image with the given tag.
 
@@ -37,8 +38,10 @@ class Controller(object):
         :param tag_value:   value of the tag.
         """
         url = '/v2/images/%s/tags/%s' % (image_id, tag_value)
-        self.http_client.put(url)
+        resp, body = self.http_client.put(url)
+        return (resp, body), resp
 
+    @utils.add_req_id_to_object()
     def delete(self, image_id, tag_value):
         """Delete the tag associated with the given image.
 
@@ -46,4 +49,5 @@ class Controller(object):
         :param tag_value:   tag value to be deleted.
         """
         url = '/v2/images/%s/tags/%s' % (image_id, tag_value)
-        self.http_client.delete(url)
+        resp, body = self.http_client.delete(url)
+        return (resp, body), resp
