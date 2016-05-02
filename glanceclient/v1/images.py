@@ -202,7 +202,7 @@ class ImageManager(base.ManagerWithFind):
         :param owner: If provided, only images with this owner (tenant id)
                       will be listed. An empty string ('') matches ownerless
                       images.
-        :param return_request_id: If an empty list is provided, populate this
+        :param return_req_id: If an empty list is provided, populate this
                               list with the request ID value from the header
                               x-openstack-request-id
         :rtype: list of :class:`Image`
