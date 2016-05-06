@@ -22,6 +22,7 @@ except ImportError:
 import hashlib
 import os
 import sys
+import traceback
 import uuid
 
 import fixtures
@@ -149,6 +150,28 @@ class ShellTest(testutils.TestCase):
         shell = openstack_shell.OpenStackImagesShell()
         argstr = '--os-image-api-version 2 help foofoo'
         self.assertRaises(exc.CommandError, shell.main, argstr.split())
+
+    @mock.patch('sys.stdout', six.StringIO())
+    @mock.patch('sys.stderr', six.StringIO())
+    @mock.patch('sys.argv', ['glance', 'help', 'foofoo'])
+    def test_no_stacktrace_when_debug_disabled(self):
+        with mock.patch.object(traceback, 'print_exc') as mock_print_exc:
+            try:
+                openstack_shell.main()
+            except SystemExit:
+                pass
+            self.assertFalse(mock_print_exc.called)
+
+    @mock.patch('sys.stdout', six.StringIO())
+    @mock.patch('sys.stderr', six.StringIO())
+    @mock.patch('sys.argv', ['glance', '--debug', 'help', 'foofoo'])
+    def test_stacktrace_when_debug_enabled(self):
+        with mock.patch.object(traceback, 'print_exc') as mock_print_exc:
+            try:
+                openstack_shell.main()
+            except SystemExit:
+                pass
+            self.assertTrue(mock_print_exc.called)
 
     def test_help(self):
         shell = openstack_shell.OpenStackImagesShell()
