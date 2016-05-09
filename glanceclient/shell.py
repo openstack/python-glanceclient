@@ -441,7 +441,16 @@ class OpenStackImagesShell(object):
             }
         else:
             kwargs = self._get_kwargs_for_create_session(args)
-            kwargs = {'session': self._get_keystone_session(**kwargs)}
+            ks_session = self._get_keystone_session(**kwargs)
+            kwargs = {'session': ks_session}
+
+        if endpoint is None:
+            endpoint_type = args.os_endpoint_type or 'public'
+            service_type = args.os_service_type or 'image'
+            endpoint = ks_session.get_endpoint(
+                service_type=service_type,
+                interface=endpoint_type,
+                region_name=args.os_region_name)
 
         return glanceclient.Client(api_version, endpoint, **kwargs)
 
