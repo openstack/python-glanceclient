@@ -577,6 +577,12 @@ class OpenStackImagesShell(object):
         if not args.os_password and options.os_password:
             args.os_password = options.os_password
 
+        if args.debug:
+            # Set up the root logger to debug so that the submodules can
+            # print debug messages
+            logging.basicConfig(level=logging.DEBUG)
+            # for iso8601 < 0.1.11
+            logging.getLogger('iso8601').setLevel(logging.WARNING)
         LOG = logging.getLogger('glanceclient')
         LOG.addHandler(logging.StreamHandler())
         LOG.setLevel(logging.DEBUG if args.debug else logging.INFO)

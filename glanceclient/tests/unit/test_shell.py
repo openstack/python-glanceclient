@@ -20,6 +20,7 @@ try:
 except ImportError:
     from ordereddict import OrderedDict
 import hashlib
+import logging
 import os
 import sys
 import traceback
@@ -549,6 +550,20 @@ class ShellTest(testutils.TestCase):
         # We expect the normal usage as a result
         self.assertIn('Command-line interface to the OpenStack Images API',
                       sys.stdout.getvalue())
+
+    @mock.patch('glanceclient.v2.client.Client')
+    @mock.patch('glanceclient.v1.shell.do_image_list')
+    @mock.patch('glanceclient.shell.logging.basicConfig')
+    def test_setup_debug(self, conf, func, v2_client):
+        cli2 = mock.MagicMock()
+        v2_client.return_value = cli2
+        cli2.http_client.get.return_value = (None, {'versions': []})
+        args = '--debug image-list'
+        glance_shell = openstack_shell.OpenStackImagesShell()
+        glance_shell.main(args.split())
+        glance_logger = logging.getLogger('glanceclient')
+        self.assertEqual(glance_logger.getEffectiveLevel(), logging.DEBUG)
+        conf.assert_called_with(level=logging.DEBUG)
 
 
 class ShellTestWithKeystoneV3Auth(ShellTest):
