@@ -42,6 +42,20 @@ USER_AGENT = 'python-glanceclient'
 CHUNKSIZE = 1024 * 64  # 64kB
 
 
+def encode_headers(headers):
+    """Encodes headers.
+
+    Note: This should be used right before
+    sending anything out.
+
+    :param headers: Headers to encode
+    :returns: Dictionary with encoded headers'
+              names and values
+    """
+    return dict((encodeutils.safe_encode(h), encodeutils.safe_encode(v))
+                for h, v in six.iteritems(headers) if v is not None)
+
+
 class _BaseHTTPClient(object):
 
     @staticmethod
@@ -193,20 +207,6 @@ class HTTPClient(_BaseHTTPClient):
         LOG.debug('\n'.join([encodeutils.safe_decode(x, errors='ignore')
                              for x in dump]))
 
-    @staticmethod
-    def encode_headers(headers):
-        """Encodes headers.
-
-        Note: This should be used right before
-        sending anything out.
-
-        :param headers: Headers to encode
-        :returns: Dictionary with encoded headers'
-                  names and values
-        """
-        return dict((encodeutils.safe_encode(h), encodeutils.safe_encode(v))
-                    for h, v in six.iteritems(headers) if v is not None)
-
     def _request(self, method, url, **kwargs):
         """Send an http request with the specified characteristics.
 
@@ -232,7 +232,7 @@ class HTTPClient(_BaseHTTPClient):
         # Note(flaper87): Before letting headers / url fly,
         # they should be encoded otherwise httplib will
         # complain.
-        headers = self.encode_headers(headers)
+        headers = encode_headers(headers)
 
         if self.endpoint.endswith("/") or url.startswith("/"):
             conn_url = "%s%s" % (self.endpoint, url)
@@ -306,7 +306,7 @@ class SessionClient(adapter.Adapter, _BaseHTTPClient):
         super(SessionClient, self).__init__(session, **kwargs)
 
     def request(self, url, method, **kwargs):
-        headers = kwargs.pop('headers', {})
+        headers = encode_headers(kwargs.pop('headers', {}))
         kwargs['raise_exc'] = False
         data = self._set_common_request_kwargs(headers, kwargs)
 
