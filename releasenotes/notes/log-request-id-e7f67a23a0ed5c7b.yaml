@@ -1,0 +1,6 @@
+---
+features:
+  - Added support to log 'x-openstack-request-id' for each api call.
+    Please refer,
+    https://blueprints.launchpad.net/python-glanceclient/+spec/log-request-id
+    for more details.
