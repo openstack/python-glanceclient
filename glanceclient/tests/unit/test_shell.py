@@ -30,7 +30,6 @@ import fixtures
 from keystoneclient import exceptions as ks_exc
 from keystoneclient import fixture as ks_fixture
 import mock
-import requests
 from requests_mock.contrib import fixture as rm_fixture
 import six
 
@@ -44,7 +43,8 @@ from glanceclient.v2 import schemas as schemas
 import json
 
 
-DEFAULT_IMAGE_URL = 'http://127.0.0.1:5000/'
+DEFAULT_IMAGE_URL = 'http://127.0.0.1:9292/'
+DEFAULT_IMAGE_URL_INTERNAL = 'http://127.0.0.1:9191/'
 DEFAULT_USERNAME = 'username'
 DEFAULT_PASSWORD = 'password'
 DEFAULT_TENANT_ID = 'tenant_id'
@@ -56,6 +56,8 @@ DEFAULT_V2_AUTH_URL = '%sv2.0' % DEFAULT_UNVERSIONED_AUTH_URL
 DEFAULT_V3_AUTH_URL = '%sv3' % DEFAULT_UNVERSIONED_AUTH_URL
 DEFAULT_AUTH_TOKEN = ' 3bcc3d3a03f44e3d8377f9247b0ad155'
 TEST_SERVICE_URL = 'http://127.0.0.1:5000/'
+DEFAULT_SERVICE_TYPE = 'image'
+DEFAULT_ENDPOINT_TYPE = 'public'
 
 FAKE_V2_ENV = {'OS_USERNAME': DEFAULT_USERNAME,
                'OS_PASSWORD': DEFAULT_PASSWORD,
@@ -70,6 +72,15 @@ FAKE_V3_ENV = {'OS_USERNAME': DEFAULT_USERNAME,
                'OS_AUTH_URL': DEFAULT_V3_AUTH_URL,
                'OS_IMAGE_URL': DEFAULT_IMAGE_URL}
 
+FAKE_V4_ENV = {'OS_USERNAME': DEFAULT_USERNAME,
+               'OS_PASSWORD': DEFAULT_PASSWORD,
+               'OS_PROJECT_ID': DEFAULT_PROJECT_ID,
+               'OS_USER_DOMAIN_NAME': DEFAULT_USER_DOMAIN_NAME,
+               'OS_AUTH_URL': DEFAULT_V3_AUTH_URL,
+               'OS_SERVICE_TYPE': DEFAULT_SERVICE_TYPE,
+               'OS_ENDPOINT_TYPE': DEFAULT_ENDPOINT_TYPE,
+               'OS_AUTH_TOKEN': DEFAULT_AUTH_TOKEN}
+
 TOKEN_ID = uuid.uuid4().hex
 
 V2_TOKEN = ks_fixture.V2Token(token_id=TOKEN_ID)
@@ -80,7 +91,8 @@ _s.add_endpoint(DEFAULT_IMAGE_URL)
 V3_TOKEN = ks_fixture.V3Token()
 V3_TOKEN.set_project_scope()
 _s = V3_TOKEN.add_service('image', name='glance')
-_s.add_standard_endpoints(public=DEFAULT_IMAGE_URL)
+_s.add_standard_endpoints(public=DEFAULT_IMAGE_URL,
+                          internal=DEFAULT_IMAGE_URL_INTERNAL)
 
 
 class ShellTest(testutils.TestCase):
@@ -102,7 +114,9 @@ class ShellTest(testutils.TestCase):
         self.requests = self.useFixture(rm_fixture.Fixture())
 
         json_list = ks_fixture.DiscoveryList(DEFAULT_UNVERSIONED_AUTH_URL)
-        self.requests.get(DEFAULT_IMAGE_URL, json=json_list, status_code=300)
+        self.requests.get(DEFAULT_UNVERSIONED_AUTH_URL,
+                          json=json_list,
+                          status_code=300)
 
         json_v2 = {'version': ks_fixture.V2Discovery(DEFAULT_V2_AUTH_URL)}
         self.requests.get(DEFAULT_V2_AUTH_URL, json=json_v2)
@@ -382,18 +396,6 @@ class ShellTest(testutils.TestCase):
         glance_shell.main(args)
         self.assertEqual(1, mock_client.call_count)
 
-    @mock.patch('glanceclient.v2.client.Client')
-    def test_password_prompted_with_v2(self, v2_client):
-        self.requests.post(self.token_url, exc=requests.ConnectionError)
-
-        cli2 = mock.MagicMock()
-        v2_client.return_value = cli2
-        cli2.http_client.get.return_value = (None, {'versions': []})
-        glance_shell = openstack_shell.OpenStackImagesShell()
-        os.environ['OS_PASSWORD'] = 'password'
-        self.assertRaises(exc.CommunicationError,
-                          glance_shell.main, ['image-list'])
-
     @mock.patch('sys.stdin', side_effect=mock.MagicMock)
     @mock.patch('getpass.getpass', side_effect=EOFError)
     @mock.patch('glanceclient.v2.client.Client')
@@ -657,6 +659,65 @@ class ShellTestWithKeystoneV3Auth(ShellTest):
             'bash-completion']
         for r in avoided:
             self.assertNotIn(r, stdout.split())
+
+
+class ShellTestWithNoOSImageURLPublic(ShellTestWithKeystoneV3Auth):
+    # auth environment to use
+    # default uses public
+    auth_env = FAKE_V4_ENV.copy()
+
+    def setUp(self):
+        super(ShellTestWithNoOSImageURLPublic, self).setUp()
+        self.image_url = DEFAULT_IMAGE_URL
+        self.requests.get(DEFAULT_IMAGE_URL + 'v2/images',
+                          text='{"images": []}')
+
+    @mock.patch('glanceclient.v1.client.Client')
+    def test_auth_plugin_invocation_with_v1(self, v1_client):
+        args = '--os-image-api-version 1 image-list'
+        glance_shell = openstack_shell.OpenStackImagesShell()
+        glance_shell.main(args.split())
+        self.assertEqual(1, self.v3_auth.call_count)
+        self._assert_auth_plugin_args()
+
+    @mock.patch('glanceclient.v2.client.Client')
+    def test_auth_plugin_invocation_with_v2(self, v2_client):
+        args = '--os-image-api-version 2 image-list'
+        glance_shell = openstack_shell.OpenStackImagesShell()
+        glance_shell.main(args.split())
+        self.assertEqual(1, self.v3_auth.call_count)
+        self._assert_auth_plugin_args()
+
+    @mock.patch('glanceclient.v2.client.Client')
+    def test_endpoint_from_interface(self, v2_client):
+        args = ('--os-image-api-version 2 image-list')
+        glance_shell = openstack_shell.OpenStackImagesShell()
+        glance_shell.main(args.split())
+        assert v2_client.called
+        (args, kwargs) = v2_client.call_args
+        self.assertEqual(kwargs['endpoint_override'], self.image_url)
+
+    def test_endpoint_real_from_interface(self):
+        args = ('--os-image-api-version 2 image-list')
+        glance_shell = openstack_shell.OpenStackImagesShell()
+        glance_shell.main(args.split())
+        self.assertEqual(self.requests.request_history[2].url,
+                         self.image_url + "v2/images?limit=20&"
+                         "sort_key=name&sort_dir=asc")
+
+
+class ShellTestWithNoOSImageURLInternal(ShellTestWithNoOSImageURLPublic):
+    # auth environment to use
+    # this uses internal
+    FAKE_V5_ENV = FAKE_V4_ENV.copy()
+    FAKE_V5_ENV['OS_ENDPOINT_TYPE'] = 'internal'
+    auth_env = FAKE_V5_ENV.copy()
+
+    def setUp(self):
+        super(ShellTestWithNoOSImageURLPublic, self).setUp()
+        self.image_url = DEFAULT_IMAGE_URL_INTERNAL
+        self.requests.get(DEFAULT_IMAGE_URL_INTERNAL + 'v2/images',
+                          text='{"images": []}')
 
 
 class ShellCacheSchemaTest(testutils.TestCase):
