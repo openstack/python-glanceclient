@@ -207,12 +207,9 @@ class TestClient(testtools.TestCase):
         self.assertEqual(self.client.last_request_id, 'req-aaa')
 
     def test_headers_encoding(self):
-        if not hasattr(self.client, 'encode_headers'):
-            self.skipTest('Cannot do header encoding check on SessionClient')
-
         value = u'ni\xf1o'
         headers = {"test": value, "none-val": None}
-        encoded = self.client.encode_headers(headers)
+        encoded = http.encode_headers(headers)
         self.assertEqual(b"ni\xc3\xb1o", encoded[b"test"])
         self.assertNotIn("none-val", encoded)
 
