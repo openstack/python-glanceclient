@@ -72,7 +72,8 @@ class NamespaceController(object):
             if elem in namespace:
                 del namespace[elem]
 
-        url = '/v2/metadefs/namespaces/{0}'.format(namespace_name)
+        url = '/v2/metadefs/namespaces/%(namespace)s' % {
+            'namespace': namespace_name}
         # Pass the original wrapped value to http client.
         resp, _ = self.http_client.put(url, data=namespace.wrapped)
         # Get request id from `put` request so it can be passed to the
@@ -92,7 +93,8 @@ class NamespaceController(object):
         if kwargs:
             query_params = '?%s' % query_params
 
-        url = '/v2/metadefs/namespaces/{0}{1}'.format(namespace, query_params)
+        url = '/v2/metadefs/namespaces/%(namespace)s%(query_params)s' % {
+            'namespace': namespace, 'query_params': query_params}
         header = header or {}
         resp, body = self.http_client.get(url, headers=header)
         # NOTE(bcwaldon): remove 'self' for now until we have an elegant
@@ -188,7 +190,8 @@ class NamespaceController(object):
     @utils.add_req_id_to_object()
     def delete(self, namespace):
         """Delete a namespace."""
-        url = '/v2/metadefs/namespaces/{0}'.format(namespace)
+        url = '/v2/metadefs/namespaces/%(namespace)s' % {
+            'namespace': namespace}
         resp, body = self.http_client.delete(url)
         return (resp, body), resp
 
@@ -212,8 +215,8 @@ class ResourceTypeController(object):
         except (warlock.InvalidOperation, ValueError) as e:
             raise TypeError(encodeutils.exception_to_unicode(e))
 
-        url = '/v2/metadefs/namespaces/{0}/resource_types'.format(namespace,
-                                                                  res_type)
+        url = '/v2/metadefs/namespaces/%(namespace)s/resource_types' % {
+            'namespace': namespace}
         resp, body = self.http_client.post(url, data=res_type)
         body.pop('self', None)
         return self.model(**body), resp
@@ -221,8 +224,9 @@ class ResourceTypeController(object):
     @utils.add_req_id_to_object()
     def deassociate(self, namespace, resource):
         """Deassociate a resource type with a namespace."""
-        url = '/v2/metadefs/namespaces/{0}/resource_types/{1}'. \
-            format(namespace, resource)
+        url = ('/v2/metadefs/namespaces/%(namespace)s/'
+               'resource_types/%(resource)s') % {
+            'namespace': namespace, 'resource': resource}
         resp, body = self.http_client.delete(url)
         return (resp, body), resp
 
@@ -240,7 +244,8 @@ class ResourceTypeController(object):
 
     @utils.add_req_id_to_generator()
     def get(self, namespace):
-        url = '/v2/metadefs/namespaces/{0}/resource_types'.format(namespace)
+        url = '/v2/metadefs/namespaces/%(namespace)s/resource_types' % {
+            'namespace': namespace}
         resp, body = self.http_client.get(url)
         body.pop('self', None)
         for resource_type in body['resource_type_associations']:
@@ -270,8 +275,8 @@ class PropertyController(object):
         except (warlock.InvalidOperation, ValueError) as e:
             raise TypeError(encodeutils.exception_to_unicode(e))
 
-        url = '/v2/metadefs/namespaces/{0}/properties'.format(namespace)
-
+        url = '/v2/metadefs/namespaces/%(namespace)s/properties' % {
+            'namespace': namespace}
         resp, body = self.http_client.post(url, data=prop)
         body.pop('self', None)
         return self.model(**body), resp
@@ -290,8 +295,9 @@ class PropertyController(object):
             except warlock.InvalidOperation as e:
                 raise TypeError(encodeutils.exception_to_unicode(e))
 
-        url = '/v2/metadefs/namespaces/{0}/properties/{1}'.format(namespace,
-                                                                  prop_name)
+        url = ('/v2/metadefs/namespaces/%(namespace)s/'
+               'properties/%(prop_name)s') % {
+            'namespace': namespace, 'prop_name': prop_name}
         # Pass the original wrapped value to http client.
         resp, _ = self.http_client.put(url, data=prop.wrapped)
         # Get request id from `put` request so it can be passed to the
@@ -306,8 +312,9 @@ class PropertyController(object):
 
     @utils.add_req_id_to_object()
     def _get(self, namespace, prop_name, header=None):
-        url = '/v2/metadefs/namespaces/{0}/properties/{1}'.format(namespace,
-                                                                  prop_name)
+        url = ('/v2/metadefs/namespaces/%(namespace)s/'
+               'properties/%(prop_name)s') % {
+            'namespace': namespace, 'prop_name': prop_name}
         header = header or {}
         resp, body = self.http_client.get(url, headers=header)
         body.pop('self', None)
@@ -320,7 +327,8 @@ class PropertyController(object):
 
         :returns: generator over list of objects
         """
-        url = '/v2/metadefs/namespaces/{0}/properties'.format(namespace)
+        url = '/v2/metadefs/namespaces/%(namespace)s/properties' % {
+            'namespace': namespace}
 
         resp, body = self.http_client.get(url)
 
@@ -331,15 +339,17 @@ class PropertyController(object):
     @utils.add_req_id_to_object()
     def delete(self, namespace, prop_name):
         """Delete a property."""
-        url = '/v2/metadefs/namespaces/{0}/properties/{1}'.format(namespace,
-                                                                  prop_name)
+        url = ('/v2/metadefs/namespaces/%(namespace)s/'
+               'properties/%(prop_name)s') % {
+            'namespace': namespace, 'prop_name': prop_name}
         resp, body = self.http_client.delete(url)
         return (resp, body), resp
 
     @utils.add_req_id_to_object()
     def delete_all(self, namespace):
         """Delete all properties in a namespace."""
-        url = '/v2/metadefs/namespaces/{0}/properties'.format(namespace)
+        url = '/v2/metadefs/namespaces/%(namespace)s/properties' % {
+            'namespace': namespace}
         resp, body = self.http_client.delete(url)
         return (resp, body), resp
 
@@ -367,7 +377,8 @@ class ObjectController(object):
         except (warlock.InvalidOperation, ValueError) as e:
             raise TypeError(encodeutils.exception_to_unicode(e))
 
-        url = '/v2/metadefs/namespaces/{0}/objects'.format(namespace)
+        url = '/v2/metadefs/namespaces/%(namespace)s/objects' % {
+            'namespace': namespace}
 
         resp, body = self.http_client.post(url, data=obj)
         body.pop('self', None)
@@ -393,8 +404,9 @@ class ObjectController(object):
             if elem in obj:
                 del obj[elem]
 
-        url = '/v2/metadefs/namespaces/{0}/objects/{1}'.format(namespace,
-                                                               object_name)
+        url = ('/v2/metadefs/namespaces/%(namespace)s/'
+               'objects/%(object_name)s') % {
+            'namespace': namespace, 'object_name': object_name}
         # Pass the original wrapped value to http client.
         resp, _ = self.http_client.put(url, data=obj.wrapped)
         # Get request id from `put` request so it can be passed to the
@@ -409,8 +421,9 @@ class ObjectController(object):
 
     @utils.add_req_id_to_object()
     def _get(self, namespace, object_name, header=None):
-        url = '/v2/metadefs/namespaces/{0}/objects/{1}'.format(namespace,
-                                                               object_name)
+        url = ('/v2/metadefs/namespaces/%(namespace)s/'
+               'objects/%(object_name)s') % {
+            'namespace': namespace, 'object_name': object_name}
         header = header or {}
         resp, body = self.http_client.get(url, headers=header)
         body.pop('self', None)
@@ -422,7 +435,8 @@ class ObjectController(object):
 
         :returns: generator over list of objects
         """
-        url = '/v2/metadefs/namespaces/{0}/objects'.format(namespace,)
+        url = '/v2/metadefs/namespaces/%(namespace)s/objects' % {
+            'namespace': namespace}
         resp, body = self.http_client.get(url)
 
         for obj in body['objects']:
@@ -431,15 +445,17 @@ class ObjectController(object):
     @utils.add_req_id_to_object()
     def delete(self, namespace, object_name):
         """Delete an object."""
-        url = '/v2/metadefs/namespaces/{0}/objects/{1}'.format(namespace,
-                                                               object_name)
+        url = ('/v2/metadefs/namespaces/%(namespace)s/'
+               'objects/%(object_name)s') % {
+            'namespace': namespace, 'object_name': object_name}
         resp, body = self.http_client.delete(url)
         return (resp, body), resp
 
     @utils.add_req_id_to_object()
     def delete_all(self, namespace):
         """Delete all objects in a namespace."""
-        url = '/v2/metadefs/namespaces/{0}/objects'.format(namespace)
+        url = '/v2/metadefs/namespaces/%(namespace)s/objects' % {
+            'namespace': namespace}
         resp, body = self.http_client.delete(url)
         return (resp, body), resp
 
@@ -463,8 +479,8 @@ class TagController(object):
         :param tag_name: The name of the new tag to create.
         """
 
-        url = ('/v2/metadefs/namespaces/{0}/tags/{1}'.format(namespace,
-                                                             tag_name))
+        url = '/v2/metadefs/namespaces/%(namespace)s/tags/%(tag_name)s' % {
+            'namespace': namespace, 'tag_name': tag_name}
 
         resp, body = self.http_client.post(url)
         body.pop('self', None)
@@ -488,7 +504,8 @@ class TagController(object):
                 raise TypeError(encodeutils.exception_to_unicode(e))
         tags = {'tags': md_tag_list}
 
-        url = '/v2/metadefs/namespaces/{0}/tags'.format(namespace)
+        url = '/v2/metadefs/namespaces/%(namespace)s/tags' % {
+            'namespace': namespace}
 
         resp, body = self.http_client.post(url, data=tags)
         body.pop('self', None)
@@ -515,8 +532,8 @@ class TagController(object):
             if elem in tag:
                 del tag[elem]
 
-        url = '/v2/metadefs/namespaces/{0}/tags/{1}'.format(namespace,
-                                                            tag_name)
+        url = '/v2/metadefs/namespaces/%(namespace)s/tags/%(tag_name)s' % {
+            'namespace': namespace, 'tag_name': tag_name}
         # Pass the original wrapped value to http client.
         resp, _ = self.http_client.put(url, data=tag.wrapped)
         # Get request id from `put` request so it can be passed to the
@@ -531,8 +548,8 @@ class TagController(object):
 
     @utils.add_req_id_to_object()
     def _get(self, namespace, tag_name, header=None):
-        url = '/v2/metadefs/namespaces/{0}/tags/{1}'.format(namespace,
-                                                            tag_name)
+        url = '/v2/metadefs/namespaces/%(namespace)s/tags/%(tag_name)s' % {
+            'namespace': namespace, 'tag_name': tag_name}
         header = header or {}
         resp, body = self.http_client.get(url, headers=header)
         body.pop('self', None)
@@ -544,7 +561,8 @@ class TagController(object):
 
         :returns: generator over list of tags.
         """
-        url = '/v2/metadefs/namespaces/{0}/tags'.format(namespace)
+        url = '/v2/metadefs/namespaces/%(namespace)s/tags' % {
+            'namespace': namespace}
         resp, body = self.http_client.get(url)
 
         for tag in body['tags']:
@@ -553,14 +571,15 @@ class TagController(object):
     @utils.add_req_id_to_object()
     def delete(self, namespace, tag_name):
         """Delete a tag."""
-        url = '/v2/metadefs/namespaces/{0}/tags/{1}'.format(namespace,
-                                                            tag_name)
+        url = '/v2/metadefs/namespaces/%(namespace)s/tags/%(tag_name)s' % {
+            'namespace': namespace, 'tag_name': tag_name}
         resp, body = self.http_client.delete(url)
         return (resp, body), resp
 
     @utils.add_req_id_to_object()
     def delete_all(self, namespace):
         """Delete all tags in a namespace."""
-        url = '/v2/metadefs/namespaces/{0}/tags'.format(namespace)
+        url = '/v2/metadefs/namespaces/%(namespace)s/tags' % {
+            'namespace': namespace}
         resp, body = self.http_client.delete(url)
         return (resp, body), resp
