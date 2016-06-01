@@ -155,7 +155,7 @@ def do_image_show(gc, args):
 @utils.arg('--file', metavar='<FILE>',
            help='Local file to save downloaded image data to. '
                 'If this is not specified and there is no redirection '
-                'the image data will be not be saved.')
+                'the image data will not be saved.')
 @utils.arg('image', metavar='<IMAGE>', help='Name or ID of image to download.')
 @utils.arg('--progress', action='store_true', default=False,
            help='Show download progress bar.')

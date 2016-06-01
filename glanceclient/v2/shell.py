@@ -272,7 +272,7 @@ def do_explain(gc, args):
 @utils.arg('--file', metavar='<FILE>',
            help=_('Local file to save downloaded image data to. '
                   'If this is not specified and there is no redirection '
-                  'the image data will be not be saved.'))
+                  'the image data will not be saved.'))
 @utils.arg('id', metavar='<IMAGE_ID>', help=_('ID of image to download.'))
 @utils.arg('--progress', action='store_true', default=False,
            help=_('Show download progress bar.'))
