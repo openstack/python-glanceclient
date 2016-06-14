@@ -15,8 +15,8 @@
 import functools
 import json
 
-from keystoneclient.auth import token_endpoint
-from keystoneclient import session
+from keystoneauth1 import session
+from keystoneauth1 import token_endpoint
 import mock
 import requests
 from requests_mock.contrib import fixture

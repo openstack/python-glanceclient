@@ -38,11 +38,11 @@ from glanceclient._i18n import _
 from glanceclient.common import utils
 from glanceclient import exc
 
-from keystoneclient.auth.identity import v2 as v2_auth
-from keystoneclient.auth.identity import v3 as v3_auth
-from keystoneclient import discover
-from keystoneclient import exceptions as ks_exc
-from keystoneclient import session
+from keystoneauth1 import discover
+from keystoneauth1 import exceptions as ks_exc
+from keystoneauth1.identity import v2 as v2_auth
+from keystoneauth1.identity import v3 as v3_auth
+from keystoneauth1 import loading
 
 osprofiler_profiler = importutils.try_import("osprofiler.profiler")
 
@@ -51,10 +51,14 @@ SUPPORTED_VERSIONS = [1, 2]
 
 class OpenStackImagesShell(object):
 
-    def _append_global_identity_args(self, parser):
+    def _append_global_identity_args(self, parser, argv):
         # register common identity args
-        session.Session.register_cli_options(parser)
-        v3_auth.Password.register_argparse_arguments(parser)
+        parser.set_defaults(os_auth_url=utils.env('OS_AUTH_URL'))
+
+        parser.set_defaults(os_project_name=utils.env(
+            'OS_PROJECT_NAME', 'OS_TENANT_NAME'))
+        parser.set_defaults(os_project_id=utils.env(
+            'OS_PROJECT_ID', 'OS_TENANT_ID'))
 
         parser.add_argument('--key-file',
                             dest='os_key',
@@ -68,16 +72,8 @@ class OpenStackImagesShell(object):
                             dest='os_cert',
                             help='DEPRECATED! Use --os-cert.')
 
-        parser.add_argument('--os-tenant-id',
-                            default=utils.env('OS_TENANT_ID'),
-                            help='Defaults to env[OS_TENANT_ID].')
-
         parser.add_argument('--os_tenant_id',
                             help=argparse.SUPPRESS)
-
-        parser.add_argument('--os-tenant-name',
-                            default=utils.env('OS_TENANT_NAME'),
-                            help='Defaults to env[OS_TENANT_NAME].')
 
         parser.add_argument('--os_tenant_name',
                             help=argparse.SUPPRESS)
@@ -110,7 +106,19 @@ class OpenStackImagesShell(object):
         parser.add_argument('--os_endpoint_type',
                             help=argparse.SUPPRESS)
 
-    def get_base_parser(self):
+        loading.register_session_argparse_arguments(parser)
+        # Peek into argv to see if os-auth-token (or the deprecated
+        # os_auth_token) or the new os-token or the environment variable
+        # OS_AUTH_TOKEN were given. In which case, the token auth plugin is
+        # what the user wants. Else, we'll default to password.
+        default_auth_plugin = 'password'
+        token_opts = ['os-token', 'os-auth-token', 'os_auth-token']
+        if argv and any(i in token_opts for i in argv):
+            default_auth_plugin = 'token'
+        loading.register_auth_argparse_arguments(
+            parser, argv, default=default_auth_plugin)
+
+    def get_base_parser(self, argv):
         parser = argparse.ArgumentParser(
             prog='glance',
             description=__doc__.strip(),
@@ -194,12 +202,12 @@ class OpenStackImagesShell(object):
                                 'the profiling will not be triggered even '
                                 'if osprofiler is enabled on server side.')
 
-        self._append_global_identity_args(parser)
+        self._append_global_identity_args(parser, argv)
 
         return parser
 
-    def get_subcommand_parser(self, version):
-        parser = self.get_base_parser()
+    def get_subcommand_parser(self, version, argv=None):
+        parser = self.get_base_parser(argv)
 
         self.subcommands = {}
         subparsers = parser.add_subparsers(metavar='<subcommand>')
@@ -261,7 +269,7 @@ class OpenStackImagesShell(object):
         v2_auth_url = None
         v3_auth_url = None
         try:
-            ks_discover = discover.Discover(session=session, auth_url=auth_url)
+            ks_discover = discover.Discover(session=session, url=auth_url)
             v2_auth_url = ks_discover.url_for('2.0')
             v3_auth_url = ks_discover.url_for('3.0')
         except ks_exc.ClientException as e:
@@ -372,16 +380,11 @@ class OpenStackImagesShell(object):
                       "or prompted response"))
 
         # Validate password flow auth
-        project_info = (
-            args.os_tenant_name or args.os_tenant_id or (
-                args.os_project_name and (
-                    args.os_project_domain_name or
-                    args.os_project_domain_id
-                )
-            ) or args.os_project_id
-        )
-
-        if not project_info:
+        os_project_name = getattr(
+            args, 'os_project_name', getattr(args, 'os_tenant_name', None))
+        os_project_id = getattr(
+            args, 'os_project_id', getattr(args, 'os_tenant_id', None))
+        if not any([os_project_name, os_project_id]):
             # tenant is deprecated in Keystone v3. Use the latest
             # terminology instead.
             raise exc.CommandError(
@@ -432,7 +435,7 @@ class OpenStackImagesShell(object):
                 'ssl_compression': args.ssl_compression
             }
         else:
-            ks_session = session.Session.load_from_cli_options(args)
+            ks_session = loading.load_session_from_argparse_arguments(args)
             auth_plugin_kwargs = self._get_kwargs_to_create_auth_plugin(args)
             ks_session.auth = self._get_keystone_auth_plugin(
                 ks_session=ks_session, **auth_plugin_kwargs)
@@ -490,7 +493,7 @@ class OpenStackImagesShell(object):
 
         def _get_subparser(api_version):
             try:
-                return self.get_subcommand_parser(api_version)
+                return self.get_subcommand_parser(api_version, argv)
             except ImportError as e:
                 if not str(e):
                     # Add a generic import error message if the raised
@@ -504,7 +507,7 @@ class OpenStackImagesShell(object):
         # NOTE(flepied) Under Python3, parsed arguments are removed
         # from the list so make a copy for the first parsing
         base_argv = copy.deepcopy(argv)
-        parser = self.get_base_parser()
+        parser = self.get_base_parser(argv)
         (options, args) = parser.parse_known_args(base_argv)
 
         try:

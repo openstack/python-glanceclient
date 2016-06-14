@@ -17,8 +17,8 @@ import copy
 import logging
 import socket
 
-from keystoneclient import adapter
-from keystoneclient import exceptions as ksc_exc
+from keystoneauth1 import adapter
+from keystoneauth1 import exceptions as ksa_exc
 from oslo_utils import importutils
 from oslo_utils import netutils
 import requests
@@ -329,13 +329,13 @@ class SessionClient(adapter.Adapter, _BaseHTTPClient):
                                                       headers=headers,
                                                       data=data,
                                                       **kwargs)
-        except ksc_exc.RequestTimeout as e:
+        except ksa_exc.ConnectTimeout as e:
             conn_url = self.get_endpoint(auth=kwargs.get('auth'))
             conn_url = "%s/%s" % (conn_url.rstrip('/'), url.lstrip('/'))
             message = ("Error communicating with %(url)s %(e)s" %
                        dict(url=conn_url, e=e))
             raise exc.InvalidEndpoint(message=message)
-        except ksc_exc.ConnectionRefused as e:
+        except ksa_exc.ConnectFailure as e:
             conn_url = self.get_endpoint(auth=kwargs.get('auth'))
             conn_url = "%s/%s" % (conn_url.rstrip('/'), url.lstrip('/'))
             message = ("Error finding address for %(url)s: %(e)s" %
