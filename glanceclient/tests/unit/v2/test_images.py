@@ -1056,10 +1056,8 @@ class TestController(testtools.TestCase):
         new_loc = {'url': 'http://spam.com/', 'metadata': {'spam': 'ham'}}
         add_patch = {'path': '/locations/-', 'value': new_loc, 'op': 'add'}
         self.controller.add_location(image_id, **new_loc)
-        self.assertEqual(self.api.calls, [
-            self._patch_req(image_id, [add_patch]),
-            self._empty_get(image_id)
-        ])
+        self.assertEqual([self._patch_req(image_id, [add_patch]),
+                          self._empty_get(image_id)], self.api.calls)
 
     @mock.patch.object(images.Controller, '_send_image_update_request',
                        side_effect=exc.HTTPBadRequest)
@@ -1077,10 +1075,9 @@ class TestController(testtools.TestCase):
         del_patches = [{'path': '/locations/1', 'op': 'remove'},
                        {'path': '/locations/0', 'op': 'remove'}]
         self.controller.delete_locations(image_id, url_set)
-        self.assertEqual(self.api.calls, [
-            self._empty_get(image_id),
-            self._patch_req(image_id, del_patches)
-        ])
+        self.assertEqual([self._empty_get(image_id),
+                          self._patch_req(image_id, del_patches)],
+                         self.api.calls)
 
     def test_remove_missing_location(self):
         image_id = 'a2b83adc-888e-11e3-8872-78acc0b951d8'
@@ -1102,11 +1099,10 @@ class TestController(testtools.TestCase):
         mod_patch = [{'path': '/locations', 'op': 'replace',
                       'value': list(loc_map.values())}]
         self.controller.update_location(image_id, **new_loc)
-        self.assertEqual(self.api.calls, [
-            self._empty_get(image_id),
-            self._patch_req(image_id, mod_patch),
-            self._empty_get(image_id)
-        ])
+        self.assertEqual([self._empty_get(image_id),
+                          self._patch_req(image_id, mod_patch),
+                          self._empty_get(image_id)],
+                         self.api.calls)
 
     def test_update_tags(self):
         image_id = 'a2b83adc-888e-11e3-8872-78acc0b951d8'

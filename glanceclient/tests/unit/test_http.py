@@ -237,7 +237,7 @@ class TestClient(testtools.TestCase):
     def test_get_connections_kwargs_http(self):
         endpoint = 'http://example.com:9292'
         test_client = http.HTTPClient(endpoint, token=u'adc123')
-        self.assertEqual(test_client.timeout, 600.0)
+        self.assertEqual(600.0, test_client.timeout)
 
     def test_http_chunked_request(self):
         text = "Ok"

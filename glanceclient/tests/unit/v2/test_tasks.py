@@ -257,45 +257,45 @@ class TestController(testtools.TestCase):
     def test_list_tasks(self):
         # NOTE(flwang): cast to list since the controller returns a generator
         tasks = list(self.controller.list())
-        self.assertEqual(tasks[0].id, _PENDING_ID)
-        self.assertEqual(tasks[0].type, 'import')
-        self.assertEqual(tasks[0].status, 'pending')
-        self.assertEqual(tasks[1].id, _PROCESSING_ID)
-        self.assertEqual(tasks[1].type, 'import')
-        self.assertEqual(tasks[1].status, 'processing')
+        self.assertEqual(_PENDING_ID, tasks[0].id)
+        self.assertEqual('import', tasks[0].type)
+        self.assertEqual('pending', tasks[0].status)
+        self.assertEqual(_PROCESSING_ID, tasks[1].id)
+        self.assertEqual('import', tasks[1].type)
+        self.assertEqual('processing', tasks[1].status)
 
     def test_list_tasks_paginated(self):
         # NOTE(flwang): cast to list since the controller returns a generator
         tasks = list(self.controller.list(page_size=1))
-        self.assertEqual(tasks[0].id, _PENDING_ID)
-        self.assertEqual(tasks[0].type, 'import')
-        self.assertEqual(tasks[1].id, _PROCESSING_ID)
-        self.assertEqual(tasks[1].type, 'import')
+        self.assertEqual(_PENDING_ID, tasks[0].id)
+        self.assertEqual('import', tasks[0].type)
+        self.assertEqual(_PROCESSING_ID, tasks[1].id)
+        self.assertEqual('import', tasks[1].type)
 
     def test_list_tasks_with_status(self):
         filters = {'filters': {'status': 'processing'}}
         tasks = list(self.controller.list(**filters))
-        self.assertEqual(tasks[0].id, _OWNED_TASK_ID)
+        self.assertEqual(_OWNED_TASK_ID, tasks[0].id)
 
     def test_list_tasks_with_wrong_status(self):
         filters = {'filters': {'status': 'fake'}}
         tasks = list(self.controller.list(**filters))
-        self.assertEqual(len(tasks), 0)
+        self.assertEqual(0, len(tasks))
 
     def test_list_tasks_with_type(self):
         filters = {'filters': {'type': 'import'}}
         tasks = list(self.controller.list(**filters))
-        self.assertEqual(tasks[0].id, _OWNED_TASK_ID)
+        self.assertEqual(_OWNED_TASK_ID, tasks[0].id)
 
     def test_list_tasks_with_wrong_type(self):
         filters = {'filters': {'type': 'fake'}}
         tasks = list(self.controller.list(**filters))
-        self.assertEqual(len(tasks), 0)
+        self.assertEqual(0, len(tasks))
 
     def test_list_tasks_for_owner(self):
         filters = {'filters': {'owner': _OWNER_ID}}
         tasks = list(self.controller.list(**filters))
-        self.assertEqual(tasks[0].id, _OWNED_TASK_ID)
+        self.assertEqual(_OWNED_TASK_ID, tasks[0].id)
 
     def test_list_tasks_for_fake_owner(self):
         filters = {'filters': {'owner': _FAKE_OWNER_ID}}
@@ -347,8 +347,8 @@ class TestController(testtools.TestCase):
 
     def test_get_task(self):
         task = self.controller.get(_PENDING_ID)
-        self.assertEqual(task.id, _PENDING_ID)
-        self.assertEqual(task.type, 'import')
+        self.assertEqual(_PENDING_ID, task.id)
+        self.assertEqual('import', task.type)
 
     def test_create_task(self):
         properties = {
@@ -357,8 +357,8 @@ class TestController(testtools.TestCase):
                       'swift://cloud.foo/myaccount/mycontainer/path'},
         }
         task = self.controller.create(**properties)
-        self.assertEqual(task.id, _PENDING_ID)
-        self.assertEqual(task.type, 'import')
+        self.assertEqual(_PENDING_ID, task.id)
+        self.assertEqual('import', task.type)
 
     def test_create_task_invalid_property(self):
         properties = {
