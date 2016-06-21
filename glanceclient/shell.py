@@ -421,9 +421,7 @@ class OpenStackImagesShell(object):
         endpoint = self._get_image_url(args)
         auth_token = args.os_auth_token
 
-        auth_req = (hasattr(args, 'func') and
-                    utils.is_authentication_required(args.func))
-        if not auth_req or (endpoint and auth_token):
+        if endpoint and auth_token:
             kwargs = {
                 'token': auth_token,
                 'insecure': args.insecure,
