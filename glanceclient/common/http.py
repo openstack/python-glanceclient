@@ -63,7 +63,7 @@ class _BaseHTTPClient(object):
         chunk = body
         while chunk:
             chunk = body.read(CHUNKSIZE)
-            if chunk == '':
+            if not chunk:
                 break
             yield chunk
 
