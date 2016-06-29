@@ -669,8 +669,8 @@ class ImageManagerTest(testtools.TestCase):
             'x-image-meta-property-c': 'd',
         }
         expect = [('POST', '/v1/images', expect_headers, None)]
-        self.assertEqual(self.api.calls, expect)
-        self.assertEqual(image.id, '1')
+        self.assertEqual(expect, self.api.calls)
+        self.assertEqual('1', image.id)
         expect_req_id = ['req-1234']
         self.assertEqual(expect_req_id, params['return_req_id'])
 
@@ -738,7 +738,7 @@ class ImageManagerTest(testtools.TestCase):
         self.mgr.update('4', **fields)
         expect_headers = {'x-glance-registry-purge-props': 'true'}
         expect = [('PUT', '/v1/images/4', expect_headers, None)]
-        self.assertEqual(self.api.calls, expect)
+        self.assertEqual(expect, self.api.calls)
         expect_req_id = ['req-1234']
         self.assertEqual(expect_req_id, fields['return_req_id'])
 
@@ -765,7 +765,7 @@ class ImageManagerTest(testtools.TestCase):
         }
         images = self.mgr.list(**fields)
         next(images)
-        self.assertEqual(fields['return_req_id'], ['req-1234'])
+        self.assertEqual(['req-1234'], fields['return_req_id'])
 
     def test_image_list_with_notfound_owner(self):
         images = self.mgr.list(owner='X', page_size=20)

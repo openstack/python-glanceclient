@@ -695,7 +695,7 @@ class ShellTestWithNoOSImageURLPublic(ShellTestWithKeystoneV3Auth):
         glance_shell.main(args.split())
         assert v2_client.called
         (args, kwargs) = v2_client.call_args
-        self.assertEqual(kwargs['endpoint_override'], self.image_url)
+        self.assertEqual(self.image_url, kwargs['endpoint_override'])
 
     def test_endpoint_real_from_interface(self):
         args = ('--os-image-api-version 2 image-list')
@@ -843,4 +843,4 @@ class ShellCacheSchemaTest(testutils.TestCase):
         switch_version = self.shell._cache_schemas(self._make_args(options),
                                                    client,
                                                    home_dir=self.cache_dir)
-        self.assertEqual(switch_version, True)
+        self.assertEqual(True, switch_version)
