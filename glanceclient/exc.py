@@ -52,7 +52,7 @@ class HTTPException(ClientException):
         self.details = details or self.__class__.__name__
 
     def __str__(self):
-        return "%s (HTTP %s)" % (self.details, self.code)
+        return "HTTP %s" % (self.details)
 
 
 class HTTPMultipleChoices(HTTPException):
