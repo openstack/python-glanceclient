@@ -34,7 +34,8 @@ class NamespaceController(object):
     @utils.memoized_property
     def model(self):
         schema = self.schema_client.get('metadefs/namespace')
-        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
+        return warlock.model_factory(schema.raw(),
+                                     base_class=schemas.SchemaBasedModel)
 
     def create(self, **kwargs):
         """Create a namespace.
@@ -186,7 +187,8 @@ class ResourceTypeController(object):
     @utils.memoized_property
     def model(self):
         schema = self.schema_client.get('metadefs/resource_type')
-        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
+        return warlock.model_factory(schema.raw(),
+                                     base_class=schemas.SchemaBasedModel)
 
     def associate(self, namespace, **kwargs):
         """Associate a resource type with a namespace."""
@@ -234,7 +236,8 @@ class PropertyController(object):
     @utils.memoized_property
     def model(self):
         schema = self.schema_client.get('metadefs/property')
-        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
+        return warlock.model_factory(schema.raw(),
+                                     base_class=schemas.SchemaBasedModel)
 
     def create(self, namespace, **kwargs):
         """Create a property.
@@ -314,7 +317,8 @@ class ObjectController(object):
     @utils.memoized_property
     def model(self):
         schema = self.schema_client.get('metadefs/object')
-        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
+        return warlock.model_factory(schema.raw(),
+                                     base_class=schemas.SchemaBasedModel)
 
     def create(self, namespace, **kwargs):
         """Create an object.
@@ -397,7 +401,8 @@ class TagController(object):
     @utils.memoized_property
     def model(self):
         schema = self.schema_client.get('metadefs/tag')
-        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
+        return warlock.model_factory(schema.raw(),
+                                     base_class=schemas.SchemaBasedModel)
 
     def create(self, namespace, tag_name):
         """Create a tag.

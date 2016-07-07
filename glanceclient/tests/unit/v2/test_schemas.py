@@ -130,7 +130,7 @@ class TestSchemaBasedModel(testtools.TestCase):
     def setUp(self):
         super(TestSchemaBasedModel, self).setUp()
         self.model = warlock.model_factory(_SCHEMA.raw(),
-                                           schemas.SchemaBasedModel)
+                                           base_class=schemas.SchemaBasedModel)
 
     def test_patch_should_replace_missing_core_properties(self):
         obj = {
