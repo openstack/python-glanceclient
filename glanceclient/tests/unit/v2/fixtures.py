@@ -90,8 +90,8 @@ schema_fixture = {
     "properties": {
         "architecture": {
             "description": "Operating system architecture as specified in "
-                           "http://docs.openstack.org/trunk/openstack-compute"
-                           "/admin/content/adding-images.html",
+                           "http://docs.openstack.org/user-guide/common"
+                           "/cli_manage_images.html",
             "is_base": "false",
             "type": "string"
         },
