@@ -93,7 +93,7 @@ class _BaseHTTPClient(object):
 
     def _handle_response(self, resp):
         if not resp.ok:
-            LOG.debug("Request returned failure status %s." % resp.status_code)
+            LOG.debug("Request returned failure status %s.", resp.status_code)
             raise exc.from_response(resp, resp.content)
         elif (resp.status_code == requests.codes.MULTIPLE_CHOICES and
               resp.request.path_url != '/versions'):
