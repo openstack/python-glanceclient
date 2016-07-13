@@ -118,6 +118,10 @@ class FakeResponse(object):
                               version=version, status=status_code)
 
     @property
+    def status(self):
+        return self.status_code
+
+    @property
     def ok(self):
         return (self.status_code < 400 or
                 self.status_code >= 600)
@@ -150,6 +154,9 @@ class FakeResponse(object):
             if not chunk:
                 break
             yield chunk
+
+    def release_conn(self, **kwargs):
+        pass
 
 
 class TestCase(testtools.TestCase):
