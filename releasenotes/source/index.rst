@@ -6,4 +6,4 @@ glanceclient Release Notes
    :maxdepth: 1
 
    unreleased
-    mitaka
+   mitaka
