@@ -22,32 +22,21 @@ _BASE_SCHEMA = {
         "type": "string"
     },
     "name": "image",
-    "links": [
-        {
-            "href": "{self}",
-            "rel": "self"
-        },
-        {
-            "href": "{file}",
-            "rel": "enclosure"
-        },
-        {
-            "href": "{schema}",
-            "rel": "describedby"
-        }
-    ],
+    "links": [{
+        "href": "{self}",
+        "rel": "self"
+    }, {
+        "href": "{file}",
+        "rel": "enclosure"
+    }, {
+        "href": "{schema}",
+        "rel": "describedby"
+    }],
     "properties": {
         "container_format": {
-            "enum": [
-                "ami",
-                "ari",
-                "aki",
-                "bare",
-                "ovf",
-                "ova",
-                "docker"
-            ],
-            "type": "string",
+            "enum": [None, "ami", "ari", "aki", "bare", "ovf", "ova",
+                     "docker"],
+            "type": ["null", "string"],
             "description": "Format of the container"
         },
         "min_ram": {
@@ -58,17 +47,15 @@ _BASE_SCHEMA = {
             "pattern": ("^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}"
                         "-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}"
                         "-([0-9a-fA-F]){12}$"),
-            "type": "string",
+            "type": ["null", "string"],
             "description": ("ID of image stored in Glance that should be "
                             "used as the ramdisk when booting an AMI-style "
-                            "image.")
+                            "image."),
+            "is_base": False
         },
         "locations": {
             "items": {
-                "required": [
-                    "url",
-                    "metadata"
-                ],
+                "required": ["url", "metadata"],
                 "type": "object",
                 "properties": {
                     "url": {
@@ -85,12 +72,12 @@ _BASE_SCHEMA = {
                             "file kept in external store")
         },
         "file": {
-            "type": "string",
             "readOnly": True,
-            "description": ("An image file url")
+            "type": "string",
+            "description": "An image file url"
         },
         "owner": {
-            "type": "string",
+            "type": ["null", "string"],
             "description": "Owner of the image",
             "maxLength": 255
         },
@@ -102,62 +89,49 @@ _BASE_SCHEMA = {
             "description": "An identifier for the image"
         },
         "size": {
-            "type": "integer",
             "readOnly": True,
+            "type": ["null", "integer"],
             "description": "Size of image file in bytes"
         },
         "os_distro": {
             "type": "string",
             "description": ("Common name of operating system distribution "
-                            "as specified in %s" % _doc_url)
+                            "as specified in %s" % _doc_url),
+            "is_base": False
         },
         "self": {
-            "type": "string",
             "readOnly": True,
-            "description": ("An image self url")
+            "type": "string",
+            "description": "An image self url"
         },
         "disk_format": {
-            "enum": [
-                "ami",
-                "ari",
-                "aki",
-                "vhd",
-                "vmdk",
-                "raw",
-                "qcow2",
-                "vdi",
-                "iso"
-            ],
-            "type": "string",
+            "enum": [None, "ami", "ari", "aki", "vhd", "vmdk", "raw",
+                     "qcow2", "vdi", "iso"],
+            "type": ["null", "string"],
             "description": "Format of the disk"
         },
         "os_version": {
             "type": "string",
-            "description": ("Operating system version as "
-                            "specified by the distributor")
+            "description": "Operating system version as specified by the"
+                           " distributor",
+            "is_base": False
         },
         "direct_url": {
-            "type": "string",
             "readOnly": True,
-            "description": ("URL to access the image file kept in "
-                            "external store")
+            "type": "string",
+            "description": "URL to access the image file kept in external"
+                           " store"
         },
         "schema": {
-            "type": "string",
             "readOnly": True,
-            "description": ("An image schema url")
+            "type": "string",
+            "description": "An image schema url"
         },
         "status": {
-            "enum": [
-                "queued",
-                "saving",
-                "active",
-                "killed",
-                "deleted",
-                "pending_delete"
-            ],
-            "type": "string",
             "readOnly": True,
+            "enum": ["queued", "saving", "active", "killed", "deleted",
+                     "pending_delete", "deactivated"],
+            "type": "string",
             "description": "Status of the image"
         },
         "tags": {
@@ -169,60 +143,57 @@ _BASE_SCHEMA = {
             "description": "List of strings related to the image"
         },
         "kernel_id": {
-            "pattern": ("^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-"
-                        "([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-"
-                        "([0-9a-fA-F]){12}$"),
-            "type": "string",
-            "description": ("ID of image stored in Glance that should be "
-                            "used as the kernel when booting an AMI-style "
-                            "image.")
+            "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F])"
+                       "{4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+            "type": ["null", "string"],
+            "description": "ID of image stored in Glance that should be "
+                           "used as the kernel when booting an "
+                           "AMI-style image.",
+            "is_base": False
         },
         "visibility": {
-            "enum": [
-                "public",
-                "private"
-            ],
+            "enum": ["public", "private"],
             "type": "string",
             "description": "Scope of image accessibility"
         },
         "updated_at": {
-            "type": "string",
             "readOnly": True,
-            "description": ("Date and time of the last "
-                            "image modification")
+            "type": "string",
+            "description": "Date and time of the last image modification"
         },
         "min_disk": {
             "type": "integer",
-            "description": ("Amount of disk space (in GB) "
-                            "required to boot image.")
+            "description": "Amount of disk space (in GB) required to boot "
+                           "image."
         },
         "virtual_size": {
-            "type": "integer",
             "readOnly": True,
+            "type": ["null", "integer"],
             "description": "Virtual size of image in bytes"
         },
         "instance_uuid": {
             "type": "string",
-            "description": ("Metadata which can be used to record which "
-                            "instance this image is associated with. "
-                            "(Informational only, does not create an instance "
-                            "snapshot.)")
+            "description": "Metadata which can be used to record which "
+                           "instance this image is associated with. "
+                           "(Informational only, does not create an "
+                           "instance snapshot.)",
+            "is_base": False
         },
         "name": {
-            "type": "string",
+            "type": ["null", "string"],
             "description": "Descriptive name for the image",
             "maxLength": 255
         },
         "checksum": {
-            "type": "string",
             "readOnly": True,
+            "type": ["null", "string"],
             "description": "md5 hash of image contents.",
             "maxLength": 32
         },
         "created_at": {
-            "type": "string",
             "readOnly": True,
-            "description": "Date and time of image registration "
+            "type": "string",
+            "description": "Date and time of image registration"
         },
         "protected": {
             "type": "boolean",
@@ -231,7 +202,8 @@ _BASE_SCHEMA = {
         "architecture": {
             "type": "string",
             "description": ("Operating system architecture as specified "
-                            "in %s" % _doc_url)
+                            "in %s" % _doc_url),
+            "is_base": False
         }
     }
 }
