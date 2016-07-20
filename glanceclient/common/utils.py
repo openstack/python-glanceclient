@@ -283,6 +283,8 @@ def save_image(data, path):
     :param path: path to save the image to
     """
     if path is None:
+        # NOTE(kragniz): for py3 compatibility: sys.stdout.buffer is only
+        # present on py3, otherwise fall back to sys.stdout
         image = getattr(sys.stdout, 'buffer',
                         sys.stdout)
     else:
