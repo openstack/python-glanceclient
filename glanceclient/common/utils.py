@@ -360,9 +360,12 @@ def get_data_file(args):
             return None
         if not sys.stdin.isatty():
             # (2) image data is provided through standard input
+            image = sys.stdin
+            if hasattr(sys.stdin, 'buffer'):
+                image = sys.stdin.buffer
             if msvcrt:
-                msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
-            return sys.stdin
+                msvcrt.setmode(image.fileno(), os.O_BINARY)
+            return image
         else:
             # (3) no image data provided
             return None
