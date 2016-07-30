@@ -92,6 +92,16 @@ class _BaseHTTPClient(object):
         return data
 
     def _handle_response(self, resp):
+        # log request-id for each api cal
+        request_id = resp.headers.get('x-openstack-request-id')
+        if request_id:
+            LOG.debug('%(method)s call to glance-api for '
+                      '%(url)s used request id '
+                      '%(response_request_id)s',
+                      {'method': resp.request.method,
+                       'url': resp.url,
+                       'response_request_id': request_id})
+
         if not resp.ok:
             LOG.debug("Request returned failure status %s." % resp.status_code)
             raise exc.from_response(resp, resp.content)
@@ -119,16 +129,6 @@ class _BaseHTTPClient(object):
                     body_iter = json.loads(''.join([c for c in body_iter]))
                 except ValueError:
                     body_iter = None
-
-        # log request-id for each api call
-        request_id = resp.headers.get('x-openstack-request-id')
-        if request_id:
-            LOG.debug('%(method)s call to glance-api for '
-                      '%(url)s used request id '
-                      '%(response_request_id)s',
-                      {'method': resp.request.method,
-                       'url': resp.url,
-                       'response_request_id': request_id})
 
         return resp, body_iter
 
