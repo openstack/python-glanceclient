@@ -31,12 +31,12 @@ class SchemaBasedModel(warlock.Model):
     """
 
     def _make_custom_patch(self, new, original):
-        if not self.get('tags'):
-            tags_patch = []
-        else:
+        if 'tags' in new and 'tags' not in original:
             tags_patch = [{"path": "/tags",
                            "value": self.get('tags'),
                            "op": "replace"}]
+        else:
+            tags_patch = []
 
         patch_string = jsonpatch.make_patch(original, new).to_string()
         patch = json.loads(patch_string)
@@ -55,9 +55,6 @@ class SchemaBasedModel(warlock.Model):
                 if (name not in original and name in new and
                         prop.get('is_base', True)):
                     original[name] = None
-
-        original['tags'] = None
-        new['tags'] = None
         return self._make_custom_patch(new, original)
 
 
