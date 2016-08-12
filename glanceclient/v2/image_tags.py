@@ -27,7 +27,8 @@ class Controller(object):
     @utils.memoized_property
     def model(self):
         schema = self.schema_client.get('image')
-        return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
+        return warlock.model_factory(schema.raw(),
+                                     base_class=schemas.SchemaBasedModel)
 
     def update(self, image_id, tag_value):
         """Update an image with the given tag.
