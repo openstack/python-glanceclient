@@ -381,20 +381,6 @@ data_fixtures = {
             '',
         )
     },
-    '/v2/images/a2b83adc-888e-11e3-8872-78acc0b951d9': {
-        'GET': (
-            {},
-            {
-                'id': 'a2b83adc-888e-11e3-8872-78acc0b951d9',
-                'name': 'image-1',
-                'tags': ['tag1', 'tag2'],
-            },
-        ),
-        'PATCH': (
-            {},
-            '',
-        )
-    },
     '/v2/images?limit=%d&os_distro=NixOS' % images.DEFAULT_PAGE_SIZE: {
         'GET': (
             {},
@@ -995,23 +981,6 @@ class TestController(testtools.TestCase):
         # NOTE(bcwaldon):due to limitations of our fake api framework, the name
         # will not actually change - yet in real life it will...
         self.assertEqual('image-3', image.name)
-
-    def test_update_add_prop_with_tags(self):
-        image_id = 'a2b83adc-888e-11e3-8872-78acc0b951d9'
-        params = {'finn': 'human'}
-        image = self.controller.update(image_id, **params)
-        expect_hdrs = {
-            'Content-Type': 'application/openstack-images-v2.1-json-patch',
-        }
-        expect_body = [[('op', 'add'), ('path', '/finn'), ('value', 'human')]]
-        expect = [
-            ('GET', '/v2/images/%s' % image_id, {}, None),
-            ('PATCH', '/v2/images/%s' % image_id, expect_hdrs, expect_body),
-            ('GET', '/v2/images/%s' % image_id, {}, None),
-        ]
-        self.assertEqual(expect, self.api.calls)
-        self.assertEqual(image_id, image.id)
-        self.assertEqual('image-1', image.name)
 
     def test_update_bad_additionalProperty_type(self):
         image_id = 'e7e59ff6-fa2e-4075-87d3-1a1398a07dc3'
