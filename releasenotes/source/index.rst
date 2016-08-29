@@ -7,3 +7,4 @@ glanceclient Release Notes
 
    unreleased
    mitaka
+   newton
