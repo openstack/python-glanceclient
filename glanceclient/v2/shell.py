@@ -988,7 +988,7 @@ def do_task_show(gc, args):
     """Describe a specific task."""
     task = gc.tasks.get(args.id)
     ignore = ['self', 'schema']
-    task = dict([item for item in task.iteritems() if item[0] not in ignore])
+    task = dict([item for item in task.items() if item[0] not in ignore])
     utils.print_dict(task)
 
 
@@ -1011,6 +1011,6 @@ def do_task_create(gc, args):
         task_values = {'type': args.type, 'input': input}
         task = gc.tasks.create(**task_values)
         ignore = ['self', 'schema']
-        task = dict([item for item in task.iteritems()
+        task = dict([item for item in task.items()
                      if item[0] not in ignore])
         utils.print_dict(task)
