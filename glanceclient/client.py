@@ -25,8 +25,8 @@ def Client(version=None, endpoint=None, session=None, *args, **kwargs):
     for specific details.
 
     :param string version: The version of API to use.
-    :param session: A keystoneclient session that should be used for transport.
-    :type session: keystoneclient.session.Session
+    :param session: A keystoneauth1 session that should be used for transport.
+    :type session: keystoneauth1.session.Session
     """
     # FIXME(jamielennox): Add a deprecation warning if no session is passed.
     # Leaving it as an option until we can ensure nothing break when we switch.

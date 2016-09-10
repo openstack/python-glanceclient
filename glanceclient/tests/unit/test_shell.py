@@ -27,8 +27,8 @@ import traceback
 import uuid
 
 import fixtures
-from keystoneclient import exceptions as ks_exc
-from keystoneclient import fixture as ks_fixture
+from keystoneauth1 import exceptions as ks_exc
+from keystoneauth1 import fixture as ks_fixture
 import mock
 from requests_mock.contrib import fixture as rm_fixture
 import six
@@ -250,7 +250,9 @@ class ShellTest(testutils.TestCase):
 
     def test_get_base_parser(self):
         test_shell = openstack_shell.OpenStackImagesShell()
-        actual_parser = test_shell.get_base_parser()
+        # NOTE(stevemar): Use the current sys.argv for base_parser since it
+        # doesn't matter for this test, it just needs to initialize the CLI
+        actual_parser = test_shell.get_base_parser(sys.argv)
         description = 'Command-line interface to the OpenStack Images API.'
         expected = argparse.ArgumentParser(
             prog='glance', usage=None,
@@ -637,7 +639,7 @@ class ShellTestWithKeystoneV3Auth(ShellTest):
         glance_shell.main(args.split())
         self.assertEqual(0, self.v3_auth.call_count)
 
-    @mock.patch('keystoneclient.discover.Discover',
+    @mock.patch('keystoneauth1.discover.Discover',
                 side_effect=ks_exc.ClientException())
     def test_api_discovery_failed_with_unversioned_auth_url(self,
                                                             discover):

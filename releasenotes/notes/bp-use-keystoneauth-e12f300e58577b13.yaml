@@ -1,0 +1,11 @@
+---
+prelude: >
+    Switch to using keystoneauth for session and auth plugins.
+other:
+  - >
+    [`bp use-keystoneauth <https://blueprints.launchpad.net/python-glanceclient/+spec/use-keystoneauth>`_]
+    As of keystoneclient 2.2.0, the session and auth plugins code has
+    been deprecated. These modules have been moved to the keystoneauth
+    library. Consumers of the session and plugin modules are encouraged
+    to move to keystoneauth. Note that there should be no change to
+    end users of glanceclient.
