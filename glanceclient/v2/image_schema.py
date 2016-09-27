@@ -105,7 +105,7 @@ _BASE_SCHEMA = {
             "description": "An image self url"
         },
         "disk_format": {
-            "enum": [None, "ami", "ari", "aki", "vhd", "vmdk", "raw",
+            "enum": [None, "ami", "ari", "aki", "vhd", "vhdx", "vmdk", "raw",
                      "qcow2", "vdi", "iso"],
             "type": ["null", "string"],
             "description": "Format of the disk"

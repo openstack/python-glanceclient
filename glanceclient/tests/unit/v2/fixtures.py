@@ -68,6 +68,30 @@ image_show_fixture = {
     "visibility": "private"
 }
 
+image_create_fixture = {
+    "checksum": "9cb02fe7fcac26f8a25d6db3109063ae",
+    "container_format": "bare",
+    "created_at": "2015-07-24T12:18:13Z",
+    "disk_format": "raw",
+    "file": "/v2/images/%s/file" % UUID,
+    "id": UUID,
+    "kernel_id": "af81fccd-b2e8-4232-886c-aa98dda22882",
+    "min_disk": 0,
+    "min_ram": 0,
+    "name": "img1",
+    "owner": "411423405e10431fb9c47ac5b2446557",
+    "protected": False,
+    "ramdisk_id": "fdb3f864-9458-4185-bd26-5d27fe6b6adf",
+    "schema": "/v2/schemas/image",
+    "self": "/v2/images/%s" % UUID,
+    "size": 145,
+    "status": "active",
+    "tags": [],
+    "updated_at": "2015-07-24T12:18:13Z",
+    "virtual_size": 123,
+    "visibility": "private"
+}
+
 schema_fixture = {
     "additionalProperties": {
         "type": "string"

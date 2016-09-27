@@ -45,8 +45,8 @@ def schema_args(schema_getter, omit=None):
                 'type': 'string',
                 'description': 'Format of the container'},
             'disk_format': {
-                'enum': [None, 'ami', 'ari', 'aki', 'vhd', 'vmdk', 'raw',
-                         'qcow2', 'vdi', 'iso'],
+                'enum': [None, 'ami', 'ari', 'aki', 'vhd', 'vhdx', 'vmdk',
+                         'raw', 'qcow2', 'vdi', 'iso'],
                 'type': 'string',
                 'description': 'Format of the disk'},
             'location': {'type': 'string'},
