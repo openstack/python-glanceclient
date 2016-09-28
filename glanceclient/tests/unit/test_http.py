@@ -157,7 +157,7 @@ class TestClient(testtools.TestCase):
         http_client.get(path)
 
         headers = self.mock.last_request.headers
-        self.assertTrue('Accept-Language' not in headers)
+        self.assertNotIn('Accept-Language', headers)
 
     def test_connection_timeout(self):
         """Verify a InvalidEndpoint is received if connection times out."""
