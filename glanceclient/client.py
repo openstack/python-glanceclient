@@ -15,6 +15,8 @@
 
 import warnings
 
+from oslo_utils import importutils
+
 from glanceclient.common import utils
 
 
@@ -56,6 +58,7 @@ def Client(version=None, endpoint=None, session=None, *args, **kwargs):
                    "http://$HOST:$PORT/v$VERSION_NUMBER")
             raise RuntimeError(msg)
 
-    module = utils.import_versioned_module(int(version), 'client')
+    module = importutils.import_versioned_module('glanceclient', int(version),
+                                                 'client')
     client_class = getattr(module, 'Client')
     return client_class(endpoint, *args, session=session, **kwargs)

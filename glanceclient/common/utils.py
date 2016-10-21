@@ -26,7 +26,6 @@ import sys
 import threading
 import uuid
 
-from oslo_utils import importutils
 import six
 
 if os.name == 'nt':
@@ -257,13 +256,6 @@ def env(*vars, **kwargs):
         if value:
             return value
     return kwargs.get('default', '')
-
-
-def import_versioned_module(version, submodule=None):
-    module = 'glanceclient.v%s' % version
-    if submodule:
-        module = '.'.join((module, submodule))
-    return importutils.import_module(module)
 
 
 def exit(msg='', exit_code=1):
