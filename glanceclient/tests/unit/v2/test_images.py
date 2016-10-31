@@ -34,6 +34,7 @@ _OWNER_ID = '6bd473f0-79ae-40ad-a927-e07ec37b642f'
 _PRIVATE_ID = 'e33560a7-3964-4de5-8339-5a24559f99ab'
 _PUBLIC_ID = '857806e7-05b6-48e0-9d40-cb0e6fb727b9'
 _SHARED_ID = '331ac905-2a38-44c5-a83d-653db8f08313'
+_COMMUNITY_ID = '609ec9fc-0ee4-44c4-854d-0480af576929'
 _STATUS_REJECTED_ID = 'f3ea56ff-d7e4-4451-998c-1e3d33539c8e'
 
 data_fixtures = {
@@ -240,6 +241,16 @@ data_fixtures = {
             {'images': [
                 {
                     'id': _SHARED_ID,
+                },
+            ]},
+        ),
+    },
+    '/v2/images?limit=%d&visibility=community' % images.DEFAULT_PAGE_SIZE: {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': _COMMUNITY_ID,
                 },
             ]},
         ),
@@ -581,6 +592,11 @@ class TestController(testtools.TestCase):
         filters = {'filters': {'visibility': 'shared'}}
         images = list(self.controller.list(**filters))
         self.assertEqual(_SHARED_ID, images[0].id)
+
+    def test_list_images_visibility_community(self):
+        filters = {'filters': {'visibility': 'community'}}
+        images = list(self.controller.list(**filters))
+        self.assertEqual(_COMMUNITY_ID, images[0].id)
 
     def test_list_images_member_status_rejected(self):
         filters = {'filters': {'member_status': 'rejected'}}

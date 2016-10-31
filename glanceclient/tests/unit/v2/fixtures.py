@@ -65,7 +65,7 @@ image_show_fixture = {
     "tags": [],
     "updated_at": "2015-07-24T12:18:13Z",
     "virtual_size": "null",
-    "visibility": "private"
+    "visibility": "shared"
 }
 
 schema_fixture = {
@@ -313,7 +313,9 @@ schema_fixture = {
             "description": "Scope of image accessibility",
             "enum": [
                 "public",
-                "private"
+                "private",
+                "community",
+                "shared"
             ],
             "type": "string"
         }
