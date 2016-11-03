@@ -16,7 +16,7 @@
 
 import testtools
 
-from glanceclient.openstack.common.apiclient import base
+from glanceclient.v1.apiclient import base
 
 
 class TestBase(testtools.TestCase):

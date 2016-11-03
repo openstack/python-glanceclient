@@ -21,7 +21,7 @@ import six
 import six.moves.urllib.parse as urlparse
 
 from glanceclient.common import utils
-from glanceclient.openstack.common.apiclient import base
+from glanceclient.v1.apiclient import base
 
 UPDATE_PARAMS = ('name', 'disk_format', 'container_format', 'min_disk',
                  'min_ram', 'owner', 'size', 'is_public', 'protected',

@@ -14,7 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from glanceclient.openstack.common.apiclient import base
+from glanceclient.v1.apiclient import base
 
 
 class VersionManager(base.ManagerWithFind):

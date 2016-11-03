@@ -45,7 +45,7 @@ import six
 from six.moves.urllib import parse
 
 from glanceclient._i18n import _
-from glanceclient.openstack.common.apiclient import exceptions
+from glanceclient.v1.apiclient import exceptions
 
 
 def getid(obj):
