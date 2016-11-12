@@ -10,8 +10,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import glanceclient
+from keystoneauth1 import loading
+from keystoneauth1 import session
 import os
-
 import os_client_config
 from tempest.lib.cli import base
 
@@ -60,3 +62,30 @@ class ClientTestBase(base.ClientTestBase):
     def glance(self, *args, **kwargs):
         return self.clients.glance(*args,
                                    **kwargs)
+
+    def glance_pyclient(self):
+        ks_creds = dict(
+            auth_url=self.creds["auth_url"],
+            username=self.creds["username"],
+            password=self.creds["password"],
+            project_name=self.creds["project_name"])
+        keystoneclient = self.Keystone(**ks_creds)
+        return self.Glance(keystoneclient)
+
+    class Keystone(object):
+        def __init__(self, **kwargs):
+            loader = loading.get_plugin_loader("password")
+            auth = loader.load_from_options(**kwargs)
+            self.session = session.Session(auth=auth)
+
+    class Glance(object):
+        def __init__(self, keystone, version="2"):
+            self.glance = glanceclient.Client(
+                version,
+                session=keystone.session)
+
+        def find(self, image_name):
+            for image in self.glance.images.list():
+                if image.name == image_name:
+                    return image
+            return None

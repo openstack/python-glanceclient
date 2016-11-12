@@ -315,16 +315,18 @@ class SessionClient(adapter.Adapter, _BaseHTTPClient):
         super(SessionClient, self).__init__(session, **kwargs)
 
     def request(self, url, method, **kwargs):
-        headers = encode_headers(kwargs.pop('headers', {}))
+        headers = kwargs.pop('headers', {})
         kwargs['raise_exc'] = False
         data = self._set_common_request_kwargs(headers, kwargs)
-
         try:
-            resp = super(SessionClient, self).request(url,
-                                                      method,
-                                                      headers=headers,
-                                                      data=data,
-                                                      **kwargs)
+            # NOTE(pumaranikar): To avoid bug #1641239, no modification of
+            # headers should be allowed after encode_headers() is called.
+            resp = super(SessionClient,
+                         self).request(url,
+                                       method,
+                                       headers=encode_headers(headers),
+                                       data=data,
+                                       **kwargs)
         except ksa_exc.ConnectTimeout as e:
             conn_url = self.get_endpoint(auth=kwargs.get('auth'))
             conn_url = "%s/%s" % (conn_url.rstrip('/'), url.lstrip('/'))

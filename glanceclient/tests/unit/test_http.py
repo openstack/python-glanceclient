@@ -20,6 +20,7 @@ import fixtures
 from keystoneauth1 import session
 from keystoneauth1 import token_endpoint
 import mock
+from oslo_utils import encodeutils
 import requests
 from requests_mock.contrib import fixture
 import six
@@ -206,6 +207,41 @@ class TestClient(testtools.TestCase):
         encoded = http.encode_headers(headers)
         self.assertEqual(b"ni\xc3\xb1o", encoded[b"test"])
         self.assertNotIn("none-val", encoded)
+
+    @mock.patch('keystoneauth1.adapter.Adapter.request')
+    def test_http_duplicate_content_type_headers(self, mock_ksarq):
+        """Test proper handling of Content-Type headers.
+
+        encode_headers() must be called as late as possible before a
+        request is sent. If this principle is violated, and if any
+        changes are made to the headers between encode_headers() and the
+        actual request (for instance a call to
+        _set_common_request_kwargs()), and if you're trying to set a
+        Content-Type that is not equal to application/octet-stream (the
+        default), it is entirely possible that you'll end up with two
+        Content-Type headers defined (yours plus
+        application/octet-stream). The request will go out the door with
+        only one of them chosen seemingly at random.
+
+        This situation only occurs in python3. This test will never fail
+        in python2.
+        """
+        path = "/v2/images/my-image"
+        headers = {
+            "Content-Type": "application/openstack-images-v2.1-json-patch"
+        }
+        data = '[{"value": "qcow2", "path": "/disk_format", "op": "replace"}]'
+        self.mock.patch(self.endpoint + path)
+        sess_http_client = self._create_session_client()
+        sess_http_client.patch(path, headers=headers, data=data)
+        # Pull out the headers with which Adapter.request was invoked
+        ksarqh = mock_ksarq.call_args[1]['headers']
+        # Only one Content-Type header (of any text-type)
+        self.assertEqual(1, [encodeutils.safe_decode(key)
+                             for key in ksarqh.keys()].count(u'Content-Type'))
+        # And it's the one we set
+        self.assertEqual(b"application/openstack-images-v2.1-json-patch",
+                         ksarqh[b"Content-Type"])
 
     def test_raw_request(self):
         """Verify the path being used for HTTP requests reflects accurately."""
