@@ -163,6 +163,35 @@ class ShellTest(testutils.TestCase):
             sys.stderr = orig_stderr
         return (stdout, stderr)
 
+    def test_fixup_subcommand(self):
+        arglist = [u'image-list', u'--help']
+        if six.PY2:
+            expected_arglist = [b'image-list', u'--help']
+        elif six.PY3:
+            expected_arglist = [u'image-list', u'--help']
+
+        openstack_shell.OpenStackImagesShell._fixup_subcommand(
+            arglist, arglist
+        )
+        self.assertEqual(expected_arglist, arglist)
+
+    def test_fixup_subcommand_with_options_preceding(self):
+        arglist = [u'--os-auth-token', u'abcdef', u'image-list', u'--help']
+        unknown = arglist[2:]
+        if six.PY2:
+            expected_arglist = [
+                u'--os-auth-token', u'abcdef', b'image-list', u'--help'
+            ]
+        elif six.PY3:
+            expected_arglist = [
+                u'--os-auth-token', u'abcdef', u'image-list', u'--help'
+            ]
+
+        openstack_shell.OpenStackImagesShell._fixup_subcommand(
+            unknown, arglist
+        )
+        self.assertEqual(expected_arglist, arglist)
+
     def test_help_unknown_command(self):
         shell = openstack_shell.OpenStackImagesShell()
         argstr = '--os-image-api-version 2 help foofoo'
