@@ -198,14 +198,6 @@ class TestClient(testtools.TestCase):
         resp, body = self.client.get(path, headers=headers)
         self.assertEqual(text, resp.text)
 
-    def test_request_id(self):
-        path = '/v1/images/detail'
-        self.mock.get(self.endpoint + path,
-                      headers={"x-openstack-request-id": "req-aaa"})
-
-        self.client.get(path)
-        self.assertEqual(self.client.last_request_id, 'req-aaa')
-
     def test_headers_encoding(self):
         value = u'ni\xf1o'
         headers = {"test": value, "none-val": None}
