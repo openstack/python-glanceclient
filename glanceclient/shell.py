@@ -211,7 +211,8 @@ class OpenStackImagesShell(object):
 
         self.subcommands = {}
         subparsers = parser.add_subparsers(metavar='<subcommand>')
-        submodule = utils.import_versioned_module(version, 'shell')
+        submodule = importutils.import_versioned_module('glanceclient',
+                                                        version, 'shell')
 
         self._find_actions(subparsers, submodule)
         self._find_actions(subparsers, self)
