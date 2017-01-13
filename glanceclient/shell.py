@@ -31,6 +31,7 @@ import traceback
 
 from oslo_utils import encodeutils
 from oslo_utils import importutils
+import six
 import six.moves.urllib.parse as urlparse
 
 import glanceclient
@@ -540,7 +541,13 @@ class OpenStackImagesShell(object):
             self.do_help(options, parser=parser)
             return 0
 
-        # Short-circuit and deal with help command right away.
+        # NOTE(sigmavirus24): Above, args is defined as the left over
+        # arguments from parser.parse_known_args(). This allows us to
+        # skip any parameters to command-line flags that may have been passed
+        # to glanceclient, e.g., --os-auth-token.
+        self._fixup_subcommand(args, argv)
+
+        # short-circuit and deal with help command right away.
         sub_parser = _get_subparser(api_version)
         args = sub_parser.parse_args(argv)
 
@@ -609,6 +616,33 @@ class OpenStackImagesShell(object):
                 print("Profiling trace ID: %s" % trace_id)
                 print("To display trace use next command:\n"
                       "osprofiler trace show --html %s " % trace_id)
+
+    @staticmethod
+    def _fixup_subcommand(unknown_args, argv):
+        # NOTE(sigmavirus24): Sometimes users pass the wrong subcommand name
+        # to glanceclient. If they're using Python 2 they will see an error:
+        # > invalid choice: u'imgae-list' (choose from ...)
+        # To avoid this, we look at the extra args already parsed from above
+        # and try to predict what the subcommand will be based on it being the
+        # first non - or -- prefixed argument in args. We then find that in
+        # argv and encode it from unicode so users don't see the pesky `u'`
+        # prefix.
+        for arg in unknown_args:
+            if not arg.startswith('-'):  # This will cover both - and --
+                subcommand_name = arg
+                break
+        else:
+            subcommand_name = ''
+
+        if (subcommand_name and six.PY2 and
+                isinstance(subcommand_name, six.text_type)):
+            # NOTE(sigmavirus24): if we found a subcommand name, then let's
+            # find it in the argv list and replace it with a bytes object
+            # instead. Note, that if we encode the argument on Python 3, the
+            # user will instead see a pesky `b'` string instead of the `u'`
+            # string we mention above.
+            subcommand_index = argv.index(subcommand_name)
+            argv[subcommand_index] = encodeutils.safe_encode(subcommand_name)
 
     @utils.arg('command', metavar='<subcommand>', nargs='?',
                help='Display help for <subcommand>.')
