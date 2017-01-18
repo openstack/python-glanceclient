@@ -31,7 +31,7 @@ import glanceclient.v1.images
 
 CONTAINER_FORMATS = 'Acceptable formats: ami, ari, aki, bare, and ovf.'
 DISK_FORMATS = ('Acceptable formats: ami, ari, aki, vhd, vmdk, raw, '
-                'qcow2, vdi, and iso.')
+                'qcow2, vdi, iso, and ploop.')
 DATA_FIELDS = ('location', 'copy_from', 'file')
 
 _bool_strict = functools.partial(strutils.bool_from_string, strict=True)

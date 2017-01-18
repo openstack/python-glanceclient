@@ -106,7 +106,7 @@ _BASE_SCHEMA = {
         },
         "disk_format": {
             "enum": [None, "ami", "ari", "aki", "vhd", "vhdx", "vmdk", "raw",
-                     "qcow2", "vdi", "iso"],
+                     "qcow2", "vdi", "iso", "ploop"],
             "type": ["null", "string"],
             "description": "Format of the disk"
         },

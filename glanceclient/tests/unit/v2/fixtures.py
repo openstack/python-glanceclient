@@ -168,7 +168,8 @@ schema_fixture = {
                 "raw",
                 "qcow2",
                 "vdi",
-                "iso"
+                "iso",
+                "ploop"
             ],
             "type": [
                 "null",
