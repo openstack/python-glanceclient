@@ -81,6 +81,7 @@ class Controller(object):
                 raise exc.HTTPBadRequest(msg)
         return sort
 
+    @utils.add_req_id_to_generator()
     def list(self, **kwargs):
         """Retrieve a listing of Image objects.
 
@@ -97,6 +98,7 @@ class Controller(object):
 
         def paginate(url, page_size, limit=None):
             next_url = url
+            req_id_hdr = {}
 
             while True:
                 if limit and page_size > limit:
@@ -105,7 +107,12 @@ class Controller(object):
                     next_url = next_url.replace("limit=%s" % page_size,
                                                 "limit=%s" % limit)
 
-                resp, body = self.http_client.get(next_url)
+                resp, body = self.http_client.get(next_url, headers=req_id_hdr)
+                # NOTE(rsjethani): Store curent request id so that it can be
+                # used in subsequent requests. Refer bug #1525259
+                req_id_hdr['x-openstack-request-id'] = \
+                    utils._extract_request_id(resp)
+
                 for image in body['images']:
                     # NOTE(bcwaldon): remove 'self' for now until we have
                     # an elegant way to pass it into the model constructor
@@ -114,7 +121,7 @@ class Controller(object):
                     # We do not validate the model when listing.
                     # This prevents side-effects of injecting invalid
                     # schema values via v1.
-                    yield self.unvalidated_model(**image)
+                    yield self.unvalidated_model(**image), resp
                     if limit:
                         limit -= 1
                         if limit <= 0:
@@ -173,17 +180,23 @@ class Controller(object):
         if isinstance(kwargs.get('marker'), six.string_types):
             url = '%s&marker=%s' % (url, kwargs['marker'])
 
-        for image in paginate(url, page_size, limit):
-            yield image
+        for image, resp in paginate(url, page_size, limit):
+            yield image, resp
 
-    def get(self, image_id):
+    @utils.add_req_id_to_object()
+    def _get(self, image_id, header=None):
         url = '/v2/images/%s' % image_id
-        resp, body = self.http_client.get(url)
+        header = header or {}
+        resp, body = self.http_client.get(url, headers=header)
         # NOTE(bcwaldon): remove 'self' for now until we have an elegant
         # way to pass it into the model constructor without conflict
         body.pop('self', None)
-        return self.unvalidated_model(**body)
+        return self.unvalidated_model(**body), resp
 
+    def get(self, image_id):
+        return self._get(image_id)
+
+    @utils.add_req_id_to_object()
     def data(self, image_id, do_checksum=True):
         """Retrieve data of an image.
 
@@ -194,7 +207,7 @@ class Controller(object):
         url = '/v2/images/%s/file' % image_id
         resp, body = self.http_client.get(url)
         if resp.status_code == codes.no_content:
-            return None
+            return None, resp
 
         checksum = resp.headers.get('content-md5', None)
         content_length = int(resp.headers.get('content-length', 0))
@@ -202,8 +215,9 @@ class Controller(object):
         if do_checksum and checksum is not None:
             body = utils.integrity_iter(body, checksum)
 
-        return utils.IterableWithLength(body, content_length)
+        return utils.IterableWithLength(body, content_length), resp
 
+    @utils.add_req_id_to_object()
     def upload(self, image_id, image_data, image_size=None):
         """Upload the data for an image.
 
@@ -214,13 +228,17 @@ class Controller(object):
         url = '/v2/images/%s/file' % image_id
         hdrs = {'Content-Type': 'application/octet-stream'}
         body = image_data
-        self.http_client.put(url, headers=hdrs, data=body)
+        resp, body = self.http_client.put(url, headers=hdrs, data=body)
+        return (resp, body), resp
 
+    @utils.add_req_id_to_object()
     def delete(self, image_id):
         """Delete an image."""
         url = '/v2/images/%s' % image_id
-        self.http_client.delete(url)
+        resp, body = self.http_client.delete(url)
+        return (resp, body), resp
 
+    @utils.add_req_id_to_object()
     def create(self, **kwargs):
         """Create an image."""
         url = '/v2/images'
@@ -236,17 +254,21 @@ class Controller(object):
         # NOTE(esheffield): remove 'self' for now until we have an elegant
         # way to pass it into the model constructor without conflict
         body.pop('self', None)
-        return self.model(**body)
+        return self.model(**body), resp
 
+    @utils.add_req_id_to_object()
     def deactivate(self, image_id):
         """Deactivate an image."""
         url = '/v2/images/%s/actions/deactivate' % image_id
-        return self.http_client.post(url)
+        resp, body = self.http_client.post(url)
+        return (resp, body), resp
 
+    @utils.add_req_id_to_object()
     def reactivate(self, image_id):
         """Reactivate an image."""
         url = '/v2/images/%s/actions/reactivate' % image_id
-        return self.http_client.post(url)
+        resp, body = self.http_client.post(url)
+        return (resp, body), resp
 
     def update(self, image_id, remove_props=None, **kwargs):
         """Update attributes of an image.
@@ -276,12 +298,16 @@ class Controller(object):
 
         url = '/v2/images/%s' % image_id
         hdrs = {'Content-Type': 'application/openstack-images-v2.1-json-patch'}
-        self.http_client.patch(url, headers=hdrs, data=image.patch)
+        resp, _ = self.http_client.patch(url, headers=hdrs, data=image.patch)
+        # Get request id from `patch` request so it can be passed to the
+        #  following `get` call
+        req_id_hdr = {
+            'x-openstack-request-id': utils._extract_request_id(resp)}
 
         # NOTE(bcwaldon): calling image.patch doesn't clear the changes, so
         # we need to fetch the image again to get a clean history. This is
         # an obvious optimization for warlock
-        return self.get(image_id)
+        return self._get(image_id, req_id_hdr)
 
     def _get_image_with_locations_or_fail(self, image_id):
         image = self.get(image_id)
@@ -290,10 +316,13 @@ class Controller(object):
                                      'API access to image locations')
         return image
 
+    @utils.add_req_id_to_object()
     def _send_image_update_request(self, image_id, patch_body):
         url = '/v2/images/%s' % image_id
         hdrs = {'Content-Type': 'application/openstack-images-v2.1-json-patch'}
-        self.http_client.patch(url, headers=hdrs, data=json.dumps(patch_body))
+        resp, body = self.http_client.patch(url, headers=hdrs,
+                                            data=json.dumps(patch_body))
+        return (resp, body), resp
 
     def add_location(self, image_id, url, metadata):
         """Add a new location entry to an image's list of locations.
@@ -308,8 +337,11 @@ class Controller(object):
         """
         add_patch = [{'op': 'add', 'path': '/locations/-',
                       'value': {'url': url, 'metadata': metadata}}]
-        self._send_image_update_request(image_id, add_patch)
-        return self.get(image_id)
+        response = self._send_image_update_request(image_id, add_patch)
+        # Get request id from the above update request and pass the same to
+        # following get request
+        req_id_hdr = {'x-openstack-request-id': response.request_ids[0]}
+        return self._get(image_id, req_id_hdr)
 
     def delete_locations(self, image_id, url_set):
         """Remove one or more location entries of an image.
@@ -332,7 +364,7 @@ class Controller(object):
         url_indices.sort(reverse=True)
         patches = [{'op': 'remove', 'path': '/locations/%s' % url_idx}
                    for url_idx in url_indices]
-        self._send_image_update_request(image_id, patches)
+        return self._send_image_update_request(image_id, patches)
 
     def update_location(self, image_id, url, metadata):
         """Update an existing location entry in an image's list of locations.
@@ -359,6 +391,9 @@ class Controller(object):
         patches = [{'op': 'replace',
                     'path': '/locations',
                     'value': list(url_map.values())}]
-        self._send_image_update_request(image_id, patches)
+        response = self._send_image_update_request(image_id, patches)
+        # Get request id from the above update request and pass the same to
+        # following get request
+        req_id_hdr = {'x-openstack-request-id': response.request_ids[0]}
 
-        return self.get(image_id)
+        return self._get(image_id, req_id_hdr)

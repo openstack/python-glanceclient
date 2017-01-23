@@ -15,6 +15,7 @@
 
 import testtools
 
+from glanceclient.tests.unit.v2 import base
 from glanceclient.tests import utils
 from glanceclient.v2 import metadefs
 
@@ -134,11 +135,11 @@ class TestTagController(testtools.TestCase):
         super(TestTagController, self).setUp()
         self.api = utils.FakeAPI(data_fixtures)
         self.schema_api = utils.FakeSchemaAPI(schema_fixtures)
-        self.controller = metadefs.TagController(self.api, self.schema_api)
+        self.controller = base.BaseController(self.api, self.schema_api,
+                                              metadefs.TagController)
 
     def test_list_tag(self):
-        tags = list(self.controller.list(NAMESPACE1))
-
+        tags = self.controller.list(NAMESPACE1)
         actual = [tag.name for tag in tags]
         self.assertEqual([TAG1, TAG2], actual)
 
@@ -155,8 +156,7 @@ class TestTagController(testtools.TestCase):
             'tags': [TAGNEW2, TAGNEW3]
         }
         tags = self.controller.create_multiple(NAMESPACE1, **properties)
-        actual = [tag.name for tag in tags]
-        self.assertEqual([TAGNEW2, TAGNEW3], actual)
+        self.assertEqual([TAGNEW2, TAGNEW3], tags)
 
     def test_update_tag(self):
         properties = {

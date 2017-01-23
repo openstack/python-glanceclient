@@ -15,6 +15,7 @@
 
 import testtools
 
+from glanceclient.tests.unit.v2 import base
 from glanceclient.tests import utils
 from glanceclient.v2 import metadefs
 
@@ -238,12 +239,11 @@ class TestPropertyController(testtools.TestCase):
         super(TestPropertyController, self).setUp()
         self.api = utils.FakeAPI(data_fixtures)
         self.schema_api = utils.FakeSchemaAPI(schema_fixtures)
-        self.controller = metadefs.PropertyController(self.api,
-                                                      self.schema_api)
+        self.controller = base.BaseController(self.api, self.schema_api,
+                                              metadefs.PropertyController)
 
     def test_list_property(self):
-        properties = list(self.controller.list(NAMESPACE1))
-
+        properties = self.controller.list(NAMESPACE1)
         actual = [prop.name for prop in properties]
         self.assertEqual(sorted([PROPERTY1, PROPERTY2]), sorted(actual))
 

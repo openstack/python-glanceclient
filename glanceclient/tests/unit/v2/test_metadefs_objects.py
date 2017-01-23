@@ -16,6 +16,7 @@
 import six
 import testtools
 
+from glanceclient.tests.unit.v2 import base
 from glanceclient.tests import utils
 from glanceclient.v2 import metadefs
 
@@ -263,11 +264,11 @@ class TestObjectController(testtools.TestCase):
         super(TestObjectController, self).setUp()
         self.api = utils.FakeAPI(data_fixtures)
         self.schema_api = utils.FakeSchemaAPI(schema_fixtures)
-        self.controller = metadefs.ObjectController(self.api, self.schema_api)
+        self.controller = base.BaseController(self.api, self.schema_api,
+                                              metadefs.ObjectController)
 
     def test_list_object(self):
-        objects = list(self.controller.list(NAMESPACE1))
-
+        objects = self.controller.list(NAMESPACE1)
         actual = [obj.name for obj in objects]
         self.assertEqual([OBJECT1, OBJECT2], actual)
 

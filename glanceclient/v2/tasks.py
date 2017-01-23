@@ -38,6 +38,7 @@ class Controller(object):
         return warlock.model_factory(schema.raw(),
                                      base_class=schemas.SchemaBasedModel)
 
+    @utils.add_req_id_to_generator()
     def list(self, **kwargs):
         """Retrieve a listing of Task objects.
 
@@ -48,14 +49,14 @@ class Controller(object):
         def paginate(url):
             resp, body = self.http_client.get(url)
             for task in body['tasks']:
-                yield task
+                yield task, resp
             try:
                 next_url = body['next']
             except KeyError:
                 return
             else:
-                for task in paginate(next_url):
-                    yield task
+                for task, resp in paginate(next_url):
+                    yield task, resp
 
         filters = kwargs.get('filters', {})
 
@@ -88,12 +89,13 @@ class Controller(object):
                 filters[param] = encodeutils.safe_encode(value)
 
         url = '/v2/tasks?%s' % six.moves.urllib.parse.urlencode(filters)
-        for task in paginate(url):
+        for task, resp in paginate(url):
             # NOTE(flwang): remove 'self' for now until we have an elegant
             # way to pass it into the model constructor without conflict
             task.pop('self', None)
-            yield self.model(**task)
+            yield self.model(**task), resp
 
+    @utils.add_req_id_to_object()
     def get(self, task_id):
         """Get a task based on given task id."""
         url = '/v2/tasks/%s' % task_id
@@ -101,8 +103,9 @@ class Controller(object):
         # NOTE(flwang): remove 'self' for now until we have an elegant
         # way to pass it into the model constructor without conflict
         body.pop('self', None)
-        return self.model(**body)
+        return self.model(**body), resp
 
+    @utils.add_req_id_to_object()
     def create(self, **kwargs):
         """Create a new task."""
         url = '/v2/tasks'
@@ -118,4 +121,4 @@ class Controller(object):
         # NOTE(flwang): remove 'self' for now until we have an elegant
         # way to pass it into the model constructor without conflict
         body.pop('self', None)
-        return self.model(**body)
+        return self.model(**body), resp

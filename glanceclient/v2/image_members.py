@@ -32,24 +32,29 @@ class Controller(object):
         schema = self.schema_client.get('member')
         return warlock.model_factory(schema.raw(), schemas.SchemaBasedModel)
 
+    @utils.add_req_id_to_generator()
     def list(self, image_id):
         url = '/v2/images/%s/members' % image_id
         resp, body = self.http_client.get(url)
         for member in body['members']:
-            yield self.model(member)
+            yield self.model(member), resp
 
+    @utils.add_req_id_to_object()
     def delete(self, image_id, member_id):
-        self.http_client.delete('/v2/images/%s/members/%s' %
-                                (image_id, member_id))
+        resp, body = self.http_client.delete('/v2/images/%s/members/%s' %
+                                             (image_id, member_id))
+        return (resp, body), resp
 
+    @utils.add_req_id_to_object()
     def update(self, image_id, member_id, member_status):
         url = '/v2/images/%s/members/%s' % (image_id, member_id)
         body = {'status': member_status}
         resp, updated_member = self.http_client.put(url, data=body)
-        return self.model(updated_member)
+        return self.model(updated_member), resp
 
+    @utils.add_req_id_to_object()
     def create(self, image_id, member_id):
         url = '/v2/images/%s/members' % image_id
         body = {'member': member_id}
         resp, created_member = self.http_client.post(url, data=body)
-        return self.model(created_member)
+        return self.model(created_member), resp
