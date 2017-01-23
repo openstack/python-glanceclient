@@ -152,7 +152,7 @@ _BASE_SCHEMA = {
             "is_base": False
         },
         "visibility": {
-            "enum": ["public", "private"],
+            "enum": ["public", "private", "community", "shared"],
             "type": "string",
             "description": "Scope of image accessibility"
         },
