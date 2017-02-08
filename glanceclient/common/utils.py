@@ -122,7 +122,7 @@ def schema_args(schema_getter, omit=None):
                                                                  kwargs))
         else:
             properties = schema.get('properties', {})
-            for name, property in six.iteritems(properties):
+            for name, property in properties.items():
                 if name in omit:
                     continue
                 param = '--' + name.replace('_', '-')
@@ -186,7 +186,7 @@ def print_list(objs, fields, formatters=None, field_settings=None):
         row = []
         for field in fields:
             if field in field_settings:
-                for setting, value in six.iteritems(field_settings[field]):
+                for setting, value in field_settings[field].items():
                     setting_dict = getattr(pt, setting)
                     setting_dict[field] = value
 
@@ -205,7 +205,7 @@ def print_dict(d, max_column_width=80):
     pt = prettytable.PrettyTable(['Property', 'Value'], caching=False)
     pt.align = 'l'
     pt.max_width = max_column_width
-    for k, v in six.iteritems(d):
+    for k, v in d.items():
         if isinstance(v, (dict, list)):
             v = json.dumps(v)
         pt.add_row([k, v])
@@ -388,7 +388,7 @@ def strip_version(endpoint):
 
 def print_image(image_obj, human_readable=False, max_col_width=None):
     ignore = ['self', 'access', 'file', 'schema']
-    image = dict([item for item in six.iteritems(image_obj)
+    image = dict([item for item in image_obj.items()
                   if item[0] not in ignore])
     if human_readable:
         image['size'] = make_size_human_readable(image['size'])

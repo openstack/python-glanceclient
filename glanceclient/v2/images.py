@@ -146,7 +146,7 @@ class Controller(object):
 
             tags_url_params.append({'tag': encodeutils.safe_encode(tag)})
 
-        for param, value in six.iteritems(filters):
+        for param, value in filters.items():
             if isinstance(value, six.string_types):
                 filters[param] = encodeutils.safe_encode(value)
 

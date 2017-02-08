@@ -72,7 +72,7 @@ class ImageManager(base.ManagerWithFind):
     def _image_meta_from_headers(self, headers):
         meta = {'properties': {}}
         safe_decode = encodeutils.safe_decode
-        for key, value in six.iteritems(headers):
+        for key, value in headers.items():
             # NOTE(flaper87): this is a compatibility fix
             # for urllib3 >= 1.11. Please, refer to this
             # bug for more info:
@@ -105,9 +105,9 @@ class ImageManager(base.ManagerWithFind):
                 return str(value)
             return value
 
-        for key, value in six.iteritems(fields_copy.pop('properties', {})):
+        for key, value in fields_copy.pop('properties', {}).items():
             headers['x-image-meta-property-%s' % key] = to_str(value)
-        for key, value in six.iteritems(fields_copy):
+        for key, value in fields_copy.items():
             headers['x-image-meta-%s' % key] = to_str(value)
         return headers
 
@@ -224,7 +224,7 @@ class ImageManager(base.ManagerWithFind):
                 return not (image.owner == owner)
 
         def paginate(qp, return_request_id=None):
-            for param, value in six.iteritems(qp):
+            for param, value in qp.items():
                 if isinstance(value, six.string_types):
                     # Note(flaper87) Url encoding should
                     # be moved inside http utils, at least

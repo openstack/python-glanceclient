@@ -134,7 +134,7 @@ class TestClient(testtools.TestCase):
         http_client.get(path)
 
         headers = self.mock.last_request.headers
-        for k, v in six.iteritems(identity_headers):
+        for k, v in identity_headers.items():
             self.assertEqual(v, headers[k])
 
     def test_language_header_passed(self):
@@ -326,7 +326,7 @@ class TestClient(testtools.TestCase):
                         'LOG.debug called with no arguments')
 
         needles = {'key': key, 'cert': cert, 'cacert': cacert}
-        for option, value in six.iteritems(needles):
+        for option, value in needles.items():
             if value:
                 regex = ".*\s--%s\s+('%s'|%s).*" % (option, value, value)
                 self.assertThat(mock_log.call_args[0][0],

@@ -53,7 +53,7 @@ def encode_headers(headers):
               names and values
     """
     return dict((encodeutils.safe_encode(h), encodeutils.safe_encode(v))
-                for h, v in six.iteritems(headers) if v is not None)
+                for h, v in headers.items() if v is not None)
 
 
 class _BaseHTTPClient(object):
@@ -181,7 +181,7 @@ class HTTPClient(_BaseHTTPClient):
         headers = copy.deepcopy(headers)
         headers.update(self.session.headers)
 
-        for (key, value) in six.iteritems(headers):
+        for (key, value) in headers.items():
             header = '-H \'%s: %s\'' % utils.safe_header(key, value)
             curl.append(header)
 
@@ -227,7 +227,7 @@ class HTTPClient(_BaseHTTPClient):
         headers = copy.deepcopy(kwargs.pop('headers', {}))
 
         if self.identity_headers:
-            for k, v in six.iteritems(self.identity_headers):
+            for k, v in self.identity_headers.items():
                 headers.setdefault(k, v)
 
         data = self._set_common_request_kwargs(headers, kwargs)
