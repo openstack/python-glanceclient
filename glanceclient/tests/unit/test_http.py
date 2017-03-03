@@ -14,7 +14,9 @@
 #    under the License.
 import functools
 import json
+import logging
 
+import fixtures
 from keystoneauth1 import session
 from keystoneauth1 import token_endpoint
 import mock
@@ -377,6 +379,22 @@ class TestClient(testtools.TestCase):
         self.assertThat(mock_log.call_args[0][0],
                         matchers.Not(matchers.MatchesRegex(token_regex)),
                         'token found in LOG.debug parameter')
+
+    def test_log_request_id_once(self):
+        logger = self.useFixture(fixtures.FakeLogger(level=logging.DEBUG))
+        data = "TEST"
+        path = '/v1/images/'
+        self.mock.get(self.endpoint + path, body=six.StringIO(data),
+                      headers={"Content-Type": "application/octet-stream",
+                               'x-openstack-request-id': "1234"})
+
+        resp, body = self.client.get(path)
+        self.assertIsInstance(body, types.GeneratorType)
+        self.assertEqual([data], list(body))
+        expected_log = ("GET call to image "
+                        "for http://example.com:9292/v1/images/ "
+                        "used request id 1234")
+        self.assertEqual(1, logger.output.count(expected_log))
 
     def test_expired_token_has_changed(self):
         # instantiate client with some token

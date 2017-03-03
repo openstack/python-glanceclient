@@ -92,16 +92,6 @@ class _BaseHTTPClient(object):
         return data
 
     def _handle_response(self, resp):
-        # log request-id for each api cal
-        request_id = resp.headers.get('x-openstack-request-id')
-        if request_id:
-            LOG.debug('%(method)s call to glance-api for '
-                      '%(url)s used request id '
-                      '%(response_request_id)s',
-                      {'method': resp.request.method,
-                       'url': resp.url,
-                       'response_request_id': request_id})
-
         if not resp.ok:
             LOG.debug("Request returned failure status %s.", resp.status_code)
             raise exc.from_response(resp, resp.content)
@@ -273,6 +263,16 @@ class HTTPClient(_BaseHTTPClient):
             message = ("Error communicating with %(endpoint)s %(e)s" %
                        {'endpoint': endpoint, 'e': e})
             raise exc.CommunicationError(message=message)
+
+        # log request-id for each api call
+        request_id = resp.headers.get('x-openstack-request-id')
+        if request_id:
+            LOG.debug('%(method)s call to image for '
+                      '%(url)s used request id '
+                      '%(response_request_id)s',
+                      {'method': resp.request.method,
+                       'url': resp.url,
+                       'response_request_id': request_id})
 
         resp, body_iter = self._handle_response(resp)
         self.log_http_response(resp)
