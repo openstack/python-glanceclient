@@ -131,9 +131,8 @@ class HTTPClient(_BaseHTTPClient):
         self.auth_token = kwargs.get('token')
         self.language_header = kwargs.get('language_header')
         if self.identity_headers:
-            if self.identity_headers.get('X-Auth-Token'):
-                self.auth_token = self.identity_headers.get('X-Auth-Token')
-                del self.identity_headers['X-Auth-Token']
+            self.auth_token = self.identity_headers.pop('X-Auth-Token',
+                                                        self.auth_token)
 
         self.session = requests.Session()
         self.session.headers["User-Agent"] = USER_AGENT
