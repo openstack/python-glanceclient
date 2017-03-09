@@ -494,6 +494,13 @@ class RequestIdProxy(wrapt.ObjectProxy):
     def wrapped(self):
         return self._self_wrapped
 
+    # Overriden next method to act as iterator
+    def next(self):
+        return next(self._self_wrapped)
+
+    # In Python 3, __next__() has replaced next().
+    __next__ = next
+
 
 class GeneratorProxy(wrapt.ObjectProxy):
     def __init__(self, wrapped):
