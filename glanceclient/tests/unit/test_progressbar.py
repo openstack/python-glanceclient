@@ -19,6 +19,7 @@ import six
 import testtools
 
 from glanceclient.common import progressbar
+from glanceclient.common import utils
 from glanceclient.tests import utils as test_utils
 
 
@@ -26,12 +27,13 @@ class TestProgressBarWrapper(testtools.TestCase):
 
     def test_iter_iterator_display_progress_bar(self):
         size = 100
-        iterator = iter('X' * 100)
+        iterator_with_len = utils.IterableWithLength(iter('X' * 100), size)
         saved_stdout = sys.stdout
         try:
             sys.stdout = output = test_utils.FakeTTYStdout()
             # Consume iterator.
-            data = list(progressbar.VerboseIteratorWrapper(iterator, size))
+            data = list(progressbar.VerboseIteratorWrapper(iterator_with_len,
+                                                           size))
             self.assertEqual(['X'] * 100, data)
             self.assertEqual(
                 '[%s>] 100%%\n' % ('=' * 29),
