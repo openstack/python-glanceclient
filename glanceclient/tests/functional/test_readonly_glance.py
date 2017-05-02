@@ -109,12 +109,3 @@ class SimpleReadOnlyGlanceClientTest(base.ClientTestBase):
 
     def test_debug_list(self):
         self.glance('--os-image-api-version 2 image-list', flags='--debug')
-
-    def test_no_ssl_compression(self):
-        # Test deprecating this hasn't broken anything
-        out = self.glance('--os-image-api-version 1 '
-                          '--no-ssl-compression image-list')
-        endpoints = self.parser.listing(out)
-        self.assertTableStruct(endpoints, [
-            'ID', 'Name', 'Disk Format', 'Container Format',
-            'Size', 'Status'])

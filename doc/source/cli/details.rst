@@ -20,7 +20,7 @@ glance usage
 
 .. code-block:: console
 
-   usage: glance [--version] [-d] [-v] [--get-schema] [--no-ssl-compression] [-f]
+   usage: glance [--version] [-d] [-v] [--get-schema] [-f]
                  [--os-image-url OS_IMAGE_URL]
                  [--os-image-api-version OS_IMAGE_API_VERSION]
                  [--profile HMAC_KEY] [--key-file OS_KEY] [--ca-file OS_CACERT]
@@ -63,11 +63,6 @@ glance optional arguments
   Ignores cached copy and forces retrieval of schema
   that generates portions of the help text. Ignored with
   API version 1.
-
-``--no-ssl-compression``
-  **DEPRECATED!** This option is deprecated and not used
-  anymore. SSL compression should be disabled by default
-  by the system SSL library.
 
 ``-f, --force``
   Prevent select actions from requesting user

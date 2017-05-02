@@ -24,7 +24,6 @@ from oslo_utils import importutils
 from oslo_utils import netutils
 import requests
 import six
-import warnings
 
 try:
     import json
@@ -146,13 +145,6 @@ class HTTPClient(_BaseHTTPClient):
         self.timeout = float(kwargs.get('timeout', 600))
 
         if self.endpoint.startswith("https"):
-            compression = kwargs.get('ssl_compression', True)
-
-            if compression is False:
-                # Note: This is not seen by default. (python must be
-                # run with -Wd)
-                warnings.warn('The "ssl_compression" argument has been '
-                              'deprecated.', DeprecationWarning)
 
             if kwargs.get('insecure', False) is True:
                 self.session.verify = False

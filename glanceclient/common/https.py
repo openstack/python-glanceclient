@@ -18,17 +18,8 @@ import ssl
 import struct
 
 import OpenSSL
-from requests import adapters
-from requests import compat
-try:
-    from requests.packages.urllib3 import connectionpool
-    from requests.packages.urllib3 import poolmanager
-except ImportError:
-    from urllib3 import connectionpool
-    from urllib3 import poolmanager
 
 
-from oslo_utils import encodeutils
 import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from six.moves import range
@@ -133,83 +124,6 @@ def to_bytes(s):
         return six.b(s)
     else:
         return s
-
-
-class HTTPSAdapter(adapters.HTTPAdapter):
-    """This adapter will be used just when ssl compression should be disabled.
-
-    The init method overwrites the default https pool by setting
-    glanceclient's one.
-    """
-    def __init__(self, *args, **kwargs):
-        classes_by_scheme = poolmanager.pool_classes_by_scheme
-        classes_by_scheme["glance+https"] = HTTPSConnectionPool
-        super(HTTPSAdapter, self).__init__(*args, **kwargs)
-
-    def request_url(self, request, proxies):
-        # NOTE(flaper87): Make sure the url is encoded, otherwise
-        # python's standard httplib will fail with a TypeError.
-        url = super(HTTPSAdapter, self).request_url(request, proxies)
-        if six.PY2:
-            url = encodeutils.safe_encode(url)
-        return url
-
-    def _create_glance_httpsconnectionpool(self, url):
-        kw = self.poolmanager.connection_pool_kw
-        # Parse the url to get the scheme, host, and port
-        parsed = compat.urlparse(url)
-        # If there is no port specified, we should use the standard HTTPS port
-        port = parsed.port or 443
-        host = parsed.netloc.rsplit(':', 1)[0]
-        pool = HTTPSConnectionPool(host, port, **kw)
-
-        with self.poolmanager.pools.lock:
-            self.poolmanager.pools[(parsed.scheme, host, port)] = pool
-
-        return pool
-
-    def get_connection(self, url, proxies=None):
-        try:
-            return super(HTTPSAdapter, self).get_connection(url, proxies)
-        except KeyError:
-            # NOTE(sigamvirus24): This works around modifying a module global
-            # which fixes bug #1396550
-            # The scheme is most likely glance+https but check anyway
-            if not url.startswith('glance+https://'):
-                raise
-
-            return self._create_glance_httpsconnectionpool(url)
-
-    def cert_verify(self, conn, url, verify, cert):
-        super(HTTPSAdapter, self).cert_verify(conn, url, verify, cert)
-        conn.ca_certs = verify[0]
-        conn.insecure = verify[1]
-
-
-class HTTPSConnectionPool(connectionpool.HTTPSConnectionPool):
-    """A replacement for the default HTTPSConnectionPool.
-
-    HTTPSConnectionPool will be instantiated when a new
-    connection is requested to the HTTPSAdapter. This
-    implementation overwrites the _new_conn method and
-    returns an instances of glanceclient's VerifiedHTTPSConnection
-    which handles no compression.
-
-    ssl_compression is hard-coded to False because this will
-    be used just when the user sets --no-ssl-compression.
-    """
-
-    scheme = 'glance+https'
-
-    def _new_conn(self):
-        self.num_connections += 1
-        return VerifiedHTTPSConnection(host=self.host,
-                                       port=self.port,
-                                       key_file=self.key_file,
-                                       cert_file=self.cert_file,
-                                       cacert=self.ca_certs,
-                                       insecure=self.insecure,
-                                       ssl_compression=False)
 
 
 class OpenSSLConnectionDelegator(object):

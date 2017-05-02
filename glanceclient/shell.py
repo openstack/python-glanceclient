@@ -155,14 +155,6 @@ class OpenStackImagesShell(object):
                                  'of schema that generates portions of the '
                                  'help text. Ignored with API version 1.')
 
-        parser.add_argument('--no-ssl-compression',
-                            dest='ssl_compression',
-                            default=True, action='store_false',
-                            help='DEPRECATED! This option is deprecated '
-                                 'and not used anymore. SSL compression '
-                                 'should be disabled by default by the '
-                                 'system SSL library.')
-
         parser.add_argument('-f', '--force',
                             dest='force',
                             default=False, action='store_true',
@@ -434,7 +426,6 @@ class OpenStackImagesShell(object):
                 'cacert': args.os_cacert,
                 'cert': args.os_cert,
                 'key': args.os_key,
-                'ssl_compression': args.ssl_compression
             }
         else:
             ks_session = loading.load_session_from_argparse_arguments(args)
