@@ -257,7 +257,7 @@ class HTTPClient(_BaseHTTPClient):
             message = "Error finding address for %s: %s" % (
                 self.endpoint_hostname, e)
             raise exc.InvalidEndpoint(message=message)
-        except (socket.error, socket.timeout) as e:
+        except (socket.error, socket.timeout, IOError) as e:
             endpoint = self.endpoint
             message = ("Error communicating with %(endpoint)s %(e)s" %
                        {'endpoint': endpoint, 'e': e})
