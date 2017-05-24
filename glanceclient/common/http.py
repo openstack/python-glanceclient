@@ -40,6 +40,7 @@ osprofiler_web = importutils.try_import("osprofiler.web")
 LOG = logging.getLogger(__name__)
 USER_AGENT = 'python-glanceclient'
 CHUNKSIZE = 1024 * 64  # 64kB
+REQ_ID_HEADER = 'X-OpenStack-Request-ID'
 
 
 def encode_headers(headers):
@@ -130,6 +131,7 @@ class HTTPClient(_BaseHTTPClient):
         self.identity_headers = kwargs.get('identity_headers')
         self.auth_token = kwargs.get('token')
         self.language_header = kwargs.get('language_header')
+        self.global_request_id = kwargs.get('global_request_id')
         if self.identity_headers:
             self.auth_token = self.identity_headers.pop('X-Auth-Token',
                                                         self.auth_token)
@@ -225,6 +227,9 @@ class HTTPClient(_BaseHTTPClient):
         if not headers.get('X-Auth-Token'):
             headers['X-Auth-Token'] = self.auth_token
 
+        if self.global_request_id:
+            headers.setdefault(REQ_ID_HEADER, self.global_request_id)
+
         if osprofiler_web:
             headers.update(osprofiler_web.get_trace_id_headers())
 
@@ -312,10 +317,14 @@ class SessionClient(adapter.Adapter, _BaseHTTPClient):
     def __init__(self, session, **kwargs):
         kwargs.setdefault('user_agent', USER_AGENT)
         kwargs.setdefault('service_type', 'image')
+        self.global_request_id = kwargs.pop('global_request_id', None)
         super(SessionClient, self).__init__(session, **kwargs)
 
     def request(self, url, method, **kwargs):
         headers = kwargs.pop('headers', {})
+        if self.global_request_id:
+            headers.setdefault(REQ_ID_HEADER, self.global_request_id)
+
         kwargs['raise_exc'] = False
         data = self._set_common_request_kwargs(headers, kwargs)
         try:

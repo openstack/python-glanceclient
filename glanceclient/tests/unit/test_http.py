@@ -15,6 +15,7 @@
 import functools
 import json
 import logging
+import uuid
 
 import fixtures
 from keystoneauth1 import session
@@ -150,6 +151,18 @@ class TestClient(testtools.TestCase):
 
         headers = self.mock.last_request.headers
         self.assertEqual(kwargs['language_header'], headers['Accept-Language'])
+
+    def test_request_id_header_passed(self):
+        global_id = encodeutils.safe_encode("req-%s" % uuid.uuid4())
+        kwargs = {'global_request_id': global_id}
+        http_client = http.HTTPClient(self.endpoint, **kwargs)
+
+        path = '/v2/images/my-image'
+        self.mock.get(self.endpoint + path)
+        http_client.get(path)
+
+        headers = self.mock.last_request.headers
+        self.assertEqual(global_id, headers['X-OpenStack-Request-ID'])
 
     def test_language_header_not_passed_no_language(self):
         kwargs = {}
