@@ -471,6 +471,9 @@ class IterableWithLength(object):
     def next(self):
         return next(self.iterable)
 
+    # In Python 3, __next__() has replaced next().
+    __next__ = next
+
     def __len__(self):
         return self.length
 
