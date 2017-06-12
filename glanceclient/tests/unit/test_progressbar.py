@@ -15,6 +15,7 @@
 
 import sys
 
+import requests
 import six
 import testtools
 
@@ -27,12 +28,16 @@ class TestProgressBarWrapper(testtools.TestCase):
 
     def test_iter_iterator_display_progress_bar(self):
         size = 100
+        # create fake response object to return request-id with iterator
+        resp = requests.Response()
+        resp.headers['x-openstack-request-id'] = 'req-1234'
         iterator_with_len = utils.IterableWithLength(iter('X' * 100), size)
+        requestid_proxy = utils.RequestIdProxy((iterator_with_len, resp))
         saved_stdout = sys.stdout
         try:
             sys.stdout = output = test_utils.FakeTTYStdout()
             # Consume iterator.
-            data = list(progressbar.VerboseIteratorWrapper(iterator_with_len,
+            data = list(progressbar.VerboseIteratorWrapper(requestid_proxy,
                                                            size))
             self.assertEqual(['X'] * 100, data)
             self.assertEqual(
