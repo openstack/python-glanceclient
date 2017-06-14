@@ -202,7 +202,7 @@ class TestUtils(testtools.TestCase):
 
         # Proxy object should succeed in behaving as the
         # wrapped object
-        self.assertTrue(isinstance(proxy, type(gen_obj)))
+        self.assertIsInstance(proxy, type(gen_obj))
 
         # Initially request_ids should be empty
         self.assertEqual([], proxy.request_ids)
