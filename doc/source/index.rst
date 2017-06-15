@@ -3,7 +3,7 @@
 ==============================================
 
 This is a client for the OpenStack Images API. There's :doc:`a Python
-API <library/api/index>` (the :mod:`glanceclient` module) and a
+API <reference/api/index>` (the :mod:`glanceclient` module) and a
 :doc:`command-line script <cli/glance>` (installed as
 :program:`glance`).
 

@@ -311,7 +311,7 @@ def get_file_size(file_obj):
     """Analyze file-like object and attempt to determine its size.
 
     :param file_obj: file-like object.
-    :retval The file's size or None if it cannot be determined.
+    :retval: The file's size or None if it cannot be determined.
     """
     if (hasattr(file_obj, 'seek') and hasattr(file_obj, 'tell') and
             (six.PY2 or six.PY3 and file_obj.seekable())):
