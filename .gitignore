@@ -24,3 +24,4 @@ glanceclient/versioninfo
 releasenotes/build
 # File created by docs build process
 /doc/source/ref
+/doc/source/reference/api/*
