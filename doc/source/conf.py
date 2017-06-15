@@ -13,9 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-# -*- coding: utf-8 -*-
-#
-
 import os
 import sys
 
@@ -98,32 +95,16 @@ add_module_names = True
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
-# Grouping the document tree for man pages.
-# List of tuples 'sourcefile', 'target', u'title', u'Authors name', 'manual'
-
-man_pages = [
-    ('man/glance', 'glance', u'Client for OpenStack Images API',
-     [u'OpenStack Foundation'], 1),
-]
 # -- Options for HTML output --------------------------------------------------
-
-# The theme to use for HTML and HTML Help pages.  Major themes that come with
-# Sphinx are currently 'default' and 'sphinxdoc'.
-#html_theme = 'nature'
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = '%sdoc' % project
 
+# -- Options for man page output ----------------------------------------------
 
-# Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title, author, documentclass
-# [howto/manual]).
-latex_documents = [
-    (
-        'index',
-        '%s.tex' % project,
-        u'%s Documentation' % project,
-        u'OpenStack Foundation',
-        'manual'
-    ),
+# Grouping the document tree for man pages.
+# List of tuples 'sourcefile', 'target', u'title', u'Authors name', 'manual'
+man_pages = [
+    ('man/glance', 'glance', u'Client for OpenStack Images API',
+     [u'OpenStack Foundation'], 1),
 ]
