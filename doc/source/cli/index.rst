@@ -27,5 +27,6 @@ Once you've configured your authentication parameters, you can run
 
 .. toctree::
 
+   details
+   property-keys
    glance
-
