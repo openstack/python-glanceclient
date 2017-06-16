@@ -16,6 +16,8 @@
 import os
 import sys
 
+import openstackdocstheme
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),
                 '..', '..')))
 
@@ -23,7 +25,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'oslosphinx']
+extensions = ['sphinx.ext.autodoc']
 
 # autodoc generation is a bit aggressive and a nuisance when doing heavy
 # text edit cycles.
@@ -53,6 +55,15 @@ add_module_names = True
 pygments_style = 'sphinx'
 
 # -- Options for HTML output --------------------------------------------------
+
+# The theme to use for HTML and HTML Help pages.  Major themes that come with
+# Sphinx are currently 'default' and 'sphinxdoc'.
+#html_theme = 'nature'
+html_theme = 'openstackdocs'
+
+# Add any paths that contain custom themes here, relative to this directory.
+#html_theme_path = ['_theme']
+html_theme_path = [openstackdocstheme.get_html_theme_path()]
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = '%sdoc' % project
