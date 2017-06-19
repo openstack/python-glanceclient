@@ -22,3 +22,5 @@ doc/build
 glanceclient/versioninfo
 # Files created by releasenotes build
 releasenotes/build
+# File created by docs build process
+/doc/source/ref
