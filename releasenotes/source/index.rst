@@ -9,3 +9,4 @@ glanceclient Release Notes
    ocata
    newton
    mitaka
+   earlier
