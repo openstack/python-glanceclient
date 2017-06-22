@@ -33,7 +33,7 @@ This is a client library for Glance built on the OpenStack Images API. It provid
 
 Development takes place via the usual OpenStack processes as outlined in the `developer guide <http://docs.openstack.org/infra/manual/developers.html>`_.  The master repository is in `Git <https://git.openstack.org/cgit/openstack/python-glanceclient>`_.
 
-See release notes and more at `<http://docs.openstack.org/developer/python-glanceclient/>`_.
+See release notes and more at `<http://docs.openstack.org/python-glanceclient/>`_.
 
 * License: Apache License, Version 2.0
 * `PyPi`_ - package installation
@@ -46,7 +46,7 @@ See release notes and more at `<http://docs.openstack.org/developer/python-glanc
 * `How to Contribute`_
 
 .. _PyPi: https://pypi.python.org/pypi/python-glanceclient
-.. _Online Documentation: http://docs.openstack.org/developer/python-glanceclient
+.. _Online Documentation: http://docs.openstack.org/python-glanceclient
 .. _Launchpad project: https://launchpad.net/python-glanceclient
 .. _Blueprints: https://blueprints.launchpad.net/python-glanceclient
 .. _Bugs: https://bugs.launchpad.net/python-glanceclient
