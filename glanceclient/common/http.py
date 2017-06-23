@@ -19,6 +19,7 @@ import socket
 
 from keystoneauth1 import adapter
 from keystoneauth1 import exceptions as ksa_exc
+import OpenSSL
 from oslo_utils import importutils
 from oslo_utils import netutils
 import requests
@@ -266,6 +267,10 @@ class HTTPClient(_BaseHTTPClient):
             endpoint = self.endpoint
             message = ("Error communicating with %(endpoint)s %(e)s" %
                        {'endpoint': endpoint, 'e': e})
+            raise exc.CommunicationError(message=message)
+        except OpenSSL.SSL.Error as e:
+            message = ("SSL Error communicating with %(url)s: %(e)s" %
+                       {'url': conn_url, 'e': e})
             raise exc.CommunicationError(message=message)
 
         # log request-id for each api call
