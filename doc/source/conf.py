@@ -25,7 +25,15 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc']
+extensions = [
+    'sphinx.ext.autodoc',
+    'openstackdocstheme',
+]
+
+# openstackdocstheme options
+repository_name = 'openstack/python-glanceclient'
+bug_project = 'python-glanceclient'
+bug_tag = ''
 
 # autodoc generation is a bit aggressive and a nuisance when doing heavy
 # text edit cycles.
@@ -67,6 +75,8 @@ html_theme_path = [openstackdocstheme.get_html_theme_path()]
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = '%sdoc' % project
+
+html_last_updated_fmt = '%Y-%m-%d %H:%M'
 
 # -- Options for man page output ----------------------------------------------
 
