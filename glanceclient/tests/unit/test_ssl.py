@@ -93,8 +93,6 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         except exc.CommunicationError as e:
             if 'certificate verify failed' not in e.message:
                 self.fail('No certificate failure message is received')
-        except Exception:
-            self.fail('Unexpected exception has been raised')
 
     @mock.patch('sys.stderr')
     def test_v1_requests_cert_verification_no_compression(self, __):
@@ -112,8 +110,6 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         except exc.CommunicationError as e:
             if 'certificate verify failed' not in e.message:
                 self.fail('No certificate failure message is received')
-        except Exception as e:
-            self.fail('Unexpected exception has been raised')
 
     @mock.patch('sys.stderr')
     def test_v2_requests_cert_verification(self, __):
@@ -130,8 +126,6 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         except exc.CommunicationError as e:
             if 'certificate verify failed' not in e.message:
                 self.fail('No certificate failure message is received')
-        except Exception:
-            self.fail('Unexpected exception has been raised')
 
     @mock.patch('sys.stderr')
     def test_v2_requests_cert_verification_no_compression(self, __):
@@ -149,8 +143,6 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         except exc.CommunicationError as e:
             if 'certificate verify failed' not in e.message:
                 self.fail('No certificate failure message is received')
-        except Exception as e:
-            self.fail('Unexpected exception has been raised')
 
     @mock.patch('sys.stderr')
     def test_v2_requests_valid_cert_verification(self, __):
@@ -168,8 +160,6 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         except exc.CommunicationError as e:
             if 'certificate verify failed' in e.message:
                 self.fail('Certificate failure message is received')
-        except Exception as e:
-            self.fail('Unexpected exception has been raised')
 
     @mock.patch('sys.stderr')
     def test_v2_requests_valid_cert_verification_no_compression(self, __):
@@ -187,8 +177,6 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         except exc.CommunicationError as e:
             if 'certificate verify failed' in e.message:
                 self.fail('Certificate failure message is received')
-        except Exception as e:
-            self.fail('Unexpected exception has been raised')
 
     @mock.patch('sys.stderr')
     def test_v2_requests_valid_cert_no_key(self, __):
@@ -208,8 +196,6 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         except exc.CommunicationError as e:
             if ('PEM lib' not in e.message):
                 self.fail('No appropriate failure message is received')
-        except Exception as e:
-            self.fail('Unexpected exception has been raised')
 
     @mock.patch('sys.stderr')
     def test_v2_requests_bad_cert(self, __):
@@ -235,8 +221,6 @@ class TestHTTPSVerifyCert(testtools.TestCase):
                     'PEM lib' not in e.message or
                     six.PY3 and 'PEM lib' not in e.message):
                 self.fail('No appropriate failure message is received')
-        except Exception as e:
-            self.fail('Unexpected exception has been raised')
 
     @mock.patch('sys.stderr')
     def test_v2_requests_bad_ca(self, __):
