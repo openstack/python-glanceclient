@@ -60,7 +60,7 @@ class NamespaceController(object):
         :param kwargs: Unpacked namespace object.
         """
         namespace = self.get(namespace_name)
-        for (key, value) in six.iteritems(kwargs):
+        for (key, value) in kwargs.items():
             try:
                 setattr(namespace, key, value)
             except warlock.InvalidOperation as e:
@@ -174,7 +174,7 @@ class NamespaceController(object):
                 raise ValueError('sort_dir must be one of the following: %s.'
                                  % ', '.join(SORT_DIR_VALUES))
 
-        for param, value in six.iteritems(filters):
+        for param, value in filters.items():
             if isinstance(value, list):
                 filters[param] = encodeutils.safe_encode(','.join(value))
             elif isinstance(value, six.string_types):

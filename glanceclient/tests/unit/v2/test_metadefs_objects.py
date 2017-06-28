@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import six
 import testtools
 
 from glanceclient.tests.unit.v2 import base
@@ -276,7 +275,7 @@ class TestObjectController(testtools.TestCase):
         obj = self.controller.get(NAMESPACE1, OBJECT1)
         self.assertEqual(OBJECT1, obj.name)
         self.assertEqual(sorted([PROPERTY1, PROPERTY2]),
-                         sorted(list(six.iterkeys(obj.properties))))
+                         sorted(list(obj.properties.keys())))
 
     def test_create_object(self):
         properties = {
