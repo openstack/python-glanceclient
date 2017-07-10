@@ -83,6 +83,6 @@ html_last_updated_fmt = '%Y-%m-%d %H:%M'
 # Grouping the document tree for man pages.
 # List of tuples 'sourcefile', 'target', u'title', u'Authors name', 'manual'
 man_pages = [
-    ('man/glance', 'glance', u'Client for OpenStack Images API',
+    ('cli/glance', 'glance', u'Client for OpenStack Images API',
      [u'OpenStack Foundation'], 1),
 ]
