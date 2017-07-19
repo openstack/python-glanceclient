@@ -2,8 +2,8 @@
 Team and repository tags
 ========================
 
-.. image:: http://governance.openstack.org/badges/python-glanceclient.svg
-    :target: http://governance.openstack.org/reference/tags/index.html
+.. image:: https://governance.openstack.org/tc/badges/python-glanceclient.svg
+    :target: https://governance.openstack.org/tc/reference/tags/index.html
     :alt: The following tags have been asserted for Python bindings to the
           OpenStack Images API:
           "project:official",
@@ -46,11 +46,11 @@ See release notes and more at `<http://docs.openstack.org/python-glanceclient/>`
 * `How to Contribute`_
 
 .. _PyPi: https://pypi.python.org/pypi/python-glanceclient
-.. _Online Documentation: http://docs.openstack.org/python-glanceclient
+.. _Online Documentation: https://docs.openstack.org/python-glanceclient/latest/
 .. _Launchpad project: https://launchpad.net/python-glanceclient
 .. _Blueprints: https://blueprints.launchpad.net/python-glanceclient
 .. _Bugs: https://bugs.launchpad.net/python-glanceclient
 .. _Source: https://git.openstack.org/cgit/openstack/python-glanceclient
-.. _How to Contribute: http://docs.openstack.org/infra/manual/developers.html
-.. _Specs: http://specs.openstack.org/openstack/glance-specs/
+.. _How to Contribute: https://docs.openstack.org/infra/manual/developers.html
+.. _Specs: https://specs.openstack.org/openstack/glance-specs/
 
