@@ -218,18 +218,46 @@ class Controller(object):
         return utils.IterableWithLength(body, content_length), resp
 
     @utils.add_req_id_to_object()
-    def upload(self, image_id, image_data, image_size=None):
+    def upload(self, image_id, image_data, image_size=None, u_url=None):
         """Upload the data for an image.
 
         :param image_id: ID of the image to upload data for.
         :param image_data: File-like object supplying the data to upload.
         :param image_size: Unused - present for backwards compatibility
+        :param u_url: Upload url to upload the data to.
         """
-        url = '/v2/images/%s/file' % image_id
+        url = u_url or '/v2/images/%s/file' % image_id
         hdrs = {'Content-Type': 'application/octet-stream'}
         body = image_data
         resp, body = self.http_client.put(url, headers=hdrs, data=body)
         return (resp, body), resp
+
+    @utils.add_req_id_to_object()
+    def get_import_info(self):
+        """Get Import info from discovery endpoint."""
+        url = '/v2/info/import'
+        resp, body = self.http_client.get(url)
+        return body, resp
+
+    @utils.add_req_id_to_object()
+    def stage(self, image_id, image_data):
+        """Upload the data to image staging.
+
+        :param image_id: ID of the image to upload data for.
+        :param image_data: File-like object supplying the data to upload.
+        """
+        url = '/v2/images/%s/stage' % image_id
+        return self.upload(image_id,
+                           image_data,
+                           u_url=url)
+
+    @utils.add_req_id_to_object()
+    def image_import(self, image_id, method='glance-direct'):
+        """Import Image via method."""
+        url = '/v2/images/%s/import' % image_id
+        data = {'import_method': method}
+        resp, body = self.http_client.post(url, data=data)
+        return body, resp
 
     @utils.add_req_id_to_object()
     def delete(self, image_id):
