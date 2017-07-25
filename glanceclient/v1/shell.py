@@ -28,8 +28,9 @@ from glanceclient.common import utils
 from glanceclient import exc
 import glanceclient.v1.images
 
-CONTAINER_FORMATS = 'Acceptable formats: ami, ari, aki, bare, and ovf.'
-DISK_FORMATS = ('Acceptable formats: ami, ari, aki, vhd, vmdk, raw, '
+CONTAINER_FORMATS = ('Acceptable formats: ami, ari, aki, bare, ovf, ova,'
+                     'docker.')
+DISK_FORMATS = ('Acceptable formats: ami, ari, aki, vhd, vdhx, vmdk, raw, '
                 'qcow2, vdi, iso, and ploop.')
 DATA_FIELDS = ('location', 'copy_from', 'file')
 
