@@ -174,7 +174,7 @@ Create a new image.
 
 ``--architecture <ARCHITECTURE>``
   Operating system architecture as specified in
-  http://docs.openstack.org/user-guide/common/cli-manage-images.html
+  https://docs.openstack.org/glance/latest/user/common-image-properties.html#architecture
 
 ``--protected [True|False]``
   If true, image will not be deletable.
@@ -213,7 +213,7 @@ Create a new image.
   Common name of operating system distribution as
   specified
   in
-  http://docs.openstack.org/user-guide/common/cli-manage-images.html
+  https://docs.openstack.org/glance/latest/user/common-image-properties.html#os-distro
 
 ``--id <ID>``
   An identifier for the image
@@ -468,7 +468,7 @@ Update an existing image.
 
 ``--architecture <ARCHITECTURE>``
   Operating system architecture as specified in
-  http://docs.openstack.org/user-guide/common/cli-manage-images.html
+  https://docs.openstack.org/glance/latest/user/common-image-properties.html#architecture
 
 ``--protected [True|False]``
   If true, image will not be deletable.
@@ -504,7 +504,7 @@ Update an existing image.
   Common name of operating system distribution as
   specified
   in
-  http://docs.openstack.org/user-guide/common/cli-manage-images.html
+  https://docs.openstack.org/glance/latest/user/common-image-properties.html#os-distro
 
 ``--owner <OWNER>``
   Owner of the image
@@ -1182,8 +1182,8 @@ Associate resource type with a metadata definitions namespace.
 
 ``--name <NAME>``
   Resource type names should be aligned with Heat
-  resource types whenever possible: http://docs.openstac
-  k.org/developer/heat/template_guide/openstack.html
+  resource types whenever possible:
+  https://docs.openstack.org/heat/latest/template_guide/openstack.html
 
 ``--properties-target <PROPERTIES_TARGET>``
   Some resource types allow more than one key / value
