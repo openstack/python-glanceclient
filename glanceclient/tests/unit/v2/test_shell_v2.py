@@ -590,6 +590,20 @@ class ShellV2Test(testtools.TestCase):
             test_shell.do_image_download(self.gc, args)
             mocked_data.assert_called_once_with('IMG-01')
 
+    @mock.patch.object(utils, 'exit')
+    @mock.patch('sys.stdout', autospec=True)
+    def test_image_download_no_file_arg(self, mocked_stdout,
+                                        mocked_utils_exit):
+        # Indicate that no file name was given as command line argument
+        args = self._make_args({'id': '1234', 'file': None, 'progress': False})
+        # Indicate that no file is specified for output redirection
+        mocked_stdout.isatty = lambda: True
+        test_shell.do_image_download(self.gc, args)
+        mocked_utils_exit.assert_called_once_with(
+            'No redirection or local file specified for downloaded image'
+            ' data. Please specify a local file with --file to save'
+            ' downloaded image or redirect output to another source.')
+
     def test_do_image_delete(self):
         args = argparse.Namespace(id=['image1', 'image2'])
         with mock.patch.object(self.gc.images, 'delete') as mocked_delete:

@@ -278,6 +278,12 @@ def do_explain(gc, args):
            help=_('Show download progress bar.'))
 def do_image_download(gc, args):
     """Download a specific image."""
+    if sys.stdout.isatty() and (args.file is None):
+        msg = ('No redirection or local file specified for downloaded image '
+               'data. Please specify a local file with --file to save '
+               'downloaded image or redirect output to another source.')
+        utils.exit(msg)
+
     try:
         body = gc.images.data(args.id)
     except (exc.HTTPForbidden, exc.HTTPException) as e:
@@ -290,13 +296,8 @@ def do_image_download(gc, args):
 
     if args.progress:
         body = progressbar.VerboseIteratorWrapper(body, len(body))
-    if not (sys.stdout.isatty() and args.file is None):
-        utils.save_image(body, args.file)
-    else:
-        msg = ('No redirection or local file specified for downloaded image '
-               'data. Please specify a local file with --file to save '
-               'downloaded image or redirect output to another source.')
-        utils.exit(msg)
+
+    utils.save_image(body, args.file)
 
 
 @utils.arg('--file', metavar='<FILE>',
