@@ -95,11 +95,11 @@ glance optional arguments
   HMAC key to use for encrypting context data for
   performance profiling of operation. This key should be
   the value of HMAC key configured in osprofiler
-  middleware in glance, it is specified in paste
-  configuration file at /etc/glance/api-paste.ini and
-  /etc/glance/registry-paste.ini. Without key the
+  middleware in glance, it is specified in glance
+  configuration file at /etc/glance/glance-api.conf and
+  /etc/glance/glance-registry.conf. Without key the
   profiling will not be triggered even if osprofiler is
-  enabled on server side.
+  enabled on server side. Defaults to ``env[OS_PROFILE]``.
 
 ``--key-file OS_KEY``
   **DEPRECATED!** Use --os-key.
