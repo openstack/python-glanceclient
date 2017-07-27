@@ -89,6 +89,56 @@ def do_image_create(gc, args):
         utils.print_image(image)
 
 
+@utils.schema_args(get_image_schema, omit=['created_at', 'updated_at', 'file',
+                                           'checksum', 'virtual_size', 'size',
+                                           'status', 'schema', 'direct_url',
+                                           'locations', 'self'])
+@utils.arg('--property', metavar="<key=value>", action='append',
+           default=[], help=_('Arbitrary property to associate with image.'
+                              ' May be used multiple times.'))
+@utils.arg('--file', metavar='<FILE>',
+           help=_('Local file that contains disk image to be uploaded '
+                  'during creation. Alternatively, the image data can be '
+                  'passed to the client via stdin.'))
+@utils.arg('--progress', action='store_true', default=False,
+           help=_('Show upload progress bar.'))
+@utils.on_data_require_fields(DATA_FIELDS)
+def do_image_create_via_import(gc, args):
+    """EXPERIMENTAL: Create a new image via image import."""
+    schema = gc.schemas.get("image")
+    _args = [(x[0].replace('-', '_'), x[1]) for x in vars(args).items()]
+    fields = dict(filter(lambda x: x[1] is not None and
+                         (x[0] == 'property' or
+                          schema.is_core_property(x[0])),
+                         _args))
+
+    raw_properties = fields.pop('property', [])
+    for datum in raw_properties:
+        key, value = datum.split('=', 1)
+        fields[key] = value
+
+    file_name = fields.pop('file', None)
+    if file_name is not None and os.access(file_name, os.R_OK) is False:
+        utils.exit("File %s does not exist or user does not have read "
+                   "privileges to it" % file_name)
+    import_methods = gc.images.get_import_info().get('import-methods')
+    if file_name and (not import_methods or
+                      'glance-direct' not in import_methods.get('value')):
+        utils.exit("No suitable import method available for direct upload, "
+                   "please use image-create instead.")
+    image, resp = gc.images.create(**fields)
+    try:
+        if utils.get_data_file(args) is not None:
+            args.id = image['id']
+            args.size = None
+            do_image_stage(gc, args)
+            args.from_create = True
+            do_image_import(gc, args)
+            image = gc.images.get(args.id)
+    finally:
+        utils.print_image(image)
+
+
 @utils.arg('id', metavar='<IMAGE_ID>', help=_('ID of image to update.'))
 @utils.schema_args(get_image_schema, omit=['id', 'locations', 'created_at',
                                            'updated_at', 'file', 'checksum',
@@ -269,6 +319,16 @@ def do_explain(gc, args):
         utils.print_list(schema.properties, columns, formatters)
 
 
+def do_import_info(gc, args):
+    """Print import methods available from Glance."""
+    try:
+        import_info = gc.images.get_import_info()
+    except exc.HTTPNotFound:
+        utils.exit('Target Glance does not support Image Import workflow')
+    else:
+        utils.print_dict(import_info)
+
+
 @utils.arg('--file', metavar='<FILE>',
            help=_('Local file to save downloaded image data to. '
                   'If this is not specified and there is no redirection '
@@ -323,6 +383,49 @@ def do_image_upload(gc, args):
             # input is unknown (most likely a piped input)
             image_data = progressbar.VerboseFileWrapper(image_data, filesize)
     gc.images.upload(args.id, image_data, args.size)
+
+
+@utils.arg('--file', metavar='<FILE>',
+           help=_('Local file that contains disk image to be uploaded.'
+                  ' Alternatively, images can be passed'
+                  ' to the client via stdin.'))
+@utils.arg('--size', metavar='<IMAGE_SIZE>', type=int,
+           help=_('Size in bytes of image to be uploaded. Default is to get '
+                  'size from provided data object but this is supported in '
+                  'case where size cannot be inferred.'),
+           default=None)
+@utils.arg('--progress', action='store_true', default=False,
+           help=_('Show upload progress bar.'))
+@utils.arg('id', metavar='<IMAGE_ID>',
+           help=_('ID of image to upload data to.'))
+def do_image_stage(gc, args):
+    """Upload data for a specific image to staging."""
+    image_data = utils.get_data_file(args)
+    if args.progress:
+        filesize = utils.get_file_size(image_data)
+        if filesize is not None:
+            # NOTE(kragniz): do not show a progress bar if the size of the
+            # input is unknown (most likely a piped input)
+            image_data = progressbar.VerboseFileWrapper(image_data, filesize)
+    gc.images.stage(args.id, image_data, args.size)
+
+
+@utils.arg('--import-method', metavar='<METHOD>', default='glance-direct',
+           help=_('Import method used for Image Import workflow. '
+                  'Valid values can be retrieved with import-info command '
+                  'and the default "glance-direct" is used with '
+                  '"image-stage".'))
+@utils.arg('id', metavar='<IMAGE_ID>',
+           help=_('ID of image to import.'))
+def do_image_import(gc, args):
+    try:
+        gc.images.image_import(args.id, args.import_method)
+    except exc.HTTPNotFound:
+        utils.exit('Target Glance does not support Image Import workflow')
+    else:
+        if not getattr(args, 'from_create', False):
+            image = gc.images.get(args.id)
+            utils.print_image(image)
 
 
 @utils.arg('id', metavar='<IMAGE_ID>', nargs='+',
