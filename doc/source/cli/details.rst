@@ -555,6 +555,179 @@ Upload data for a specific image.
 ``--progress``
   Show upload progress bar.
 
+.. _glance_import-info:
+
+glance import-info
+------------------
+
+.. code-block:: console
+
+   usage: glance import-info
+
+Prints the import methods available from Glance, or a message
+if the target Glance does not support image import.
+
+.. _glance_image-stage:
+
+glance image-stage
+------------------
+
+.. code-block:: console
+
+   usage: glance image-stage [--file <FILE>] [--size <IMAGE_SIZE>]
+                             [--progress]
+                             <IMAGE_ID>
+
+Upload data for a specific image to staging.
+
+**Positional arguments:**
+
+``<IMAGE_ID>``
+  ID of image to upload data to.
+
+**Optional arguments:**
+
+``--file <FILE>``
+  Local file that contains disk image to be uploaded.
+  Alternatively, images can be passed to the client via
+  stdin.
+
+``--size <IMAGE_SIZE>``
+  Size in bytes of image to be uploaded.  Default is to get size from
+  provided data object but this is supported in case where size cannot
+  be inferred.
+
+``--progress``
+  Show upload progress bar.
+
+.. _glance_image-import:
+
+glance image-import
+-------------------
+
+.. code-block:: console
+
+   usage: glance image-import [--import-method <METHOD>]
+                              <IMAGE_ID>
+
+Initiate the image import taskflow.
+
+**Positional arguments:**
+
+``<IMAGE_ID>``
+  ID of image to import.
+
+**Optional arguments:**
+
+``--import-method <METHOD>``
+  Import method used for Image Import workflow.  Valid values can
+  be retrieved with import-info command and the default "glance-direct"
+  is used with "image-stage".
+
+.. _glance_image-create-via-import:
+
+glance image-create-via-import
+------------------------------
+
+This is an **EXPERIMENTAL** command.  It may be renamed or removed in
+future releases.
+
+.. code-block:: console
+
+   usage: glance image-create-via import [--architecture <ARCHITECTURE>]
+                                         [--protected [True|False]] [--name <NAME>]
+                                         [--instance-uuid <INSTANCE_UUID>]
+                                         [--min-disk <MIN_DISK>] [--visibility <VISIBILITY>]
+                                         [--kernel-id <KERNEL_ID>]
+                                         [--tags <TAGS> [<TAGS> ...]]
+                                         [--os-version <OS_VERSION>]
+                                         [--disk-format <DISK_FORMAT>]
+                                         [--os-distro <OS_DISTRO>] [--id <ID>]
+                                         [--owner <OWNER>] [--ramdisk-id <RAMDISK_ID>]
+                                         [--min-ram <MIN_RAM>]
+                                         [--container-format <CONTAINER_FORMAT>]
+                                         [--property <key=value>] [--file <FILE>]
+                                         [--progress]
+
+Create a new image using the image import process.
+
+**NOTE** This is an EXPERIMENTAL command.  It may be renamed or removed in
+future releases.
+
+**Optional arguments:**
+
+``--architecture <ARCHITECTURE>``
+  Operating system architecture as specified in
+  https://docs.openstack.org/glance/latest/user/common-image-properties.html#architecture
+
+``--protected [True|False]``
+  If true, image will not be deletable.
+
+``--name <NAME>``
+  Descriptive name for the image
+
+``--instance-uuid <INSTANCE_UUID>``
+  Metadata which can be used to record which instance
+  this image is associated with. (Informational only,
+  does not create an instance snapshot.)
+
+``--min-disk <MIN_DISK>``
+  Amount of disk space (in GB) required to boot image.
+
+``--visibility <VISIBILITY>``
+  Scope of image accessibility Valid values: public,
+  private, community, shared
+
+``--kernel-id <KERNEL_ID>``
+  ID of image stored in Glance that should be used as
+  the kernel when booting an AMI-style image.
+
+``--tags <TAGS> [<TAGS> ...]``
+  List of strings related to the image
+
+``--os-version <OS_VERSION>``
+  Operating system version as specified by the
+  distributor
+
+``--disk-format <DISK_FORMAT>``
+  Format of the disk Valid values: None, ami, ari, aki,
+  vhd, vhdx, vmdk, raw, qcow2, vdi, iso, ploop
+
+``--os-distro <OS_DISTRO>``
+  Common name of operating system distribution as
+  specified
+  in
+  https://docs.openstack.org/glance/latest/user/common-image-properties.html#os-distro
+
+``--id <ID>``
+  An identifier for the image
+
+``--owner <OWNER>``
+  Owner of the image
+
+``--ramdisk-id <RAMDISK_ID>``
+  ID of image stored in Glance that should be used as
+  the ramdisk when booting an AMI-style image.
+
+``--min-ram <MIN_RAM>``
+  Amount of ram (in MB) required to boot image.
+
+``--container-format <CONTAINER_FORMAT>``
+  Format of the container Valid values: None, ami, ari,
+  aki, bare, ovf, ova, docker
+
+``--property <key=value>``
+  Arbitrary property to associate with image. May be
+  used multiple times.
+
+``--file <FILE>``
+  Local file that contains disk image to be uploaded
+  during creation. Alternatively, the image data can be
+  passed to the client via stdin.
+
+``--progress``
+  Show upload progress bar.
+
 .. _glance_location-add:
 
 glance location-add
