@@ -1,0 +1,76 @@
+---
+prelude: >
+  This was a quiet development cycle for the python-glanceclient.
+  There were several improvements made in the testing code, and the
+  documentation was reorganized in accord with the `new standard
+  layout
+  <http://specs.openstack.org/openstack/docs-specs/specs/pike/os-manuals-migration.html>`_
+  for OpenStack projects.
+
+  The main feature in this release is the addition of support for the
+  new image import functionality introduced into Glance during this
+  cycle.
+features:
+  - |
+    Client support has been added for the new image import functionality
+    introduced into Glance in this cycle.  This is a feature of the Images
+    API version 2 only, and it is disabled by default in Glance.  The following
+    commands have been added to the command line interface:
+
+    * ``import-info`` - gets information about the import configuration of
+      the target Glance
+    * ``image-stage`` - uploads image data to the staging area
+    * ``image-import`` - initiates the import process for a previously
+      created image record whose image data is currently in the staging area
+    * ``image-create-via-import`` - this is an EXPERIMENTAL command that compresses
+      the three-step import process of the Images API version 2 into a single call
+      from the command line, just as the current client ``image-create`` command
+      compresses a two-step process into one step.  *It is EXPERIMENTAL because the
+      name of the command may change or it may be removed entirely in future
+      releases.*  The intent is that as Glance image import is adopted by deployers,
+      this command may be renamed to ``image-create`` as it behaves exactly the same
+      from the user's point of view.  It is included in this release so that the
+      Glance team can get feedback from deployers and end users.
+
+fixes:
+  - |
+    The following are some highlights of the bug fixes included in this
+    release.
+
+    * Bug 1659010_: Help text inaccurate for container_format, disk_format
+    * Bug 1570766_: Fix 'UnicodeEncodeError' for unicode values in url
+    * Bug 1583919_: --no-ssl-compression is deprecated
+
+    .. _1659010: https://code.launchpad.net/bugs/1659010
+    .. _1570766: https://code.launchpad.net/bugs/1570766
+    .. _1583919: https://code.launchpad.net/bugs/1583919
+
+other:
+  - |
+    The deprecated ``--no-ssl-compression`` option to the python-glanceclient
+    command line interface has been removed_.  The option has been inoperative_
+    since the Liberty release.
+
+  - |
+    An optimization_ was added in the case where an image download is requested
+    from the command line interface without specifying either a filename
+    destination for the data or output redirection.  The optimization properly
+    delays opening a connection to the server until *after* the CLI has
+    verified that the user has specified a location for the downloaded data.
+    In the pre-optimized code, if a user did not have permission to download
+    the requested image or if the image had no data associated with it, the CLI
+    would fail with an appropriate message when the client attempted to create
+    the connection but before it had determined that there was no place to put
+    the data.  With this optimization, a user will not be able to "probe" the
+    server to see whether image data is available without specifying either the
+    ``--file`` option or command line redirection.
+
+  - |
+    The argument to the ``--profile`` option of the command line interface
+    may now be specified_ by setting the value of the ``OS_PROFILE`` environment
+    variable.
+
+    .. _removed: https://git.openstack.org/cgit/openstack/python-glanceclient/commit/?id=28c003dc1179ddb3124fd30c6f525dd341ae9213
+    .. _inoperative: https://specs.openstack.org/openstack/glance-specs/specs/liberty/approved/remove-special-client-ssl-handling.html
+    .. _optimization: https://git.openstack.org/cgit/openstack/python-glanceclient/commit/?id=1df55dd952fe52c1c1fc2583326d017275b01ddc
+    .. _specified: https://git.openstack.org/cgit/openstack/python-glanceclient/commit/?id=c0f88d5fc0fd947319e022cfeba21bcb15635316
