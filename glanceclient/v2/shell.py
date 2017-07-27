@@ -418,6 +418,7 @@ def do_image_stage(gc, args):
 @utils.arg('id', metavar='<IMAGE_ID>',
            help=_('ID of image to import.'))
 def do_image_import(gc, args):
+    """Initiate the image import taskflow."""
     try:
         gc.images.image_import(args.id, args.import_method)
     except exc.HTTPNotFound:
