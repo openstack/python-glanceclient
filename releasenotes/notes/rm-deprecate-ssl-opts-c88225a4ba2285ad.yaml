@@ -1,0 +1,9 @@
+---
+other:
+  - |
+    The following options to the command line client, which have been
+    deprecated since Icehouse, have been removed:
+
+    * ``--key-file`` (use ``--os-key`` instead)
+    * ``--ca-file`` (use ``--os-cacert`` instead)
+    * ``--cert-file`` (use ``--os-cert`` instead)
