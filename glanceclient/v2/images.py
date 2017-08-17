@@ -257,7 +257,7 @@ class Controller(object):
     def image_import(self, image_id, method='glance-direct'):
         """Import Image via method."""
         url = '/v2/images/%s/import' % image_id
-        data = {'import_method': method}
+        data = {'method': {'name': method}}
         resp, body = self.http_client.post(url, data=data)
         return body, resp
 
