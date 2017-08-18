@@ -102,6 +102,9 @@ def do_image_create(gc, args):
                   'passed to the client via stdin.'))
 @utils.arg('--progress', action='store_true', default=False,
            help=_('Show upload progress bar.'))
+@utils.arg('--import-method', metavar='<METHOD>', default='glance-direct',
+           help=_('Import method used for Image Import workflow. '
+                  'Valid values can be retrieved with import-info command.'))
 @utils.on_data_require_fields(DATA_FIELDS)
 def do_image_create_via_import(gc, args):
     """EXPERIMENTAL: Create a new image via image import."""
@@ -126,7 +129,7 @@ def do_image_create_via_import(gc, args):
                       'glance-direct' not in import_methods.get('value')):
         utils.exit("No suitable import method available for direct upload, "
                    "please use image-create instead.")
-    image, resp = gc.images.create(**fields)
+    image = gc.images.create(**fields)
     try:
         if utils.get_data_file(args) is not None:
             args.id = image['id']
