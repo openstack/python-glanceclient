@@ -240,16 +240,18 @@ class Controller(object):
         return body, resp
 
     @utils.add_req_id_to_object()
-    def stage(self, image_id, image_data):
+    def stage(self, image_id, image_data, image_size=None):
         """Upload the data to image staging.
 
         :param image_id: ID of the image to upload data for.
         :param image_data: File-like object supplying the data to upload.
+        :param image_size: Unused - present for backwards compatibility
         """
         url = '/v2/images/%s/stage' % image_id
-        return self.upload(image_id,
-                           image_data,
-                           u_url=url)
+        resp, body = self.upload(image_id,
+                                 image_data,
+                                 u_url=url)
+        return body, resp
 
     @utils.add_req_id_to_object()
     def image_import(self, image_id, method='glance-direct'):
