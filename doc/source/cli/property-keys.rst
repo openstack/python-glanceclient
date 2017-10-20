@@ -200,6 +200,13 @@ For example:
      - Specifies the type of disk controller to attach disk devices to.
      - One of ``scsi``, ``virtio``, ``uml``, ``xen``, ``ide``, or ``usb``.
    * - libvirt API driver
+     - ``hw_pointer_model``
+     - Input devices that allow interaction with a graphical framebuffer,
+       for example to provide a graphic tablet for absolute cursor movement.
+       Currently only supported by the KVM/QEMU hypervisor configuration
+       and VNC or SPICE consoles must be enabled.
+     - ``usbtablet``
+   * - libvirt API driver
      - ``hw_rng_model``
      - Adds a random-number generator device to the image's instances. The
        cloud administrator can enable and control device behavior by
