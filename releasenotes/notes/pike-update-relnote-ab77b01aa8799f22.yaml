@@ -1,0 +1,16 @@
+---
+prelude: >
+  This update contains bug fixes for the interoperable image import
+  functionality introduced into Glance as an EXPERIMENTAL API during
+  the Pike cycle.
+fixes:
+  - |
+    The following bug fixes are included in this release:
+
+    * Bug 1711090_: stage call fails with TypeError
+    * Bug 1711259_: Fix image-import call
+    * Bug 1711511_: image-create-via-import fails with ValueError
+
+    .. _1711090: https://code.launchpad.net/bugs/1711090
+    .. _1711259: https://code.launchpad.net/bugs/1711259
+    .. _1711511: https://code.launchpad.net/bugs/1711511
