@@ -1,0 +1,50 @@
+- job:
+    name: glanceclient-dsvm-functional
+    parent: devstack-tox-functional
+    description: |
+      devstack-based functional tests for glanceclient
+    required-projects:
+      - openstack/python-glanceclient
+    timeout: 4200
+    vars:
+      devstack_localrc:
+        # TODO(rosmaita): remove when glanceclient tests no longer
+        #   use the Images v1 API
+        GLANCE_V1_ENABLED: True
+        LIBS_FROM_GIT: python-glanceclient
+      devstack_services:
+        # turn off ceilometer
+        ceilometer-acentral: false
+        ceilometer-acompute: false
+        ceilometer-alarm-evaluator: false
+        ceilometer-alarm-notifier: false
+        ceilometer-anotification: false
+        ceilometer-api: false
+        ceilometer-collector: false
+        # turn on swift
+        s-account: true
+        s-container: true
+        s-object: true
+        s-proxy: true
+        # TODO(rosmaita): restore ssl
+        tls-proxy: false
+      # Hardcode glanceclient path so the job can be run on glance patches
+      zuul_work_dir: src/git.openstack.org/openstack/python-glanceclient
+
+- job:
+    name: glanceclient-dsvm-functional-identity-v3-only
+    parent: glanceclient-dsvm-functional
+    vars:
+      devstack_localrc:
+        ENABLE_IDENTITY_V2: False
+
+- project:
+    name: openstack/python-glanceclient
+    check:
+      jobs:
+        - glanceclient-dsvm-functional
+        - glanceclient-dsvm-functional-identity-v3-only:
+            voting: false
+    gate:
+      jobs:
+        - glanceclient-dsvm-functional
