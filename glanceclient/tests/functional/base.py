@@ -56,6 +56,8 @@ class ClientTestBase(base.ClientTestBase):
             username=self.creds['username'],
             password=self.creds['password'],
             tenant_name=self.creds['project_name'],
+            user_domain_id=self.creds['user_domain_id'],
+            project_domain_id=self.creds['project_domain_id'],
             uri=self.creds['auth_url'],
             cli_dir=cli_dir)
 
@@ -68,7 +70,9 @@ class ClientTestBase(base.ClientTestBase):
             auth_url=self.creds["auth_url"],
             username=self.creds["username"],
             password=self.creds["password"],
-            project_name=self.creds["project_name"])
+            project_name=self.creds["project_name"],
+            user_domain_id=self.creds["user_domain_id"],
+            project_domain_id=self.creds["project_domain_id"])
         keystoneclient = self.Keystone(**ks_creds)
         return self.Glance(keystoneclient)
 
