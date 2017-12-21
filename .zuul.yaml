@@ -26,8 +26,6 @@
         s-container: true
         s-object: true
         s-proxy: true
-        # TODO(rosmaita): restore ssl
-        tls-proxy: false
       # Hardcode glanceclient path so the job can be run on glance patches
       zuul_work_dir: src/git.openstack.org/openstack/python-glanceclient
 
