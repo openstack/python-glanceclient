@@ -23,5 +23,5 @@ done so, you can use the API like so::
 .. toctree::
    :maxdepth: 2
 
-   api/index
+   Python API Reference <api/modules>
    apiv2
