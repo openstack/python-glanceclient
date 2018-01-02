@@ -353,7 +353,7 @@ def do_image_download(gc, args):
         msg = "Unable to download image '%s'. (%s)" % (args.id, e)
         utils.exit(msg)
 
-    if body is None:
+    if body.wrapped is None:
         msg = ('Image %s has no data.' % args.id)
         utils.exit(msg)
 

@@ -581,11 +581,10 @@ class ShellV2Test(testtools.TestCase):
         args = self._make_args(
             {'id': 'IMG-01', 'file': 'test', 'progress': True})
 
-        with mock.patch.object(self.gc.images, 'data') as mocked_data:
-            def _data():
-                for c in 'abcedf':
-                    yield c
-            mocked_data.return_value = utils.IterableWithLength(_data(), 5)
+        with mock.patch.object(self.gc.images, 'data') as mocked_data, \
+                mock.patch.object(utils, '_extract_request_id'):
+            mocked_data.return_value = utils.RequestIdProxy(
+                [c for c in 'abcdef'])
 
             test_shell.do_image_download(self.gc, args)
             mocked_data.assert_called_once_with('IMG-01')
