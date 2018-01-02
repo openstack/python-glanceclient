@@ -321,6 +321,14 @@ For example:
        allows for flexibility in setting/overriding the default behavior as
        needed.
      - ``true`` or ``false``
+   * - libvirt API driver
+     - ``img_hide_hypervisor_id``
+     - Some hypervisors add a signature to their guests.  While the presence
+       of the signature can enable some paravirtualization features on the
+       guest, it can also have the effect of preventing some drivers from
+       loading.  Hiding the signature by setting this property to ``true``
+       may allow such drivers to load and work.
+     - ``true`` or ``false``
    * - VMware API driver
      - ``vmware_adaptertype``
      - The virtual SCSI or IDE controller used by the hypervisor.
