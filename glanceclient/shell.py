@@ -61,18 +61,6 @@ class OpenStackImagesShell(object):
         parser.set_defaults(os_project_id=utils.env(
             'OS_PROJECT_ID', 'OS_TENANT_ID'))
 
-        parser.add_argument('--key-file',
-                            dest='os_key',
-                            help='DEPRECATED! Use --os-key.')
-
-        parser.add_argument('--ca-file',
-                            dest='os_cacert',
-                            help='DEPRECATED! Use --os-cacert.')
-
-        parser.add_argument('--cert-file',
-                            dest='os_cert',
-                            help='DEPRECATED! Use --os-cert.')
-
         parser.add_argument('--os_tenant_id',
                             help=argparse.SUPPRESS)
 

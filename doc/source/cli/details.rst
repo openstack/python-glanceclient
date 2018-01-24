@@ -23,8 +23,7 @@ glance usage
    usage: glance [--version] [-d] [-v] [--get-schema] [-f]
                  [--os-image-url OS_IMAGE_URL]
                  [--os-image-api-version OS_IMAGE_API_VERSION]
-                 [--profile HMAC_KEY] [--key-file OS_KEY] [--ca-file OS_CACERT]
-                 [--cert-file OS_CERT] [--os-region-name OS_REGION_NAME]
+                 [--profile HMAC_KEY] [--os-region-name OS_REGION_NAME]
                  [--os-auth-token OS_AUTH_TOKEN]
                  [--os-service-type OS_SERVICE_TYPE]
                  [--os-endpoint-type OS_ENDPOINT_TYPE] [--insecure]
@@ -100,15 +99,6 @@ glance optional arguments
   /etc/glance/glance-registry.conf. Without key the
   profiling will not be triggered even if osprofiler is
   enabled on server side. Defaults to ``env[OS_PROFILE]``.
-
-``--key-file OS_KEY``
-  **DEPRECATED!** Use --os-key.
-
-``--ca-file OS_CACERT``
-  **DEPRECATED!** Use --os-cacert.
-
-``--cert-file OS_CERT``
-  **DEPRECATED!** Use --os-cert.
 
 ``--os-region-name OS_REGION_NAME``
   Defaults to ``env[OS_REGION_NAME]``.
