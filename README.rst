@@ -8,7 +8,8 @@ Team and repository tags
           OpenStack Images API:
           "project:official",
           "stable:follows-policy",
-          "vulnerability:managed".
+          "vulnerability:managed",
+          "team:diverse-affiliation".
           Follow the link for an explanation of these tags.
 .. NOTE(rosmaita): the alt text above will have to be updated when
    additional tags are asserted for python-glanceclient.  (The SVG in the
