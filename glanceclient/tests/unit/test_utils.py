@@ -115,6 +115,42 @@ class TestUtils(testtools.TestCase):
 ''',
                          output_dict.getvalue())
 
+    def test_print_list_with_list_no_unicode(self):
+        class Struct(object):
+            def __init__(self, **entries):
+                self.__dict__.update(entries)
+
+        # test for removing 'u' from lists in print_list output
+        columns = ['ID', 'Tags']
+        images = [Struct(**{'id': 'b8e1c57e-907a-4239-aed8-0df8e54b8d2d',
+                  'tags': [u'Name1', u'Tag_123', u'veeeery long']})]
+        saved_stdout = sys.stdout
+        try:
+            sys.stdout = output_list = six.StringIO()
+            utils.print_list(images, columns)
+
+        finally:
+            sys.stdout = saved_stdout
+
+        self.assertEqual('''\
++--------------------------------------+--------------------------------------+
+| ID                                   | Tags                                 |
++--------------------------------------+--------------------------------------+
+| b8e1c57e-907a-4239-aed8-0df8e54b8d2d | ['Name1', 'Tag_123', 'veeeery long'] |
++--------------------------------------+--------------------------------------+
+''',
+                         output_list.getvalue())
+
+    def test_unicode_key_value_to_string(self):
+        src = {u'key': u'\u70fd\u7231\u5a77'}
+        expected = {'key': '\xe7\x83\xbd\xe7\x88\xb1\xe5\xa9\xb7'}
+        if six.PY2:
+            self.assertEqual(expected, utils.unicode_key_value_to_string(src))
+        else:
+            # u'xxxx' in PY3 is str, we will not get extra 'u' from cli
+            # output in PY3
+            self.assertEqual(src, utils.unicode_key_value_to_string(src))
+
     def test_schema_args_with_list_types(self):
         # NOTE(flaper87): Regression for bug
         # https://bugs.launchpad.net/python-glanceclient/+bug/1401032
