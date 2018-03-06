@@ -10,7 +10,7 @@
       devstack_localrc:
         # TODO(rosmaita): remove when glanceclient tests no longer
         #   use the Images v1 API
-        GLANCE_V1_ENABLED: True
+        GLANCE_V1_ENABLED: true
         LIBS_FROM_GIT: python-glanceclient
       devstack_services:
         # turn off ceilometer
@@ -34,10 +34,9 @@
     parent: glanceclient-dsvm-functional
     vars:
       devstack_localrc:
-        ENABLE_IDENTITY_V2: False
+        ENABLE_IDENTITY_V2: false
 
 - project:
-    name: openstack/python-glanceclient
     check:
       jobs:
         - glanceclient-dsvm-functional
