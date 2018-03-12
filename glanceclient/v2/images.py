@@ -254,10 +254,16 @@ class Controller(object):
         return body, resp
 
     @utils.add_req_id_to_object()
-    def image_import(self, image_id, method='glance-direct'):
+    def image_import(self, image_id, method='glance-direct', uri=None):
         """Import Image via method."""
         url = '/v2/images/%s/import' % image_id
         data = {'method': {'name': method}}
+        if uri:
+            if method == 'web-download':
+                data['method']['uri'] = uri
+            else:
+                raise exc.HTTPBadRequest('URI is only supported with method: '
+                                         '"web-download"')
         resp, body = self.http_client.post(url, data=data)
         return body, resp
 

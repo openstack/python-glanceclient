@@ -215,6 +215,9 @@ data_fixtures = {
     '/v2/images/87b634c1-f893-33c9-28a9-e5673c99239a/actions/deactivate': {
         'POST': ({}, None)
     },
+    '/v2/images/606b0e88-7c5a-4d54-b5bb-046105d4de6f/import': {
+        'POST': ({}, None)
+    },
     '/v2/images?limit=%d&visibility=public' % images.DEFAULT_PAGE_SIZE: {
         'GET': (
             {},
@@ -866,6 +869,16 @@ class TestController(testtools.TestCase):
         body = self.controller.data('1b1c6366-dd57-11e1-af0f-02163e68b1d8')
         body = ''.join([b for b in body])
         self.assertEqual('CCC', body)
+
+    def test_image_import(self):
+        uri = 'http://example.com/image.qcow'
+        data = [('method', {'name': 'web-download',
+                 'uri': uri})]
+        image_id = '606b0e88-7c5a-4d54-b5bb-046105d4de6f'
+        self.controller.image_import(image_id, 'web-download', uri)
+        expect = [('POST', '/v2/images/%s/import' % image_id, {},
+                  data)]
+        self.assertEqual(expect, self.api.calls)
 
     def test_download_no_data(self):
         resp = utils.FakeResponse(headers={}, status_code=204)

@@ -105,6 +105,8 @@ def do_image_create(gc, args):
 @utils.arg('--import-method', metavar='<METHOD>', default='glance-direct',
            help=_('Import method used for Image Import workflow. '
                   'Valid values can be retrieved with import-info command.'))
+@utils.arg('--uri', metavar='<IMAGE_URL>', default=None,
+           help=_('URI to download the external image.'))
 @utils.on_data_require_fields(DATA_FIELDS)
 def do_image_create_via_import(gc, args):
     """EXPERIMENTAL: Create a new image via image import."""
@@ -129,15 +131,22 @@ def do_image_create_via_import(gc, args):
                       'glance-direct' not in import_methods.get('value')):
         utils.exit("No suitable import method available for direct upload, "
                    "please use image-create instead.")
+    if args.import_method == 'web-download' and not args.uri:
+            utils.exit("URI is required for web-download import method. "
+                       "Please use '--uri <uri>'.")
+    if args.uri and args.import_method != 'web-download':
+            utils.exit("Import method should be 'web-download' if URI is "
+                       "provided.")
+
     image = gc.images.create(**fields)
     try:
+        args.id = image['id']
         if utils.get_data_file(args) is not None:
-            args.id = image['id']
             args.size = None
             do_image_stage(gc, args)
-            args.from_create = True
-            do_image_import(gc, args)
-            image = gc.images.get(args.id)
+        args.from_create = True
+        do_image_import(gc, args)
+        image = gc.images.get(args.id)
     finally:
         utils.print_image(image)
 
@@ -418,12 +427,19 @@ def do_image_stage(gc, args):
                   'Valid values can be retrieved with import-info command '
                   'and the default "glance-direct" is used with '
                   '"image-stage".'))
+@utils.arg('--uri', metavar='<IMAGE_URL>', default=None,
+           help=_('URI to download the external image.'))
 @utils.arg('id', metavar='<IMAGE_ID>',
            help=_('ID of image to import.'))
 def do_image_import(gc, args):
     """Initiate the image import taskflow."""
     try:
-        gc.images.image_import(args.id, args.import_method)
+        if args.import_method == 'web-download' and not args.uri:
+            utils.exit("Provide URI for web-download import method.")
+        if args.uri and args.import_method != 'web-download':
+            utils.exit("Import method should be 'web-download' if URI is "
+                       "provided.")
+        gc.images.image_import(args.id, args.import_method, args.uri)
     except exc.HTTPNotFound:
         utils.exit('Target Glance does not support Image Import workflow')
     else:

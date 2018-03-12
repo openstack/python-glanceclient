@@ -447,6 +447,33 @@ class ShellV2Test(testtools.TestCase):
             utils.print_dict.assert_called_once_with({
                 'id': 'pass', 'name': 'IMG-01', 'myprop': 'myval'})
 
+    def test_do_image_create_via_import_with_web_download(self):
+        temp_args = {'name': 'IMG-01',
+                     'disk_format': 'vhd',
+                     'container_format': 'bare',
+                     'uri': 'http://example.com/image.qcow',
+                     'import_method': 'web-download',
+                     'progress': False}
+        args = self._make_args(temp_args)
+        with mock.patch.object(self.gc.images, 'create') as mocked_create:
+            with mock.patch.object(self.gc.images, 'get') as mocked_get:
+                ignore_fields = ['self', 'access', 'schema']
+                expect_image = dict([(field, field) for field in
+                                     ignore_fields])
+                expect_image['id'] = 'pass'
+                expect_image['name'] = 'IMG-01'
+                expect_image['disk_format'] = 'vhd'
+                expect_image['container_format'] = 'bare'
+                mocked_create.return_value = expect_image
+                mocked_get.return_value = expect_image
+                test_shell.do_image_create_via_import(self.gc, args)
+
+                mocked_create.assert_called_once_with(**temp_args)
+                mocked_get.assert_called_with('pass')
+                utils.print_dict.assert_called_with({
+                    'id': 'pass', 'name': 'IMG-01', 'disk_format': 'vhd',
+                    'container_format': 'bare'})
+
     def test_do_image_update_no_user_props(self):
         args = self._make_args({'id': 'pass', 'name': 'IMG-01',
                                 'disk_format': 'vhd',
@@ -576,6 +603,17 @@ class ShellV2Test(testtools.TestCase):
             mocked_upload.return_value = None
             test_shell.do_image_upload(self.gc, args)
             mocked_upload.assert_called_once_with('IMG-01', 'testfile', 1024)
+
+    def test_image_import(self):
+        args = self._make_args(
+            {'id': 'IMG-01', 'uri': 'http://example.com/image.qcow',
+             'import_method': 'web-download', 'from_create': True})
+
+        with mock.patch.object(self.gc.images, 'image_import') as mock_import:
+            mock_import.return_value = None
+            test_shell.do_image_import(self.gc, args)
+            mock_import.assert_called_once_with(
+                'IMG-01', 'web-download', 'http://example.com/image.qcow')
 
     def test_image_download(self):
         args = self._make_args(
