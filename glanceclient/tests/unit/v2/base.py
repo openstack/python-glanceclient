@@ -106,6 +106,10 @@ class BaseController(testtools.TestCase):
         resp = self.controller.deassociate(*args)
         self._assertRequestId(resp)
 
+    def image_import(self, *args):
+        resp = self.controller.image_import(*args)
+        self._assertRequestId(resp)
+
 
 class BaseResourceTypeController(BaseController):
     def __init__(self, api, schema_api, controller_class):
