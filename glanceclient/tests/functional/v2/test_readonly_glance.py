@@ -24,13 +24,6 @@ class SimpleReadOnlyGlanceClientTest(base.ClientTestBase):
     This only exercises client commands that are read only.
     """
 
-    def test_list_v1(self):
-        out = self.glance('--os-image-api-version 1 image-list')
-        endpoints = self.parser.listing(out)
-        self.assertTableStruct(endpoints, [
-            'ID', 'Name', 'Disk Format', 'Container Format',
-            'Size', 'Status'])
-
     def test_list_v2(self):
         out = self.glance('--os-image-api-version 2 image-list')
         endpoints = self.parser.listing(out)
@@ -40,14 +33,6 @@ class SimpleReadOnlyGlanceClientTest(base.ClientTestBase):
         self.assertRaises(exceptions.CommandFailed,
                           self.glance,
                           'this-does-not-exist')
-
-    def test_member_list_v1(self):
-        tenant_name = '--tenant-id %s' % self.creds['project_name']
-        out = self.glance('--os-image-api-version 1 member-list',
-                          params=tenant_name)
-        endpoints = self.parser.listing(out)
-        self.assertTableStruct(endpoints,
-                               ['Image ID', 'Member ID', 'Can Share'])
 
     def test_member_list_v2(self):
         try:

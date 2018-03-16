@@ -6,10 +6,12 @@
 # assumptions:
 # - devstack is running
 # - the devstack tls-proxy service is running
+# - the environment var OS_TESTENV_NAME is set in tox.ini (defaults
+#   to 'functional'
 #
 # This code based on a function in devstack lib/tls
 function set_ca_bundle {
-    local python_cmd='.tox/functional/bin/python'
+    local python_cmd=".tox/${OS_TESTENV_NAME:-functional}/bin/python"
     local capath=$($python_cmd -c $'try:\n from requests import certs\n print (certs.where())\nexcept ImportError: pass')
     # of course, each distro keeps the CA store in a different location
     local fedora_CA='/etc/pki/tls/certs/ca-bundle.crt'
