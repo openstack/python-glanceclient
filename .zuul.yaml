@@ -42,6 +42,8 @@
         - glanceclient-dsvm-functional
         - glanceclient-dsvm-functional-identity-v3-only:
             voting: false
+        - openstack-tox-lower-constraints
     gate:
       jobs:
         - glanceclient-dsvm-functional
+        - openstack-tox-lower-constraints
