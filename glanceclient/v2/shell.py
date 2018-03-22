@@ -102,14 +102,34 @@ def do_image_create(gc, args):
                   'passed to the client via stdin.'))
 @utils.arg('--progress', action='store_true', default=False,
            help=_('Show upload progress bar.'))
-@utils.arg('--import-method', metavar='<METHOD>', default='glance-direct',
+@utils.arg('--import-method', metavar='<METHOD>',
+           default=utils.env('OS_IMAGE_IMPORT_METHOD', default=None),
            help=_('Import method used for Image Import workflow. '
-                  'Valid values can be retrieved with import-info command.'))
+                  'Valid values can be retrieved with import-info command. '
+                  'Defaults to env[OS_IMAGE_IMPORT_METHOD] or if that is '
+                  'undefined uses \'glance-direct\' if data is provided using '
+                  '--file or stdin. Otherwise, simply creates an image '
+                  'record if no import-method and no data is supplied'))
 @utils.arg('--uri', metavar='<IMAGE_URL>', default=None,
            help=_('URI to download the external image.'))
 @utils.on_data_require_fields(DATA_FIELDS)
 def do_image_create_via_import(gc, args):
-    """EXPERIMENTAL: Create a new image via image import."""
+    """EXPERIMENTAL: Create a new image via image import.
+
+    Use the interoperable image import workflow to create an image.  This
+    command is designed to be backward compatible with the current image-create
+    command, so its behavior is as follows:
+
+    * If an import-method is specified (either on the command line or through
+      the OS_IMAGE_IMPORT_METHOD environment variable, then you must provide a
+      data source appropriate to that method (for example, --file for
+      glance-direct, or --uri for web-download).
+    * If no import-method is specified AND you provide either a --file or
+      data to stdin, the command will assume you are using the 'glance-direct'
+      import-method and will act accordingly.
+    * If no import-method is specified and no data is supplied via --file or
+      stdin, the command will simply create an image record in 'queued' status.
+    """
     schema = gc.schemas.get("image")
     _args = [(x[0].replace('-', '_'), x[1]) for x in vars(args).items()]
     fields = dict(filter(lambda x: x[1] is not None and
@@ -123,29 +143,59 @@ def do_image_create_via_import(gc, args):
         fields[key] = value
 
     file_name = fields.pop('file', None)
-    if file_name is not None and os.access(file_name, os.R_OK) is False:
-        utils.exit("File %s does not exist or user does not have read "
-                   "privileges to it" % file_name)
+    using_stdin = not sys.stdin.isatty()
+
+    # special processing for backward compatibility with image-create
+    if args.import_method is None and (file_name or using_stdin):
+        args.import_method = 'glance-direct'
+
+    # determine whether the requested import method is valid
     import_methods = gc.images.get_import_info().get('import-methods')
-    if file_name and (not import_methods or
-                      'glance-direct' not in import_methods.get('value')):
-        utils.exit("No suitable import method available for direct upload, "
-                   "please use image-create instead.")
-    if args.import_method == 'web-download' and not args.uri:
+    if args.import_method and args.import_method not in import_methods.get(
+            'value'):
+        utils.exit("Import method '%s' is not valid for this cloud. "
+                   "Valid values can be retrieved with import-info command." %
+                   args.import_method)
+
+    # make sure we have all and only correct inputs for the requested method
+    if args.import_method is None:
+        if args.uri:
+            utils.exit("You cannot use --uri without specifying an import "
+                       "method.")
+    if args.import_method == 'glance-direct':
+        if args.uri:
+            utils.exit("You cannot specify a --uri with the glance-direct "
+                       "import method.")
+        if file_name is not None and os.access(file_name, os.R_OK) is False:
+            utils.exit("File %s does not exist or user does not have read "
+                       "privileges to it." % file_name)
+        if file_name is not None and using_stdin:
+            utils.exit("You cannot use both --file and stdin with the "
+                       "glance-direct import method.")
+        if not file_name and not using_stdin:
+            utils.exit("You must specify a --file or provide data via stdin "
+                       "for the glance-direct import method.")
+    if args.import_method == 'web-download':
+        if not args.uri:
             utils.exit("URI is required for web-download import method. "
                        "Please use '--uri <uri>'.")
-    if args.uri and args.import_method != 'web-download':
-            utils.exit("Import method should be 'web-download' if URI is "
-                       "provided.")
+        if file_name:
+            utils.exit("You cannot specify a --file with the web-download "
+                       "import method.")
+        if using_stdin:
+            utils.exit("You cannot pass data via stdin with the web-download "
+                       "import method.")
 
+    # process
     image = gc.images.create(**fields)
     try:
         args.id = image['id']
-        if utils.get_data_file(args) is not None:
-            args.size = None
-            do_image_stage(gc, args)
-        args.from_create = True
-        do_image_import(gc, args)
+        if args.import_method:
+            if utils.get_data_file(args) is not None:
+                args.size = None
+                do_image_stage(gc, args)
+            args.from_create = True
+            do_image_import(gc, args)
         image = gc.images.get(args.id)
     finally:
         utils.print_image(image)
