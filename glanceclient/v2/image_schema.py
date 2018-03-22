@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-_doc_url = "http://docs.openstack.org/user-guide/common/cli-manage-images.html"  # noqa
+_doc_url = "https://docs.openstack.org/python-glanceclient/latest/cli/property-keys.html"  # noqa
 # NOTE(flaper87): Keep a copy of the current default schema so that
 # we can react on cases where there's no connection to an OpenStack
 # deployment. See #1481729
