@@ -483,19 +483,53 @@ def do_image_stage(gc, args):
            help=_('ID of image to import.'))
 def do_image_import(gc, args):
     """Initiate the image import taskflow."""
-    try:
-        if args.import_method == 'web-download' and not args.uri:
-            utils.exit("Provide URI for web-download import method.")
-        if args.uri and args.import_method != 'web-download':
-            utils.exit("Import method should be 'web-download' if URI is "
-                       "provided.")
+
+    if getattr(args, 'from_create', False):
+        # this command is being called "internally" so we can skip
+        # validation -- just do the import and get out of here
         gc.images.image_import(args.id, args.import_method, args.uri)
+        return
+
+    # do input validation
+    try:
+        import_methods = gc.images.get_import_info().get('import-methods')
     except exc.HTTPNotFound:
         utils.exit('Target Glance does not support Image Import workflow')
-    else:
-        if not getattr(args, 'from_create', False):
-            image = gc.images.get(args.id)
-            utils.print_image(image)
+
+    if args.import_method not in import_methods.get('value'):
+        utils.exit("Import method '%s' is not valid for this cloud. "
+                   "Valid values can be retrieved with import-info command." %
+                   args.import_method)
+
+    if args.import_method == 'web-download' and not args.uri:
+        utils.exit("Provide URI for web-download import method.")
+    if args.uri and args.import_method != 'web-download':
+        utils.exit("Import method should be 'web-download' if URI is "
+                   "provided.")
+
+    # check image properties
+    image = gc.images.get(args.id)
+    container_format = image.get('container_format')
+    disk_format = image.get('disk_format')
+    if not (container_format and disk_format):
+        utils.exit("The 'container_format' and 'disk_format' properties "
+                   "must be set on an image before it can be imported.")
+
+    image_status = image.get('status')
+    if args.import_method == 'glance-direct':
+        if image_status != 'uploading':
+            utils.exit("The 'glance-direct' import method can only be applied "
+                       "to an image in status 'uploading'")
+    if args.import_method == 'web-download':
+        if image_status != 'queued':
+            utils.exit("The 'web-download' import method can only be applied "
+                       "to an image in status 'queued'")
+
+    # finally, do the import
+    gc.images.image_import(args.id, args.import_method, args.uri)
+
+    image = gc.images.get(args.id)
+    utils.print_image(image)
 
 
 @utils.arg('id', metavar='<IMAGE_ID>', nargs='+',
