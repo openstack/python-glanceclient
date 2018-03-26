@@ -157,6 +157,46 @@ class ShellV2Test(testtools.TestCase):
         self.assertEqual('error: Must provide --disk-format when using stdin.',
                          e.message)
 
+    @mock.patch('sys.stderr')
+    def test_create_via_import_glance_direct_missing_disk_format(self, __):
+        e = self.assertRaises(exc.CommandError, self._run_command,
+                              '--os-image-api-version 2 '
+                              'image-create-via-import '
+                              '--file fake_src --container-format bare')
+        self.assertEqual('error: Must provide --disk-format when using '
+                         '--file.', e.message)
+
+    @mock.patch('sys.stderr')
+    def test_create_via_import_glance_direct_missing_container_format(
+            self, __):
+        e = self.assertRaises(exc.CommandError, self._run_command,
+                              '--os-image-api-version 2 '
+                              'image-create-via-import '
+                              '--file fake_src --disk-format qcow2')
+        self.assertEqual('error: Must provide --container-format when '
+                         'using --file.', e.message)
+
+    @mock.patch('sys.stderr')
+    def test_create_via_import_web_download_missing_disk_format(self, __):
+        e = self.assertRaises(exc.CommandError, self._run_command,
+                              '--os-image-api-version 2 '
+                              'image-create-via-import ' +
+                              '--import-method web-download ' +
+                              '--uri fake_uri --container-format bare')
+        self.assertEqual('error: Must provide --disk-format when using '
+                         '--uri.', e.message)
+
+    @mock.patch('sys.stderr')
+    def test_create_via_import_web_download_missing_container_format(
+            self, __):
+        e = self.assertRaises(exc.CommandError, self._run_command,
+                              '--os-image-api-version 2 '
+                              'image-create-via-import '
+                              '--import-method web-download '
+                              '--uri fake_uri --disk-format qcow2')
+        self.assertEqual('error: Must provide --container-format when '
+                         'using --uri.', e.message)
+
     def test_do_image_list(self):
         input = {
             'limit': None,

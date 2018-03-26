@@ -30,7 +30,7 @@ import os
 
 MEMBER_STATUS_VALUES = image_members.MEMBER_STATUS_VALUES
 IMAGE_SCHEMA = None
-DATA_FIELDS = ('location', 'copy_from', 'file')
+DATA_FIELDS = ('location', 'copy_from', 'file', 'uri')
 
 
 def get_image_schema():
