@@ -303,12 +303,15 @@ schema_fixture = {
             "readOnly": True,
             "description": "Status of the image",
             "enum": [
+                "deactivated",
                 "queued",
                 "saving",
                 "active",
                 "killed",
                 "deleted",
-                "pending_delete"
+                "pending_delete",
+                "uploading",
+                "importing"
             ],
             "type": "string"
         },
