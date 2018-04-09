@@ -1,0 +1,35 @@
+---
+prelude: >
+    This release of python-glanceclient syncs up with Queens release of Glance
+    API service, including critical bugfixes to client behaviour against the
+    new Interoperable Image Import feature.
+features:
+  - |
+    Support for Interoperable Image Import 'web-download' import method.
+issues:
+  - |
+    Help texts for some properties has possibly outdated links. Please do
+    refer to the documentation of the deployment while we do find a way how to
+    document these references in a way that they do not point user to false
+    information.
+critical:
+  - |
+    Client commands "image-create-via-import" and "image-import" have aligned
+    to the Glance common principles of failing early. This means that client
+    does determine if the call would fail for sure before taking any create
+    actions and thus minimizes the clutter created on the service that the
+    user or admin would potentially need to take action on.
+fixes:
+  - |
+    The following are some highlights of bugfixes included in this release.
+
+    * Bug 1758718_: image-import needs to fail faster
+    * Bug 1758149_: image-create-via-import needs to fail faster
+    * Bug 1757927_: image-create-via-import does not fail with missing
+      {container,disk}-format for web-download method
+    * Bug 1758039_: client does not provide way to use 'web-download'
+
+    .. _1758718: https://code.launchpad.net/bugs/1758718
+    .. _1758149: https://code.launchpad.net/bugs/1758149
+    .. _1757927: https://code.launchpad.net/bugs/1757927
+    .. _1758039: https://code.launchpad.net/bugs/1758039
