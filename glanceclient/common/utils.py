@@ -380,7 +380,7 @@ def strip_version(endpoint):
     (scheme, netloc, path, __, __, __) = url_parts
     path = path.lstrip('/')
     # regex to match 'v1' or 'v2.0' etc
-    if re.match('v\d+\.?\d*', path):
+    if re.match(r'v\d+\.?\d*', path):
         version = float(path.lstrip('v'))
         endpoint = scheme + '://' + netloc
     return endpoint, version
