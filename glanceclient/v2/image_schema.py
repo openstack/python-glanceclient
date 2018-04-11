@@ -129,7 +129,8 @@ _BASE_SCHEMA = {
         },
         "status": {
             "readOnly": True,
-            "enum": ["queued", "saving", "active", "killed", "deleted",
+            "enum": ["queued", "saving", "active", "killed",
+                     "deleted", "uploading", "importing",
                      "pending_delete", "deactivated"],
             "type": "string",
             "description": "Status of the image"
