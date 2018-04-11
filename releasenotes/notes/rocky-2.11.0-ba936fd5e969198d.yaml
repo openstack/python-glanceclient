@@ -1,0 +1,12 @@
+---
+issues:
+  - |
+    Help texts for some properties has possibly outdated links. Please refer
+    to the documentation of the deployment while we try to find a way how to
+    document these references in a way that they do not point user to false
+    information.
+fixes:
+  - |
+    * Bug 1762044_: Sync schema with glance-api service
+
+    .. _1762044: https://code.launchpad.net/bugs/1762044
