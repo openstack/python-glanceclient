@@ -48,9 +48,10 @@ class ClientTestBase(base.ClientTestBase):
 
     def _get_clients(self):
         self.creds = credentials().get_auth_args()
+        venv_name = os.environ.get('OS_TESTENV_NAME', 'functional')
         cli_dir = os.environ.get(
             'OS_GLANCECLIENT_EXEC_DIR',
-            os.path.join(os.path.abspath('.'), '.tox/functional/bin'))
+            os.path.join(os.path.abspath('.'), '.tox/%s/bin' % venv_name))
 
         return base.CLIClient(
             username=self.creds['username'],

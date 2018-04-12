@@ -1,16 +1,54 @@
 - job:
+    name: glanceclient-dsvm-functional-v1
+    parent: devstack-tox-functional
+    description: |
+      Devstack-based functional tests for glanceclient
+      against the Image API v1.
+
+      The Image API v1 is removed from glance in Rocky, but
+      is still supported by glanceclient until the S cycle,
+      so we test it against glance stable/queens.
+
+      THIS JOB SHOULD BE REMOVED AT THE BEGINNING OF THE S
+      CYCLE.
+    override-checkout: stable/queens
+    required-projects:
+      - name: openstack/python-glanceclient
+        override-checkout: master
+    timeout: 4200
+    vars:
+      tox_envlist: functional-v1
+      devstack_localrc:
+        GLANCE_V1_ENABLED: true
+      devstack_services:
+        # turn off ceilometer
+        ceilometer-acentral: false
+        ceilometer-acompute: false
+        ceilometer-alarm-evaluator: false
+        ceilometer-alarm-notifier: false
+        ceilometer-anotification: false
+        ceilometer-api: false
+        ceilometer-collector: false
+        # turn on swift
+        s-account: true
+        s-container: true
+        s-object: true
+        s-proxy: true
+      # Hardcode glanceclient path so the job can be run on glance patches
+      zuul_work_dir: src/git.openstack.org/openstack/python-glanceclient
+
+- job:
     name: glanceclient-dsvm-functional
     parent: devstack-tox-functional
     description: |
-      devstack-based functional tests for glanceclient
+      Devstack-based functional tests for glanceclient.
+
+      These test glanceclient against Image API v2 only.
     required-projects:
       - openstack/python-glanceclient
     timeout: 4200
     vars:
       devstack_localrc:
-        # TODO(rosmaita): remove when glanceclient tests no longer
-        #   use the Images v1 API
-        GLANCE_V1_ENABLED: true
         LIBS_FROM_GIT: python-glanceclient
       devstack_services:
         # turn off ceilometer
@@ -39,11 +77,13 @@
 - project:
     check:
       jobs:
+        - glanceclient-dsvm-functional-v1
         - glanceclient-dsvm-functional
         - glanceclient-dsvm-functional-identity-v3-only:
             voting: false
         - openstack-tox-lower-constraints
     gate:
       jobs:
+        - glanceclient-dsvm-functional-v1
         - glanceclient-dsvm-functional
         - openstack-tox-lower-constraints
