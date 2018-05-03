@@ -141,6 +141,44 @@ class TestUtils(testtools.TestCase):
 ''',
                          output_list.getvalue())
 
+    def test_print_image_virtual_size_available(self):
+        image = {'id': '42', 'virtual_size': 1337}
+        saved_stdout = sys.stdout
+        try:
+            sys.stdout = output_list = six.StringIO()
+            utils.print_image(image)
+        finally:
+            sys.stdout = saved_stdout
+
+        self.assertEqual('''\
++--------------+-------+
+| Property     | Value |
++--------------+-------+
+| id           | 42    |
+| virtual_size | 1337  |
++--------------+-------+
+''',
+                         output_list.getvalue())
+
+    def test_print_image_virtual_size_not_available(self):
+        image = {'id': '42', 'virtual_size': None}
+        saved_stdout = sys.stdout
+        try:
+            sys.stdout = output_list = six.StringIO()
+            utils.print_image(image)
+        finally:
+            sys.stdout = saved_stdout
+
+        self.assertEqual('''\
++--------------+---------------+
+| Property     | Value         |
++--------------+---------------+
+| id           | 42            |
+| virtual_size | Not available |
++--------------+---------------+
+''',
+                         output_list.getvalue())
+
     def test_unicode_key_value_to_string(self):
         src = {u'key': u'\u70fd\u7231\u5a77'}
         expected = {'key': '\xe7\x83\xbd\xe7\x88\xb1\xe5\xa9\xb7'}
