@@ -22,11 +22,11 @@ Python bindings to the OpenStack Images API
 ===========================================
 
 .. image:: https://img.shields.io/pypi/v/python-glanceclient.svg
-    :target: https://pypi.python.org/pypi/python-glanceclient/
+    :target: https://pypi.org/project/python-glanceclient/
     :alt: Latest Version
 
 .. image:: https://img.shields.io/pypi/dm/python-glanceclient.svg
-    :target: https://pypi.python.org/pypi/python-glanceclient/
+    :target: https://pypi.org/project/python-glanceclient/
     :alt: Downloads
 
 This is a client library for Glance built on the OpenStack Images API. It provides a Python API (the ``glanceclient`` module) and a command-line tool (``glance``). This library fully supports the v1 Images API, while support for the v2 API is in progress.
@@ -45,7 +45,7 @@ See release notes and more at `<http://docs.openstack.org/python-glanceclient/>`
 * `Specs`_
 * `How to Contribute`_
 
-.. _PyPi: https://pypi.python.org/pypi/python-glanceclient
+.. _PyPi: https://pypi.org/project/python-glanceclient
 .. _Online Documentation: https://docs.openstack.org/python-glanceclient/latest/
 .. _Launchpad project: https://launchpad.net/python-glanceclient
 .. _Blueprints: https://blueprints.launchpad.net/python-glanceclient
