@@ -216,10 +216,15 @@ class TestClient(testtools.TestCase):
 
     def test_headers_encoding(self):
         value = u'ni\xf1o'
-        headers = {"test": value, "none-val": None}
+        headers = {"test": value, "none-val": None, "Name": "value"}
         encoded = http.encode_headers(headers)
-        self.assertEqual(b"ni\xc3\xb1o", encoded[b"test"])
+        # Bug #1766235: According to RFC 8187, headers must be
+        # encoded as 7-bit ASCII, so expect to see only displayable
+        # chars in percent-encoding
+        self.assertEqual(b"ni%C3%B1o", encoded[b"test"])
         self.assertNotIn("none-val", encoded)
+        self.assertNotIn(b"none-val", encoded)
+        self.assertEqual(b"value", encoded[b"Name"])
 
     @mock.patch('keystoneauth1.adapter.Adapter.request')
     def test_http_duplicate_content_type_headers(self, mock_ksarq):
@@ -466,4 +471,7 @@ class TestClient(testtools.TestCase):
         http_client.auth_token = unicode_token
         http_client.get(path)
         headers = self.mock.last_request.headers
-        self.assertEqual(b'ni\xc3\xb1o', headers['X-Auth-Token'])
+        # Bug #1766235: According to RFC 8187, headers must be
+        # encoded as 7-bit ASCII, so expect to see only displayable
+        # chars in percent-encoding
+        self.assertEqual(b'ni%C3%B1o', headers['X-Auth-Token'])
