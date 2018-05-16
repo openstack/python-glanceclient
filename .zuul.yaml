@@ -114,6 +114,13 @@
     vars:
       tox_envlist: py35
 
+- job:
+    name: glanceclient-dsvm-functional-py3
+    parent: glanceclient-dsvm-functional
+    vars:
+      devstack_localrc:
+        USE_PYTHON3: true
+
 - project:
     check:
       jobs:
@@ -131,3 +138,6 @@
         - glanceclient-tox-py35-keystone-tips
         - glanceclient-tox-py27-oslo-tips
         - glanceclient-tox-py35-oslo-tips
+    experimental:
+      jobs:
+        - glanceclient-dsvm-functional-py3
