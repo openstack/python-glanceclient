@@ -68,13 +68,6 @@
       zuul_work_dir: src/git.openstack.org/openstack/python-glanceclient
 
 - job:
-    name: glanceclient-dsvm-functional-identity-v3-only
-    parent: glanceclient-dsvm-functional
-    vars:
-      devstack_localrc:
-        ENABLE_IDENTITY_V2: false
-
-- job:
     name: glanceclient-tox-keystone-tips-base
     parent: tox
     description: Abstract job for glanceclient vs. keystone
@@ -126,8 +119,6 @@
       jobs:
         - glanceclient-dsvm-functional-v1
         - glanceclient-dsvm-functional
-        - glanceclient-dsvm-functional-identity-v3-only:
-            voting: false
         - openstack-tox-lower-constraints
     gate:
       jobs:
