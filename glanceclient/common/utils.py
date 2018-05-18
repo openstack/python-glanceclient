@@ -177,6 +177,12 @@ def pretty_choice_list(l):
 
 
 def print_list(objs, fields, formatters=None, field_settings=None):
+    '''Prints a list of objects.
+
+    @param objs: Objects to print
+    @param fields: Fields on each object to be printed
+    @param formatters: Custom field formatters
+    '''
     formatters = formatters or {}
     field_settings = field_settings or {}
     pt = prettytable.PrettyTable([f for f in fields], caching=False)
@@ -196,9 +202,34 @@ def print_list(objs, fields, formatters=None, field_settings=None):
                 field_name = field.lower().replace(' ', '_')
                 data = getattr(o, field_name, None) or ''
                 row.append(data)
+        count = 0
+        # Converts unicode values in list to string
+        for part in row:
+            count = count + 1
+            if isinstance(part, list):
+                part = unicode_key_value_to_string(part)
+                row[count - 1] = part
         pt.add_row(row)
 
     print(encodeutils.safe_decode(pt.get_string()))
+
+
+def _encode(src):
+    """remove extra 'u' in PY2."""
+    if six.PY2 and isinstance(src, unicode):
+        return src.encode('utf-8')
+    return src
+
+
+def unicode_key_value_to_string(src):
+    """Recursively converts dictionary keys to strings."""
+    if isinstance(src, dict):
+        return dict((_encode(k),
+                    _encode(unicode_key_value_to_string(v)))
+                    for k, v in src.items())
+    if isinstance(src, list):
+        return [unicode_key_value_to_string(l) for l in src]
+    return _encode(src)
 
 
 def print_dict(d, max_column_width=80):
