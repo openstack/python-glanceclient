@@ -218,16 +218,21 @@ class Controller(object):
         return utils.IterableWithLength(body, content_length), resp
 
     @utils.add_req_id_to_object()
-    def upload(self, image_id, image_data, image_size=None, u_url=None):
+    def upload(self, image_id, image_data, image_size=None, u_url=None,
+               backend=None):
         """Upload the data for an image.
 
         :param image_id: ID of the image to upload data for.
         :param image_data: File-like object supplying the data to upload.
         :param image_size: Unused - present for backwards compatibility
         :param u_url: Upload url to upload the data to.
+        :param backend: Backend store to upload image to.
         """
         url = u_url or '/v2/images/%s/file' % image_id
         hdrs = {'Content-Type': 'application/octet-stream'}
+        if backend is not None:
+            hdrs['x-image-meta-store'] = backend
+
         body = image_data
         resp, body = self.http_client.put(url, headers=hdrs, data=body)
         return (resp, body), resp
@@ -236,6 +241,13 @@ class Controller(object):
     def get_import_info(self):
         """Get Import info from discovery endpoint."""
         url = '/v2/info/import'
+        resp, body = self.http_client.get(url)
+        return body, resp
+
+    @utils.add_req_id_to_object()
+    def get_stores_info(self):
+        """Get available stores info from discovery endpoint."""
+        url = '/v2/info/stores'
         resp, body = self.http_client.get(url)
         return body, resp
 
@@ -254,17 +266,22 @@ class Controller(object):
         return body, resp
 
     @utils.add_req_id_to_object()
-    def image_import(self, image_id, method='glance-direct', uri=None):
+    def image_import(self, image_id, method='glance-direct', uri=None,
+                     backend=None):
         """Import Image via method."""
+        headers = {}
         url = '/v2/images/%s/import' % image_id
         data = {'method': {'name': method}}
+        if backend is not None:
+            headers['x-image-meta-store'] = backend
+
         if uri:
             if method == 'web-download':
                 data['method']['uri'] = uri
             else:
                 raise exc.HTTPBadRequest('URI is only supported with method: '
                                          '"web-download"')
-        resp, body = self.http_client.post(url, data=data)
+        resp, body = self.http_client.post(url, data=data, headers=headers)
         return body, resp
 
     @utils.add_req_id_to_object()
@@ -277,7 +294,11 @@ class Controller(object):
     @utils.add_req_id_to_object()
     def create(self, **kwargs):
         """Create an image."""
+        headers = {}
         url = '/v2/images'
+        backend = kwargs.pop('backend', None)
+        if backend is not None:
+            headers['x-image-meta-store'] = backend
 
         image = self.model()
         for (key, value) in kwargs.items():
@@ -286,7 +307,7 @@ class Controller(object):
             except warlock.InvalidOperation as e:
                 raise TypeError(encodeutils.exception_to_unicode(e))
 
-        resp, body = self.http_client.post(url, data=image)
+        resp, body = self.http_client.post(url, headers=headers, data=image)
         # NOTE(esheffield): remove 'self' for now until we have an elegant
         # way to pass it into the model constructor without conflict
         body.pop('self', None)
