@@ -1,0 +1,14 @@
+---
+fixes:
+  - |
+    Bug 1766235_: Handle HTTP headers per RFC 8187
+
+    Previously the glanceclient encoded HTTP headers as UTF-8
+    bytes.  According to `RFC 8187`_, however, headers should be
+    encoded as 7-bit ASCII.  The glanceclient now sends all headers
+    as 7-bit ASCII.  It handles unicode strings by percent-encoding_
+    them before sending them in headers.
+
+    .. _1766235: https://code.launchpad.net/bugs/1766235
+    .. _RFC 8187: https://tools.ietf.org/html/rfc8187
+    .. _percent-encoding: https://tools.ietf.org/html/rfc3986#section-2.1
