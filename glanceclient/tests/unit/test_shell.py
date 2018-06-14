@@ -799,10 +799,10 @@ class ShellCacheSchemaTest(testutils.TestCase):
                          open.mock_calls[0])
         self.assertEqual(mock.call(self.cache_files[1], 'w'),
                          open.mock_calls[4])
-        self.assertEqual(mock.call().write(json.dumps(schema_odict)),
-                         open.mock_calls[2])
-        self.assertEqual(mock.call().write(json.dumps(schema_odict)),
-                         open.mock_calls[6])
+        actual = json.loads(open.mock_calls[2][1][0])
+        self.assertEqual(schema_odict, actual)
+        actual = json.loads(open.mock_calls[6][1][0])
+        self.assertEqual(schema_odict, actual)
 
     @mock.patch('six.moves.builtins.open', new=mock.mock_open(), create=True)
     @mock.patch('os.path.exists', side_effect=[True, False, False, False])
@@ -822,10 +822,10 @@ class ShellCacheSchemaTest(testutils.TestCase):
                          open.mock_calls[0])
         self.assertEqual(mock.call(self.cache_files[1], 'w'),
                          open.mock_calls[4])
-        self.assertEqual(mock.call().write(json.dumps(schema_odict)),
-                         open.mock_calls[2])
-        self.assertEqual(mock.call().write(json.dumps(schema_odict)),
-                         open.mock_calls[6])
+        actual = json.loads(open.mock_calls[2][1][0])
+        self.assertEqual(schema_odict, actual)
+        actual = json.loads(open.mock_calls[6][1][0])
+        self.assertEqual(schema_odict, actual)
 
     @mock.patch('six.moves.builtins.open', new=mock.mock_open(), create=True)
     @mock.patch('os.path.exists', return_value=True)
