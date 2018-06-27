@@ -53,4 +53,4 @@ See release notes and more at `<http://docs.openstack.org/python-glanceclient/>`
 .. _Source: https://git.openstack.org/cgit/openstack/python-glanceclient
 .. _How to Contribute: https://docs.openstack.org/infra/manual/developers.html
 .. _Specs: https://specs.openstack.org/openstack/glance-specs/
-
+.. _Release notes: https://docs.openstack.org/releasenotes/python-glanceclient
