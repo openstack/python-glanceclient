@@ -13,7 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import json
+import os
 import sys
+
+from oslo_utils import strutils
 
 from glanceclient._i18n import _
 from glanceclient.common import progressbar
@@ -25,8 +29,6 @@ from glanceclient.v2 import images
 from glanceclient.v2 import namespace_schema
 from glanceclient.v2 import resource_type_schema
 from glanceclient.v2 import tasks
-import json
-import os
 
 MEMBER_STATUS_VALUES = image_members.MEMBER_STATUS_VALUES
 IMAGE_SCHEMA = None
@@ -49,8 +51,17 @@ def get_image_schema():
 @utils.schema_args(get_image_schema, omit=['created_at', 'updated_at', 'file',
                                            'checksum', 'virtual_size', 'size',
                                            'status', 'schema', 'direct_url',
-                                           'locations', 'self',
+                                           'locations', 'self', 'os_hidden',
                                            'os_hash_value', 'os_hash_algo'])
+# NOTE(rosmaita): to make this option more intuitive for end users, we
+# do not use the Glance image property name 'os_hidden' here.  This means
+# we must include 'os_hidden' in the 'omit' list above and handle the
+# --hidden argument by hand
+@utils.arg('--hidden', type=strutils.bool_from_string, metavar='[True|False]',
+           default=None,
+           dest='os_hidden',
+           help=("If true, image will not appear in default image list "
+                 "response."))
 @utils.arg('--property', metavar="<key=value>", action='append',
            default=[], help=_('Arbitrary property to associate with image.'
                               ' May be used multiple times.'))
@@ -68,6 +79,7 @@ def do_image_create(gc, args):
     """Create a new image."""
     schema = gc.schemas.get("image")
     _args = [(x[0].replace('-', '_'), x[1]) for x in vars(args).items()]
+
     fields = dict(filter(lambda x: x[1] is not None and
                          (x[0] == 'property' or
                           schema.is_core_property(x[0])),
@@ -108,8 +120,14 @@ def do_image_create(gc, args):
 @utils.schema_args(get_image_schema, omit=['created_at', 'updated_at', 'file',
                                            'checksum', 'virtual_size', 'size',
                                            'status', 'schema', 'direct_url',
-                                           'locations', 'self',
+                                           'locations', 'self', 'os_hidden',
                                            'os_hash_value', 'os_hash_algo'])
+# NOTE: --hidden requires special handling; see note at do_image_create
+@utils.arg('--hidden', type=strutils.bool_from_string, metavar='[True|False]',
+           default=None,
+           dest='os_hidden',
+           help=("If true, image will not appear in default image list "
+                 "response."))
 @utils.arg('--property', metavar="<key=value>", action='append',
            default=[], help=_('Arbitrary property to associate with image.'
                               ' May be used multiple times.'))
@@ -152,6 +170,7 @@ def do_image_create_via_import(gc, args):
     """
     schema = gc.schemas.get("image")
     _args = [(x[0].replace('-', '_'), x[1]) for x in vars(args).items()]
+
     fields = dict(filter(lambda x: x[1] is not None and
                          (x[0] == 'property' or
                           schema.is_core_property(x[0])),
@@ -258,8 +277,14 @@ def _validate_backend(backend, gc):
                                            'updated_at', 'file', 'checksum',
                                            'virtual_size', 'size', 'status',
                                            'schema', 'direct_url', 'tags',
-                                           'self', 'os_hash_value',
-                                           'os_hash_algo'])
+                                           'self', 'os_hidden',
+                                           'os_hash_value', 'os_hash_algo'])
+# NOTE: --hidden requires special handling; see note at do_image_create
+@utils.arg('--hidden', type=strutils.bool_from_string, metavar='[True|False]',
+           default=None,
+           dest='os_hidden',
+           help=("If true, image will not appear in default image list "
+                 "response."))
 @utils.arg('--property', metavar="<key=value>", action='append',
            default=[], help=_('Arbitrary property to associate with image.'
                               ' May be used multiple times.'))
@@ -269,6 +294,7 @@ def do_image_update(gc, args):
     """Update an existing image."""
     schema = gc.schemas.get("image")
     _args = [(x[0].replace('-', '_'), x[1]) for x in vars(args).items()]
+
     fields = dict(filter(lambda x: x[1] is not None and
                          (x[0] in ['property', 'remove_property'] or
                           schema.is_core_property(x[0])),
@@ -314,10 +340,20 @@ def do_image_update(gc, args):
            help=(_("Comma-separated list of sort keys and directions in the "
                    "form of <key>[:<asc|desc>]. Valid keys: %s. OPTIONAL."
                    ) % ', '.join(images.SORT_KEY_VALUES)))
+@utils.arg('--hidden',
+           dest='os_hidden',
+           metavar='[True|False]',
+           default=None,
+           type=strutils.bool_from_string,
+           const=True,
+           nargs='?',
+           help="Filters results by hidden status. Default=None.")
 def do_image_list(gc, args):
     """List images you can access."""
-    filter_keys = ['visibility', 'member_status', 'owner', 'checksum', 'tag']
+    filter_keys = ['visibility', 'member_status', 'owner', 'checksum', 'tag',
+                   'os_hidden']
     filter_items = [(key, getattr(args, key)) for key in filter_keys]
+
     if args.properties:
         filter_properties = [prop.split('=', 1) for prop in args.properties]
         if any(len(pair) != 2 for pair in filter_properties):

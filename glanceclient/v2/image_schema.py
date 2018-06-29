@@ -213,6 +213,11 @@ _BASE_SCHEMA = {
             "type": "boolean",
             "description": "If true, image will not be deletable."
         },
+        "os_hidden": {
+            "type": "boolean",
+            "description": "If true, image will not appear in default "
+                           "image list response."
+        },
         "architecture": {
             "type": "string",
             "description": ("Operating system architecture as specified "
