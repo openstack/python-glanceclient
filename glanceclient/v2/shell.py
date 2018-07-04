@@ -247,7 +247,7 @@ def do_image_update(gc, args):
            help=_("Filter images by a user-defined image property."),
            action='append', dest='properties', default=[])
 @utils.arg('--checksum', metavar='<CHECKSUM>',
-           help=_('Displays images that match the checksum.'))
+           help=_('Displays images that match the MD5 checksum.'))
 @utils.arg('--tag', metavar='<TAG>', action='append',
            help=_("Filter images by a user-defined tag."))
 @utils.arg('--sort-key', default=[], action='append',

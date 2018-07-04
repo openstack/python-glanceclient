@@ -325,7 +325,7 @@ List images you can access.
   Filter images by a user-defined image property.
 
 ``--checksum <CHECKSUM>``
-  Displays images that match the checksum.
+  Displays images that match the MD5 checksum.
 
 ``--tag <TAG>``
   Filter images by a user-defined tag.
