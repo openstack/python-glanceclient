@@ -5,12 +5,12 @@
 In order to use the CLI, you must provide your OpenStack username,
 password, tenant, and auth endpoint. Use the corresponding
 configuration options (``--os-username``, ``--os-password``,
-``--os-tenant-id``, and ``--os-auth-url``) or set them in environment
+``--os-project-id``, and ``--os-auth-url``) or set them in environment
 variables::
 
     export OS_USERNAME=user
     export OS_PASSWORD=pass
-    export OS_TENANT_ID=b363706f891f48019483f8bd6503c54b
+    export OS_PROJECT_ID=b363706f891f48019483f8bd6503c54b
     export OS_AUTH_URL=http://auth.example.com:5000/v2.0
 
 The command line tool will attempt to reauthenticate using your

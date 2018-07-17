@@ -23,12 +23,12 @@ Service (Glance).
 
 In order to use the CLI, you must provide your OpenStack username, password,
 project (historically called tenant), and auth endpoint. You can use
-configuration options ``--os-username``, ``--os-password``, ``--os-tenant-id``,
+configuration options ``--os-username``, ``--os-password``, ``--os-project-id``,
 and ``--os-auth-url`` or set corresponding environment variables::
 
     export OS_USERNAME=user
     export OS_PASSWORD=pass
-    export OS_TENANT_ID=b363706f891f48019483f8bd6503c54b
+    export OS_PROJECT_ID=b363706f891f48019483f8bd6503c54b
     export OS_AUTH_URL=http://auth.example.com:5000/v2.0
 
 The command line tool will attempt to reauthenticate using provided credentials
