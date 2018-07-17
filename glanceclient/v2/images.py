@@ -125,7 +125,7 @@ class Controller(object):
                     if limit:
                         limit -= 1
                         if limit <= 0:
-                            raise StopIteration
+                            return
 
                 try:
                     next_url = body['next']
