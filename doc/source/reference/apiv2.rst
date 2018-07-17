@@ -1,6 +1,18 @@
 Python API v2
 =============
 
+These Identity Service credentials can be used to authenticate::
+
+    * auth_url: Identity Service endpoint for authorization
+    * username: name of user
+    * password: user's password
+    * project_{name|id}: name or ID of project
+
+Also the following parameters are required when using the Identity API v3::
+
+    * user_domain_{name|id}: name or ID of a domain the user belongs to
+    * project_domain_{name|id}: name or ID for a domain the project belongs to
+
 To create a client::
 
    from keystoneauth1 import loading
