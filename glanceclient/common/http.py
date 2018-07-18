@@ -42,6 +42,7 @@ LOG = logging.getLogger(__name__)
 USER_AGENT = 'python-glanceclient'
 CHUNKSIZE = 1024 * 64  # 64kB
 REQ_ID_HEADER = 'X-OpenStack-Request-ID'
+TOKEN_HEADERS = ['X-Auth-Token', 'X-Service-Token']
 
 
 def encode_headers(headers):
@@ -61,16 +62,20 @@ def encode_headers(headers):
     # Bug #1766235: According to RFC 8187, headers must be encoded as ASCII.
     # So we first %-encode them to get them into range < 128 and then turn
     # them into ASCII.
-    if six.PY2:
-        # incoming items may be unicode, so get them into something
-        # the py2 version of urllib can handle before percent encoding
-        encoded_dict = dict((urlparse.quote(encodeutils.safe_encode(h)),
-                             urlparse.quote(encodeutils.safe_encode(v)))
-                            for h, v in headers.items() if v is not None)
-    else:
-        encoded_dict = dict((urlparse.quote(h), urlparse.quote(v))
-                            for h, v in headers.items() if v is not None)
-
+    encoded_dict = {}
+    for h, v in headers.items():
+        if v is not None:
+            # if the item is token, do not quote '+' as well.
+            safe = '+/' if h in TOKEN_HEADERS else '/'
+            if six.PY2:
+                # incoming items may be unicode, so get them into something
+                # the py2 version of urllib can handle before percent encoding
+                key = urlparse.quote(encodeutils.safe_encode(h), safe)
+                value = urlparse.quote(encodeutils.safe_encode(v), safe)
+            else:
+                key = urlparse.quote(h, safe)
+                value = urlparse.quote(v, safe)
+            encoded_dict[key] = value
     return dict((encodeutils.safe_encode(h, encoding='ascii'),
                  encodeutils.safe_encode(v, encoding='ascii'))
                 for h, v in encoded_dict.items())

@@ -467,11 +467,11 @@ class TestClient(testtools.TestCase):
         headers = self.mock.last_request.headers
         self.assertEqual(refreshed_token, headers['X-Auth-Token'])
         # regression check for bug 1448080
-        unicode_token = u'ni\xf1o'
+        unicode_token = u'ni\xf1o+'
         http_client.auth_token = unicode_token
         http_client.get(path)
         headers = self.mock.last_request.headers
         # Bug #1766235: According to RFC 8187, headers must be
         # encoded as 7-bit ASCII, so expect to see only displayable
-        # chars in percent-encoding
-        self.assertEqual(b'ni%C3%B1o', headers['X-Auth-Token'])
+        # chars in percent-encoding. The '+' char will be not be changed.
+        self.assertEqual(b'ni%C3%B1o+', headers['X-Auth-Token'])
