@@ -191,6 +191,19 @@ _BASE_SCHEMA = {
             "description": "md5 hash of image contents.",
             "maxLength": 32
         },
+        "os_hash_algo": {
+            "readOnly": True,
+            "type": ["null", "string"],
+            "description": "Algorithm to calculate os_hash_value",
+            "maxLength": 32
+        },
+        "os_hash_value": {
+            "readOnly": True,
+            "type": ["null", "string"],
+            "description": "Hexdigest of the image contents using the "
+                           "algorithm specified by the os_hash_algo",
+            "maxLength": 32
+        },
         "created_at": {
             "readOnly": True,
             "type": "string",
