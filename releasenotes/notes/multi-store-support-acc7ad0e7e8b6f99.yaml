@@ -1,0 +1,35 @@
+---
+features:
+  - |
+    This release adds client support for the Glance feature
+    `multi-store backend support
+    <https://specs.openstack.org/openstack/glance-specs/specs/rocky/approved/glance/multi-store.html>`_,
+    introduced in the Rocky release.  This feature allows end users
+    to direct uploaded or imported image data to a particular backend
+    when a cloud operator has configured the Image Service to use multiple
+    backends.
+
+    The available backends are discoverable by making the ``stores-info``
+    call, which will return a list of available backends.  The list contains
+    an identifier (``id``) and a ``description`` of each available
+    backend.  The default backend is indicated in this response.
+
+    When uploading or importing an image, the glanceclient now accepts
+    the ``--backend`` option.  Its value must be the ``id`` of a backend
+    configured in the cloud against which the call is being made.  This
+    option may also be configured by exporting the ``OS_IMAGE_BACKEND``
+    environment variable with the ``id`` of a configured backend as its
+    value.
+
+    Some other points to keep in mind:
+
+    - If no backend is specified, the image data is stored in the
+      default backend.
+    - If the version of the Image Service API contacted does not
+      support multi-store backends, the option is silently ignored
+      and the image data is stored in the default backend.
+    - If an invalid backend identifier is used, the glanceclient will
+      exit with an error message.
+    - Backend identifiers and their meanings are unique to each cloud.
+      Consult the ``stores-info`` call and your cloud provider's
+      documentation for details.
