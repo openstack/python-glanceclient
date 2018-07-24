@@ -49,7 +49,8 @@ def get_image_schema():
 @utils.schema_args(get_image_schema, omit=['created_at', 'updated_at', 'file',
                                            'checksum', 'virtual_size', 'size',
                                            'status', 'schema', 'direct_url',
-                                           'locations', 'self'])
+                                           'locations', 'self',
+                                           'os_hash_value', 'os_hash_algo'])
 @utils.arg('--property', metavar="<key=value>", action='append',
            default=[], help=_('Arbitrary property to associate with image.'
                               ' May be used multiple times.'))
@@ -92,7 +93,8 @@ def do_image_create(gc, args):
 @utils.schema_args(get_image_schema, omit=['created_at', 'updated_at', 'file',
                                            'checksum', 'virtual_size', 'size',
                                            'status', 'schema', 'direct_url',
-                                           'locations', 'self'])
+                                           'locations', 'self',
+                                           'os_hash_value', 'os_hash_algo'])
 @utils.arg('--property', metavar="<key=value>", action='append',
            default=[], help=_('Arbitrary property to associate with image.'
                               ' May be used multiple times.'))
@@ -206,7 +208,8 @@ def do_image_create_via_import(gc, args):
                                            'updated_at', 'file', 'checksum',
                                            'virtual_size', 'size', 'status',
                                            'schema', 'direct_url', 'tags',
-                                           'self'])
+                                           'self', 'os_hash_value',
+                                           'os_hash_algo'])
 @utils.arg('--property', metavar="<key=value>", action='append',
            default=[], help=_('Arbitrary property to associate with image.'
                               ' May be used multiple times.'))

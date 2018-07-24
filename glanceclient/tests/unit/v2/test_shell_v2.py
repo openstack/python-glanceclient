@@ -400,6 +400,82 @@ class ShellV2Test(testtools.TestCase):
                 'id': 'pass', 'name': 'IMG-01', 'disk_format': 'vhd',
                 'container_format': 'bare'})
 
+    @mock.patch('sys.stdin', autospec=True)
+    def test_do_image_create_for_none_multi_hash(self, mock_stdin):
+        args = self._make_args({'name': 'IMG-01', 'disk_format': 'vhd',
+                                'container_format': 'bare',
+                                'file': None})
+        with mock.patch.object(self.gc.images, 'create') as mocked_create:
+            ignore_fields = ['self', 'access', 'file', 'schema']
+            expect_image = dict([(field, field) for field in ignore_fields])
+            expect_image['id'] = 'pass'
+            expect_image['name'] = 'IMG-01'
+            expect_image['disk_format'] = 'vhd'
+            expect_image['container_format'] = 'bare'
+            expect_image['os_hash_algo'] = None
+            expect_image['os_hash_value'] = None
+            mocked_create.return_value = expect_image
+
+            # Ensure that the test stdin is not considered
+            # to be supplying image data
+            mock_stdin.isatty = lambda: True
+            test_shell.do_image_create(self.gc, args)
+
+            mocked_create.assert_called_once_with(name='IMG-01',
+                                                  disk_format='vhd',
+                                                  container_format='bare')
+            utils.print_dict.assert_called_once_with({
+                'id': 'pass', 'name': 'IMG-01', 'disk_format': 'vhd',
+                'container_format': 'bare', 'os_hash_algo': None,
+                'os_hash_value': None})
+
+    def test_do_image_create_with_multihash(self):
+        self.mock_get_data_file.return_value = six.StringIO()
+        try:
+            with open(tempfile.mktemp(), 'w+') as f:
+                f.write('Some data here')
+                f.flush()
+                f.seek(0)
+                file_name = f.name
+            temp_args = {'name': 'IMG-01',
+                         'disk_format': 'vhd',
+                         'container_format': 'bare',
+                         'file': file_name,
+                         'progress': False}
+            args = self._make_args(temp_args)
+            with mock.patch.object(self.gc.images, 'create') as mocked_create:
+                with mock.patch.object(self.gc.images, 'get') as mocked_get:
+
+                    ignore_fields = ['self', 'access', 'schema']
+                    expect_image = dict([(field, field) for field in
+                                         ignore_fields])
+                    expect_image['id'] = 'pass'
+                    expect_image['name'] = 'IMG-01'
+                    expect_image['disk_format'] = 'vhd'
+                    expect_image['container_format'] = 'bare'
+                    expect_image['checksum'] = 'fake-checksum'
+                    expect_image['os_hash_algo'] = 'fake-hash_algo'
+                    expect_image['os_hash_value'] = 'fake-hash_value'
+                    mocked_create.return_value = expect_image
+                    mocked_get.return_value = expect_image
+
+                    test_shell.do_image_create(self.gc, args)
+
+                    temp_args.pop('file', None)
+                    mocked_create.assert_called_once_with(**temp_args)
+                    mocked_get.assert_called_once_with('pass')
+                    utils.print_dict.assert_called_once_with({
+                        'id': 'pass', 'name': 'IMG-01', 'disk_format': 'vhd',
+                        'container_format': 'bare',
+                        'checksum': 'fake-checksum',
+                        'os_hash_algo': 'fake-hash_algo',
+                        'os_hash_value': 'fake-hash_value'})
+        finally:
+            try:
+                os.remove(f.name)
+            except Exception:
+                pass
+
     def test_do_image_create_with_file(self):
         self.mock_get_data_file.return_value = six.StringIO()
         try:
