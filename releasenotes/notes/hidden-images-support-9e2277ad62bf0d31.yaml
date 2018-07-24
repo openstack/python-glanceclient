@@ -1,0 +1,23 @@
+---
+features:
+  - |
+    This release adds client support for the Glance "hidden images"
+    feature described in the spec `Operator maintained images lifecycle
+    <https://specs.openstack.org/openstack/glance-specs/specs/rocky/approved/glance/operator-image-workflow.html>`_.
+
+    Support in the glanceclient includes the following:
+
+    - The following calls now allow the specification of a ``--hidden``
+      option that takes a boolean value (``true`` or ``false``).  When
+      this option is omitted, the default value is ``false``.
+
+      * ``image-create``
+      * ``image-create-via-import``
+      * ``image-update``
+
+    - The ``image-list`` call now allows the specification of a
+      ``--hidden`` filter that takes a boolean value (``true`` or
+      ``false``).  By default, "hidden" images are not displayed
+      in the ``image-list`` response (that's why they're called
+      "hidden").  To see those images, use ``--hidden true`` as a
+      filter on the ``image-list`` call.
