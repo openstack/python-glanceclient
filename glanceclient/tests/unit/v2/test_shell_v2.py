@@ -95,6 +95,7 @@ class ShellV2Test(testtools.TestCase):
         # dict directly, it throws an AttributeError.
         class Args(object):
             def __init__(self, entries):
+                self.backend = None
                 self.__dict__.update(entries)
 
         return Args(args)
@@ -1178,7 +1179,8 @@ class ShellV2Test(testtools.TestCase):
             utils.get_data_file = mock.Mock(return_value='testfile')
             mocked_upload.return_value = None
             test_shell.do_image_upload(self.gc, args)
-            mocked_upload.assert_called_once_with('IMG-01', 'testfile', 1024)
+            mocked_upload.assert_called_once_with('IMG-01', 'testfile', 1024,
+                                                  backend=None)
 
     @mock.patch('glanceclient.common.utils.exit')
     def test_neg_image_import_not_available(self, mock_utils_exit):
@@ -1339,7 +1341,7 @@ class ShellV2Test(testtools.TestCase):
                     mock_import.return_value = None
                     test_shell.do_image_import(self.gc, args)
                     mock_import.assert_called_once_with(
-                        'IMG-01', 'glance-direct', None)
+                        'IMG-01', 'glance-direct', None, backend=None)
 
     def test_image_import_web_download(self):
         args = self._make_args(
@@ -1357,7 +1359,7 @@ class ShellV2Test(testtools.TestCase):
                     test_shell.do_image_import(self.gc, args)
                     mock_import.assert_called_once_with(
                         'IMG-01', 'web-download',
-                        'http://example.com/image.qcow')
+                        'http://example.com/image.qcow', backend=None)
 
     @mock.patch('glanceclient.common.utils.print_image')
     def test_image_import_no_print_image(self, mocked_utils_print_image):
@@ -1375,7 +1377,7 @@ class ShellV2Test(testtools.TestCase):
                     mock_import.return_value = None
                     test_shell.do_image_import(self.gc, args)
                     mock_import.assert_called_once_with(
-                        'IMG-02', 'glance-direct', None)
+                        'IMG-02', 'glance-direct', None, backend=None)
                     mocked_utils_print_image.assert_not_called()
 
     def test_image_download(self):
