@@ -5,7 +5,7 @@ features:
     introduced in Rocky.  This feature introduces two new image properties,
     ``os_hash_algo`` and ``os_hash_value``.  The content of ``os_hash_algo``
     is an algorithm identifier recognized by the Python ``hashlib`` library.
-    The ``os_hash_value``is a hexdigest of the image data computed using
+    The ``os_hash_value`` is a hexdigest of the image data computed using
     this algorithm.  The ``os_hash_algo`` is not end-user settable; it
     is configured in Glance by the cloud operator.  In the glanceclient,
     the feature is limited solely to the display of these values.
