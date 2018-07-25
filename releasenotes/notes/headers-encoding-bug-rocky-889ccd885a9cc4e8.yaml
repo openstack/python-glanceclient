@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    * Bug 1783290_: glance will return 401 error if the request token contains url code
+
+    .. _1783290: https://code.launchpad.net/bugs/1783290
