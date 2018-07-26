@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    The announcement that `Bug 1783290
+    <https://code.launchpad.net/bugs/1783290>`_ was fixed in the previous
+    release was premature.  That bug has been more thoroughly fixed in
+    this release.
