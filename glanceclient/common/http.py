@@ -66,7 +66,7 @@ def encode_headers(headers):
     for h, v in headers.items():
         if v is not None:
             # if the item is token, do not quote '+' as well.
-            safe = '+/' if h in TOKEN_HEADERS else '/'
+            safe = '=+/' if h in TOKEN_HEADERS else '/'
             if six.PY2:
                 # incoming items may be unicode, so get them into something
                 # the py2 version of urllib can handle before percent encoding
