@@ -8,8 +8,7 @@ Team and repository tags
           OpenStack Images API:
           "project:official",
           "stable:follows-policy",
-          "vulnerability:managed",
-          "team:diverse-affiliation".
+          "vulnerability:managed".
           Follow the link for an explanation of these tags.
 .. NOTE(rosmaita): the alt text above will have to be updated when
    additional tags are asserted for python-glanceclient.  (The SVG in the
@@ -27,9 +26,9 @@ Python bindings to the OpenStack Images API
 
 This is a client library for Glance built on the OpenStack Images API. It provides a Python API (the ``glanceclient`` module) and a command-line tool (``glance``). This library fully supports the v1 Images API, while support for the v2 API is in progress.
 
-Development takes place via the usual OpenStack processes as outlined in the `developer guide <http://docs.openstack.org/infra/manual/developers.html>`_.  The master repository is in `Git <https://git.openstack.org/cgit/openstack/python-glanceclient>`_.
+Development takes place via the usual OpenStack processes as outlined in the `developer guide <https://docs.openstack.org/infra/manual/developers.html>`_.  The master repository is in `Git <https://git.openstack.org/cgit/openstack/python-glanceclient>`_.
 
-See release notes and more at `<http://docs.openstack.org/python-glanceclient/>`_.
+See release notes and more at `<https://docs.openstack.org/python-glanceclient/latest/>`_.
 
 * License: Apache License, Version 2.0
 * `PyPi`_ - package installation
