@@ -25,8 +25,8 @@ BASE_SCHEMA = {
         "name": {
             "type": "string",
             "description": "Resource type names should be aligned with Heat "
-                           "resource types whenever possible: http://docs."
-                           "openstack.org/developer/heat/template_guide/"
+                           "resource types whenever possible: https://docs."
+                           "openstack.org/heat/latest/template_guide/"
                            "openstack.html",
             "maxLength": 80
 
