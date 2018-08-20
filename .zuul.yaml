@@ -10,7 +10,7 @@
       devstack_localrc:
         # TODO(rosmaita): remove when glanceclient tests no longer
         #   use the Images v1 API
-        GLANCE_V1_ENABLED: True
+        GLANCE_V1_ENABLED: true
         LIBS_FROM_GIT: python-glanceclient
         SWIFT_HASH: de63c7a09e4049599f2d00da1a355f89
       devstack_services:
@@ -35,9 +35,16 @@
     parent: glanceclient-dsvm-functional
     vars:
       devstack_localrc:
-        ENABLE_IDENTITY_V2: False
+        ENABLE_IDENTITY_V2: false
 
 - project:
+    templates:
+      - openstack-python-jobs
+      - openstack-python35-jobs
+      - release-notes-jobs
+      - publish-openstack-sphinx-docs
+      - check-requirements
+      - lib-forward-testing
     check:
       jobs:
         - glanceclient-dsvm-functional
@@ -46,3 +53,6 @@
     gate:
       jobs:
         - glanceclient-dsvm-functional
+    post:
+      jobs:
+        - openstack-tox-cover
