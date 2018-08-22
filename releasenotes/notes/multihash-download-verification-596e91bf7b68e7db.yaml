@@ -1,0 +1,41 @@
+---
+features:
+  - |
+    This release adds verification of image data downloads using the Glance
+    "multihash" feature introduced in the OpenStack Rocky release.  When
+    the ``os_hash_value`` is populated on an image, the glanceclient will
+    verify this value by computing the hexdigest of the downloaded data
+    using the algorithm specified by the image's ``os_hash_algo`` property.
+
+    Because the secure hash algorithm specified is determined by the cloud
+    provider, it is possible that the ``os_hash_algo`` may identify an
+    algorithm not available in the version of the Python ``hashlib`` library
+    used by the client.  In such a case the download will fail due to an
+    unsupported hash type.  In the event this occurs, a new option,
+    ``--allow-md5-fallback``, is introduced to the ``image-download`` command.
+    When present, this option will allow the glanceclient to use the legacy
+    MD5 checksum to verify the downloaded data if the secure hash algorithm
+    specified by the ``os_hash_algo`` image property is not supported.
+
+    Note that the fallback is *not* used in the case where the algorithm is
+    supported but the hexdigest of the downloaded data does not match the
+    ``os_hash_value``.  In that case the download fails regardless of whether
+    the option is present or not.
+
+    Whether using the ``--allow-md5-fallback`` option is a good idea depends
+    upon the user's expectations for the verification.  MD5 is an insecure
+    hashing algorithm, so if you are interested in making sure that the
+    downloaded image data has not been replaced by a datastream carefully
+    crafted to have the same MD5 checksum, then you should not use the
+    fallback.  If, however, you are using Glance in a trusted environment
+    and your interest is simply to verify that no bits have flipped during
+    the data transfer, the MD5 fallback is sufficient for that purpose.  That
+    being said, it is our recommendation that the multihash should be used
+    whenever possible.
+security:
+  - |
+    This release of the glanceclient uses the Glance "multihash" feature,
+    introduced in Rocky, to use a secure hashing algorithm to verify the
+    integrity of downloaded data.  Legacy images without the "multihash"
+    image properties (``os_hash_algo`` and ``os_hash_value``) are verified
+    using the MD5 ``checksum`` image property.

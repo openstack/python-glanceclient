@@ -1729,7 +1729,8 @@ class ShellV2Test(testtools.TestCase):
 
     def test_image_download(self):
         args = self._make_args(
-            {'id': 'IMG-01', 'file': 'test', 'progress': True})
+            {'id': 'IMG-01', 'file': 'test', 'progress': True,
+             'allow_md5_fallback': False})
 
         with mock.patch.object(self.gc.images, 'data') as mocked_data, \
                 mock.patch.object(utils, '_extract_request_id'):
@@ -1737,14 +1738,27 @@ class ShellV2Test(testtools.TestCase):
                 [c for c in 'abcdef'])
 
             test_shell.do_image_download(self.gc, args)
-            mocked_data.assert_called_once_with('IMG-01')
+            mocked_data.assert_called_once_with('IMG-01',
+                                                allow_md5_fallback=False)
+
+        # check that non-default value is being passed correctly
+        args.allow_md5_fallback = True
+        with mock.patch.object(self.gc.images, 'data') as mocked_data, \
+                mock.patch.object(utils, '_extract_request_id'):
+            mocked_data.return_value = utils.RequestIdProxy(
+                [c for c in 'abcdef'])
+
+            test_shell.do_image_download(self.gc, args)
+            mocked_data.assert_called_once_with('IMG-01',
+                                                allow_md5_fallback=True)
 
     @mock.patch.object(utils, 'exit')
     @mock.patch('sys.stdout', autospec=True)
     def test_image_download_no_file_arg(self, mocked_stdout,
                                         mocked_utils_exit):
         # Indicate that no file name was given as command line argument
-        args = self._make_args({'id': '1234', 'file': None, 'progress': False})
+        args = self._make_args({'id': '1234', 'file': None, 'progress': False,
+                                'allow_md5_fallback': False})
         # Indicate that no file is specified for output redirection
         mocked_stdout.isatty = lambda: True
         test_shell.do_image_download(self.gc, args)
@@ -1835,7 +1849,8 @@ class ShellV2Test(testtools.TestCase):
     def test_do_image_download_with_forbidden_id(self, mocked_print_err,
                                                  mocked_stdout):
         args = self._make_args({'id': 'IMG-01', 'file': None,
-                                'progress': False})
+                                'progress': False,
+                                'allow_md5_fallback': False})
         mocked_stdout.isatty = lambda: False
         with mock.patch.object(self.gc.images, 'data') as mocked_data:
             mocked_data.side_effect = exc.HTTPForbidden
@@ -1852,7 +1867,8 @@ class ShellV2Test(testtools.TestCase):
     @mock.patch.object(utils, 'print_err')
     def test_do_image_download_with_500(self, mocked_print_err, mocked_stdout):
         args = self._make_args({'id': 'IMG-01', 'file': None,
-                                'progress': False})
+                                'progress': False,
+                                'allow_md5_fallback': False})
         mocked_stdout.isatty = lambda: False
         with mock.patch.object(self.gc.images, 'data') as mocked_data:
             mocked_data.side_effect = exc.HTTPInternalServerError

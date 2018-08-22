@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import hashlib
 import json
 from oslo_utils import encodeutils
 from requests import codes
@@ -197,13 +198,39 @@ class Controller(object):
         return self._get(image_id)
 
     @utils.add_req_id_to_object()
-    def data(self, image_id, do_checksum=True):
+    def data(self, image_id, do_checksum=True, allow_md5_fallback=False):
         """Retrieve data of an image.
 
-        :param image_id:    ID of the image to download.
-        :param do_checksum: Enable/disable checksum validation.
-        :returns: An iterable body or None
+        When do_checksum is enabled, validation proceeds as follows:
+
+        1. if the image has a 'os_hash_value' property, the algorithm
+           specified in the image's 'os_hash_algo' property will be used
+           to validate against the 'os_hash_value' value.  If the
+           specified hash algorithm is not available AND allow_md5_fallback
+           is True, then continue to step #2
+        2. else if the image has a checksum property, MD5 is used to
+           validate against the 'checksum' value
+        3. else if the download response has a 'content-md5' header, MD5
+           is used to validate against the header value
+        4. if none of 1-3 obtain, the data is **not validated** (this is
+           compatible with legacy behavior)
+
+        :param image_id:    ID of the image to download
+        :param do_checksum: Enable/disable checksum validation
+        :param allow_md5_fallback:
+            Use the MD5 checksum for validation if the algorithm specified by
+            the image's 'os_hash_algo' property is not available
+        :returns: An iterable body or ``None``
         """
+        if do_checksum:
+            # doing this first to prevent race condition if image record
+            # is deleted during the image download
+            url = '/v2/images/%s' % image_id
+            resp, image_meta = self.http_client.get(url)
+            meta_checksum = image_meta.get('checksum', None)
+            meta_hash_value = image_meta.get('os_hash_value', None)
+            meta_hash_algo = image_meta.get('os_hash_algo', None)
+
         url = '/v2/images/%s/file' % image_id
         resp, body = self.http_client.get(url)
         if resp.status_code == codes.no_content:
@@ -212,8 +239,32 @@ class Controller(object):
         checksum = resp.headers.get('content-md5', None)
         content_length = int(resp.headers.get('content-length', 0))
 
-        if do_checksum and checksum is not None:
-            body = utils.integrity_iter(body, checksum)
+        check_md5sum = do_checksum
+        if do_checksum and meta_hash_value is not None:
+            try:
+                hasher = hashlib.new(str(meta_hash_algo))
+                body = utils.serious_integrity_iter(body,
+                                                    hasher,
+                                                    meta_hash_value)
+                check_md5sum = False
+            except ValueError as ve:
+                if (str(ve).startswith('unsupported hash type') and
+                        allow_md5_fallback):
+                    check_md5sum = True
+                else:
+                    raise
+
+        if do_checksum and check_md5sum:
+            if meta_checksum is not None:
+                body = utils.integrity_iter(body, meta_checksum)
+            elif checksum is not None:
+                body = utils.integrity_iter(body, checksum)
+            else:
+                # NOTE(rosmaita): this preserves legacy behavior to return the
+                # image data when checksumming is requested but there's no
+                # 'content-md5' header in the response.  Just want to make it
+                # clear that we're doing this on purpose.
+                pass
 
         return utils.IterableWithLength(body, content_length), resp
 
