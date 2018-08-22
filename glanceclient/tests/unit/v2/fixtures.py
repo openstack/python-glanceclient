@@ -14,6 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import hashlib
+
+
 UUID = "3fc2ba62-9a02-433e-b565-d493ffc69034"
 
 image_list_fixture = {
@@ -65,7 +68,9 @@ image_show_fixture = {
     "tags": [],
     "updated_at": "2015-07-24T12:18:13Z",
     "virtual_size": "null",
-    "visibility": "shared"
+    "visibility": "shared",
+    "os_hash_algo": "sha384",
+    "os_hash_value": hashlib.sha384(b'DATA').hexdigest()
 }
 
 image_create_fixture = {
