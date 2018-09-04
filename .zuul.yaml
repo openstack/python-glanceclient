@@ -70,6 +70,7 @@
 - job:
     name: glanceclient-tox-keystone-tips-base
     parent: tox
+    abstract: true
     description: Abstract job for glanceclient vs. keystone
     required-projects:
       - name: openstack/keystoneauth
@@ -93,6 +94,7 @@
 - job:
     name: glanceclient-tox-oslo-tips-base
     parent: tox
+    abstract: true
     description: Abstract job for glanceclient vs. oslo
     required-projects:
       - name: openstack/oslo.i18n
@@ -143,10 +145,26 @@
         - glanceclient-dsvm-functional
     periodic:
       jobs:
-        - glanceclient-tox-py27-keystone-tips
-        - glanceclient-tox-py35-keystone-tips
-        - glanceclient-tox-py27-oslo-tips
-        - glanceclient-tox-py35-oslo-tips
+        # NOTE(rosmaita): we only want the "tips" jobs to be run against
+        # master, hence the 'branches' qualifiers below.  Without them, when
+        # a stable branch is cut, the tests would be run against the stable
+        # branch as well, which is pointless because these libraries are
+        # frozen (more or less) in the stable branches.
+        #
+        # The "tips" jobs can be removed from the stable branch .zuul.yaml
+        # files if someone is so inclined, but that would require manual
+        # maintenance, so we do not do it by default.  Another option is
+        # to define these jobs in the openstack-infra/project-config repo.
+        # That would make us less agile in adjusting these tests, so we
+        # aren't doing that either.
+        - glanceclient-tox-py27-keystone-tips:
+            branches: master
+        - glanceclient-tox-py35-keystone-tips:
+            branches: master
+        - glanceclient-tox-py27-oslo-tips:
+            branches: master
+        - glanceclient-tox-py35-oslo-tips:
+            branches: master
     experimental:
       jobs:
         - glanceclient-dsvm-functional-py3
