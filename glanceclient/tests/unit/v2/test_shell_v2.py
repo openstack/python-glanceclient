@@ -1428,18 +1428,25 @@ class ShellV2Test(testtools.TestCase):
 
     def test_do_location_add(self):
         gc = self.gc
-        loc = {'url': 'http://foo.com/', 'metadata': {'foo': 'bar'}}
-        args = self._make_args({'id': 'pass',
-                                'url': loc['url'],
-                                'metadata': json.dumps(loc['metadata'])})
+        loc = {'url': 'http://foo.com/',
+               'metadata': {'foo': 'bar'},
+               'validation_data': {'checksum': 'csum',
+                                   'os_hash_algo': 'algo',
+                                   'os_hash_value': 'value'}}
+        args = {'id': 'pass',
+                'url': loc['url'],
+                'metadata': json.dumps(loc['metadata']),
+                'checksum': 'csum',
+                'hash_algo': 'algo',
+                'hash_value': 'value'}
         with mock.patch.object(gc.images, 'add_location') as mocked_addloc:
             expect_image = {'id': 'pass', 'locations': [loc]}
             mocked_addloc.return_value = expect_image
 
-            test_shell.do_location_add(self.gc, args)
-            mocked_addloc.assert_called_once_with('pass',
-                                                  loc['url'],
-                                                  loc['metadata'])
+            test_shell.do_location_add(self.gc, self._make_args(args))
+            mocked_addloc.assert_called_once_with(
+                'pass', loc['url'], loc['metadata'],
+                validation_data=loc['validation_data'])
             utils.print_dict.assert_called_once_with(expect_image)
 
     def test_do_location_delete(self):

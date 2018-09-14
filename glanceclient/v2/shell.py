@@ -725,16 +725,30 @@ def do_image_tag_delete(gc, args):
 @utils.arg('--metadata', metavar='<STRING>', default='{}',
            help=_('Metadata associated with the location. '
                   'Must be a valid JSON object (default: %(default)s)'))
+@utils.arg('--checksum', metavar='<STRING>',
+           help=_('md5 checksum of image contents'))
+@utils.arg('--hash-algo', metavar='<STRING>',
+           help=_('Multihash algorithm'))
+@utils.arg('--hash-value', metavar='<STRING>',
+           help=_('Multihash value'))
 @utils.arg('id', metavar='<IMAGE_ID>',
            help=_('ID of image to which the location is to be added.'))
 def do_location_add(gc, args):
     """Add a location (and related metadata) to an image."""
+    validation_data = {}
+    if args.checksum:
+        validation_data['checksum'] = args.checksum
+    if args.hash_algo:
+        validation_data['os_hash_algo'] = args.hash_algo
+    if args.hash_value:
+        validation_data['os_hash_value'] = args.hash_value
     try:
         metadata = json.loads(args.metadata)
     except ValueError:
         utils.exit('Metadata is not a valid JSON object.')
     else:
-        image = gc.images.add_location(args.id, args.url, metadata)
+        image = gc.images.add_location(args.id, args.url, metadata,
+                                       validation_data=validation_data)
         utils.print_dict(image)
 
 
