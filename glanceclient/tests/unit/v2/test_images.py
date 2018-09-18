@@ -14,6 +14,7 @@
 #    under the License.
 
 import errno
+import hashlib
 import mock
 import testtools
 
@@ -193,7 +194,13 @@ data_fixtures = {
             'A',
         ),
     },
-    '/v2/images/66fb18d6-db27-11e1-a1eb-080027cbe205/file': {
+    '/v2/images/5cc4bebc-db27-11e1-a1eb-080027cbe205': {
+        'GET': (
+            {},
+            {},
+        ),
+    },
+    '/v2/images/headeronly-db27-11e1-a1eb-080027cbe205/file': {
         'GET': (
             {
                 'content-md5': 'wrong'
@@ -201,12 +208,128 @@ data_fixtures = {
             'BB',
         ),
     },
-    '/v2/images/1b1c6366-dd57-11e1-af0f-02163e68b1d8/file': {
+    '/v2/images/headeronly-db27-11e1-a1eb-080027cbe205': {
+        'GET': (
+            {},
+            {},
+        ),
+    },
+    '/v2/images/chkonly-db27-11e1-a1eb-080027cbe205/file': {
+        'GET': (
+            {
+                'content-md5': 'wrong'
+            },
+            'BB',
+        ),
+    },
+    '/v2/images/chkonly-db27-11e1-a1eb-080027cbe205': {
+        'GET': (
+            {},
+            {
+                'checksum': 'wrong',
+            },
+        ),
+    },
+    '/v2/images/multihash-db27-11e1-a1eb-080027cbe205/file': {
+        'GET': (
+            {
+                'content-md5': 'wrong'
+            },
+            'BB',
+        ),
+    },
+    '/v2/images/multihash-db27-11e1-a1eb-080027cbe205': {
+        'GET': (
+            {},
+            {
+                'checksum': 'wrong',
+                'os_hash_algo': 'md5',
+                'os_hash_value': 'junk'
+            },
+        ),
+    },
+    '/v2/images/badalgo-db27-11e1-a1eb-080027cbe205/file': {
+        'GET': (
+            {
+                'content-md5': hashlib.md5(b'BB').hexdigest()
+            },
+            'BB',
+        ),
+    },
+    '/v2/images/badalgo-db27-11e1-a1eb-080027cbe205': {
+        'GET': (
+            {},
+            {
+                'checksum': hashlib.md5(b'BB').hexdigest(),
+                'os_hash_algo': 'not_an_algo',
+                'os_hash_value': 'whatever'
+            },
+        ),
+    },
+    '/v2/images/bad-multihash-value-good-checksum/file': {
+        'GET': (
+            {
+                'content-md5': hashlib.md5(b'GOODCHECKSUM').hexdigest()
+            },
+            'GOODCHECKSUM',
+        ),
+    },
+    '/v2/images/bad-multihash-value-good-checksum': {
+        'GET': (
+            {},
+            {
+                'checksum': hashlib.md5(b'GOODCHECKSUM').hexdigest(),
+                'os_hash_algo': 'sha512',
+                'os_hash_value': 'badmultihashvalue'
+            },
+        ),
+    },
+    '/v2/images/headeronly-dd57-11e1-af0f-02163e68b1d8/file': {
         'GET': (
             {
                 'content-md5': 'defb99e69a9f1f6e06f15006b1f166ae'
             },
             'CCC',
+        ),
+    },
+    '/v2/images/headeronly-dd57-11e1-af0f-02163e68b1d8': {
+        'GET': (
+            {},
+            {},
+        ),
+    },
+    '/v2/images/chkonly-dd57-11e1-af0f-02163e68b1d8/file': {
+        'GET': (
+            {
+                'content-md5': 'defb99e69a9f1f6e06f15006b1f166ae'
+            },
+            'CCC',
+        ),
+    },
+    '/v2/images/chkonly-dd57-11e1-af0f-02163e68b1d8': {
+        'GET': (
+            {},
+            {
+                'checksum': 'defb99e69a9f1f6e06f15006b1f166ae',
+            },
+        ),
+    },
+    '/v2/images/multihash-dd57-11e1-af0f-02163e68b1d8/file': {
+        'GET': (
+            {
+                'content-md5': 'defb99e69a9f1f6e06f15006b1f166ae'
+            },
+            'CCC',
+        ),
+    },
+    '/v2/images/multihash-dd57-11e1-af0f-02163e68b1d8': {
+        'GET': (
+            {},
+            {
+                'checksum': 'defb99e69a9f1f6e06f15006b1f166ae',
+                'os_hash_algo': 'sha384',
+                'os_hash_value': hashlib.sha384(b'CCC').hexdigest()
+            },
         ),
     },
     '/v2/images/87b634c1-f893-33c9-28a9-e5673c99239a/actions/reactivate': {
@@ -846,12 +969,11 @@ class TestController(testtools.TestCase):
         self.assertEqual('A', body)
 
     def test_data_with_wrong_checksum(self):
-        body = self.controller.data('66fb18d6-db27-11e1-a1eb-080027cbe205',
+        body = self.controller.data('headeronly-db27-11e1-a1eb-080027cbe205',
                                     do_checksum=False)
         body = ''.join([b for b in body])
         self.assertEqual('BB', body)
-
-        body = self.controller.data('66fb18d6-db27-11e1-a1eb-080027cbe205')
+        body = self.controller.data('headeronly-db27-11e1-a1eb-080027cbe205')
         try:
             body = ''.join([b for b in body])
             self.fail('data did not raise an error.')
@@ -860,15 +982,116 @@ class TestController(testtools.TestCase):
             msg = 'was 9d3d9048db16a7eee539e93e3618cbe7 expected wrong'
             self.assertIn(msg, str(e))
 
-    def test_data_with_checksum(self):
-        body = self.controller.data('1b1c6366-dd57-11e1-af0f-02163e68b1d8',
+        body = self.controller.data('chkonly-db27-11e1-a1eb-080027cbe205',
                                     do_checksum=False)
         body = ''.join([b for b in body])
-        self.assertEqual('CCC', body)
+        self.assertEqual('BB', body)
+        body = self.controller.data('chkonly-db27-11e1-a1eb-080027cbe205')
+        try:
+            body = ''.join([b for b in body])
+            self.fail('data did not raise an error.')
+        except IOError as e:
+            self.assertEqual(errno.EPIPE, e.errno)
+            msg = 'was 9d3d9048db16a7eee539e93e3618cbe7 expected wrong'
+            self.assertIn(msg, str(e))
 
-        body = self.controller.data('1b1c6366-dd57-11e1-af0f-02163e68b1d8')
+        body = self.controller.data('multihash-db27-11e1-a1eb-080027cbe205',
+                                    do_checksum=False)
         body = ''.join([b for b in body])
-        self.assertEqual('CCC', body)
+        self.assertEqual('BB', body)
+        body = self.controller.data('multihash-db27-11e1-a1eb-080027cbe205')
+        try:
+            body = ''.join([b for b in body])
+            self.fail('data did not raise an error.')
+        except IOError as e:
+            self.assertEqual(errno.EPIPE, e.errno)
+            msg = 'was 9d3d9048db16a7eee539e93e3618cbe7 expected junk'
+            self.assertIn(msg, str(e))
+
+        body = self.controller.data('badalgo-db27-11e1-a1eb-080027cbe205',
+                                    do_checksum=False)
+        body = ''.join([b for b in body])
+        self.assertEqual('BB', body)
+        try:
+            body = self.controller.data('badalgo-db27-11e1-a1eb-080027cbe205')
+            self.fail('bad os_hash_algo did not raise an error.')
+        except ValueError as e:
+            msg = 'unsupported hash type not_an_algo'
+            self.assertIn(msg, str(e))
+
+    def test_data_with_checksum(self):
+        for prefix in ['headeronly', 'chkonly', 'multihash']:
+            body = self.controller.data(prefix +
+                                        '-dd57-11e1-af0f-02163e68b1d8',
+                                        do_checksum=False)
+            body = ''.join([b for b in body])
+            self.assertEqual('CCC', body)
+
+            body = self.controller.data(prefix +
+                                        '-dd57-11e1-af0f-02163e68b1d8')
+            body = ''.join([b for b in body])
+            self.assertEqual('CCC', body)
+
+    def test_data_with_checksum_and_fallback(self):
+        # make sure the allow_md5_fallback option does not cause any
+        # incorrect behavior when fallback is not needed
+        for prefix in ['headeronly', 'chkonly', 'multihash']:
+            body = self.controller.data(prefix +
+                                        '-dd57-11e1-af0f-02163e68b1d8',
+                                        do_checksum=False,
+                                        allow_md5_fallback=True)
+            body = ''.join([b for b in body])
+            self.assertEqual('CCC', body)
+
+            body = self.controller.data(prefix +
+                                        '-dd57-11e1-af0f-02163e68b1d8',
+                                        allow_md5_fallback=True)
+            body = ''.join([b for b in body])
+            self.assertEqual('CCC', body)
+
+    def test_data_with_bad_hash_algo_and_fallback(self):
+        # shouldn't matter when do_checksum is False
+        body = self.controller.data('badalgo-db27-11e1-a1eb-080027cbe205',
+                                    do_checksum=False,
+                                    allow_md5_fallback=True)
+        body = ''.join([b for b in body])
+        self.assertEqual('BB', body)
+
+        # default value for do_checksum is True
+        body = self.controller.data('badalgo-db27-11e1-a1eb-080027cbe205',
+                                    allow_md5_fallback=True)
+        body = ''.join([b for b in body])
+        self.assertEqual('BB', body)
+
+    def test_neg_data_with_bad_hash_value_and_fallback_enabled(self):
+        # make sure download fails when good hash_algo but bad hash_value
+        # even when correct checksum is present regardless of
+        # allow_md5_fallback setting
+        body = self.controller.data('bad-multihash-value-good-checksum',
+                                    allow_md5_fallback=False)
+        try:
+            body = ''.join([b for b in body])
+            self.fail('bad os_hash_value did not raise an error.')
+        except IOError as e:
+            self.assertEqual(errno.EPIPE, e.errno)
+            msg = 'expected badmultihashvalue'
+            self.assertIn(msg, str(e))
+
+        body = self.controller.data('bad-multihash-value-good-checksum',
+                                    allow_md5_fallback=True)
+        try:
+            body = ''.join([b for b in body])
+            self.fail('bad os_hash_value did not raise an error.')
+        except IOError as e:
+            self.assertEqual(errno.EPIPE, e.errno)
+            msg = 'expected badmultihashvalue'
+            self.assertIn(msg, str(e))
+
+        # download should succeed when do_checksum is off, though
+        body = self.controller.data('bad-multihash-value-good-checksum',
+                                    do_checksum=False)
+        body = ''.join([b for b in body])
+        self.assertEqual('GOODCHECKSUM', body)
 
     def test_image_import(self):
         uri = 'http://example.com/image.qcow'
@@ -883,7 +1106,7 @@ class TestController(testtools.TestCase):
     def test_download_no_data(self):
         resp = utils.FakeResponse(headers={}, status_code=204)
         self.controller.controller.http_client.get = mock.Mock(
-            return_value=(resp, None))
+            return_value=(resp, {}))
         self.controller.data('image_id')
 
     def test_download_forbidden(self):

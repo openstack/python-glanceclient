@@ -965,7 +965,9 @@ class ShellTestRequests(testutils.TestCase):
             self.requests = self.useFixture(rm_fixture.Fixture())
             self.requests.get('http://example.com/v2/images/%s/file' % id,
                               headers=headers, raw=fake)
-
+            self.requests.get('http://example.com/v2/images/%s' % id,
+                              headers={'Content-type': 'application/json'},
+                              json=image_show_fixture)
             shell = openstack_shell.OpenStackImagesShell()
             argstr = ('--os-image-api-version 2 --os-auth-token faketoken '
                       '--os-image-url http://example.com '
