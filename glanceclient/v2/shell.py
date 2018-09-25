@@ -348,6 +348,13 @@ def do_image_update(gc, args):
            const=True,
            nargs='?',
            help="Filters results by hidden status. Default=None.")
+@utils.arg('--include-stores',
+           metavar='[True|False]',
+           default=None,
+           type=strutils.bool_from_string,
+           const=True,
+           nargs='?',
+           help="Print backend store id.")
 def do_image_list(gc, args):
     """List images you can access."""
     filter_keys = ['visibility', 'member_status', 'owner', 'checksum', 'tag',
@@ -383,6 +390,9 @@ def do_image_list(gc, args):
     if args.verbose:
         columns += ['Disk_format', 'Container_format', 'Size', 'Status',
                     'Owner']
+
+    if args.include_stores:
+        columns += ['Stores']
 
     images = gc.images.list(**kwargs)
     utils.print_list(images, columns)
