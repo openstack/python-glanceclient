@@ -66,7 +66,11 @@ def encode_headers(headers):
     for h, v in headers.items():
         if v is not None:
             # if the item is token, do not quote '+' as well.
-            safe = '=+/' if h in TOKEN_HEADERS else '/'
+            # NOTE(imacdonn): urlparse.quote() is intended for quoting the
+            # path part of a URL, but headers like x-image-meta-location
+            # include an entire URL. We should avoid encoding the colon in
+            # this case (bug #1788942)
+            safe = '=+/' if h in TOKEN_HEADERS else '/:'
             if six.PY2:
                 # incoming items may be unicode, so get them into something
                 # the py2 version of urllib can handle before percent encoding

@@ -216,7 +216,11 @@ class TestClient(testtools.TestCase):
 
     def test_headers_encoding(self):
         value = u'ni\xf1o'
-        headers = {"test": value, "none-val": None, "Name": "value"}
+        fake_location = b'http://web_server:80/images/fake.img'
+        headers = {"test": value,
+                   "none-val": None,
+                   "Name": "value",
+                   "x-image-meta-location": fake_location}
         encoded = http.encode_headers(headers)
         # Bug #1766235: According to RFC 8187, headers must be
         # encoded as 7-bit ASCII, so expect to see only displayable
@@ -225,6 +229,8 @@ class TestClient(testtools.TestCase):
         self.assertNotIn("none-val", encoded)
         self.assertNotIn(b"none-val", encoded)
         self.assertEqual(b"value", encoded[b"Name"])
+        # Bug #1788942: Colons in URL should not get percent-encoded
+        self.assertEqual(fake_location, encoded[b"x-image-meta-location"])
 
     @mock.patch('keystoneauth1.adapter.Adapter.request')
     def test_http_duplicate_content_type_headers(self, mock_ksarq):
