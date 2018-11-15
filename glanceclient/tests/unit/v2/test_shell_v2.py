@@ -264,6 +264,7 @@ class ShellV2Test(testtools.TestCase):
             'sort_dir': ['desc', 'asc'],
             'sort': None,
             'verbose': False,
+            'include_stores': False,
             'os_hidden': False
         }
         args = self._make_args(input)
@@ -286,6 +287,83 @@ class ShellV2Test(testtools.TestCase):
                                                 filters=exp_img_filters)
             utils.print_list.assert_called_once_with({}, ['ID', 'Name'])
 
+    def test_do_image_list_verbose(self):
+        input = {
+            'limit': None,
+            'page_size': 18,
+            'visibility': True,
+            'member_status': 'Fake',
+            'owner': 'test',
+            'checksum': 'fake_checksum',
+            'tag': 'fake tag',
+            'properties': [],
+            'sort_key': ['name', 'id'],
+            'sort_dir': ['desc', 'asc'],
+            'sort': None,
+            'verbose': True,
+            'include_stores': False,
+            'os_hidden': False
+        }
+        args = self._make_args(input)
+        with mock.patch.object(self.gc.images, 'list') as mocked_list:
+            mocked_list.return_value = {}
+
+            test_shell.do_image_list(self.gc, args)
+            utils.print_list.assert_called_once_with(
+                {}, ['ID', 'Name', 'Disk_format', 'Container_format',
+                     'Size', 'Status', 'Owner'])
+
+    def test_do_image_list_with_include_stores_true(self):
+        input = {
+            'limit': None,
+            'page_size': 18,
+            'visibility': True,
+            'member_status': 'Fake',
+            'owner': 'test',
+            'checksum': 'fake_checksum',
+            'tag': 'fake tag',
+            'properties': [],
+            'sort_key': ['name', 'id'],
+            'sort_dir': ['desc', 'asc'],
+            'sort': None,
+            'verbose': False,
+            'include_stores': True,
+            'os_hidden': False
+        }
+        args = self._make_args(input)
+        with mock.patch.object(self.gc.images, 'list') as mocked_list:
+            mocked_list.return_value = {}
+
+            test_shell.do_image_list(self.gc, args)
+            utils.print_list.assert_called_once_with(
+                {}, ['ID', 'Name', 'Stores'])
+
+    def test_do_image_list_verbose_with_include_stores_true(self):
+        input = {
+            'limit': None,
+            'page_size': 18,
+            'visibility': True,
+            'member_status': 'Fake',
+            'owner': 'test',
+            'checksum': 'fake_checksum',
+            'tag': 'fake tag',
+            'properties': [],
+            'sort_key': ['name', 'id'],
+            'sort_dir': ['desc', 'asc'],
+            'sort': None,
+            'verbose': True,
+            'include_stores': True,
+            'os_hidden': False
+        }
+        args = self._make_args(input)
+        with mock.patch.object(self.gc.images, 'list') as mocked_list:
+            mocked_list.return_value = {}
+
+            test_shell.do_image_list(self.gc, args)
+            utils.print_list.assert_called_once_with(
+                {}, ['ID', 'Name', 'Disk_format', 'Container_format',
+                     'Size', 'Status', 'Owner', 'Stores'])
+
     def test_do_image_list_with_hidden_true(self):
         input = {
             'limit': None,
@@ -300,6 +378,7 @@ class ShellV2Test(testtools.TestCase):
             'sort_dir': ['desc', 'asc'],
             'sort': None,
             'verbose': False,
+            'include_stores': False,
             'os_hidden': True
         }
         args = self._make_args(input)
@@ -336,6 +415,7 @@ class ShellV2Test(testtools.TestCase):
             'sort_dir': ['desc'],
             'sort': None,
             'verbose': False,
+            'include_stores': False,
             'os_hidden': False
         }
         args = self._make_args(input)
@@ -372,6 +452,7 @@ class ShellV2Test(testtools.TestCase):
             'sort_key': [],
             'sort_dir': [],
             'verbose': False,
+            'include_stores': False,
             'os_hidden': False
         }
         args = self._make_args(input)
@@ -408,6 +489,7 @@ class ShellV2Test(testtools.TestCase):
             'sort_dir': ['desc'],
             'sort': None,
             'verbose': False,
+            'include_stores': False,
             'os_hidden': False
         }
         args = self._make_args(input)
