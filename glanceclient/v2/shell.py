@@ -327,6 +327,9 @@ def do_image_update(gc, args):
            action='append', dest='properties', default=[])
 @utils.arg('--checksum', metavar='<CHECKSUM>',
            help=_('Displays images that match the MD5 checksum.'))
+@utils.arg('--hash', dest='os_hash_value', default=None,
+           metavar='<HASH_VALUE>',
+           help=_('Displays images that match the specified hash value.'))
 @utils.arg('--tag', metavar='<TAG>', action='append',
            help=_("Filter images by a user-defined tag."))
 @utils.arg('--sort-key', default=[], action='append',
@@ -358,7 +361,7 @@ def do_image_update(gc, args):
 def do_image_list(gc, args):
     """List images you can access."""
     filter_keys = ['visibility', 'member_status', 'owner', 'checksum', 'tag',
-                   'os_hidden']
+                   'os_hidden', 'os_hash_value']
     filter_items = [(key, getattr(args, key)) for key in filter_keys]
 
     if args.properties:

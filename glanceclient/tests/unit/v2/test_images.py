@@ -26,6 +26,10 @@ from glanceclient.v2 import images
 _CHKSUM = '93264c3edf5972c9f1cb309543d38a5c'
 _CHKSUM1 = '54264c3edf5972c9f1cb309453d38a46'
 
+_HASHVAL = '54264c3edf93264c3edf5972c9f1cb309543d38a5c5972c9f1cb309453d38a46'
+_HASHVAL1 = 'cb309543d38a5c5972c9f1cb309453d38a4654264c3edf93264c3edf5972c9f1'
+_HASHBAD = '93264c3edf597254264c3edf5972c9f1cb309453d38a46c9f1cb309543d38a5c'
+
 _TAG1 = 'power'
 _TAG2 = '64bit'
 
@@ -457,6 +461,41 @@ data_fixtures = {
             {'images': []},
         ),
     },
+    '/v2/images?limit=%d&os_hash_value=%s' % (images.DEFAULT_PAGE_SIZE,
+                                              _HASHVAL): {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': '3a4560a1-e585-443e-9b39-553b46ec92d1',
+                    'name': 'image-1',
+                }
+            ]},
+        ),
+    },
+    '/v2/images?limit=%d&os_hash_value=%s' % (images.DEFAULT_PAGE_SIZE,
+                                              _HASHVAL1): {
+        'GET': (
+            {},
+            {'images': [
+                {
+                    'id': '2a4560b2-e585-443e-9b39-553b46ec92d1',
+                    'name': 'image-1',
+                },
+                {
+                    'id': '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810',
+                    'name': 'image-2',
+                },
+            ]},
+        ),
+    },
+    '/v2/images?limit=%d&os_hash_value=%s' % (images.DEFAULT_PAGE_SIZE,
+                                              _HASHBAD): {
+        'GET': (
+            {},
+            {'images': []},
+        ),
+    },
     '/v2/images?limit=%d&tag=%s' % (images.DEFAULT_PAGE_SIZE, _TAG1): {
         'GET': (
             {},
@@ -751,6 +790,27 @@ class TestController(testtools.TestCase):
 
     def test_list_images_for_wrong_checksum(self):
         filters = {'filters': {'checksum': 'wrong'}}
+        images = self.controller.list(**filters)
+        self.assertEqual(0, len(images))
+
+    def test_list_images_for_hash_single_image(self):
+        fake_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
+        filters = {'filters': {'os_hash_value': _HASHVAL}}
+        images = self.controller.list(**filters)
+        self.assertEqual(1, len(images))
+        self.assertEqual('%s' % fake_id, images[0].id)
+
+    def test_list_images_for_hash_multiple_images(self):
+        fake_id1 = '2a4560b2-e585-443e-9b39-553b46ec92d1'
+        fake_id2 = '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810'
+        filters = {'filters': {'os_hash_value': _HASHVAL1}}
+        images = self.controller.list(**filters)
+        self.assertEqual(2, len(images))
+        self.assertEqual('%s' % fake_id1, images[0].id)
+        self.assertEqual('%s' % fake_id2, images[1].id)
+
+    def test_list_images_for_wrong_hash(self):
+        filters = {'filters': {'os_hash_value': _HASHBAD}}
         images = self.controller.list(**filters)
         self.assertEqual(0, len(images))
 

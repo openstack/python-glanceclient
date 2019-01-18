@@ -265,6 +265,7 @@ class ShellV2Test(testtools.TestCase):
             'sort': None,
             'verbose': False,
             'include_stores': False,
+            'os_hash_value': None,
             'os_hidden': False
         }
         args = self._make_args(input)
@@ -302,6 +303,7 @@ class ShellV2Test(testtools.TestCase):
             'sort': None,
             'verbose': True,
             'include_stores': False,
+            'os_hash_value': None,
             'os_hidden': False
         }
         args = self._make_args(input)
@@ -328,6 +330,7 @@ class ShellV2Test(testtools.TestCase):
             'sort': None,
             'verbose': False,
             'include_stores': True,
+            'os_hash_value': None,
             'os_hidden': False
         }
         args = self._make_args(input)
@@ -353,6 +356,7 @@ class ShellV2Test(testtools.TestCase):
             'sort': None,
             'verbose': True,
             'include_stores': True,
+            'os_hash_value': None,
             'os_hidden': False
         }
         args = self._make_args(input)
@@ -379,6 +383,7 @@ class ShellV2Test(testtools.TestCase):
             'sort': None,
             'verbose': False,
             'include_stores': False,
+            'os_hash_value': None,
             'os_hidden': True
         }
         args = self._make_args(input)
@@ -416,6 +421,7 @@ class ShellV2Test(testtools.TestCase):
             'sort': None,
             'verbose': False,
             'include_stores': False,
+            'os_hash_value': None,
             'os_hidden': False
         }
         args = self._make_args(input)
@@ -453,6 +459,7 @@ class ShellV2Test(testtools.TestCase):
             'sort_dir': [],
             'verbose': False,
             'include_stores': False,
+            'os_hash_value': None,
             'os_hidden': False
         }
         args = self._make_args(input)
@@ -490,6 +497,7 @@ class ShellV2Test(testtools.TestCase):
             'sort': None,
             'verbose': False,
             'include_stores': False,
+            'os_hash_value': None,
             'os_hidden': False
         }
         args = self._make_args(input)

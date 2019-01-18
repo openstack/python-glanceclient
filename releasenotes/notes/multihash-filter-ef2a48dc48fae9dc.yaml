@@ -1,0 +1,13 @@
+---
+features:
+  - |
+    For parity with the old ``checksum`` field, this release adds the
+    ability for CLI users to filter the image list based upon a particular
+    multihash value using the ``--hash <HASH_VALUE>`` option.  Issue the
+    command:
+
+    .. code-block:: none
+
+        glance help image-list
+
+    for more information.
