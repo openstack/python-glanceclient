@@ -36,6 +36,15 @@
         s-proxy: true
       # Hardcode glanceclient path so the job can be run on glance patches
       zuul_work_dir: src/git.openstack.org/openstack/python-glanceclient
+    irrelevant-files:
+      - ^doc/.*$
+      - ^releasenotes/.*$
+      - ^.*\.rst$
+      - ^(test-|)requirements.txt$
+      - ^lower-constraints.txt$
+      - ^setup.cfg$
+      - ^tox.ini$
+      - ^\.zuul\.yaml$
 
 - job:
     name: glanceclient-dsvm-functional
@@ -66,6 +75,15 @@
         s-proxy: true
       # Hardcode glanceclient path so the job can be run on glance patches
       zuul_work_dir: src/git.openstack.org/openstack/python-glanceclient
+    irrelevant-files:
+      - ^doc/.*$
+      - ^releasenotes/.*$
+      - ^.*\.rst$
+      - ^(test-|)requirements.txt$
+      - ^lower-constraints.txt$
+      - ^setup.cfg$
+      - ^tox.ini$
+      - ^\.zuul\.yaml$
 
 - job:
     name: glanceclient-tox-keystone-tips-base
