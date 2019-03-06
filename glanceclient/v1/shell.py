@@ -45,11 +45,11 @@ _bool_strict = functools.partial(strutils.bool_from_string, strict=True)
            help='Filter images to those that changed since the given time'
                 ', which will include the deleted images.')
 @utils.arg('--container-format', metavar='<CONTAINER_FORMAT>',
-           help='Filter images to those that have this container format. '
-                + CONTAINER_FORMATS)
+           help='Filter images to those that have this container format. ' +
+                CONTAINER_FORMATS)
 @utils.arg('--disk-format', metavar='<DISK_FORMAT>',
-           help='Filter images to those that have this disk format. '
-                + DISK_FORMATS)
+           help='Filter images to those that have this disk format. ' +
+                DISK_FORMATS)
 @utils.arg('--size-min', metavar='<SIZE>', type=int,
            help='Filter images to those with a size greater than this.')
 @utils.arg('--size-max', metavar='<SIZE>', type=int,
