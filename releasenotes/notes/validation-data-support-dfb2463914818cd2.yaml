@@ -3,7 +3,7 @@ features:
   - |
     Support for embedding validation data (checksum and multihash) when adding
     a location to an image. Requires the Stein release server-side.
-    
+
     The ``glance.images.add_location()`` method now accepts an optional
     argument ``validation_data``, in the form of a dictionary containing
     ``checksum``, ``os_hash_algo`` and ``os_hash_value``.

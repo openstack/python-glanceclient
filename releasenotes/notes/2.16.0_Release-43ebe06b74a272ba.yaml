@@ -1,0 +1,12 @@
+---
+prelude: >
+  This version of python-glanceclient adds Python 3.6 classifier and gating
+  on Python 3.7 environment.
+fixes:
+  - |
+    * Bug 1788271_: Add image-list filter for multihash
+    * Bug 1598714_: Remove redundant information from error message
+
+    .. _1788271: https://code.launchpad.net/bugs/1788271
+    .. _1598714: https://code.launchpad.net/bugs/1598714
+
