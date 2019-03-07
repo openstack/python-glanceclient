@@ -432,7 +432,7 @@ class Controller(object):
                                             data=json.dumps(patch_body))
         return (resp, body), resp
 
-    def add_location(self, image_id, url, metadata):
+    def add_location(self, image_id, url, metadata, validation_data=None):
         """Add a new location entry to an image's list of locations.
 
         It is an error to add a URL that is already present in the list of
@@ -441,10 +441,13 @@ class Controller(object):
         :param image_id: ID of image to which the location is to be added.
         :param url: URL of the location to add.
         :param metadata: Metadata associated with the location.
+        :param validation_data: Validation data for the image.
         :returns: The updated image
         """
         add_patch = [{'op': 'add', 'path': '/locations/-',
                       'value': {'url': url, 'metadata': metadata}}]
+        if validation_data:
+            add_patch[0]['value']['validation_data'] = validation_data
         response = self._send_image_update_request(image_id, add_patch)
         # Get request id from the above update request and pass the same to
         # following get request
