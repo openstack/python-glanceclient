@@ -27,7 +27,7 @@
         s-object: true
         s-proxy: true
       # Hardcode glanceclient path so the job can be run on glance patches
-      zuul_work_dir: src/git.openstack.org/openstack/python-glanceclient
+      zuul_work_dir: src/opendev.org/openstack/python-glanceclient
 
 - job:
     name: glanceclient-dsvm-functional-identity-v3-only
