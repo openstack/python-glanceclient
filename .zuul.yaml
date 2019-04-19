@@ -35,7 +35,7 @@
         s-object: true
         s-proxy: true
       # Hardcode glanceclient path so the job can be run on glance patches
-      zuul_work_dir: src/git.openstack.org/openstack/python-glanceclient
+      zuul_work_dir: src/opendev.org/openstack/python-glanceclient
     irrelevant-files:
       - ^doc/.*$
       - ^releasenotes/.*$
@@ -74,7 +74,7 @@
         s-object: true
         s-proxy: true
       # Hardcode glanceclient path so the job can be run on glance patches
-      zuul_work_dir: src/git.openstack.org/openstack/python-glanceclient
+      zuul_work_dir: src/opendev.org/openstack/python-glanceclient
     irrelevant-files:
       - ^doc/.*$
       - ^releasenotes/.*$
@@ -173,7 +173,7 @@
         # The "tips" jobs can be removed from the stable branch .zuul.yaml
         # files if someone is so inclined, but that would require manual
         # maintenance, so we do not do it by default.  Another option is
-        # to define these jobs in the openstack-infra/project-config repo.
+        # to define these jobs in the openstack/project-config repo.
         # That would make us less agile in adjusting these tests, so we
         # aren't doing that either.
         - glanceclient-tox-py27-keystone-tips:
