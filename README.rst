@@ -26,7 +26,7 @@ Python bindings to the OpenStack Images API
 
 This is a client library for Glance built on the OpenStack Images API. It provides a Python API (the ``glanceclient`` module) and a command-line tool (``glance``). This library fully supports the v1 Images API, while support for the v2 API is in progress.
 
-Development takes place via the usual OpenStack processes as outlined in the `developer guide <https://docs.openstack.org/infra/manual/developers.html>`_.  The master repository is in `Git <https://git.openstack.org/cgit/openstack/python-glanceclient>`_.
+Development takes place via the usual OpenStack processes as outlined in the `developer guide <https://docs.openstack.org/infra/manual/developers.html>`_.  The master repository is in `Git <https://opendev.org/openstack/python-glanceclient>`_.
 
 See release notes and more at `<https://docs.openstack.org/python-glanceclient/latest/>`_.
 
@@ -45,7 +45,7 @@ See release notes and more at `<https://docs.openstack.org/python-glanceclient/l
 .. _Launchpad project: https://launchpad.net/python-glanceclient
 .. _Blueprints: https://blueprints.launchpad.net/python-glanceclient
 .. _Bugs: https://bugs.launchpad.net/python-glanceclient
-.. _Source: https://git.openstack.org/cgit/openstack/python-glanceclient
+.. _Source: https://opendev.org/openstack/python-glanceclient
 .. _How to Contribute: https://docs.openstack.org/infra/manual/developers.html
 .. _Specs: https://specs.openstack.org/openstack/glance-specs/
 .. _Release notes: https://docs.openstack.org/releasenotes/python-glanceclient

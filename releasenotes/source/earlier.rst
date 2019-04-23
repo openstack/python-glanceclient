@@ -107,14 +107,14 @@ A lot of effort has been invested to make the transition as smooth as possible, 
 * 5e85d61 cleanup openstack-common.conf and sync updated files
 * 1432701_: Add parameter 'changes-since' for image-list of v1
 
-.. _remcustssl: https://review.openstack.org/#/c/187674
+.. _remcustssl: https://review.opendev.org/#/c/187674
 .. _1309272: https://bugs.launchpad.net/python-glanceclient/+bug/1309272
 .. _1481729: https://bugs.launchpad.net/python-glanceclient/+bug/1481729
 .. _1477910: https://bugs.launchpad.net/python-glanceclient/+bug/1477910
 .. _1475769: https://bugs.launchpad.net/python-glanceclient/+bug/1475769
 .. _1479020: https://bugs.launchpad.net/python-glanceclient/+bug/1479020
 .. _1433637: https://bugs.launchpad.net/python-glanceclient/+bug/1433637
-.. _metatags: https://review.openstack.org/#/c/179674/
+.. _metatags: https://review.opendev.org/#/c/179674/
 .. _1472234: https://bugs.launchpad.net/python-glanceclient/+bug/1472234
 .. _1473454: https://bugs.launchpad.net/python-cinderclient/+bug/1473454
 .. _1468485: https://bugs.launchpad.net/python-glanceclient/+bug/1468485
