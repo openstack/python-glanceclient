@@ -71,8 +71,8 @@ def get_image_schema():
                   'passed to the client via stdin.'))
 @utils.arg('--progress', action='store_true', default=False,
            help=_('Show upload progress bar.'))
-@utils.arg('--backend', metavar='<STORE>',
-           default=utils.env('OS_IMAGE_BACKEND', default=None),
+@utils.arg('--store', metavar='<STORE>',
+           default=utils.env('OS_IMAGE_STORE', default=None),
            help='Backend store to upload image to.')
 @utils.on_data_require_fields(DATA_FIELDS)
 def do_image_create(gc, args):
@@ -90,12 +90,12 @@ def do_image_create(gc, args):
         key, value = datum.split('=', 1)
         fields[key] = value
 
-    backend = args.backend
+    backend = args.store
 
     file_name = fields.pop('file', None)
     using_stdin = not sys.stdin.isatty()
-    if args.backend and not (file_name or using_stdin):
-        utils.exit("--backend option should only be provided with --file "
+    if args.store and not (file_name or using_stdin):
+        utils.exit("--store option should only be provided with --file "
                    "option or stdin.")
 
     if backend:
@@ -108,7 +108,7 @@ def do_image_create(gc, args):
     image = gc.images.create(**fields)
     try:
         if utils.get_data_file(args) is not None:
-            backend = fields.get('backend', None)
+            backend = fields.get('store', None)
             args.id = image['id']
             args.size = None
             do_image_upload(gc, args)
@@ -147,8 +147,8 @@ def do_image_create(gc, args):
                   'record if no import-method and no data is supplied'))
 @utils.arg('--uri', metavar='<IMAGE_URL>', default=None,
            help=_('URI to download the external image.'))
-@utils.arg('--backend', metavar='<STORE>',
-           default=utils.env('OS_IMAGE_BACKEND', default=None),
+@utils.arg('--store', metavar='<STORE>',
+           default=utils.env('OS_IMAGE_STORE', default=None),
            help='Backend store to upload image to.')
 @utils.on_data_require_fields(DATA_FIELDS)
 def do_image_create_via_import(gc, args):
@@ -198,8 +198,8 @@ def do_image_create_via_import(gc, args):
 
     # determine if backend is valid
     backend = None
-    if args.backend:
-        backend = args.backend
+    if args.store:
+        backend = args.store
         _validate_backend(backend, gc)
 
     # make sure we have all and only correct inputs for the requested method
@@ -209,7 +209,7 @@ def do_image_create_via_import(gc, args):
                        "method.")
     if args.import_method == 'glance-direct':
         if backend and not (file_name or using_stdin):
-            utils.exit("--backend option should only be provided with --file "
+            utils.exit("--store option should only be provided with --file "
                        "option or stdin for the glance-direct import method.")
         if args.uri:
             utils.exit("You cannot specify a --uri with the glance-direct "
@@ -225,7 +225,7 @@ def do_image_create_via_import(gc, args):
                        "for the glance-direct import method.")
     if args.import_method == 'web-download':
         if backend and not args.uri:
-            utils.exit("--backend option should only be provided with --uri "
+            utils.exit("--store option should only be provided with --uri "
                        "option for the web-download import method.")
         if not args.uri:
             utils.exit("URI is required for web-download import method. "
@@ -267,7 +267,7 @@ def _validate_backend(backend, gc):
                 break
 
         if not valid_backend:
-            utils.exit("Backend '%s' is not valid for this cloud. Valid "
+            utils.exit("Store '%s' is not valid for this cloud. Valid "
                        "values can be retrieved with stores-info command." %
                        backend)
 
@@ -559,14 +559,14 @@ def do_image_download(gc, args):
            help=_('Show upload progress bar.'))
 @utils.arg('id', metavar='<IMAGE_ID>',
            help=_('ID of image to upload data to.'))
-@utils.arg('--backend', metavar='<STORE>',
-           default=utils.env('OS_IMAGE_BACKEND', default=None),
+@utils.arg('--store', metavar='<STORE>',
+           default=utils.env('OS_IMAGE_STORE', default=None),
            help='Backend store to upload image to.')
 def do_image_upload(gc, args):
     """Upload data for a specific image."""
     backend = None
-    if args.backend:
-        backend = args.backend
+    if args.store:
+        backend = args.store
         # determine if backend is valid
         _validate_backend(backend, gc)
 
@@ -614,14 +614,14 @@ def do_image_stage(gc, args):
            help=_('URI to download the external image.'))
 @utils.arg('id', metavar='<IMAGE_ID>',
            help=_('ID of image to import.'))
-@utils.arg('--backend', metavar='<STORE>',
-           default=utils.env('OS_IMAGE_BACKEND', default=None),
+@utils.arg('--store', metavar='<STORE>',
+           default=utils.env('OS_IMAGE_STORE', default=None),
            help='Backend store to upload image to.')
 def do_image_import(gc, args):
     """Initiate the image import taskflow."""
     backend = None
-    if args.backend:
-        backend = args.backend
+    if args.store:
+        backend = args.store
         # determine if backend is valid
         _validate_backend(backend, gc)
 

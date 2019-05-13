@@ -95,7 +95,7 @@ class ShellV2Test(testtools.TestCase):
         # dict directly, it throws an AttributeError.
         class Args(object):
             def __init__(self, entries):
-                self.backend = None
+                self.store = None
                 self.__dict__.update(entries)
 
         return Args(args)
@@ -782,9 +782,9 @@ class ShellV2Test(testtools.TestCase):
     @mock.patch('glanceclient.common.utils.exit')
     @mock.patch('os.access')
     @mock.patch('sys.stdin', autospec=True)
-    def test_neg_do_image_create_no_file_and_stdin_with_backend(
+    def test_neg_do_image_create_no_file_and_stdin_with_store(
             self, mock_stdin, mock_access, mock_utils_exit):
-        expected_msg = ('--backend option should only be provided with --file '
+        expected_msg = ('--store option should only be provided with --file '
                         'option or stdin.')
         mock_utils_exit.side_effect = self._mock_utils_exit
         mock_stdin.isatty = lambda: True
@@ -792,7 +792,7 @@ class ShellV2Test(testtools.TestCase):
         args = self._make_args({'name': 'IMG-01',
                                 'property': ['myprop=myval'],
                                 'file': None,
-                                'backend': 'file1',
+                                'store': 'file1',
                                 'container_format': 'bare',
                                 'disk_format': 'qcow2'})
 
@@ -805,16 +805,16 @@ class ShellV2Test(testtools.TestCase):
         mock_utils_exit.assert_called_once_with(expected_msg)
 
     @mock.patch('glanceclient.common.utils.exit')
-    def test_neg_do_image_create_invalid_backend(
+    def test_neg_do_image_create_invalid_store(
             self, mock_utils_exit):
-        expected_msg = ("Backend 'dummy' is not valid for this cloud. "
+        expected_msg = ("Store 'dummy' is not valid for this cloud. "
                         "Valid values can be retrieved with stores-info "
                         "command.")
         mock_utils_exit.side_effect = self._mock_utils_exit
         args = self._make_args({'name': 'IMG-01',
                                 'property': ['myprop=myval'],
                                 'file': "somefile.txt",
-                                'backend': 'dummy',
+                                'store': 'dummy',
                                 'container_format': 'bare',
                                 'disk_format': 'qcow2'})
 
@@ -873,13 +873,13 @@ class ShellV2Test(testtools.TestCase):
     @mock.patch('glanceclient.common.utils.exit')
     @mock.patch('os.access')
     @mock.patch('sys.stdin', autospec=True)
-    def test_neg_image_create_via_import_no_file_and_stdin_with_backend(
+    def test_neg_image_create_via_import_no_file_and_stdin_with_store(
             self, mock_stdin, mock_access, mock_utils_exit):
-        expected_msg = ('--backend option should only be provided with --file '
+        expected_msg = ('--store option should only be provided with --file '
                         'option or stdin for the glance-direct import method.')
         my_args = self.base_args.copy()
         my_args['import_method'] = 'glance-direct'
-        my_args['backend'] = 'file1'
+        my_args['store'] = 'file1'
         args = self._make_args(my_args)
 
         mock_stdin.isatty = lambda: True
@@ -900,13 +900,13 @@ class ShellV2Test(testtools.TestCase):
 
     @mock.patch('glanceclient.common.utils.exit')
     @mock.patch('sys.stdin', autospec=True)
-    def test_neg_image_create_via_import_no_uri_with_backend(
+    def test_neg_image_create_via_import_no_uri_with_store(
             self, mock_stdin, mock_utils_exit):
-        expected_msg = ('--backend option should only be provided with --uri '
+        expected_msg = ('--store option should only be provided with --uri '
                         'option for the web-download import method.')
         my_args = self.base_args.copy()
         my_args['import_method'] = 'web-download'
-        my_args['backend'] = 'file1'
+        my_args['store'] = 'file1'
         args = self._make_args(my_args)
         mock_utils_exit.side_effect = self._mock_utils_exit
         with mock.patch.object(self.gc.images,
@@ -925,14 +925,14 @@ class ShellV2Test(testtools.TestCase):
     @mock.patch('glanceclient.common.utils.exit')
     @mock.patch('os.access')
     @mock.patch('sys.stdin', autospec=True)
-    def test_neg_image_create_via_import_invalid_backend(
+    def test_neg_image_create_via_import_invalid_store(
             self, mock_stdin, mock_access, mock_utils_exit):
-        expected_msg = ("Backend 'dummy' is not valid for this cloud. "
+        expected_msg = ("Store 'dummy' is not valid for this cloud. "
                         "Valid values can be retrieved with stores-info"
                         " command.")
         my_args = self.base_args.copy()
         my_args['import_method'] = 'glance-direct'
-        my_args['backend'] = 'dummy'
+        my_args['store'] = 'dummy'
         args = self._make_args(my_args)
 
         mock_stdin.isatty = lambda: True
@@ -1576,15 +1576,15 @@ class ShellV2Test(testtools.TestCase):
                                                   backend=None)
 
     @mock.patch('glanceclient.common.utils.exit')
-    def test_image_upload_invalid_backend(self, mock_utils_exit):
-        expected_msg = ("Backend 'dummy' is not valid for this cloud. "
+    def test_image_upload_invalid_store(self, mock_utils_exit):
+        expected_msg = ("Store 'dummy' is not valid for this cloud. "
                         "Valid values can be retrieved with stores-info "
                         "command.")
         mock_utils_exit.side_effect = self._mock_utils_exit
 
         args = self._make_args(
             {'id': 'IMG-01', 'file': 'test', 'size': 1024, 'progress': False,
-             'backend': 'dummy'})
+             'store': 'dummy'})
 
         with mock.patch.object(self.gc.images,
                                'get_stores_info') as mock_stores_info:
@@ -1743,15 +1743,15 @@ class ShellV2Test(testtools.TestCase):
         mock_utils_exit.assert_called_once_with(expected_msg)
 
     @mock.patch('glanceclient.common.utils.exit')
-    def test_image_import_invalid_backend(self, mock_utils_exit):
-        expected_msg = ("Backend 'dummy' is not valid for this cloud. "
+    def test_image_import_invalid_store(self, mock_utils_exit):
+        expected_msg = ("Store 'dummy' is not valid for this cloud. "
                         "Valid values can be retrieved with stores-info "
                         "command.")
         mock_utils_exit.side_effect = self._mock_utils_exit
 
         args = self._make_args(
             {'id': 'IMG-01', 'import_method': 'glance-direct', 'uri': None,
-             'backend': 'dummy'})
+             'store': 'dummy'})
 
         with mock.patch.object(self.gc.images, 'get') as mocked_get:
             with mock.patch.object(self.gc.images,
