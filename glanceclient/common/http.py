@@ -270,6 +270,7 @@ class HTTPClient(_BaseHTTPClient):
                                         conn_url,
                                         data=data,
                                         headers=headers,
+                                        timeout=self.timeout,
                                         **kwargs)
         except requests.exceptions.Timeout as e:
             message = ("Error communicating with %(url)s: %(e)s" %
