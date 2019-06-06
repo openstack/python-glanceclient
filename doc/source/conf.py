@@ -84,7 +84,6 @@ html_theme_path = [openstackdocstheme.get_html_theme_path()]
 # Output file base name for HTML help builder.
 htmlhelp_basename = '%sdoc' % project
 
-html_last_updated_fmt = '%Y-%m-%d %H:%M'
 
 # -- Options for man page output ----------------------------------------------
 
