@@ -28,10 +28,10 @@ import uuid
 
 import six
 
-if os.name == 'nt':
-    import msvcrt
-else:
-    msvcrt = None
+if os.name == 'nt':  # noqa
+    import msvcrt  # noqa
+else:  # noqa
+    msvcrt = None  # noqa
 
 from oslo_utils import encodeutils
 from oslo_utils import strutils

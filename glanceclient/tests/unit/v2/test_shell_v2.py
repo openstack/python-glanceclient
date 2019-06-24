@@ -57,7 +57,7 @@ def schema_args(schema_getter, omit=None):
     return original_schema_args(my_schema_getter, omit)
 utils.schema_args = schema_args
 
-from glanceclient.v2 import shell as test_shell
+from glanceclient.v2 import shell as test_shell  # noqa
 
 # Return original decorator.
 utils.schema_args = original_schema_args

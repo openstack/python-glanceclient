@@ -334,8 +334,8 @@ class ShellInvalidEndpointandParameterTest(utils.TestCase):
             e = self.assertRaises(exc.CommandError, self.run_command,
                                   '--os-image-api-version 1 image-create ' +
                                   origin + ' fake_src --container-format bare')
-            self.assertEqual('error: Must provide --disk-format when using '
-                             + origin + '.', e.message)
+            self.assertEqual('error: Must provide --disk-format when using ' +
+                             origin + '.', e.message)
 
     @mock.patch('sys.stderr')
     def test_image_create_missing_container_format(self, __):
@@ -536,8 +536,8 @@ class ShellStdinHandlingTests(testtools.TestCase):
         self._do_update()
 
         self.assertTrue(
-            'data' not in self.collected_args[1]
-            or self.collected_args[1]['data'] is None
+            'data' not in self.collected_args[1] or
+            self.collected_args[1]['data'] is None
         )
 
     def test_image_update_opened_stdin(self):
