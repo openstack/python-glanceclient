@@ -511,7 +511,7 @@ def do_stores_info(gc, args):
                   'available on the client, the download will fail. Use this '
                   'flag to indicate that in such a case the legacy MD5 image '
                   'checksum should be used to validate the downloaded data. '
-                  'You can also set the enviroment variable '
+                  'You can also set the environment variable '
                   'OS_IMAGE_ALLOW_MD5_FALLBACK to any value to activate this '
                   'option.'))
 @utils.arg('--file', metavar='<FILE>',
