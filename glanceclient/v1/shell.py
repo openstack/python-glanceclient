@@ -30,7 +30,7 @@ import glanceclient.v1.images
 
 CONTAINER_FORMATS = ('Acceptable formats: ami, ari, aki, bare, ovf, ova,'
                      'docker.')
-DISK_FORMATS = ('Acceptable formats: ami, ari, aki, vhd, vdhx, vmdk, raw, '
+DISK_FORMATS = ('Acceptable formats: ami, ari, aki, vhd, vhdx, vmdk, raw, '
                 'qcow2, vdi, iso, and ploop.')
 DATA_FIELDS = ('location', 'copy_from', 'file')
 
