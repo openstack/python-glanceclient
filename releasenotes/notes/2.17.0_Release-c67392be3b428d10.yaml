@@ -1,0 +1,35 @@
+---
+prelude: |
+  This version of python-glanceclient finalizes client-side support for
+  the Glance multiple stores feature.  See the `Multi Store Support
+  <https://docs.openstack.org/glance/latest/admin/multistores.html>`_
+  section of the Glance documentation for more information.
+
+  Support for Glance multiple stores has been available on an EXPERIMENTAL
+  basis since release 2.12.0.  For the Train release, the Image service
+  has finalized how API users interact with multiple stores.  See the
+  "Upgrade Notes" section of this document for information about changes this
+  has necessitated in multistore support in the glanceclient.
+fixes:
+  - |
+    Bug 1822052_: HTTPClient: actually set a timeout for requests
+
+    .. _1822052: https://code.launchpad.net/bugs/1822052
+upgrade:
+  - |
+    The following Command Line Interface calls now take a ``--store``
+    option:
+
+    * ``glance image-create``
+    * ``glance image-create-via-import``
+    * ``glance image-upload``
+    * ``glance image-import``
+
+    The value for this option is a store identifier.  The list of
+    available stores may be obtained from the ``glance stores-info``
+    command.
+
+  - |
+    The ``--backend`` option, available on some commands on an experimental
+    basis since release 2.12.0, is no longer available.  Use ``--store``
+    instead.
