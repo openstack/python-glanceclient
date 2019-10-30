@@ -94,14 +94,6 @@
       - name: openstack/keystoneauth
 
 - job:
-    name: glanceclient-tox-py27-keystone-tips
-    parent: glanceclient-tox-keystone-tips-base
-    description: |
-      glanceclient py27 unit tests vs. keystone masters
-    vars:
-      tox_envlist: py27
-
-- job:
     name: glanceclient-tox-py35-keystone-tips
     parent: glanceclient-tox-keystone-tips-base
     description: |
@@ -117,14 +109,6 @@
     required-projects:
       - name: openstack/oslo.i18n
       - name: openstack/oslo.utils
-
-- job:
-    name: glanceclient-tox-py27-oslo-tips
-    parent: glanceclient-tox-oslo-tips-base
-    description: |
-      glanceclient py27 unit tests vs. oslo masters
-    vars:
-      tox_envlist: py27
 
 - job:
     name: glanceclient-tox-py35-oslo-tips
@@ -148,8 +132,7 @@
       - lib-forward-testing-python3
       - openstack-cover-jobs
       - openstack-lower-constraints-jobs
-      - openstack-python-jobs
-      - openstack-python3-train-jobs
+      - openstack-python3-ussuri-jobs
       - publish-openstack-docs-pti
       - release-notes-jobs-python3
     check:
@@ -174,11 +157,7 @@
         # to define these jobs in the openstack/project-config repo.
         # That would make us less agile in adjusting these tests, so we
         # aren't doing that either.
-        - glanceclient-tox-py27-keystone-tips:
-            branches: master
         - glanceclient-tox-py35-keystone-tips:
-            branches: master
-        - glanceclient-tox-py27-oslo-tips:
             branches: master
         - glanceclient-tox-py35-oslo-tips:
             branches: master
