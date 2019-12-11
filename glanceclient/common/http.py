@@ -183,6 +183,15 @@ class HTTPClient(_BaseHTTPClient):
             self.session.cert = (kwargs.get('cert_file'),
                                  kwargs.get('key_file'))
 
+    def __del__(self):
+        if self.session:
+            try:
+                self.session.close()
+            except Exception as e:
+                LOG.exception(e)
+            finally:
+                self.session = None
+
     @staticmethod
     def parse_endpoint(endpoint):
         return netutils.urlsplit(endpoint)
