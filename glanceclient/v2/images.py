@@ -318,13 +318,22 @@ class Controller(object):
 
     @utils.add_req_id_to_object()
     def image_import(self, image_id, method='glance-direct', uri=None,
-                     backend=None):
+                     backend=None, stores=None, allow_failure=True,
+                     all_stores=None):
         """Import Image via method."""
         headers = {}
         url = '/v2/images/%s/import' % image_id
         data = {'method': {'name': method}}
+        if stores:
+            data['stores'] = stores
+            if allow_failure:
+                data['all_stores_must_succeed'] = 'false'
         if backend is not None:
             headers['x-image-meta-store'] = backend
+        if all_stores:
+            data['all_stores'] = 'true'
+            if allow_failure:
+                data['all_stores_must_succeed'] = 'false'
 
         if uri:
             if method == 'web-download':

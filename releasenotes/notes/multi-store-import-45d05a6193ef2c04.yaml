@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    Adds support for multi-store import where user can import
+    image into multiple backend stores with single command.

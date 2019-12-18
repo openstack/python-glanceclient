@@ -150,6 +150,28 @@ def do_image_create(gc, args):
 @utils.arg('--store', metavar='<STORE>',
            default=utils.env('OS_IMAGE_STORE', default=None),
            help='Backend store to upload image to.')
+@utils.arg('--stores', metavar='<STORES>',
+           default=utils.env('OS_IMAGE_STORES', default=None),
+           help=_('Stores to upload image to if multi-stores import '
+                  'available. Comma separated list. Available stores can be '
+                  'listed with "stores-info" call.'))
+@utils.arg('--all-stores', type=strutils.bool_from_string,
+           metavar='[True|False]',
+           default=None,
+           dest='os_all_stores',
+           help=_('"all-stores" can be ued instead of "stores"-list to '
+                  'indicate that image should be imported into all available '
+                  'stores.'))
+@utils.arg('--allow-failure', type=strutils.bool_from_string,
+           metavar='[True|False]',
+           dest='os_allow_failure',
+           default=utils.env('OS_IMAGE_ALLOW_FAILURE', default=True),
+           help=_('Indicator if all stores listed (or available) must '
+                  'succeed. "True" by default meaning that we allow some '
+                  'stores to fail and the status can be monitored from the '
+                  'image metadata. If this is set to "False" the import will '
+                  'be reverted should any of the uploads fail. Only usable '
+                  'with "stores" or "all-stores".'))
 @utils.on_data_require_fields(DATA_FIELDS)
 def do_image_create_via_import(gc, args):
     """EXPERIMENTAL: Create a new image via image import.
@@ -198,9 +220,21 @@ def do_image_create_via_import(gc, args):
 
     # determine if backend is valid
     backend = None
-    if args.store:
+    stores = getattr(args, "stores", None)
+    all_stores = getattr(args, "os_all_stores", None)
+
+    if (args.store and (stores or all_stores)) or (stores and all_stores):
+        utils.exit("Only one of --store, --stores and --all-stores can be "
+                   "provided")
+    elif args.store:
         backend = args.store
+        # determine if backend is valid
         _validate_backend(backend, gc)
+    elif stores:
+        stores = str(stores).split(',')
+        for store in stores:
+            # determine if backend is valid
+            _validate_backend(store, gc)
 
     # make sure we have all and only correct inputs for the requested method
     if args.import_method is None:
@@ -211,6 +245,14 @@ def do_image_create_via_import(gc, args):
         if backend and not (file_name or using_stdin):
             utils.exit("--store option should only be provided with --file "
                        "option or stdin for the glance-direct import method.")
+        if stores and not (file_name or using_stdin):
+            utils.exit("--stores option should only be provided with --file "
+                       "option or stdin for the glance-direct import method.")
+        if all_stores and not (file_name or using_stdin):
+            utils.exit("--all-stores option should only be provided with "
+                       "--file option or stdin for the glance-direct import "
+                       "method.")
+
         if args.uri:
             utils.exit("You cannot specify a --uri with the glance-direct "
                        "import method.")
@@ -227,6 +269,12 @@ def do_image_create_via_import(gc, args):
         if backend and not args.uri:
             utils.exit("--store option should only be provided with --uri "
                        "option for the web-download import method.")
+        if stores and not args.uri:
+            utils.exit("--stores option should only be provided with --uri "
+                       "option for the web-download import method.")
+        if all_stores and not args.uri:
+            utils.exit("--all-stores option should only be provided with "
+                       "--uri option for the web-download import method.")
         if not args.uri:
             utils.exit("URI is required for web-download import method. "
                        "Please use '--uri <uri>'.")
@@ -246,6 +294,7 @@ def do_image_create_via_import(gc, args):
                 args.size = None
                 do_image_stage(gc, args)
             args.from_create = True
+            args.stores = stores
             do_image_import(gc, args)
         image = gc.images.get(args.id)
     finally:
@@ -617,19 +666,56 @@ def do_image_stage(gc, args):
 @utils.arg('--store', metavar='<STORE>',
            default=utils.env('OS_IMAGE_STORE', default=None),
            help='Backend store to upload image to.')
+@utils.arg('--stores', metavar='<STORES>',
+           default=utils.env('OS_IMAGE_STORES', default=None),
+           help='Stores to upload image to if multi-stores import available.')
+@utils.arg('--all-stores', type=strutils.bool_from_string,
+           metavar='[True|False]',
+           default=None,
+           dest='os_all_stores',
+           help=_('"all-stores" can be ued instead of "stores"-list to '
+                  'indicate that image should be imported all available '
+                  'stores.'))
+@utils.arg('--allow-failure', type=strutils.bool_from_string,
+           metavar='[True|False]',
+           dest='os_allow_failure',
+           default=utils.env('OS_IMAGE_ALLOW_FAILURE', default=True),
+           help=_('Indicator if all stores listed (or available) must '
+                  'succeed. "True" by default meaning that we allow some '
+                  'stores to fail and the status can be monitored from the '
+                  'image metadata. If this is set to "False" the import will '
+                  'be reverted should any of the uploads fail. Only usable '
+                  'with "stores" or "all-stores".'))
 def do_image_import(gc, args):
     """Initiate the image import taskflow."""
-    backend = None
-    if args.store:
-        backend = args.store
+    backend = getattr(args, "store", None)
+    stores = getattr(args, "stores", None)
+    all_stores = getattr(args, "os_all_stores", None)
+    allow_failure = getattr(args, "os_allow_failure", True)
+
+    if not getattr(args, 'from_create', False):
+        if (args.store and (stores or all_stores)) or (stores and all_stores):
+            utils.exit("Only one of --store, --stores and --all-stores can be "
+                       "provided")
+        elif args.store:
+            backend = args.store
+            # determine if backend is valid
+            _validate_backend(backend, gc)
+        elif stores:
+            stores = str(stores).split(',')
+
         # determine if backend is valid
-        _validate_backend(backend, gc)
+        if stores:
+            for store in stores:
+                _validate_backend(store, gc)
 
     if getattr(args, 'from_create', False):
         # this command is being called "internally" so we can skip
         # validation -- just do the import and get out of here
         gc.images.image_import(args.id, args.import_method, args.uri,
-                               backend=backend)
+                               backend=backend,
+                               stores=stores, all_stores=all_stores,
+                               allow_failure=allow_failure)
         return
 
     # do input validation
@@ -669,7 +755,9 @@ def do_image_import(gc, args):
 
     # finally, do the import
     gc.images.image_import(args.id, args.import_method, args.uri,
-                           backend=backend)
+                           backend=backend,
+                           stores=stores, all_stores=all_stores,
+                           allow_failure=allow_failure)
 
     image = gc.images.get(args.id)
     utils.print_image(image)

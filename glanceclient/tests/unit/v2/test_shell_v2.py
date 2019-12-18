@@ -871,6 +871,90 @@ class ShellV2Test(testtools.TestCase):
         mock_utils_exit.assert_called_once_with(expected_msg)
 
     @mock.patch('glanceclient.common.utils.exit')
+    def test_neg_image_create_via_import_stores_all_stores_specified(
+            self, mock_utils_exit):
+        expected_msg = ('Only one of --store, --stores and --all-stores can '
+                        'be provided')
+        mock_utils_exit.side_effect = self._mock_utils_exit
+        my_args = self.base_args.copy()
+        my_args.update(
+            {'id': 'IMG-01', 'import_method': 'glance-direct',
+             'stores': 'file1,file2', 'os_all_stores': True,
+             'file': 'some.mufile',
+             'disk_format': 'raw',
+             'container_format': 'bare',
+             })
+        args = self._make_args(my_args)
+
+        with mock.patch.object(self.gc.images,
+                               'get_import_info') as mocked_info:
+            mocked_info.return_value = self.import_info_response
+            try:
+                test_shell.do_image_create_via_import(self.gc, args)
+                self.fail("utils.exit should have been called")
+            except SystemExit:
+                pass
+        mock_utils_exit.assert_called_once_with(expected_msg)
+
+    @mock.patch('glanceclient.common.utils.exit')
+    @mock.patch('sys.stdin', autospec=True)
+    def test_neg_image_create_via_import_stores_without_file(
+            self, mock_stdin, mock_utils_exit):
+        expected_msg = ('--stores option should only be provided with --file '
+                        'option or stdin for the glance-direct import method.')
+        mock_utils_exit.side_effect = self._mock_utils_exit
+        mock_stdin.isatty = lambda: True
+        my_args = self.base_args.copy()
+        my_args.update(
+            {'id': 'IMG-01', 'import_method': 'glance-direct',
+             'stores': 'file1,file2',
+             'disk_format': 'raw',
+             'container_format': 'bare',
+             })
+        args = self._make_args(my_args)
+
+        with mock.patch.object(self.gc.images,
+                               'get_import_info') as mocked_info:
+            with mock.patch.object(self.gc.images,
+                                   'get_stores_info') as mocked_stores_info:
+                mocked_stores_info.return_value = self.stores_info_response
+                mocked_info.return_value = self.import_info_response
+                try:
+                    test_shell.do_image_create_via_import(self.gc, args)
+                    self.fail("utils.exit should have been called")
+                except SystemExit:
+                    pass
+        mock_utils_exit.assert_called_once_with(expected_msg)
+
+    @mock.patch('glanceclient.common.utils.exit')
+    @mock.patch('sys.stdin', autospec=True)
+    def test_neg_image_create_via_import_all_stores_without_file(
+            self, mock_stdin, mock_utils_exit):
+        expected_msg = ('--all-stores option should only be provided with '
+                        '--file option or stdin for the glance-direct import '
+                        'method.')
+        mock_utils_exit.side_effect = self._mock_utils_exit
+        mock_stdin.isatty = lambda: True
+        my_args = self.base_args.copy()
+        my_args.update(
+            {'id': 'IMG-01', 'import_method': 'glance-direct',
+             'os_all_stores': True,
+             'disk_format': 'raw',
+             'container_format': 'bare',
+             })
+        args = self._make_args(my_args)
+
+        with mock.patch.object(self.gc.images,
+                               'get_import_info') as mocked_info:
+            mocked_info.return_value = self.import_info_response
+            try:
+                test_shell.do_image_create_via_import(self.gc, args)
+                self.fail("utils.exit should have been called")
+            except SystemExit:
+                pass
+        mock_utils_exit.assert_called_once_with(expected_msg)
+
+    @mock.patch('glanceclient.common.utils.exit')
     @mock.patch('os.access')
     @mock.patch('sys.stdin', autospec=True)
     def test_neg_image_create_via_import_no_file_and_stdin_with_store(
@@ -1073,6 +1157,60 @@ class ShellV2Test(testtools.TestCase):
         args = self._make_args(my_args)
         mock_stdin.isatty = lambda: True
         mock_utils_exit.side_effect = self._mock_utils_exit
+        with mock.patch.object(self.gc.images,
+                               'get_import_info') as mocked_info:
+            mocked_info.return_value = self.import_info_response
+            try:
+                test_shell.do_image_create_via_import(self.gc, args)
+                self.fail("utils.exit should have been called")
+            except SystemExit:
+                pass
+        mock_utils_exit.assert_called_once_with(expected_msg)
+
+    @mock.patch('glanceclient.common.utils.exit')
+    def test_neg_image_create_via_import_stores_without_uri(
+            self, mock_utils_exit):
+        expected_msg = ('--stores option should only be provided with --uri '
+                        'option for the web-download import method.')
+        mock_utils_exit.side_effect = self._mock_utils_exit
+        my_args = self.base_args.copy()
+        my_args.update(
+            {'id': 'IMG-01', 'import_method': 'web-download',
+             'stores': 'file1,file2',
+             'disk_format': 'raw',
+             'container_format': 'bare',
+             })
+        args = self._make_args(my_args)
+
+        with mock.patch.object(self.gc.images,
+                               'get_import_info') as mocked_info:
+            with mock.patch.object(self.gc.images,
+                                   'get_stores_info') as mocked_stores_info:
+                mocked_stores_info.return_value = self.stores_info_response
+                mocked_info.return_value = self.import_info_response
+                try:
+                    test_shell.do_image_create_via_import(self.gc, args)
+                    self.fail("utils.exit should have been called")
+                except SystemExit:
+                    pass
+        mock_utils_exit.assert_called_once_with(expected_msg)
+
+    @mock.patch('glanceclient.common.utils.exit')
+    def test_neg_image_create_via_import_all_stores_without_uri(
+            self, mock_utils_exit):
+        expected_msg = ('--all-stores option should only be provided with '
+                        '--uri option for the web-download import '
+                        'method.')
+        mock_utils_exit.side_effect = self._mock_utils_exit
+        my_args = self.base_args.copy()
+        my_args.update(
+            {'id': 'IMG-01', 'import_method': 'web-download',
+             'os_all_stores': True,
+             'disk_format': 'raw',
+             'container_format': 'bare',
+             })
+        args = self._make_args(my_args)
+
         with mock.patch.object(self.gc.images,
                                'get_import_info') as mocked_info:
             mocked_info.return_value = self.import_info_response
@@ -1785,7 +1923,8 @@ class ShellV2Test(testtools.TestCase):
                     mock_import.return_value = None
                     test_shell.do_image_import(self.gc, args)
                     mock_import.assert_called_once_with(
-                        'IMG-01', 'glance-direct', None, backend=None)
+                        'IMG-01', 'glance-direct', None, backend=None,
+                        all_stores=None, allow_failure=True, stores=None)
 
     def test_image_import_web_download(self):
         args = self._make_args(
@@ -1803,7 +1942,9 @@ class ShellV2Test(testtools.TestCase):
                     test_shell.do_image_import(self.gc, args)
                     mock_import.assert_called_once_with(
                         'IMG-01', 'web-download',
-                        'http://example.com/image.qcow', backend=None)
+                        'http://example.com/image.qcow',
+                        all_stores=None, allow_failure=True,
+                        backend=None, stores=None)
 
     @mock.patch('glanceclient.common.utils.print_image')
     def test_image_import_no_print_image(self, mocked_utils_print_image):
@@ -1821,8 +1962,31 @@ class ShellV2Test(testtools.TestCase):
                     mock_import.return_value = None
                     test_shell.do_image_import(self.gc, args)
                     mock_import.assert_called_once_with(
-                        'IMG-02', 'glance-direct', None, backend=None)
+                        'IMG-02', 'glance-direct', None, stores=None,
+                        all_stores=None, allow_failure=True, backend=None)
                     mocked_utils_print_image.assert_not_called()
+
+    @mock.patch('glanceclient.common.utils.print_image')
+    @mock.patch('glanceclient.v2.shell._validate_backend')
+    def test_image_import_multiple_stores(self, mocked_utils_print_image,
+                                          msvb):
+        args = self._make_args(
+            {'id': 'IMG-02', 'uri': None, 'import_method': 'glance-direct',
+                'from_create': False, 'stores': 'site1,site2'})
+        with mock.patch.object(self.gc.images, 'image_import') as mock_import:
+            with mock.patch.object(self.gc.images, 'get') as mocked_get:
+                with mock.patch.object(self.gc.images,
+                                       'get_import_info') as mocked_info:
+                    mocked_get.return_value = {'status': 'uploading',
+                                               'container_format': 'bare',
+                                               'disk_format': 'raw'}
+                    mocked_info.return_value = self.import_info_response
+                    mock_import.return_value = None
+                    test_shell.do_image_import(self.gc, args)
+                    mock_import.assert_called_once_with(
+                        'IMG-02', 'glance-direct', None, all_stores=None,
+                        allow_failure=True, stores=['site1', 'site2'],
+                        backend=None)
 
     def test_image_download(self):
         args = self._make_args(
