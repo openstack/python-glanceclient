@@ -1,52 +1,4 @@
 - job:
-    name: glanceclient-dsvm-functional-v1
-    parent: devstack-tox-functional
-    description: |
-      Devstack-based functional tests for glanceclient
-      against the Image API v1.
-
-      The Image API v1 is removed from glance in Rocky, but
-      is still supported by glanceclient until the S cycle,
-      so we test it against glance stable/queens.
-
-      THIS JOB SHOULD BE REMOVED AT THE BEGINNING OF THE S
-      CYCLE.
-    override-checkout: stable/queens
-    required-projects:
-      - name: openstack/python-glanceclient
-        override-checkout: master
-    timeout: 4200
-    vars:
-      tox_envlist: functional-v1
-      devstack_localrc:
-        GLANCE_V1_ENABLED: true
-      devstack_services:
-        # turn off ceilometer
-        ceilometer-acentral: false
-        ceilometer-acompute: false
-        ceilometer-alarm-evaluator: false
-        ceilometer-alarm-notifier: false
-        ceilometer-anotification: false
-        ceilometer-api: false
-        ceilometer-collector: false
-        # turn on swift
-        s-account: true
-        s-container: true
-        s-object: true
-        s-proxy: true
-      # Hardcode glanceclient path so the job can be run on glance patches
-      zuul_work_dir: src/opendev.org/openstack/python-glanceclient
-    irrelevant-files:
-      - ^doc/.*$
-      - ^releasenotes/.*$
-      - ^.*\.rst$
-      - ^(test-|)requirements.txt$
-      - ^lower-constraints.txt$
-      - ^setup.cfg$
-      - ^tox.ini$
-      - ^\.zuul\.yaml$
-
-- job:
     name: glanceclient-dsvm-functional
     parent: devstack-tox-functional
     description: |
@@ -136,11 +88,9 @@
       - release-notes-jobs-python3
     check:
       jobs:
-        - glanceclient-dsvm-functional-v1
         - glanceclient-dsvm-functional
     gate:
       jobs:
-        - glanceclient-dsvm-functional-v1
         - glanceclient-dsvm-functional
     periodic:
       jobs:
