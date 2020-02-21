@@ -842,7 +842,7 @@ class ShellV2Test(testtools.TestCase):
     import_info_response = {'import-methods': {
         'type': 'array',
         'description': 'Import methods available.',
-        'value': ['glance-direct', 'web-download']}}
+        'value': ['glance-direct', 'web-download', 'copy-image']}}
 
     def _mock_utils_exit(self, msg):
         sys.exit(msg)
@@ -860,6 +860,27 @@ class ShellV2Test(testtools.TestCase):
         mock_stdin.isatty = lambda: False
         mock_access.return_value = True
         mock_utils_exit.side_effect = self._mock_utils_exit
+        with mock.patch.object(self.gc.images,
+                               'get_import_info') as mocked_info:
+            mocked_info.return_value = self.import_info_response
+            try:
+                test_shell.do_image_create_via_import(self.gc, args)
+                self.fail("utils.exit should have been called")
+            except SystemExit:
+                pass
+        mock_utils_exit.assert_called_once_with(expected_msg)
+
+    @mock.patch('glanceclient.common.utils.exit')
+    def test_neg_image_create_via_import_copy_image(
+            self, mock_utils_exit):
+        expected_msg = ("Import method 'copy-image' cannot be used "
+                        "while creating the image.")
+        mock_utils_exit.side_effect = self._mock_utils_exit
+        my_args = self.base_args.copy()
+        my_args.update(
+            {'id': 'IMG-01', 'import_method': 'copy-image'})
+        args = self._make_args(my_args)
+
         with mock.patch.object(self.gc.images,
                                'get_import_info') as mocked_info:
             mocked_info.return_value = self.import_info_response
@@ -1987,6 +2008,82 @@ class ShellV2Test(testtools.TestCase):
                         'IMG-02', 'glance-direct', None, all_stores=None,
                         allow_failure=True, stores=['site1', 'site2'],
                         backend=None)
+
+    @mock.patch('glanceclient.common.utils.print_image')
+    @mock.patch('glanceclient.v2.shell._validate_backend')
+    def test_image_import_copy_image(self, mocked_utils_print_image,
+                                     msvb):
+        args = self._make_args(
+            {'id': 'IMG-02', 'uri': None, 'import_method': 'copy-image',
+                'from_create': False, 'stores': 'file1,file2'})
+        with mock.patch.object(self.gc.images, 'image_import') as mock_import:
+            with mock.patch.object(self.gc.images, 'get') as mocked_get:
+                with mock.patch.object(self.gc.images,
+                                       'get_import_info') as mocked_info:
+                    mocked_get.return_value = {'status': 'active',
+                                               'container_format': 'bare',
+                                               'disk_format': 'raw'}
+                    mocked_info.return_value = self.import_info_response
+                    mock_import.return_value = None
+                    test_shell.do_image_import(self.gc, args)
+                    mock_import.assert_called_once_with(
+                        'IMG-02', 'copy-image', None, all_stores=None,
+                        allow_failure=True, stores=['file1', 'file2'],
+                        backend=None)
+
+    @mock.patch('glanceclient.common.utils.exit')
+    def test_neg_image_import_copy_image_not_active(
+            self, mock_utils_exit):
+        expected_msg = ("The 'copy-image' import method can only be used on "
+                        "an image with status 'active'.")
+        mock_utils_exit.side_effect = self._mock_utils_exit
+        args = self._make_args(
+            {'id': 'IMG-02', 'uri': None, 'import_method': 'copy-image',
+             'disk_format': 'raw',
+             'container_format': 'bare',
+             'from_create': False, 'stores': 'file1,file2'})
+        with mock.patch.object(
+                self.gc.images,
+                'get_stores_info') as mocked_stores_info:
+            with mock.patch.object(self.gc.images, 'get') as mocked_get:
+                with mock.patch.object(self.gc.images,
+                                       'get_import_info') as mocked_info:
+
+                    mocked_stores_info.return_value = self.stores_info_response
+                    mocked_get.return_value = {'status': 'uploading',
+                                               'container_format': 'bare',
+                                               'disk_format': 'raw'}
+                    mocked_info.return_value = self.import_info_response
+                    try:
+                        test_shell.do_image_import(self.gc, args)
+                        self.fail("utils.exit should have been called")
+                    except SystemExit:
+                        pass
+            mock_utils_exit.assert_called_once_with(expected_msg)
+
+    @mock.patch('glanceclient.common.utils.exit')
+    def test_neg_image_import_stores_all_stores_not_specified(
+            self, mock_utils_exit):
+        expected_msg = ("Provide either --stores or --all-stores for "
+                        "'copy-image' import method.")
+        mock_utils_exit.side_effect = self._mock_utils_exit
+        my_args = self.base_args.copy()
+        my_args.update(
+            {'id': 'IMG-01', 'import_method': 'copy-image',
+             'disk_format': 'raw',
+             'container_format': 'bare',
+             })
+        args = self._make_args(my_args)
+
+        with mock.patch.object(self.gc.images,
+                               'get_import_info') as mocked_info:
+            mocked_info.return_value = self.import_info_response
+            try:
+                test_shell.do_image_import(self.gc, args)
+                self.fail("utils.exit should have been called")
+            except SystemExit:
+                pass
+        mock_utils_exit.assert_called_once_with(expected_msg)
 
     def test_image_download(self):
         args = self._make_args(

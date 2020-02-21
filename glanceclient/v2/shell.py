@@ -210,6 +210,10 @@ def do_image_create_via_import(gc, args):
     if args.import_method is None and (file_name or using_stdin):
         args.import_method = 'glance-direct'
 
+    if args.import_method == 'copy-image':
+        utils.exit("Import method 'copy-image' cannot be used "
+                   "while creating the image.")
+
     # determine whether the requested import method is valid
     import_methods = gc.images.get_import_info().get('import-methods')
     if args.import_method and args.import_method not in import_methods.get(
@@ -735,6 +739,10 @@ def do_image_import(gc, args):
         utils.exit("Import method should be 'web-download' if URI is "
                    "provided.")
 
+    if args.import_method == 'copy-image' and not (stores or all_stores):
+        utils.exit("Provide either --stores or --all-stores for "
+                   "'copy-image' import method.")
+
     # check image properties
     image = gc.images.get(args.id)
     container_format = image.get('container_format')
@@ -752,6 +760,10 @@ def do_image_import(gc, args):
         if image_status != 'queued':
             utils.exit("The 'web-download' import method can only be applied "
                        "to an image in status 'queued'")
+    if args.import_method == 'copy-image':
+        if image_status != 'active':
+            utils.exit("The 'copy-image' import method can only be used on "
+                       "an image with status 'active'.")
 
     # finally, do the import
     gc.images.image_import(args.id, args.import_method, args.uri,

@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    Adds support for copy-image import method which will copy existing
+    images into multiple stores.
