@@ -35,7 +35,6 @@
       - ^lower-constraints.txt$
       - ^setup.cfg$
       - ^tox.ini$
-      - ^\.zuul\.yaml$
 
 - job:
     name: glanceclient-tox-keystone-tips-base
