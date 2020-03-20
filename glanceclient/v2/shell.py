@@ -556,6 +556,24 @@ def do_stores_info(gc, args):
         utils.print_dict(stores_info)
 
 
+@utils.arg('id', metavar='<IMAGE_ID>', help=_('ID of image to update.'))
+@utils.arg('--store', metavar='<STORE_ID>', required=True,
+           help=_('Store to delete image from.'))
+def do_stores_delete(gc, args):
+    """Delete image from specific store."""
+    try:
+        gc.images.delete_from_store(args.store, args.id)
+    except exc.HTTPNotFound:
+        utils.exit('Multi Backend support is not enabled or Image/store not '
+                   'found.')
+    except (exc.HTTPForbidden, exc.HTTPException) as e:
+        msg = ("Unable to delete image '%s' from store '%s'. (%s)" % (
+               args.id,
+               args.store,
+               e))
+        utils.exit(msg)
+
+
 @utils.arg('--allow-md5-fallback', action='store_true',
            default=utils.env('OS_IMAGE_ALLOW_MD5_FALLBACK', default=False),
            help=_('If os_hash_algo and os_hash_value properties are available '
