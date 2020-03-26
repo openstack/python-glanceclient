@@ -45,12 +45,12 @@
       - name: openstack/keystoneauth
 
 - job:
-    name: glanceclient-tox-py35-keystone-tips
+    name: glanceclient-tox-py3-keystone-tips
     parent: glanceclient-tox-keystone-tips-base
     description: |
-      glanceclient py35 unit tests vs. keystone masters
+      glanceclient py3 unit tests vs. keystone masters
     vars:
-      tox_envlist: py35
+      tox_envlist: py3
 
 - job:
     name: glanceclient-tox-oslo-tips-base
@@ -62,12 +62,12 @@
       - name: openstack/oslo.utils
 
 - job:
-    name: glanceclient-tox-py35-oslo-tips
+    name: glanceclient-tox-py3-oslo-tips
     parent: glanceclient-tox-oslo-tips-base
     description: |
-      glanceclient py35 unit tests vs. oslo masters
+      glanceclient py3 unit tests vs. oslo masters
     vars:
-      tox_envlist: py35
+      tox_envlist: py3
 
 - job:
     name: glanceclient-dsvm-functional-py3
@@ -105,9 +105,9 @@
         # to define these jobs in the openstack/project-config repo.
         # That would make us less agile in adjusting these tests, so we
         # aren't doing that either.
-        - glanceclient-tox-py35-keystone-tips:
+        - glanceclient-tox-py3-keystone-tips:
             branches: master
-        - glanceclient-tox-py35-oslo-tips:
+        - glanceclient-tox-py3-oslo-tips:
             branches: master
     experimental:
       jobs:
