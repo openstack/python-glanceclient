@@ -70,7 +70,7 @@ other:
     may now be specified_ by setting the value of the ``OS_PROFILE`` environment
     variable.
 
-    .. _removed: https://git.openstack.org/cgit/openstack/python-glanceclient/commit/?id=28c003dc1179ddb3124fd30c6f525dd341ae9213
+    .. _removed: https://opendev.org/openstack/python-glanceclient/commit/28c003dc1179ddb3124fd30c6f525dd341ae9213
     .. _inoperative: https://specs.openstack.org/openstack/glance-specs/specs/liberty/approved/remove-special-client-ssl-handling.html
-    .. _optimization: https://git.openstack.org/cgit/openstack/python-glanceclient/commit/?id=1df55dd952fe52c1c1fc2583326d017275b01ddc
-    .. _specified: https://git.openstack.org/cgit/openstack/python-glanceclient/commit/?id=c0f88d5fc0fd947319e022cfeba21bcb15635316
+    .. _optimization: https://opendev.org/openstack/python-glanceclient/commit/1df55dd952fe52c1c1fc2583326d017275b01ddc
+    .. _specified: https://opendev.org/openstack/python-glanceclient/commit/c0f88d5fc0fd947319e022cfeba21bcb15635316
