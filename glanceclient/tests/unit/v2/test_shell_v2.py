@@ -55,6 +55,8 @@ def schema_args(schema_getter, omit=None):
             'locations': {'type': 'string'},
             'copy_from': {'type': 'string'}}}
     return original_schema_args(my_schema_getter, omit)
+
+
 utils.schema_args = schema_args
 
 from glanceclient.v2 import shell as test_shell  # noqa

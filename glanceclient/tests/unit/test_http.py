@@ -367,11 +367,11 @@ class TestClient(testtools.TestCase):
         self.assertTrue(mock_log.called, 'LOG.debug never called')
         self.assertTrue(mock_log.call_args[0],
                         'LOG.debug called with no arguments')
-        hd_regex = ".*\s-H\s+'\s*%s\s*:\s*%s\s*'.*" % (hd_name, hd_val)
+        hd_regex = r".*\s-H\s+'\s*%s\s*:\s*%s\s*'.*" % (hd_name, hd_val)
         self.assertThat(mock_log.call_args[0][0],
                         matchers.MatchesRegex(hd_regex),
                         'header not found in curl command')
-        body_regex = ".*\s-d\s+'%s'\s.*" % body
+        body_regex = r".*\s-d\s+'%s'\s.*" % body
         self.assertThat(mock_log.call_args[0][0],
                         matchers.MatchesRegex(body_regex),
                         'body not found in curl command')
@@ -390,12 +390,12 @@ class TestClient(testtools.TestCase):
         needles = {'key': key, 'cert': cert, 'cacert': cacert}
         for option, value in needles.items():
             if value:
-                regex = ".*\s--%s\s+('%s'|%s).*" % (option, value, value)
+                regex = r".*\s--%s\s+('%s'|%s).*" % (option, value, value)
                 self.assertThat(mock_log.call_args[0][0],
                                 matchers.MatchesRegex(regex),
                                 'no --%s option in curl command' % option)
             else:
-                regex = ".*\s--%s\s+.*" % option
+                regex = r".*\s--%s\s+.*" % option
                 self.assertThat(mock_log.call_args[0][0],
                                 matchers.Not(matchers.MatchesRegex(regex)),
                                 'unexpected --%s option in curl command' %
@@ -421,7 +421,7 @@ class TestClient(testtools.TestCase):
         self.assertTrue(mock_log.call_args[0],
                         'LOG.debug called with no arguments')
         self.assertThat(mock_log.call_args[0][0],
-                        matchers.MatchesRegex('.*\s-k\s.*'),
+                        matchers.MatchesRegex(r'.*\s-k\s.*'),
                         'no -k option in curl command')
 
     @mock.patch('glanceclient.common.http.LOG.debug')

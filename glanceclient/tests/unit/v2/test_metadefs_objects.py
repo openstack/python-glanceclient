@@ -58,6 +58,7 @@ def _get_object_fixture(ns_name, obj_name, **kwargs):
 
     return obj
 
+
 data_fixtures = {
     "/v2/metadefs/namespaces/%s/objects" % NAMESPACE1: {
         "GET": (

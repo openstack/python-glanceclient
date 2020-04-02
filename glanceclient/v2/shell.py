@@ -840,15 +840,15 @@ def do_image_reactivate(gc, args):
 @utils.arg('tag_value', metavar='<TAG_VALUE>',
            help=_('Value of the tag.'))
 def do_image_tag_update(gc, args):
-        """Update an image with the given tag."""
-        if not (args.image_id and args.tag_value):
-            utils.exit('Unable to update tag. Specify image_id and tag_value')
-        else:
-            gc.image_tags.update(args.image_id, args.tag_value)
-            image = gc.images.get(args.image_id)
-            image = [image]
-            columns = ['ID', 'Tags']
-            utils.print_list(image, columns)
+    """Update an image with the given tag."""
+    if not (args.image_id and args.tag_value):
+        utils.exit('Unable to update tag. Specify image_id and tag_value')
+    else:
+        gc.image_tags.update(args.image_id, args.tag_value)
+        image = gc.images.get(args.image_id)
+        image = [image]
+        columns = ['ID', 'Tags']
+        utils.print_list(image, columns)
 
 
 @utils.arg('image_id', metavar='<IMAGE_ID>',

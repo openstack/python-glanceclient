@@ -72,7 +72,7 @@ class SimpleReadOnlyGlanceClientTest(base.ClientTestBase):
         commands = []
         cmds_start = lines.index('Positional arguments:')
         cmds_end = lines.index('Optional arguments:')
-        command_pattern = re.compile('^ {4}([a-z0-9\-\_]+)')
+        command_pattern = re.compile(r'^ {4}([a-z0-9\-\_]+)')
         for line in lines[cmds_start:cmds_end]:
             match = command_pattern.match(line)
             if match:

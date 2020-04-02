@@ -58,6 +58,7 @@ def _get_namespace_fixture(ns_name, rt_name=RESOURCE_TYPE1, **kwargs):
 
     return ns
 
+
 data_fixtures = {
     "/v2/metadefs/namespaces?limit=20": {
         "GET": (
