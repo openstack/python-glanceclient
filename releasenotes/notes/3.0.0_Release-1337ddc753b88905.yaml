@@ -1,0 +1,25 @@
+---
+prelude: |
+    This version of python-glanceclient finalizes client-side support for
+    the Glance import image in multiple stores, copy existing image in
+    multiple stores and delete image from single store.
+fixes:
+  - |
+    Bug 1838694: glanceclient doesn't cleanup session it creates if one is not provided
+
+    .. _1838694: https://bugs.launchpad.net/python-glanceclient/+bug/1838694
+upgrade:
+  - |
+    The following Command Line Interface calls now take ``--stores``,
+    ``--all-stores`` and ``--allow-failure`` option:
+
+    * ``glance image-create-via-import``
+    * ``glance image-import``
+
+    The value for ``--stores`` option is a list of store identifiers.  The
+    list of available stores may be obtained from the ``glance stores-info``
+    command.
+
+    The value for ``--all-stores`` option could be True or False.
+
+    The value for ``--allow-failure`` option could be True or False.
