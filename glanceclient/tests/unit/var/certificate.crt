@@ -1,66 +1,34 @@
-# Certificate:
-#    Data:
-#        Version: 3 (0x2)
-#        Serial Number: 1 (0x1)
-#        Signature Algorithm: sha1WithRSAEncryption
-#        Issuer: O=Openstack CA Org, OU=Openstack Test CA/emailAddress=admin@ca.example.com,
-#                L=State CA, ST=CA, C=AU, CN=Openstack Test Certificate Authority
-#        Validity
-#            Not Before: Nov 16 12:50:19 2012 GMT
-#            Not After : Apr  3 12:50:19 2040 GMT
-#        Subject: O=Openstack Test Org, OU=Openstack Test Unit/emailAddress=admin@example.com,
-#                 L=State1, ST=CA, C=US, CN=0.0.0.0
-#        Subject Public Key Info:
-#            Public Key Algorithm: rsaEncryption
-#            RSA Public Key: (4096 bit)
-#                Modulus (4096 bit):
-#                    00:d4:bb:3a:c4:a0:06:54:31:23:5d:b0:78:5a:be:
-#                    45:44:ae:a1:89:86:11:d8:ca:a8:33:b0:4f:f3:e1:
-#                    .
-#                    .
-#                    .
-#                Exponent: 65537 (0x10001)
-#        X509v3 extensions:
-#            X509v3 Subject Alternative Name:
-#                DNS:alt1.example.com, DNS:alt2.example.com
-#    Signature Algorithm: sha1WithRSAEncryption
-#        2c:fc:5c:87:24:bd:4a:fa:40:d2:2e:35:a4:2a:f3:1c:b3:67:
-#        b0:e4:8a:cd:67:6b:55:50:d4:cb:dd:2d:26:a5:15:62:90:a3:
-#        .
-#        .
-#        .
 -----BEGIN CERTIFICATE-----
-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
-tdc5rw==
+MIIF3TCCA8UCFApiIYk0jePQYtuj9aOTINDiado4MA0GCSqGSIb3DQEBCwUAMIG4
+MQswCQYDVQQGEwJBVTERMA8GA1UECAwIU3RhdGUgQ0ExCzAJBgNVBAcMAkNBMRkw
+FwYDVQQKDBBPcGVuU3RhY2sgQ0EgT3JnMRowGAYDVQQLDBFPcGVuU3RhY2sgVGVz
+dCBDQTEtMCsGA1UEAwwkT3BlbnN0YWNrIFRlc3QgQ2VydGlmaWNhdGUgQXV0aG9y
+aXR5MSMwIQYJKoZIhvcNAQkBFhRhZG1pbkBjYS5leGFtcGxlLmNvbTAgFw0yMDA0
+MDcxMjMxMjFaGA8yOTk5MDEwMTEyMzEyMVowgZoxCzAJBgNVBAYTAlVTMQswCQYD
+VQQIDAJDQTEPMA0GA1UEBwwGU3RhdGUxMRswGQYDVQQKDBJPcGVuU3RhY2sgVGVz
+dCBPcmcxHDAaBgNVBAsME09wZW5TdGFjayBUZXN0IFVuaXQxEDAOBgNVBAMMBzAu
+MC4wLjAxIDAeBgkqhkiG9w0BCQEWEWFkbWluQGV4YW1wbGUuY29tMIICIjANBgkq
+hkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvwpYRmNTJsZASu0XKwcRNRU7JlMlWwFM
+3x5qMMb9h77v/CxPbMl4rjdFhPSqHm2Cc5J9dtihfRZFnwmfOlp2lahJMpC6xVad
+QU5tDChKICTM1MFwjThrK1dK17wIzuOFVCUESWU7JpTTbT7GD05w/kozcEC8IzVu
+V43TY5srByXtJs8J/m+G7rh2FI1+9a56xAQAlztYp6lWpzZpxohhgt2BFoqNNHal
+zdTI368+lk/OkzTrQTXnXATZjFAm95q4I3z9uumAJlaUBzf0qNadYPOAKhdLOK1l
+y4WsmBl9DGhUVTC4177k+gK6sEXIZV3bgAWjhgALF84HqAYVxesrEj64HBFGRxYO
+iL7+CJQr27MGBsEqqzi7I4BkI2chIoG80XAORH+mGzv4ToB+in2LPNKWAy9A5X7h
+uszZdg+O/pwjRwTqRpsNLpTQ/eeONuOJmQTlYNwRdNCVRQqkddOiZdP0McEuZw/r
+b5hgbos/HQnpD1604MNOC2xPK8uqGtHJkDyevRGeOpQH1FyJhWEDNDt/+T1O1C+2
+egvM1sOu6bJrrI4oo1Co2x+Fp2/ak/cx72n2+7KgpxnAQRwIpChh54X3MLGr8Zc2
+2m+yghIzABiDNW486S4xeCxa07sqOa5noFNt8rj5ylwHWVwmaW0rQxcTS6BKavop
+D+GsTBM0niECAwEAATANBgkqhkiG9w0BAQsFAAOCAgEA5c6wtD6NX7JxZpSLnm7R
+AjfEVA1uVWugbkkk9w96r0bWWnMHgJTuDqIrxfXURvHYKsh65BIYfajtlTddaPdx
+0j+++8EO5zTzmosARNQ+gxUNZws6/cA8EDsrIRrv6HrO2Y+v0V8ZsaAZCxkC51gh
+iTW3oMzPrAup7R2Bp0KXbqe+bWUWN7fHUs6klHtYdI1BXBMLn5DJQvGEfXgZnyQI
+OpJEo5OcVluVx9XbiNN3XpWk77UjoR75CLMdA6s+FA8OL0B86VanjaedOa0ZVOP6
+A+GeAvGJ8InYgLDOpDRV4pM8BXEAUJT2c59bVpTjZ3u3VLQ8cXgOqSdM7gBgiYio
+A7S3yCTaHsMLbRP6iehw/sjyey8VHvvltZ9c9p+aMHpGK202aeCfCNTZx17649Nu
+7DVvLKO+zUvlOvW0eEnj/A6U8sZmoSnU2vPq3OIxZWDXihC5lEHpqbw6Qqwbo5Yd
+T048fo7NlF3fVOh5pjPHPwexlHwDq/MP+xFexDI8sHNQEx7Sc0OpEXZinVSLtQEY
+Zu0+0U/0wC2XLbyoI0NUIbJHKAjXUYnQnuGkshQFzth2TtRvVsF4rq6ckcSrcxsu
+x9iKUQkW9f9Okjf7hj1vuv1/ouRHPc9JBaNDHRcHNyRTz6PmBZTWDLxzI3NZ0e0p
+9l4gwJ1ojNB2abF4LOEf5bU=
 -----END CERTIFICATE-----
