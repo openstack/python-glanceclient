@@ -7,6 +7,7 @@ cliff==2.8.0
 cmd2==0.8.0
 coverage==4.0
 cryptography==2.1
+ddt==1.2.1
 debtcollector==1.2.0
 docutils==0.11
 dulwich==0.15.0

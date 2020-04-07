@@ -18,6 +18,8 @@ import hashlib
 import testtools
 from unittest import mock
 
+import ddt
+
 from glanceclient import exc
 from glanceclient.tests.unit.v2 import base
 from glanceclient.tests import utils
@@ -704,6 +706,7 @@ schema_fixtures = {
 }
 
 
+@ddt.ddt
 class TestController(testtools.TestCase):
     def setUp(self):
         super(TestController, self).setUp()
@@ -1091,6 +1094,21 @@ class TestController(testtools.TestCase):
                                         '-dd57-11e1-af0f-02163e68b1d8')
             body = ''.join([b for b in body])
             self.assertEqual('CCC', body)
+
+    @ddt.data('headeronly', 'chkonly', 'multihash')
+    def test_data_with_checksum_but_no_md5_algo(self, prefix):
+        with mock.patch('hashlib.new', mock.MagicMock(
+                side_effect=ValueError('unsupported hash type'))):
+            body = self.controller.data(prefix +
+                                        '-dd57-11e1-af0f-02163e68b1d8',
+                                        allow_md5_fallback=True)
+            try:
+                body = ''.join([b for b in body])
+                self.fail('missing md5 algo did not raise an error')
+            except IOError as e:
+                self.assertEqual(errno.EPIPE, e.errno)
+                msg = 'md5 algorithm is not available on the client'
+                self.assertIn(msg, str(e))
 
     def test_data_with_checksum_and_fallback(self):
         # make sure the allow_md5_fallback option does not cause any

@@ -436,7 +436,14 @@ def integrity_iter(iter, checksum):
 
     :raises: IOError
     """
-    md5sum = hashlib.md5()
+    try:
+        md5sum = hashlib.new('md5')
+    except ValueError:
+        raise IOError(errno.EPIPE,
+                      'Corrupt image download. Expected checksum is %s '
+                      'but md5 algorithm is not available on the client' %
+                      checksum)
+
     for chunk in iter:
         yield chunk
         if isinstance(chunk, six.string_types):

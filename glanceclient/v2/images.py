@@ -209,9 +209,11 @@ class Controller(object):
            specified hash algorithm is not available AND allow_md5_fallback
            is True, then continue to step #2
         2. else if the image has a checksum property, MD5 is used to
-           validate against the 'checksum' value
+           validate against the 'checksum' value.  (If MD5 is not available
+           to the client, the download fails.)
         3. else if the download response has a 'content-md5' header, MD5
-           is used to validate against the header value
+           is used to validate against the header value.  (If MD5 is not
+           available to the client, the download fails.)
         4. if none of 1-3 obtain, the data is **not validated** (this is
            compatible with legacy behavior)
 

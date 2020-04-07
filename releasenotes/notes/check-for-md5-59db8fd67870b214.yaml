@@ -1,0 +1,13 @@
+---
+other:
+  -|
+   For legacy (pre-Rocky) images that do not contain "multihash" metadata,
+   or when the ``--allow-md5-fallback`` option is used in cases where the
+   multihash metadata is present but the specified algorithm is not available
+   to the glanceclient, the glanceclient uses an MD5 checksum to validate
+   the download.  When operating in a FIPS-compliant environment, however,
+   the MD5 algorithm may be unavailable to the glanceclient. In such a case,
+   (that is, when the MD5 checksum information is available to the glanceclient
+   but the MD5 algorithm is not), the glanceclient will fail the download as
+   corrupt because it cannot prove otherwise.  This is consistent with
+   current behavior.
