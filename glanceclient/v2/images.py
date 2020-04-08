@@ -335,13 +335,13 @@ class Controller(object):
         if stores:
             data['stores'] = stores
             if allow_failure:
-                data['all_stores_must_succeed'] = 'false'
+                data['all_stores_must_succeed'] = False
         if backend is not None:
             headers['x-image-meta-store'] = backend
         if all_stores:
-            data['all_stores'] = 'true'
+            data['all_stores'] = True
             if allow_failure:
-                data['all_stores_must_succeed'] = 'false'
+                data['all_stores_must_succeed'] = False
 
         if uri:
             if method == 'web-download':
