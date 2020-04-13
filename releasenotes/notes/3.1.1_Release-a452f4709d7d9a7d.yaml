@@ -1,0 +1,10 @@
+---
+prelude: |
+    This version of python-glanceclient fixes an important issue where under
+    some circumstances the client was not sending information of the
+    appropriate data type when contacting the Image Service API.
+fixes:
+  - |
+    Bug 1871674_: Pass boolean instead of string for --all-stores, --allow-failure options
+
+    .. _1871674: https://code.launchpad.net/bugs/1871674
