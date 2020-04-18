@@ -17,12 +17,13 @@
 import argparse
 import json
 import os
+from unittest import mock
+
 import six
 import subprocess
 import tempfile
 import testtools
 
-import mock
 
 from glanceclient import exc
 from glanceclient import shell

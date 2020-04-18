@@ -14,8 +14,8 @@
 #    under the License.
 
 import os
+from unittest import mock
 
-import mock
 import six
 import ssl
 import testtools

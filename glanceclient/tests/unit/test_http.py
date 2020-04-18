@@ -15,12 +15,12 @@
 import functools
 import json
 import logging
+from unittest import mock
 import uuid
 
 import fixtures
 from keystoneauth1 import session
 from keystoneauth1 import token_endpoint
-import mock
 from oslo_utils import encodeutils
 import requests
 from requests_mock.contrib import fixture

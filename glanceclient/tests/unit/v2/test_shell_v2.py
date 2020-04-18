@@ -16,8 +16,9 @@
 import argparse
 from copy import deepcopy
 import json
-import mock
 import os
+from unittest import mock
+
 import six
 import sys
 import tempfile

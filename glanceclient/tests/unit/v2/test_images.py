@@ -15,8 +15,8 @@
 
 import errno
 import hashlib
-import mock
 import testtools
+from unittest import mock
 
 from glanceclient import exc
 from glanceclient.tests.unit.v2 import base

@@ -14,8 +14,8 @@
 #    under the License.
 
 import sys
+from unittest import mock
 
-import mock
 from oslo_utils import encodeutils
 from requests import Response
 import six

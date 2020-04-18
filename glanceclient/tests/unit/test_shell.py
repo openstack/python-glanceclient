@@ -21,12 +21,12 @@ import logging
 import os
 import sys
 import traceback
+from unittest import mock
 import uuid
 
 import fixtures
 from keystoneauth1 import exceptions as ks_exc
 from keystoneauth1 import fixture as ks_fixture
-import mock
 from requests_mock.contrib import fixture as rm_fixture
 import six
 
