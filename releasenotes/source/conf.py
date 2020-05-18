@@ -29,8 +29,6 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 # sys.path.insert(0, os.path.abspath('.'))
 
-import openstackdocstheme
-
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -41,6 +39,7 @@ import openstackdocstheme
 # ones.
 extensions = [
     'reno.sphinxext',
+    'openstackdocstheme'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -58,6 +57,11 @@ master_doc = 'index'
 # General information about the project.
 project = u'glanceclient Release Notes'
 copyright = u'2016, Glance Developers'
+
+openstackdocs_repo_name = 'openstack/python-glanceclient'
+openstackdocs_bug_project = 'python-glanceclient'
+openstackdocs_bug_tag = ''
+openstackdocs_auto_name = False
 
 # Release notes are not versioned, so we don't need to set version or release
 version = ''
@@ -93,7 +97,7 @@ exclude_patterns = []
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
@@ -112,10 +116,6 @@ html_theme = 'openstackdocs'
 # further.  For a list of options available for each theme, see the
 # documentation.
 # html_theme_options = {}
-
-# Add any paths that contain custom themes here, relative to this directory.
-# html_theme_path = []
-html_theme_path = [openstackdocstheme.get_html_theme_path()]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".

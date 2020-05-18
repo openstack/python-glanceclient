@@ -16,7 +16,6 @@
 import os
 import sys
 
-import openstackdocstheme
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),
                 '..', '..')))
@@ -39,9 +38,9 @@ apidoc_excluded_paths = [
 apidoc_separate_modules = True
 
 # openstackdocstheme options
-repository_name = 'openstack/python-glanceclient'
-bug_project = 'python-glanceclient'
-bug_tag = ''
+openstackdocs_repo_name = 'openstack/python-glanceclient'
+openstackdocs_bug_project = 'python-glanceclient'
+openstackdocs_bug_tag = ''
 
 # autodoc generation is a bit aggressive and a nuisance when doing heavy
 # text edit cycles.
@@ -68,7 +67,7 @@ add_function_parentheses = True
 add_module_names = True
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # -- Options for HTML output --------------------------------------------------
 
@@ -76,10 +75,6 @@ pygments_style = 'sphinx'
 # Sphinx are currently 'default' and 'sphinxdoc'.
 #html_theme = 'nature'
 html_theme = 'openstackdocs'
-
-# Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = ['_theme']
-html_theme_path = [openstackdocstheme.get_html_theme_path()]
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = '%sdoc' % project
