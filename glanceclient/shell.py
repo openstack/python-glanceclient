@@ -17,8 +17,6 @@
 Command-line interface to the OpenStack Images API.
 """
 
-from __future__ import print_function
-
 import argparse
 import copy
 import getpass
