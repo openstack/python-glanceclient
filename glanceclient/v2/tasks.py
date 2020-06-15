@@ -14,8 +14,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import urllib.parse
+
 from oslo_utils import encodeutils
-import six
 import warlock
 
 from glanceclient.common import utils
@@ -85,10 +86,10 @@ class Controller(object):
                                  % ', '.join(SORT_DIR_VALUES))
 
         for param, value in filters.items():
-            if isinstance(value, six.string_types):
+            if isinstance(value, str):
                 filters[param] = encodeutils.safe_encode(value)
 
-        url = '/v2/tasks?%s' % six.moves.urllib.parse.urlencode(filters)
+        url = '/v2/tasks?%s' % urllib.parse.urlencode(filters)
         for task, resp in paginate(url):
             # NOTE(flwang): remove 'self' for now until we have an elegant
             # way to pass it into the model constructor without conflict

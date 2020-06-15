@@ -14,6 +14,7 @@
 #    under the License.
 
 import copy
+import io
 import logging
 import socket
 
@@ -23,8 +24,7 @@ import OpenSSL
 from oslo_utils import importutils
 from oslo_utils import netutils
 import requests
-import six
-import six.moves.urllib.parse as urlparse
+import urllib.parse
 
 try:
     import json
@@ -66,19 +66,13 @@ def encode_headers(headers):
     for h, v in headers.items():
         if v is not None:
             # if the item is token, do not quote '+' as well.
-            # NOTE(imacdonn): urlparse.quote() is intended for quoting the
+            # NOTE(imacdonn): urllib.parse.quote() is intended for quoting the
             # path part of a URL, but headers like x-image-meta-location
             # include an entire URL. We should avoid encoding the colon in
             # this case (bug #1788942)
             safe = '=+/' if h in TOKEN_HEADERS else '/:'
-            if six.PY2:
-                # incoming items may be unicode, so get them into something
-                # the py2 version of urllib can handle before percent encoding
-                key = urlparse.quote(encodeutils.safe_encode(h), safe)
-                value = urlparse.quote(encodeutils.safe_encode(v), safe)
-            else:
-                key = urlparse.quote(h, safe)
-                value = urlparse.quote(v, safe)
+            key = urllib.parse.quote(h, safe)
+            value = urllib.parse.quote(v, safe)
             encoded_dict[key] = value
     return dict((encodeutils.safe_encode(h, encoding='ascii'),
                  encodeutils.safe_encode(v, encoding='ascii'))
@@ -105,7 +99,7 @@ class _BaseHTTPClient(object):
         # NOTE(jamielennox): remove this later. Managers should pass json= if
         # they want to send json data.
         data = kwargs.pop("data", None)
-        if data is not None and not isinstance(data, six.string_types):
+        if data is not None and not isinstance(data, str):
             try:
                 data = json.dumps(data)
                 content_type = 'application/json'
@@ -143,7 +137,7 @@ class _BaseHTTPClient(object):
                 # response encoding
                 body_iter = resp.json()
             else:
-                body_iter = six.StringIO(content)
+                body_iter = io.StringIO(content)
                 try:
                     body_iter = json.loads(''.join([c for c in body_iter]))
                 except ValueError:
@@ -209,13 +203,13 @@ class HTTPClient(_BaseHTTPClient):
         if not self.session.verify:
             curl.append('-k')
         else:
-            if isinstance(self.session.verify, six.string_types):
+            if isinstance(self.session.verify, str):
                 curl.append(' --cacert %s' % self.session.verify)
 
         if self.session.cert:
             curl.append(' --cert %s --key %s' % self.session.cert)
 
-        if data and isinstance(data, six.string_types):
+        if data and isinstance(data, str):
             curl.append('-d \'%s\'' % data)
 
         curl.append(url)

@@ -20,10 +20,6 @@ import struct
 import OpenSSL
 
 
-import six
-# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
-from six.moves import range
-
 try:
     from eventlet import patcher
     # Handle case where we are running in a monkey patched environment
@@ -33,9 +29,9 @@ try:
     else:
         raise ImportError
 except ImportError:
+    import http.client
     from OpenSSL import SSL
-    from six.moves import http_client
-    HTTPSConnection = http_client.HTTPSConnection
+    HTTPSConnection = http.client.HTTPSConnection
     Connection = SSL.Connection
 
 
@@ -120,8 +116,8 @@ def host_matches_cert(host, x509):
 
 
 def to_bytes(s):
-    if isinstance(s, six.string_types):
-        return six.b(s)
+    if isinstance(s, str):
+        return bytes(s, 'latin-1')
     else:
         return s
 
@@ -161,14 +157,7 @@ class VerifiedHTTPSConnection(HTTPSConnection):
                  ssl_compression=True):
         # List of exceptions reported by Python3 instead of
         # SSLConfigurationError
-        if six.PY3:
-            excp_lst = (TypeError, FileNotFoundError, ssl.SSLError)
-        else:
-            # NOTE(jamespage)
-            # Accommodate changes in behaviour for pep-0467, introduced
-            # in python 2.7.9.
-            # https://github.com/python/peps/blob/master/pep-0476.txt
-            excp_lst = (TypeError, IOError, ssl.SSLError)
+        excp_lst = (TypeError, FileNotFoundError, ssl.SSLError)
         try:
             HTTPSConnection.__init__(self, host, port,
                                      key_file=key_file,

@@ -15,8 +15,6 @@
 
 import sys
 
-import six
-
 
 class _ProgressBarBase(object):
     """A progress bar provider for a wrapped obect.
@@ -83,7 +81,7 @@ class VerboseIteratorWrapper(_ProgressBarBase):
 
     def next(self):
         try:
-            data = six.next(self._wrapped)
+            data = next(self._wrapped)
             # NOTE(mouad): Assuming that data is a string b/c otherwise calling
             # len function will not make any sense.
             self._display_progress_bar(len(data))

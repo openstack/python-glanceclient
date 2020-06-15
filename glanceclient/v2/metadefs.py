@@ -14,8 +14,7 @@
 #    under the License.
 
 from oslo_utils import encodeutils
-import six
-from six.moves.urllib import parse
+import urllib.parse
 import warlock
 
 from glanceclient.common import utils
@@ -89,7 +88,7 @@ class NamespaceController(object):
     @utils.add_req_id_to_object()
     def _get(self, namespace, header=None, **kwargs):
         """Get one namespace."""
-        query_params = parse.urlencode(kwargs)
+        query_params = urllib.parse.urlencode(kwargs)
         if kwargs:
             query_params = '?%s' % query_params
 
@@ -179,10 +178,10 @@ class NamespaceController(object):
         for param, value in filters.items():
             if isinstance(value, list):
                 filters[param] = encodeutils.safe_encode(','.join(value))
-            elif isinstance(value, six.string_types):
+            elif isinstance(value, str):
                 filters[param] = encodeutils.safe_encode(value)
 
-        url = '/v2/metadefs/namespaces?%s' % parse.urlencode(filters)
+        url = '/v2/metadefs/namespaces?%s' % urllib.parse.urlencode(filters)
 
         for namespace, resp in paginate(url):
             yield namespace, resp

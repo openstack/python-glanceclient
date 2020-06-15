@@ -26,7 +26,6 @@
 
 from oslo_utils import encodeutils
 from oslo_utils import uuidutils
-import six
 
 from glanceclient._i18n import _
 from glanceclient.v1.apiclient import exceptions
@@ -52,10 +51,7 @@ def find_resource(manager, name_or_id, **find_args):
 
     # now try to get entity as uuid
     try:
-        if six.PY2:
-            tmp_id = encodeutils.safe_encode(name_or_id)
-        else:
-            tmp_id = encodeutils.safe_decode(name_or_id)
+        tmp_id = encodeutils.safe_decode(name_or_id)
 
         if uuidutils.is_uuid_like(tmp_id):
             return manager.get(tmp_id)
