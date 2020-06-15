@@ -14,10 +14,10 @@
 #    under the License.
 
 import copy
+import io
 import json
-import six
-import six.moves.urllib.parse as urlparse
 import testtools
+from urllib import parse
 
 from glanceclient.v2 import schemas
 
@@ -38,11 +38,11 @@ class FakeAPI(object):
         fixture = self.fixtures[sort_url_by_query_keys(url)][method]
 
         data = fixture[1]
-        if isinstance(fixture[1], six.string_types):
+        if isinstance(fixture[1], str):
             try:
                 data = json.loads(fixture[1])
             except ValueError:
-                data = six.StringIO(fixture[1])
+                data = io.StringIO(fixture[1])
 
         return FakeResponse(fixture[0], fixture[1]), data
 
@@ -141,7 +141,7 @@ class FakeResponse(object):
 
     @property
     def text(self):
-        if isinstance(self.content, six.binary_type):
+        if isinstance(self.content, bytes):
             return self.content.decode('utf-8')
 
         return self.content
@@ -166,7 +166,7 @@ class TestCase(testtools.TestCase):
         'verify': True}
 
 
-class FakeTTYStdout(six.StringIO):
+class FakeTTYStdout(io.StringIO):
     """A Fake stdout that try to emulate a TTY device as much as possible."""
 
     def isatty(self):
@@ -177,7 +177,7 @@ class FakeTTYStdout(six.StringIO):
         if data.startswith('\r'):
             self.seek(0)
             data = data[1:]
-        return six.StringIO.write(self, data)
+        return io.StringIO.write(self, data)
 
 
 class FakeNoTTYStdout(FakeTTYStdout):
@@ -197,24 +197,24 @@ def sort_url_by_query_keys(url):
     :param url: url which will be ordered by query keys
     :returns url: url with ordered query keys
     """
-    parsed = urlparse.urlparse(url)
-    queries = urlparse.parse_qsl(parsed.query, True)
+    parsed = parse.urlparse(url)
+    queries = parse.parse_qsl(parsed.query, True)
     sorted_query = sorted(queries, key=lambda x: x[0])
 
-    encoded_sorted_query = urlparse.urlencode(sorted_query, True)
+    encoded_sorted_query = parse.urlencode(sorted_query, True)
 
     url_parts = (parsed.scheme, parsed.netloc, parsed.path,
                  parsed.params, encoded_sorted_query,
                  parsed.fragment)
 
-    return urlparse.urlunparse(url_parts)
+    return parse.urlunparse(url_parts)
 
 
 def build_call_record(method, url, headers, data):
     """Key the request body be ordered if it's a dict type."""
     if isinstance(data, dict):
         data = sorted(data.items())
-    if isinstance(data, six.string_types):
+    if isinstance(data, str):
         # NOTE(flwang): For image update, the data will be a 'list' which
         # contains operation dict, such as: [{"op": "remove", "path": "/a"}]
         try:

@@ -15,11 +15,11 @@
 #    under the License.
 import argparse
 from copy import deepcopy
+import io
 import json
 import os
 from unittest import mock
 
-import six
 import sys
 import tempfile
 import testtools
@@ -196,7 +196,7 @@ class ShellV2Test(testtools.TestCase):
     @mock.patch('sys.stderr')
     def test_image_create_missing_container_format_stdin_data(self, __):
         # Fake that get_data_file method returns data
-        self.mock_get_data_file.return_value = six.StringIO()
+        self.mock_get_data_file.return_value = io.StringIO()
         e = self.assertRaises(exc.CommandError, self._run_command,
                               '--os-image-api-version 2 image-create'
                               ' --disk-format qcow2')
@@ -206,7 +206,7 @@ class ShellV2Test(testtools.TestCase):
     @mock.patch('sys.stderr')
     def test_image_create_missing_disk_format_stdin_data(self, __):
         # Fake that get_data_file method returns data
-        self.mock_get_data_file.return_value = six.StringIO()
+        self.mock_get_data_file.return_value = io.StringIO()
         e = self.assertRaises(exc.CommandError, self._run_command,
                               '--os-image-api-version 2 image-create'
                               ' --container-format bare')
@@ -618,7 +618,7 @@ class ShellV2Test(testtools.TestCase):
                 'os_hash_value': None})
 
     def test_do_image_create_with_multihash(self):
-        self.mock_get_data_file.return_value = six.StringIO()
+        self.mock_get_data_file.return_value = io.StringIO()
         try:
             with open(tempfile.mktemp(), 'w+') as f:
                 f.write('Some data here')
@@ -694,7 +694,7 @@ class ShellV2Test(testtools.TestCase):
                 'container_format': 'bare', 'os_hidden': True})
 
     def test_do_image_create_with_file(self):
-        self.mock_get_data_file.return_value = six.StringIO()
+        self.mock_get_data_file.return_value = io.StringIO()
         try:
             file_name = None
             with open(tempfile.mktemp(), 'w+') as f:
@@ -1412,7 +1412,7 @@ class ShellV2Test(testtools.TestCase):
             self, mock_stdin, mock_do_stage, mock_do_import):
         """Backward compat -> handle this like a glance-direct"""
         mock_stdin.isatty = lambda: False
-        self.mock_get_data_file.return_value = six.StringIO()
+        self.mock_get_data_file.return_value = io.StringIO()
         args = self._make_args(self.base_args)
         with mock.patch.object(self.gc.images, 'create') as mocked_create:
             with mock.patch.object(self.gc.images, 'get') as mocked_get:
@@ -1447,7 +1447,7 @@ class ShellV2Test(testtools.TestCase):
             self, mock_stdin, mock_access, mock_do_stage, mock_do_import):
         """Backward compat -> handle this like a glance-direct"""
         mock_stdin.isatty = lambda: True
-        self.mock_get_data_file.return_value = six.StringIO()
+        self.mock_get_data_file.return_value = io.StringIO()
         mock_access.return_value = True
         my_args = self.base_args.copy()
         my_args['file'] = 'fake-image-file.browncow'
