@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    * Bug 1886650_: Glance client does not correctly forward global request IDs
+
+    .. _1886650: https://code.launchpad.net/bugs/1886650
