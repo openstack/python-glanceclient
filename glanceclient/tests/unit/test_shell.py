@@ -17,6 +17,7 @@
 import argparse
 from collections import OrderedDict
 import hashlib
+import io
 import logging
 import os
 import sys
@@ -28,7 +29,6 @@ import fixtures
 from keystoneauth1 import exceptions as ks_exc
 from keystoneauth1 import fixture as ks_fixture
 from requests_mock.contrib import fixture as rm_fixture
-import six
 
 from glanceclient.common import utils
 from glanceclient import exc
@@ -144,8 +144,8 @@ class ShellTest(testutils.TestCase):
         orig = sys.stdout
         orig_stderr = sys.stderr
         try:
-            sys.stdout = six.StringIO()
-            sys.stderr = six.StringIO()
+            sys.stdout = io.StringIO()
+            sys.stderr = io.StringIO()
             _shell = openstack_shell.OpenStackImagesShell()
             _shell.main(argstr.split())
         except SystemExit:
@@ -162,10 +162,7 @@ class ShellTest(testutils.TestCase):
 
     def test_fixup_subcommand(self):
         arglist = [u'image-list', u'--help']
-        if six.PY2:
-            expected_arglist = [b'image-list', u'--help']
-        elif six.PY3:
-            expected_arglist = [u'image-list', u'--help']
+        expected_arglist = [u'image-list', u'--help']
 
         openstack_shell.OpenStackImagesShell._fixup_subcommand(
             arglist, arglist
@@ -175,14 +172,9 @@ class ShellTest(testutils.TestCase):
     def test_fixup_subcommand_with_options_preceding(self):
         arglist = [u'--os-auth-token', u'abcdef', u'image-list', u'--help']
         unknown = arglist[2:]
-        if six.PY2:
-            expected_arglist = [
-                u'--os-auth-token', u'abcdef', b'image-list', u'--help'
-            ]
-        elif six.PY3:
-            expected_arglist = [
-                u'--os-auth-token', u'abcdef', u'image-list', u'--help'
-            ]
+        expected_arglist = [
+            u'--os-auth-token', u'abcdef', u'image-list', u'--help'
+        ]
 
         openstack_shell.OpenStackImagesShell._fixup_subcommand(
             unknown, arglist
@@ -194,8 +186,8 @@ class ShellTest(testutils.TestCase):
         argstr = '--os-image-api-version 2 help foofoo'
         self.assertRaises(exc.CommandError, shell.main, argstr.split())
 
-    @mock.patch('sys.stdout', six.StringIO())
-    @mock.patch('sys.stderr', six.StringIO())
+    @mock.patch('sys.stdout', io.StringIO())
+    @mock.patch('sys.stderr', io.StringIO())
     @mock.patch('sys.argv', ['glance', 'help', 'foofoo'])
     def test_no_stacktrace_when_debug_disabled(self):
         with mock.patch.object(traceback, 'print_exc') as mock_print_exc:
@@ -205,8 +197,8 @@ class ShellTest(testutils.TestCase):
                 pass
             self.assertFalse(mock_print_exc.called)
 
-    @mock.patch('sys.stdout', six.StringIO())
-    @mock.patch('sys.stderr', six.StringIO())
+    @mock.patch('sys.stdout', io.StringIO())
+    @mock.patch('sys.stderr', io.StringIO())
     @mock.patch('sys.argv', ['glance', 'help', 'foofoo'])
     def test_stacktrace_when_debug_enabled_by_env(self):
         old_environment = os.environ.copy()
@@ -221,8 +213,8 @@ class ShellTest(testutils.TestCase):
         finally:
             os.environ = old_environment
 
-    @mock.patch('sys.stdout', six.StringIO())
-    @mock.patch('sys.stderr', six.StringIO())
+    @mock.patch('sys.stdout', io.StringIO())
+    @mock.patch('sys.stderr', io.StringIO())
     @mock.patch('sys.argv', ['glance', '--debug', 'help', 'foofoo'])
     def test_stacktrace_when_debug_enabled(self):
         with mock.patch.object(traceback, 'print_exc') as mock_print_exc:
@@ -589,8 +581,8 @@ class ShellTest(testutils.TestCase):
         self.assertRaises(exc.CommandError, glance_shell.main, args.split())
 
     @mock.patch('sys.argv', ['glance'])
-    @mock.patch('sys.stdout', six.StringIO())
-    @mock.patch('sys.stderr', six.StringIO())
+    @mock.patch('sys.stdout', io.StringIO())
+    @mock.patch('sys.stderr', io.StringIO())
     def test_main_noargs(self):
         # Ensure that main works with no command-line arguments
         try:
@@ -781,7 +773,7 @@ class ShellCacheSchemaTest(testutils.TestCase):
 
         return Args(args)
 
-    @mock.patch('six.moves.builtins.open', new=mock.mock_open(), create=True)
+    @mock.patch('builtins.open', new=mock.mock_open(), create=True)
     @mock.patch('os.path.exists', return_value=True)
     def test_cache_schemas_gets_when_forced(self, exists_mock):
         options = {
@@ -804,7 +796,7 @@ class ShellCacheSchemaTest(testutils.TestCase):
         actual = json.loads(open.mock_calls[6][1][0])
         self.assertEqual(schema_odict, actual)
 
-    @mock.patch('six.moves.builtins.open', new=mock.mock_open(), create=True)
+    @mock.patch('builtins.open', new=mock.mock_open(), create=True)
     @mock.patch('os.path.exists', side_effect=[True, False, False, False])
     def test_cache_schemas_gets_when_not_exists(self, exists_mock):
         options = {
@@ -827,7 +819,7 @@ class ShellCacheSchemaTest(testutils.TestCase):
         actual = json.loads(open.mock_calls[6][1][0])
         self.assertEqual(schema_odict, actual)
 
-    @mock.patch('six.moves.builtins.open', new=mock.mock_open(), create=True)
+    @mock.patch('builtins.open', new=mock.mock_open(), create=True)
     @mock.patch('os.path.exists', return_value=True)
     def test_cache_schemas_leaves_when_present_not_forced(self, exists_mock):
         options = {
@@ -848,7 +840,7 @@ class ShellCacheSchemaTest(testutils.TestCase):
         self.assertEqual(4, exists_mock.call_count)
         self.assertEqual(0, open.mock_calls.__len__())
 
-    @mock.patch('six.moves.builtins.open', new=mock.mock_open(), create=True)
+    @mock.patch('builtins.open', new=mock.mock_open(), create=True)
     @mock.patch('os.path.exists', return_value=True)
     def test_cache_schemas_leaves_auto_switch(self, exists_mock):
         options = {
@@ -899,7 +891,7 @@ class ShellTestRequests(testutils.TestCase):
 
             headers = {'Content-Length': '4',
                        'Content-type': 'application/octet-stream'}
-            fake = testutils.FakeResponse(headers, six.StringIO('DATA'))
+            fake = testutils.FakeResponse(headers, io.StringIO('DATA'))
             self.requests.get('http://example.com/v1/images/%s' % id,
                               raw=fake)
 
@@ -938,7 +930,7 @@ class ShellTestRequests(testutils.TestCase):
 
             headers = {'Content-Length': '4',
                        'Content-type': 'application/octet-stream'}
-            fake = testutils.FakeResponse(headers, six.StringIO('DATA'))
+            fake = testutils.FakeResponse(headers, io.StringIO('DATA'))
             self.requests.get('http://example.com/v1/images/%s' % id,
                               headers=headers, raw=fake)
 
@@ -960,7 +952,7 @@ class ShellTestRequests(testutils.TestCase):
             id = image_show_fixture['id']
             headers = {'Content-Length': '4',
                        'Content-type': 'application/octet-stream'}
-            fake = testutils.FakeResponse(headers, six.StringIO('DATA'))
+            fake = testutils.FakeResponse(headers, io.StringIO('DATA'))
 
             self.requests = self.useFixture(rm_fixture.Fixture())
             self.requests.get('http://example.com/v2/images/%s/file' % id,

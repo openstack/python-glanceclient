@@ -13,14 +13,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import io
 import sys
 from unittest import mock
 
 from oslo_utils import encodeutils
 from requests import Response
-import six
 # NOTE(jokke): simplified transition to py3, behaves like py2 xrange
-from six.moves import range
 import testtools
 
 from glanceclient.common import utils
@@ -47,7 +46,7 @@ class TestUtils(testtools.TestCase):
 
     def test_get_new_file_size(self):
         size = 98304
-        file_obj = six.StringIO('X' * size)
+        file_obj = io.StringIO('X' * size)
         try:
             self.assertEqual(size, utils.get_file_size(file_obj))
             # Check that get_file_size didn't change original file position.
@@ -57,7 +56,7 @@ class TestUtils(testtools.TestCase):
 
     def test_get_consumed_file_size(self):
         size, consumed = 98304, 304
-        file_obj = six.StringIO('X' * size)
+        file_obj = io.StringIO('X' * size)
         file_obj.seek(consumed)
         try:
             self.assertEqual(size, utils.get_file_size(file_obj))
@@ -79,10 +78,10 @@ class TestUtils(testtools.TestCase):
 
         saved_stdout = sys.stdout
         try:
-            sys.stdout = output_list = six.StringIO()
+            sys.stdout = output_list = io.StringIO()
             utils.print_list(images, columns)
 
-            sys.stdout = output_dict = six.StringIO()
+            sys.stdout = output_dict = io.StringIO()
             utils.print_dict({'K': 'k', 'Key': 'veeeeeeeeeeeeeeeeeeeeeeee'
                               'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
                               'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
@@ -126,7 +125,7 @@ class TestUtils(testtools.TestCase):
                   'tags': [u'Name1', u'Tag_123', u'veeeery long']})]
         saved_stdout = sys.stdout
         try:
-            sys.stdout = output_list = six.StringIO()
+            sys.stdout = output_list = io.StringIO()
             utils.print_list(images, columns)
 
         finally:
@@ -145,7 +144,7 @@ class TestUtils(testtools.TestCase):
         image = {'id': '42', 'virtual_size': 1337}
         saved_stdout = sys.stdout
         try:
-            sys.stdout = output_list = six.StringIO()
+            sys.stdout = output_list = io.StringIO()
             utils.print_image(image)
         finally:
             sys.stdout = saved_stdout
@@ -164,7 +163,7 @@ class TestUtils(testtools.TestCase):
         image = {'id': '42', 'virtual_size': None}
         saved_stdout = sys.stdout
         try:
-            sys.stdout = output_list = six.StringIO()
+            sys.stdout = output_list = io.StringIO()
             utils.print_image(image)
         finally:
             sys.stdout = saved_stdout
@@ -181,13 +180,9 @@ class TestUtils(testtools.TestCase):
 
     def test_unicode_key_value_to_string(self):
         src = {u'key': u'\u70fd\u7231\u5a77'}
-        expected = {'key': '\xe7\x83\xbd\xe7\x88\xb1\xe5\xa9\xb7'}
-        if six.PY2:
-            self.assertEqual(expected, utils.unicode_key_value_to_string(src))
-        else:
-            # u'xxxx' in PY3 is str, we will not get extra 'u' from cli
-            # output in PY3
-            self.assertEqual(src, utils.unicode_key_value_to_string(src))
+        # u'xxxx' in PY3 is str, we will not get extra 'u' from cli
+        # output in PY3
+        self.assertEqual(src, utils.unicode_key_value_to_string(src))
 
     def test_schema_args_with_list_types(self):
         # NOTE(flaper87): Regression for bug
@@ -240,7 +235,7 @@ class TestUtils(testtools.TestCase):
             for chunk in i:
                 raise(IOError)
 
-        data = six.moves.StringIO('somestring')
+        data = io.StringIO('somestring')
         data.close = mock.Mock()
         i = utils.IterableWithLength(data, 10)
         self.assertRaises(IOError, _iterate, i)

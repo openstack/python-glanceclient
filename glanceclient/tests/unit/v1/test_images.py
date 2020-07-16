@@ -14,11 +14,10 @@
 #    under the License.
 
 import errno
+import io
 import json
 import testtools
-
-import six
-from six.moves.urllib import parse
+from urllib import parse
 
 from glanceclient.tests import utils
 from glanceclient.v1 import client
@@ -634,7 +633,7 @@ class ImageManagerTest(testtools.TestCase):
         self.assertEqual({'a': 'b', 'c': 'd'}, image.properties)
 
     def test_create_with_data(self):
-        image_data = six.StringIO('XXX')
+        image_data = io.StringIO('XXX')
         self.mgr.create(data=image_data)
         expect_headers = {'x-image-meta-size': '3'}
         expect = [('POST', '/v1/images', expect_headers, image_data)]
@@ -711,7 +710,7 @@ class ImageManagerTest(testtools.TestCase):
         self.assertEqual(10, image.min_disk)
 
     def test_update_with_data(self):
-        image_data = six.StringIO('XXX')
+        image_data = io.StringIO('XXX')
         self.mgr.update('1', data=image_data)
         expect_headers = {'x-image-meta-size': '3',
                           'x-glance-registry-purge-props': 'false'}
@@ -744,10 +743,7 @@ class ImageManagerTest(testtools.TestCase):
 
     def test_image_meta_from_headers_encoding(self):
         value = u"ni\xf1o"
-        if six.PY2:
-            fields = {"x-image-meta-name": "ni\xc3\xb1o"}
-        else:
-            fields = {"x-image-meta-name": value}
+        fields = {"x-image-meta-name": value}
         headers = self.mgr._image_meta_from_headers(fields)
         self.assertEqual(value, headers["name"])
 

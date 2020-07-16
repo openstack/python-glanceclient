@@ -19,13 +19,13 @@ from unittest import mock
 import uuid
 
 import fixtures
+import io
 from keystoneauth1 import session
 from keystoneauth1 import token_endpoint
 from oslo_utils import encodeutils
 import requests
 from requests_mock.contrib import fixture
-import six
-from six.moves.urllib import parse
+from urllib import parse
 from testscenarios import load_tests_apply_scenarios as load_tests  # noqa
 import testtools
 from testtools import matchers
@@ -310,14 +310,14 @@ class TestClient(testtools.TestCase):
     def test__chunk_body_exact_size_chunk(self):
         test_client = http._BaseHTTPClient()
         bytestring = b'x' * http.CHUNKSIZE
-        data = six.BytesIO(bytestring)
+        data = io.BytesIO(bytestring)
         chunk = list(test_client._chunk_body(data))
         self.assertEqual(1, len(chunk))
         self.assertEqual([bytestring], chunk)
 
     def test_http_chunked_request(self):
         text = "Ok"
-        data = six.StringIO(text)
+        data = io.StringIO(text)
         path = '/v1/images/'
         self.mock.post(self.endpoint + path, text=text)
 
@@ -336,13 +336,13 @@ class TestClient(testtools.TestCase):
         resp, body = self.client.post(path, headers=headers, data=data)
 
         self.assertEqual(text, resp.text)
-        self.assertIsInstance(self.mock.last_request.body, six.string_types)
+        self.assertIsInstance(self.mock.last_request.body, str)
         self.assertEqual(data, json.loads(self.mock.last_request.body))
 
     def test_http_chunked_response(self):
         data = "TEST"
         path = '/v1/images/'
-        self.mock.get(self.endpoint + path, body=six.StringIO(data),
+        self.mock.get(self.endpoint + path, body=io.StringIO(data),
                       headers={"Content-Type": "application/octet-stream"})
 
         resp, body = self.client.get(path)
@@ -355,7 +355,7 @@ class TestClient(testtools.TestCase):
             response = 'Ok'
             headers = {"Content-Type": "text/plain",
                        "test": "value1\xa5\xa6"}
-            fake = utils.FakeResponse(headers, six.StringIO(response))
+            fake = utils.FakeResponse(headers, io.StringIO(response))
             self.client.log_http_response(fake)
         except UnicodeDecodeError as e:
             self.fail("Unexpected UnicodeDecodeError exception '%s'" % e)
@@ -458,7 +458,7 @@ class TestClient(testtools.TestCase):
         logger = self.useFixture(fixtures.FakeLogger(level=logging.DEBUG))
         data = "TEST"
         path = '/v1/images/'
-        self.mock.get(self.endpoint + path, body=six.StringIO(data),
+        self.mock.get(self.endpoint + path, body=io.StringIO(data),
                       headers={"Content-Type": "application/octet-stream",
                                'x-openstack-request-id': "1234"})
 

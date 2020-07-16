@@ -15,11 +15,11 @@
 #    under the License.
 
 import argparse
+import io
 import json
 import os
 from unittest import mock
 
-import six
 import subprocess
 import tempfile
 import testtools
@@ -33,12 +33,6 @@ import glanceclient.v1.images
 import glanceclient.v1.shell as v1shell
 
 from glanceclient.tests import utils
-
-if six.PY3:
-    import io
-    file_type = io.IOBase
-else:
-    file_type = file
 
 fixtures = {
     '/v1/images/96d2c7e1-de4e-4612-8aa2-ba26610c804e': {
@@ -351,7 +345,7 @@ class ShellInvalidEndpointandParameterTest(utils.TestCase):
     @mock.patch('sys.stderr')
     def test_image_create_missing_container_format_stdin_data(self, __):
         # Fake that get_data_file method returns data
-        self.mock_get_data_file.return_value = six.StringIO()
+        self.mock_get_data_file.return_value = io.StringIO()
         e = self.assertRaises(exc.CommandError, self.run_command,
                               '--os-image-api-version 1 image-create'
                               ' --disk-format qcow2')
@@ -361,7 +355,7 @@ class ShellInvalidEndpointandParameterTest(utils.TestCase):
     @mock.patch('sys.stderr')
     def test_image_create_missing_disk_format_stdin_data(self, __):
         # Fake that get_data_file method returns data
-        self.mock_get_data_file.return_value = six.StringIO()
+        self.mock_get_data_file.return_value = io.StringIO()
         e = self.assertRaises(exc.CommandError, self.run_command,
                               '--os-image-api-version 1 image-create'
                               ' --container-format bare')
@@ -574,7 +568,7 @@ class ShellStdinHandlingTests(testtools.TestCase):
             self._do_update('44d2c7e1-de4e-4612-8aa2-ba26610c444f')
 
             self.assertIn('data', self.collected_args[1])
-            self.assertIsInstance(self.collected_args[1]['data'], file_type)
+            self.assertIsInstance(self.collected_args[1]['data'], io.IOBase)
             self.assertEqual(b'Some Data',
                              self.collected_args[1]['data'].read())
 
@@ -599,7 +593,7 @@ class ShellStdinHandlingTests(testtools.TestCase):
             self._do_update('44d2c7e1-de4e-4612-8aa2-ba26610c444f')
 
             self.assertIn('data', self.collected_args[1])
-            self.assertIsInstance(self.collected_args[1]['data'], file_type)
+            self.assertIsInstance(self.collected_args[1]['data'], io.IOBase)
             self.assertEqual(b'Some Data\n',
                              self.collected_args[1]['data'].read())
 

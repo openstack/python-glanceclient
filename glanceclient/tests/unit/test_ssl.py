@@ -16,7 +16,6 @@
 import os
 from unittest import mock
 
-import six
 import ssl
 import testtools
 import threading
@@ -26,10 +25,7 @@ from glanceclient import exc
 from glanceclient import v1
 from glanceclient import v2
 
-if six.PY3 is True:
-    import socketserver
-else:
-    import SocketServer as socketserver
+import socketserver
 
 
 TEST_VAR_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -217,9 +213,7 @@ class TestHTTPSVerifyCert(testtools.TestCase):
             # starting from python 2.7.8 the way to handle loading private
             # keys into the SSL_CTX was changed and error message become
             # similar to the one in 3.X
-            if (six.PY2 and 'PrivateKey' not in e.message and
-                    'PEM lib' not in e.message or
-                    six.PY3 and 'PEM lib' not in e.message):
+            if 'PEM lib' not in e.message:
                 self.fail('No appropriate failure message is received')
 
     @mock.patch('sys.stderr')
