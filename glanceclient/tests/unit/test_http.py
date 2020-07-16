@@ -267,6 +267,20 @@ class TestClient(testtools.TestCase):
         self.assertEqual(b"application/openstack-images-v2.1-json-patch",
                          ksarqh[b"Content-Type"])
 
+    def test_request_id_header_session_client(self):
+        global_id = "req-%s" % uuid.uuid4()
+        kwargs = {'global_request_id': global_id}
+        auth = token_endpoint.Token(self.endpoint, self.token)
+        sess = session.Session(auth=auth)
+        http_client = http.SessionClient(sess, **kwargs)
+
+        path = '/v2/images/my-image'
+        self.mock.get(self.endpoint + path)
+        http_client.get(path)
+
+        headers = self.mock.last_request.headers
+        self.assertEqual(global_id, headers['X-OpenStack-Request-ID'])
+
     def test_raw_request(self):
         """Verify the path being used for HTTP requests reflects accurately."""
         headers = {"Content-Type": "text/plain"}
