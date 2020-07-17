@@ -17,8 +17,7 @@ import hashlib
 import json
 from oslo_utils import encodeutils
 from requests import codes
-import six
-from six.moves.urllib import parse
+import urllib.parse
 import warlock
 
 from glanceclient.common import utils
@@ -55,7 +54,7 @@ class Controller(object):
 
     @staticmethod
     def _wrap(value):
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             return [value]
         return value
 
@@ -142,19 +141,19 @@ class Controller(object):
         tags_url_params = []
 
         for tag in tags:
-            if not isinstance(tag, six.string_types):
+            if not isinstance(tag, str):
                 raise exc.HTTPBadRequest("Invalid tag value %s" % tag)
 
             tags_url_params.append({'tag': encodeutils.safe_encode(tag)})
 
         for param, value in filters.items():
-            if isinstance(value, six.string_types):
+            if isinstance(value, str):
                 filters[param] = encodeutils.safe_encode(value)
 
-        url = '/v2/images?%s' % parse.urlencode(filters)
+        url = '/v2/images?%s' % urllib.parse.urlencode(filters)
 
         for param in tags_url_params:
-            url = '%s&%s' % (url, parse.urlencode(param))
+            url = '%s&%s' % (url, urllib.parse.urlencode(param))
 
         if 'sort' in kwargs:
             if 'sort_key' in kwargs or 'sort_dir' in kwargs:
@@ -178,7 +177,7 @@ class Controller(object):
             for dir in sort_dir:
                 url = '%s&sort_dir=%s' % (url, dir)
 
-        if isinstance(kwargs.get('marker'), six.string_types):
+        if isinstance(kwargs.get('marker'), str):
             url = '%s&marker=%s' % (url, kwargs['marker'])
 
         for image, resp in paginate(url, page_size, limit):

@@ -16,8 +16,6 @@
 import re
 import sys
 
-import six
-
 
 class BaseException(Exception):
     """An error occurred."""
@@ -179,8 +177,7 @@ def from_response(response, body=None):
         details = ': '.join(details_temp)
         return cls(details=details)
     elif body:
-        if six.PY3:
-            body = body.decode('utf-8')
+        body = body.decode('utf-8')
         details = body.replace('\n\n', '\n')
         return cls(details=details)
 

@@ -41,8 +41,7 @@ import abc
 import copy
 
 from oslo_utils import strutils
-import six
-from six.moves.urllib import parse
+import urllib.parse
 
 from glanceclient._i18n import _
 from glanceclient.v1.apiclient import exceptions
@@ -224,8 +223,7 @@ class BaseManager(HookableMixin):
         return self.client.delete(url)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class ManagerWithFind(BaseManager):
+class ManagerWithFind(BaseManager, metaclass=abc.ABCMeta):
     """Manager with additional `find()`/`findall()` methods."""
 
     @abc.abstractmethod
@@ -350,10 +348,11 @@ class CrudManager(BaseManager):
         """
         kwargs = self._filter_kwargs(kwargs)
 
+        query = urllib.parse.urlencode(kwargs) if kwargs else '',
         return self._list(
             '%(base_url)s%(query)s' % {
                 'base_url': self.build_url(base_url=base_url, **kwargs),
-                'query': '?%s' % parse.urlencode(kwargs) if kwargs else '',
+                'query': '?%s' % query,
             },
             self.collection_key)
 
@@ -389,10 +388,11 @@ class CrudManager(BaseManager):
         """
         kwargs = self._filter_kwargs(kwargs)
 
+        query = urllib.parse.urlencode(kwargs) if kwargs else '',
         rl = self._list(
             '%(base_url)s%(query)s' % {
                 'base_url': self.build_url(base_url=base_url, **kwargs),
-                'query': '?%s' % parse.urlencode(kwargs) if kwargs else '',
+                'query': '?%s' % query,
             },
             self.collection_key)
         num = len(rl)

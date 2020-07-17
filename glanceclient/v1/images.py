@@ -17,8 +17,7 @@ import copy
 
 from oslo_utils import encodeutils
 from oslo_utils import strutils
-import six
-import six.moves.urllib.parse as urlparse
+import urllib.parse
 
 from glanceclient.common import utils
 from glanceclient.v1.apiclient import base
@@ -101,7 +100,7 @@ class ImageManager(base.ManagerWithFind):
         # headers will be encoded later, before the
         # request is sent.
         def to_str(value):
-            if not isinstance(value, six.string_types):
+            if not isinstance(value, str):
                 return str(value)
             return value
 
@@ -129,7 +128,7 @@ class ImageManager(base.ManagerWithFind):
         """
         image_id = base.getid(image)
         resp, body = self.client.head('/v1/images/%s'
-                                      % urlparse.quote(str(image_id)))
+                                      % urllib.parse.quote(str(image_id)))
         meta = self._image_meta_from_headers(resp.headers)
         return_request_id = kwargs.get('return_req_id', None)
         if return_request_id is not None:
@@ -145,7 +144,7 @@ class ImageManager(base.ManagerWithFind):
         """
         image_id = base.getid(image)
         resp, body = self.client.get('/v1/images/%s'
-                                     % urlparse.quote(str(image_id)))
+                                     % urllib.parse.quote(str(image_id)))
         content_length = int(resp.headers.get('content-length', 0))
         checksum = resp.headers.get('x-image-meta-checksum', None)
         if do_checksum and checksum is not None:
@@ -225,7 +224,7 @@ class ImageManager(base.ManagerWithFind):
 
         def paginate(qp, return_request_id=None):
             for param, value in qp.items():
-                if isinstance(value, six.string_types):
+                if isinstance(value, str):
                     # Note(flaper87) Url encoding should
                     # be moved inside http utils, at least
                     # shouldn't be here.
@@ -234,7 +233,7 @@ class ImageManager(base.ManagerWithFind):
                     # trying to encode them
                     qp[param] = encodeutils.safe_decode(value)
 
-            url = '/v1/images/detail?%s' % urlparse.urlencode(qp)
+            url = '/v1/images/detail?%s' % urllib.parse.urlencode(qp)
             images, resp = self._list(url, "images")
 
             if return_request_id is not None:

@@ -19,12 +19,11 @@ import hashlib
 import json
 import os
 import re
-import six.moves.urllib.parse as urlparse
 import sys
 import threading
+import urllib.parse
 import uuid
 
-import six
 
 if os.name == 'nt':  # noqa
     import msvcrt  # noqa
@@ -159,7 +158,7 @@ def schema_args(schema_getter, omit=None):
                     # for the `join` to succeed. Enum types can also be `None`
                     # therefore, join's call would fail without the following
                     # list comprehension
-                    vals = [six.text_type(val) for val in property.get('enum')]
+                    vals = [str(val) for val in property.get('enum')]
                     description += ('Valid values: ' + ', '.join(vals))
                 kwargs['help'] = description
 
@@ -214,8 +213,6 @@ def print_list(objs, fields, formatters=None, field_settings=None):
 
 def _encode(src):
     """remove extra 'u' in PY2."""
-    if six.PY2 and isinstance(src, unicode):
-        return src.encode('utf-8')
     return src
 
 
@@ -343,7 +340,7 @@ def get_file_size(file_obj):
     :retval: The file's size or None if it cannot be determined.
     """
     if (hasattr(file_obj, 'seek') and hasattr(file_obj, 'tell') and
-            (six.PY2 or six.PY3 and file_obj.seekable())):
+            file_obj.seekable()):
         try:
             curr = file_obj.tell()
             file_obj.seek(0, os.SEEK_END)
@@ -399,13 +396,13 @@ def strip_version(endpoint):
     # we make endpoint the first argument. However, we
     # can't do that just yet because we need to keep
     # backwards compatibility.
-    if not isinstance(endpoint, six.string_types):
+    if not isinstance(endpoint, str):
         raise ValueError("Expected endpoint")
 
     version = None
     # Get rid of trailing '/' if present
     endpoint = endpoint.rstrip('/')
-    url_parts = urlparse.urlparse(endpoint)
+    url_parts = urllib.parse.urlparse(endpoint)
     (scheme, netloc, path, __, __, __) = url_parts
     path = path.lstrip('/')
     # regex to match 'v1' or 'v2.0' etc
@@ -444,8 +441,8 @@ def integrity_iter(iter, checksum):
 
     for chunk in iter:
         yield chunk
-        if isinstance(chunk, six.string_types):
-            chunk = six.b(chunk)
+        if isinstance(chunk, str):
+            chunk = bytes(chunk, 'latin-1')
         md5sum.update(chunk)
     md5sum = md5sum.hexdigest()
     if md5sum != checksum:
@@ -464,8 +461,8 @@ def serious_integrity_iter(iter, hasher, hash_value):
     """
     for chunk in iter:
         yield chunk
-        if isinstance(chunk, six.string_types):
-            chunk = six.b(chunk)
+        if isinstance(chunk, str):
+            chunk = bytes(chunk, 'latin-1')
         hasher.update(chunk)
     computed = hasher.hexdigest()
     if computed != hash_value:

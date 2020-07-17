@@ -36,8 +36,6 @@ Exception definitions.
 import inspect
 import sys
 
-import six
-
 from glanceclient._i18n import _
 
 
@@ -461,7 +459,7 @@ def from_response(response, method, url):
                     kwargs["message"] = (error.get("message") or
                                          error.get("faultstring"))
                     kwargs["details"] = (error.get("details") or
-                                         six.text_type(body))
+                                         str(body))
     elif content_type.startswith("text/"):
         kwargs["details"] = getattr(response, 'text', '')
 
