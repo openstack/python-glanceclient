@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    Bug 1889666_: 'stores' property added when using image-create-via-import --stores <list>
+
+    .. _1889666: https://bugs.launchpad.net/glance/+bug/1889666
