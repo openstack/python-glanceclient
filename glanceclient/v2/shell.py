@@ -235,6 +235,9 @@ def do_image_create_via_import(gc, args):
         # determine if backend is valid
         _validate_backend(backend, gc)
     elif stores:
+        # NOTE(jokke): Making sure here that we do not include the stores in
+        # the create call
+        fields.pop("stores")
         stores = str(stores).split(',')
         for store in stores:
             # determine if backend is valid
