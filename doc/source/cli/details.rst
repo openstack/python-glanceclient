@@ -598,6 +598,10 @@ glance image-import
 .. code-block:: console
 
    usage: glance image-import [--import-method <METHOD>]
+                              [--uri <IMAGE_URL>]
+                              [--store <STORE>] [--stores <STORES>]
+                              [--all-stores [True|False]]
+                              [--allow-failure [True|False]]
                               <IMAGE_ID>
 
 Initiate the image import taskflow.
@@ -613,6 +617,29 @@ Initiate the image import taskflow.
   Import method used for Image Import workflow.  Valid values can
   be retrieved with import-info command and the default "glance-direct"
   is used with "image-stage".
+
+``--uri <IMAGE_URL>``
+  URI to download the external image
+
+``--store <STORE>``
+  Backend store to upload image to.
+
+``--stores <STORES>``
+  List of comma separated stores to upload image if multi-stores are
+  enabled in the environment.
+
+``--all-stores [True|False]``
+  "all-stores" can be used instead of "--stores <STORES>" to indicate
+  that image should be imported all available stores.
+
+``--allow-failure [True|False]``
+  Indicator if all stores listed (or available) must
+  succeed. "True" by default meaning that we allow some
+  stores to fail and the status can be monitored from
+  the image metadata. If this is set to "False" the
+  import will be reverted should any of the uploads
+  fail. Only usable with "stores" or "all-stores".
+
 
 .. _glance_image-create-via-import:
 
