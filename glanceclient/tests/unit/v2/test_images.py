@@ -20,6 +20,7 @@ from unittest import mock
 
 import ddt
 
+from glanceclient.common import utils as common_utils
 from glanceclient import exc
 from glanceclient.tests.unit.v2 import base
 from glanceclient.tests import utils
@@ -674,6 +675,19 @@ data_fixtures = {
             ]},
         ),
     },
+    '/v2/images/3a4560a1-e585-443e-9b39-553b46ec92d1/tasks': {
+        'GET': (
+            {},
+            {'tasks': [
+                {
+                    'id': '6f99bf80-2ee6-47cf-acfe-1f1fabb7e810',
+                    'status': 'succeed',
+                    'message': 'Copied 44 MiB',
+                    'updated_at': '2021-03-01T18:28:26.000000'
+                }
+            ]},
+        ),
+    },
 }
 
 schema_fixtures = {
@@ -714,6 +728,22 @@ class TestController(testtools.TestCase):
         self.schema_api = utils.FakeSchemaAPI(schema_fixtures)
         self.controller = base.BaseController(self.api, self.schema_api,
                                               images.Controller)
+
+    def test_image_tasks_supported(self):
+        with mock.patch.object(common_utils,
+                               'has_version') as mock_has_version:
+            mock_has_version.return_value = True
+            image_tasks = self.controller.get_associated_image_tasks(
+                '3a4560a1-e585-443e-9b39-553b46ec92d1')
+            self.assertEqual(1, len(image_tasks['tasks']))
+
+    def test_image_tasks_not_supported(self):
+        with mock.patch.object(common_utils,
+                               'has_version') as mock_has_version:
+            mock_has_version.return_value = False
+            self.assertRaises(exc.HTTPNotImplemented,
+                              self.controller.get_associated_image_tasks,
+                              '3a4560a1-e585-443e-9b39-553b46ec92d1')
 
     def test_list_images(self):
         images = self.controller.list()

@@ -197,6 +197,25 @@ class Controller(object):
         return self._get(image_id)
 
     @utils.add_req_id_to_object()
+    def get_associated_image_tasks(self, image_id):
+        """Get the tasks associated with an image.
+
+        :param image_id: ID of the image
+        :raises: exc.HTTPNotImplemented if Glance is not new enough to support
+                 this API (v2.12).
+        """
+        # NOTE (abhishekk): Verify that /v2i/images/%s/tasks is supported by
+        # glance
+        if utils.has_version(self.http_client, 'v2.12'):
+            url = '/v2/images/%s/tasks' % image_id
+            resp, body = self.http_client.get(url)
+            body.pop('self', None)
+            return body, resp
+        else:
+            raise exc.HTTPNotImplemented(
+                'This operation is not supported by Glance.')
+
+    @utils.add_req_id_to_object()
     def data(self, image_id, do_checksum=True, allow_md5_fallback=False):
         """Retrieve data of an image.
 
