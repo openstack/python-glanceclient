@@ -468,6 +468,24 @@ def do_image_show(gc, args):
     utils.print_image(image, args.human_readable, int(args.max_column_width))
 
 
+@utils.arg('id', metavar='<IMAGE_ID>', help=_('ID of image to get tasks.'))
+def do_image_tasks(gc, args):
+    """Get tasks associated with image"""
+    columns = ['Message', 'Status', 'Updated at']
+    if args.verbose:
+        columns_to_prepend = ['Image Id', 'Task Id']
+        columns_to_extend = ['User Id', 'Request Id',
+                             'Result', 'Owner', 'Input', 'Expires at']
+        columns = columns_to_prepend + columns + columns_to_extend
+    try:
+        tasks = gc.images.get_associated_image_tasks(args.id)
+        utils.print_dict_list(tasks['tasks'], columns)
+    except exc.HTTPNotFound:
+        utils.exit('Image %s not found.' % args.id)
+    except exc.HTTPNotImplemented:
+        utils.exit('Server does not support image tasks API (v2.12)')
+
+
 @utils.arg('--image-id', metavar='<IMAGE_ID>', required=True,
            help=_('Image to display members of.'))
 def do_member_list(gc, args):

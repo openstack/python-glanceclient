@@ -173,6 +173,34 @@ def pretty_choice_list(l):
     return ', '.join("'%s'" % i for i in l)
 
 
+def has_version(client, version):
+    versions = client.get('/versions')[1].get('versions')
+    supported = ['SUPPORTED', 'CURRENT']
+    for version_struct in versions:
+        if version_struct['id'] == version:
+            return version_struct['status'] in supported
+    return False
+
+
+def print_dict_list(objects, fields):
+    pt = prettytable.PrettyTable([f for f in fields], caching=False)
+    pt.align = 'l'
+    for o in objects:
+        row = []
+        for field in fields:
+            field_name = field.lower().replace(' ', '_')
+            # NOTE (abhishekk) mapping field to actual name in the
+            # structure.
+            if field_name == 'task_id':
+                field_name = 'id'
+            data = o.get(field_name, '')
+            row.append(data)
+
+        pt.add_row(row)
+
+    print(encodeutils.safe_decode(pt.get_string()))
+
+
 def print_list(objs, fields, formatters=None, field_settings=None):
     '''Prints a list of objects.
 

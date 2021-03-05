@@ -38,6 +38,13 @@ class BaseController(testtools.TestCase):
 
         return resources
 
+    def get_associated_image_tasks(self, *args, **kwargs):
+        resource = self.controller.get_associated_image_tasks(
+            *args, **kwargs)
+
+        self._assertRequestId(resource)
+        return resource
+
     def get(self, *args, **kwargs):
         resource = self.controller.get(*args, **kwargs)
 
