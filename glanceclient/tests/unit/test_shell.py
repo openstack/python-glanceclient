@@ -600,6 +600,17 @@ class ShellTest(testutils.TestCase):
         self.assertEqual(glance_logger.getEffectiveLevel(), logging.DEBUG)
         conf.assert_called_with(level=logging.DEBUG)
 
+    def test_subcommand_help(self):
+        # Ensure that main works with sub command help
+        stdout, stderr = self.shell('help stores-delete')
+
+        expected = 'usage: glance stores-delete --store <STORE_ID> ' \
+                   '<IMAGE_ID>\n\nDelete image from specific store.' \
+                   '\n\nPositional arguments:\n  <IMAGE_ID>          ' \
+                   'ID of image to update.\n\nRequired arguments:\n  ' \
+                   '--store <STORE_ID>  Store to delete image from.\n'
+        self.assertEqual(expected, stdout)
+
 
 class ShellTestWithKeystoneV3Auth(ShellTest):
     # auth environment to use

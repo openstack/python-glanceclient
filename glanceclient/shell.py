@@ -224,8 +224,12 @@ class OpenStackImagesShell(object):
                                    help=argparse.SUPPRESS,
                                    )
             self.subcommands[command] = subparser
+            required_args = subparser.add_argument_group('Required arguments')
             for (args, kwargs) in arguments:
-                subparser.add_argument(*args, **kwargs)
+                if kwargs.get('required', False):
+                    required_args.add_argument(*args, **kwargs)
+                else:
+                    subparser.add_argument(*args, **kwargs)
             subparser.set_defaults(func=callback)
 
     def _add_bash_completion_subparser(self, subparsers):
