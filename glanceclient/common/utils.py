@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import datetime
 import errno
 import functools
 import hashlib
@@ -175,11 +176,52 @@ def pretty_choice_list(l):
 
 def has_version(client, version):
     versions = client.get('/versions')[1].get('versions')
-    supported = ['SUPPORTED', 'CURRENT']
+    supported = ['SUPPORTED', 'CURRENT', 'EXPERIMENTAL']
     for version_struct in versions:
         if version_struct['id'] == version:
             return version_struct['status'] in supported
     return False
+
+
+def print_cached_images(cached_images):
+    cache_pt = prettytable.PrettyTable(("ID",
+                                        "State",
+                                        "Last Accessed (UTC)",
+                                        "Last Modified (UTC)",
+                                        "Size",
+                                        "Hits"))
+    for item in cached_images:
+        state = "queued"
+        last_accessed = "N/A"
+        last_modified = "N/A"
+        size = "N/A"
+        hits = "N/A"
+        if item == 'cached_images':
+            state = "cached"
+            for image in cached_images[item]:
+                last_accessed = image['last_accessed']
+                if last_accessed == 0:
+                    last_accessed = "N/A"
+                else:
+                    last_accessed = datetime.datetime.utcfromtimestamp(
+                        last_accessed).isoformat()
+
+                cache_pt.add_row((image['image_id'], state,
+                                  last_accessed,
+                                  datetime.datetime.utcfromtimestamp(
+                                      image['last_modified']).isoformat(),
+                                  image['size'],
+                                  image['hits']))
+        else:
+            for image in cached_images[item]:
+                cache_pt.add_row((image,
+                                  state,
+                                  last_accessed,
+                                  last_modified,
+                                  size,
+                                  hits))
+
+    print(cache_pt.get_string())
 
 
 def print_dict_list(objects, fields):

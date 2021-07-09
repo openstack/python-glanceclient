@@ -16,6 +16,7 @@
 
 from glanceclient.common import http
 from glanceclient.common import utils
+from glanceclient.v2 import cache
 from glanceclient.v2 import image_members
 from glanceclient.v2 import image_tags
 from glanceclient.v2 import images
@@ -39,6 +40,7 @@ class Client(object):
     """
 
     def __init__(self, endpoint=None, **kwargs):
+        self.endpoint_provided = endpoint is not None
         endpoint, self.version = utils.endpoint_version_from_url(endpoint, 2.0)
         self.http_client = http.get_http_client(endpoint=endpoint, **kwargs)
         self.schemas = schemas.Controller(self.http_client)
@@ -69,3 +71,5 @@ class Client(object):
             metadefs.NamespaceController(self.http_client, self.schemas))
 
         self.versions = versions.VersionController(self.http_client)
+
+        self.cache = cache.Controller(self.http_client)

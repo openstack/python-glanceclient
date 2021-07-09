@@ -114,6 +114,7 @@ class ShellV2Test(testtools.TestCase):
         utils.print_dict = mock.Mock()
         utils.save_image = mock.Mock()
         utils.print_dict_list = mock.Mock()
+        utils.print_cached_images = mock.Mock()
 
     def assert_exits_with_msg(self, func, func_args, err_msg=None):
         with mock.patch.object(utils, 'exit') as mocked_utils_exit:
@@ -3180,3 +3181,178 @@ class ShellV2Test(testtools.TestCase):
                 ['name'],
                 field_settings={
                     'description': {'align': 'l', 'max_width': 50}})
+
+    def _test_do_cache_list(self, supported=True):
+        args = self._make_args({})
+        expected_output = {
+            "cached_images": [
+                {
+                    "image_id": "pass",
+                    "last_accessed": 0,
+                    "last_modified": 0,
+                    "size": "fake_size",
+                    "hits": "fake_hits",
+                }
+            ],
+            "queued_images": ['fake_image']
+        }
+
+        with mock.patch.object(self.gc.cache, 'list') as mocked_cache_list:
+            if supported:
+                mocked_cache_list.return_value = expected_output
+            else:
+                mocked_cache_list.side_effect = exc.HTTPNotImplemented
+            test_shell.do_cache_list(self.gc, args)
+            mocked_cache_list.assert_called()
+            if supported:
+                utils.print_cached_images.assert_called_once_with(
+                    expected_output)
+
+    def test_do_cache_list(self):
+        self._test_do_cache_list()
+
+    def test_do_cache_list_unsupported(self):
+        self.assertRaises(exc.HTTPNotImplemented,
+                          self._test_do_cache_list, supported=False)
+
+    def test_do_cache_list_endpoint_not_provided(self):
+        args = self._make_args({})
+        self.gc.endpoint_provided = False
+        with mock.patch('glanceclient.common.utils.exit') as mock_exit:
+            test_shell.do_cache_list(self.gc, args)
+            mock_exit.assert_called_once_with(
+                'Direct server endpoint needs to be provided. Do '
+                'not use loadbalanced or catalog endpoints.')
+
+    def _test_cache_queue(self, supported=True, forbidden=False,):
+        args = argparse.Namespace(id=['image1'])
+        with mock.patch.object(self.gc.cache, 'queue') as mocked_cache_queue:
+            if supported:
+                mocked_cache_queue.return_value = None
+            else:
+                mocked_cache_queue.side_effect = exc.HTTPNotImplemented
+            if forbidden:
+                mocked_cache_queue.side_effect = exc.HTTPForbidden
+
+            test_shell.do_cache_queue(self.gc, args)
+            if supported:
+                mocked_cache_queue.assert_called_once_with('image1')
+
+    def test_do_cache_queue(self):
+        self._test_cache_queue()
+
+    def test_do_cache_queue_unsupported(self):
+        with mock.patch(
+                'glanceclient.common.utils.print_err') as mock_print_err:
+            self._test_cache_queue(supported=False)
+            mock_print_err.assert_called_once_with(
+                "'HTTP HTTPNotImplemented': Unable to queue image "
+                "'image1' for caching.")
+
+    def test_do_cache_queue_forbidden(self):
+        with mock.patch(
+                'glanceclient.common.utils.print_err') as mock_print_err:
+            self._test_cache_queue(forbidden=True)
+            mock_print_err.assert_called_once_with(
+                "You are not permitted to queue the image 'image1' for "
+                "caching.")
+
+    def test_do_cache_queue_endpoint_not_provided(self):
+        args = argparse.Namespace(id=['image1'])
+        self.gc.endpoint_provided = False
+        with mock.patch('glanceclient.common.utils.exit') as mock_exit:
+            test_shell.do_cache_queue(self.gc, args)
+            mock_exit.assert_called_once_with(
+                'Direct server endpoint needs to be provided. Do '
+                'not use loadbalanced or catalog endpoints.')
+
+    def _test_cache_delete(self, supported=True, forbidden=False,):
+        args = argparse.Namespace(id=['image1'])
+        with mock.patch.object(self.gc.cache, 'delete') as mocked_cache_delete:
+            if supported:
+                mocked_cache_delete.return_value = None
+            else:
+                mocked_cache_delete.side_effect = exc.HTTPNotImplemented
+            if forbidden:
+                mocked_cache_delete.side_effect = exc.HTTPForbidden
+
+            test_shell.do_cache_delete(self.gc, args)
+            if supported:
+                mocked_cache_delete.assert_called_once_with('image1')
+
+    def test_do_cache_delete(self):
+        self._test_cache_delete()
+
+    def test_do_cache_delete_unsupported(self):
+        with mock.patch(
+                'glanceclient.common.utils.print_err') as mock_print_err:
+            self._test_cache_delete(supported=False)
+            mock_print_err.assert_called_once_with(
+                "'HTTP HTTPNotImplemented': Unable to delete image "
+                "'image1' from cache.")
+
+    def test_do_cache_delete_forbidden(self):
+        with mock.patch(
+                'glanceclient.common.utils.print_err') as mock_print_err:
+            self._test_cache_delete(forbidden=True)
+            mock_print_err.assert_called_once_with(
+                "You are not permitted to "
+                "delete the image 'image1' from cache.")
+
+    def test_do_cache_delete_endpoint_not_provided(self):
+        args = argparse.Namespace(id=['image1'])
+        self.gc.endpoint_provided = False
+        with mock.patch('glanceclient.common.utils.exit') as mock_exit:
+            test_shell.do_cache_delete(self.gc, args)
+            mock_exit.assert_called_once_with(
+                'Direct server endpoint needs to be provided. Do '
+                'not use loadbalanced or catalog endpoints.')
+
+    def _test_cache_clear(self, target='both', supported=True,
+                          forbidden=False,):
+        args = self._make_args({'target': target})
+        with mock.patch.object(self.gc.cache, 'clear') as mocked_cache_clear:
+            if supported:
+                mocked_cache_clear.return_value = None
+            else:
+                mocked_cache_clear.side_effect = exc.HTTPNotImplemented
+            if forbidden:
+                mocked_cache_clear.side_effect = exc.HTTPForbidden
+
+            test_shell.do_cache_clear(self.gc, args)
+            if supported:
+                mocked_cache_clear.mocked_cache_clear(target)
+
+    def test_do_cache_clear_all(self):
+        self._test_cache_clear()
+
+    def test_do_cache_clear_queued_only(self):
+        self._test_cache_clear(target='queue')
+
+    def test_do_cache_clear_cached_only(self):
+        self._test_cache_clear(target='cache')
+
+    def test_do_cache_clear_unsupported(self):
+        with mock.patch(
+                'glanceclient.common.utils.print_err') as mock_print_err:
+            self._test_cache_clear(supported=False)
+            mock_print_err.assert_called_once_with(
+                "'HTTP HTTPNotImplemented': Unable to delete image(s) "
+                "from cache.")
+
+    def test_do_cache_clear_forbidden(self):
+        with mock.patch(
+                'glanceclient.common.utils.print_err') as mock_print_err:
+            self._test_cache_clear(forbidden=True)
+            mock_print_err.assert_called_once_with(
+                "You are not permitted to "
+                "delete image(s) from cache.")
+
+    def test_do_cache_clear_endpoint_not_provided(self):
+        args = self._make_args({'target': 'both'})
+        self.gc.endpoint_provided = False
+        with mock.patch('glanceclient.common.utils.exit') as mock_exit:
+            test_shell.do_cache_clear(self.gc, args)
+            mock_exit.assert_called_once_with(
+                'Direct server endpoint needs to be provided. Do '
+                'not use loadbalanced or catalog endpoints.')
