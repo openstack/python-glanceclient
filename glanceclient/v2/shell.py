@@ -490,11 +490,19 @@ def do_image_tasks(gc, args):
            help=_('Image to display members of.'))
 def do_member_list(gc, args):
     """Describe sharing permissions by image."""
-
     members = gc.image_members.list(args.image_id)
     columns = ['Image ID', 'Member ID', 'Status']
     utils.print_list(members, columns)
 
+
+@utils.arg('image_id', metavar='<IMAGE_ID>',
+           help=_('Image from which to display member.'))
+@utils.arg('member_id', metavar='<MEMBER_ID>',
+           help=_('Project to display.'))
+def do_member_get(gc, args):
+    """Show details of an image member"""
+    member = gc.image_members.get(args.image_id, args.member_id)
+    utils.print_dict(member)
 
 @utils.arg('image_id', metavar='<IMAGE_ID>',
            help=_('Image from which to remove member.'))

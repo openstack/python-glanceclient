@@ -2378,6 +2378,16 @@ class ShellV2Test(testtools.TestCase):
             columns = ['Image ID', 'Member ID', 'Status']
             utils.print_list.assert_called_once_with({}, columns)
 
+    def test_do_member_get(self):
+        args = self._make_args({'image_id': 'IMG-01', 'member_id': 'MEM-01'})
+        with mock.patch.object(self.gc.image_members, 'get') as mock_get:
+            mock_get.return_value = {}
+
+            test_shell.do_member_get(self.gc, args)
+
+            mock_get.assert_called_once_with('IMG-01', 'MEM-01')
+            utils.print_dict.assert_called_once_with({})
+
     def test_do_member_create(self):
         args = self._make_args({'image_id': 'IMG-01', 'member_id': 'MEM-01'})
         with mock.patch.object(self.gc.image_members, 'create') as mock_create:

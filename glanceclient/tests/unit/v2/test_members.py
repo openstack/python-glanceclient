@@ -45,6 +45,17 @@ data_fixtures = {
         )
     },
     '/v2/images/{image}/members/{mem}'.format(image=IMAGE, mem=MEMBER): {
+        'GET': (
+            {},
+            {
+                'image_id': IMAGE,
+                'member_id': MEMBER,
+                'status': 'pending',
+                'created_at': '2013-11-26T07:21:21Z',
+                'updated_at': '2013-11-26T07:21:21Z',
+                'schema': "/v2/schemas/member"
+            },
+        ),
         'DELETE': (
             {},
             None,
@@ -89,6 +100,11 @@ class TestController(testtools.TestCase):
         image_members = self.controller.list(image_id)
         self.assertEqual(IMAGE, image_members[0].image_id)
         self.assertEqual(MEMBER, image_members[0].member_id)
+
+    def test_get_image_members(self):
+        image_member = self.controller.get(IMAGE, MEMBER)
+        self.assertEqual(IMAGE, image_member.image_id)
+        self.assertEqual(MEMBER, image_member.member_id)
 
     def test_delete_image_member(self):
         image_id = IMAGE

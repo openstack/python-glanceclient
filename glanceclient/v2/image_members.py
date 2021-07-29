@@ -40,6 +40,12 @@ class Controller(object):
             yield self.model(member), resp
 
     @utils.add_req_id_to_object()
+    def get(self, image_id, member_id):
+        url = '/v2/images/%s/members/%s' % (image_id, member_id)
+        resp, member = self.http_client.get(url)
+        return self.model(member), resp
+
+    @utils.add_req_id_to_object()
     def delete(self, image_id, member_id):
         resp, body = self.http_client.delete('/v2/images/%s/members/%s' %
                                              (image_id, member_id))
