@@ -211,6 +211,14 @@ class ShellTest(testutils.TestCase):
             self.assertEqual(0, actual)
             self.assertFalse(et_mock.called)
 
+    def test_help_no_subcommand(self):
+        shell = openstack_shell.OpenStackImagesShell()
+        argstr = '--os-image-api-version 2'
+        with mock.patch.object(shell, '_get_keystone_auth_plugin') as et_mock:
+            actual = shell.main(argstr.split())
+            self.assertEqual(0, actual)
+            self.assertFalse(et_mock.called)
+
     def test_blank_call(self):
         shell = openstack_shell.OpenStackImagesShell()
         with mock.patch.object(shell, '_get_keystone_auth_plugin') as et_mock:

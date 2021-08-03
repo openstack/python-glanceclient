@@ -166,6 +166,8 @@ class OpenStackImagesShell(object):
         parser.add_argument('--os_image_api_version',
                             help=argparse.SUPPRESS)
 
+        parser.set_defaults(func=self.do_help)
+
         if osprofiler_profiler:
             parser.add_argument('--profile',
                                 metavar='HMAC_KEY',
