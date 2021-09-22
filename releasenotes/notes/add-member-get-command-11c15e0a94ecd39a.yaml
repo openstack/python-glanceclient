@@ -2,4 +2,5 @@
 fixes:
   - |
     Bug 1938154_: Added member-get command
+
     .. _1938154: https://bugs.launchpad.net/glance/+bug/1938154
