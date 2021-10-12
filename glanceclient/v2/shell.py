@@ -1383,10 +1383,12 @@ def do_md_tag_create(gc, args):
 @utils.arg('--delim', metavar='<DELIM>', required=False,
            help=_('The delimiter used to separate the names'
                   ' (if none is provided then the default is a comma).'))
+@utils.arg('--append', default=False, action='store_true', required=False,
+           help=_('Append the new tags to the existing ones instead of'
+                  'overwriting them'))
 def do_md_tag_create_multiple(gc, args):
     """Create new metadata definitions tags inside a namespace."""
     delim = args.delim or ','
-
     tags = []
     names_list = args.names.split(delim)
     for name in names_list:
@@ -1398,7 +1400,7 @@ def do_md_tag_create_multiple(gc, args):
         utils.exit('Please supply at least one tag name. For example: '
                    '--names Tag1')
 
-    fields = {'tags': tags}
+    fields = {'tags': tags, 'append': args.append}
     new_tags = gc.metadefs_tag.create_multiple(args.namespace, **fields)
     columns = ['name']
     column_settings = {
