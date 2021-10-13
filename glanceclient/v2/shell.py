@@ -94,7 +94,7 @@ def do_image_create(gc, args):
     backend = args.store
 
     file_name = fields.pop('file', None)
-    using_stdin = not sys.stdin.isatty()
+    using_stdin = hasattr(sys.stdin, 'isatty') and not sys.stdin.isatty()
     if args.store and not (file_name or using_stdin):
         utils.exit("--store option should only be provided with --file "
                    "option or stdin.")
@@ -205,7 +205,7 @@ def do_image_create_via_import(gc, args):
         fields[key] = value
 
     file_name = fields.pop('file', None)
-    using_stdin = not sys.stdin.isatty()
+    using_stdin = hasattr(sys.stdin, 'isatty') and not sys.stdin.isatty()
 
     # special processing for backward compatibility with image-create
     if args.import_method is None and (file_name or using_stdin):
