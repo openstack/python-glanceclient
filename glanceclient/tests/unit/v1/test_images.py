@@ -25,6 +25,9 @@ from glanceclient.v1 import images
 from glanceclient.v1 import shell
 
 
+DEFAULT_PAGE_SIZE = 20
+
+
 fixtures = {
     '/v1/images': {
         'POST': (
@@ -67,7 +70,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?is_public=None&limit=20': {
+    f'/v1/images/detail?is_public=None&limit={DEFAULT_PAGE_SIZE}': {
         'GET': (
             {'x-openstack-request-id': 'req-1234'},
             {'images': [
@@ -157,7 +160,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?limit=20&marker=a': {
+    f'/v1/images/detail?limit={DEFAULT_PAGE_SIZE}&marker=a': {
         'GET': (
             {},
             {'images': [
@@ -227,7 +230,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?limit=20&name=foo': {
+    f'/v1/images/detail?limit={DEFAULT_PAGE_SIZE}&name=foo': {
         'GET': (
             {},
             {'images': [
@@ -244,7 +247,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?limit=20&property-ping=pong':
+    f'/v1/images/detail?limit={DEFAULT_PAGE_SIZE}&property-ping=pong':
     {
         'GET': (
             {},
@@ -257,7 +260,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?limit=20&sort_dir=desc': {
+    f'/v1/images/detail?limit={DEFAULT_PAGE_SIZE}&sort_dir=desc': {
         'GET': (
             {},
             {'images': [
@@ -274,7 +277,7 @@ fixtures = {
             ]},
         ),
     },
-    '/v1/images/detail?limit=20&sort_key=name': {
+    f'/v1/images/detail?limit={DEFAULT_PAGE_SIZE}&sort_key=name': {
         'GET': (
             {},
             {'images': [
@@ -467,31 +470,31 @@ class ImageManagerTest(testtools.TestCase):
 
     def test_list_with_marker(self):
         list(self.mgr.list(marker='a'))
-        url = '/v1/images/detail?limit=20&marker=a'
+        url = f'/v1/images/detail?limit={DEFAULT_PAGE_SIZE}&marker=a'
         expect = [('GET', url, {}, None)]
         self.assertEqual(expect, self.api.calls)
 
     def test_list_with_filter(self):
         list(self.mgr.list(filters={'name': "foo"}))
-        url = '/v1/images/detail?limit=20&name=foo'
+        url = f'/v1/images/detail?limit={DEFAULT_PAGE_SIZE}&name=foo'
         expect = [('GET', url, {}, None)]
         self.assertEqual(expect, self.api.calls)
 
     def test_list_with_property_filters(self):
         list(self.mgr.list(filters={'properties': {'ping': 'pong'}}))
-        url = '/v1/images/detail?limit=20&property-ping=pong'
+        url = f'/v1/images/detail?limit={DEFAULT_PAGE_SIZE}&property-ping=pong'
         expect = [('GET', url, {}, None)]
         self.assertEqual(expect, self.api.calls)
 
     def test_list_with_sort_dir(self):
         list(self.mgr.list(sort_dir='desc'))
-        url = '/v1/images/detail?limit=20&sort_dir=desc'
+        url = f'/v1/images/detail?limit={DEFAULT_PAGE_SIZE}&sort_dir=desc'
         expect = [('GET', url, {}, None)]
         self.assertEqual(expect, self.api.calls)
 
     def test_list_with_sort_key(self):
         list(self.mgr.list(sort_key='name'))
-        url = '/v1/images/detail?limit=20&sort_key=name'
+        url = f'/v1/images/detail?limit={DEFAULT_PAGE_SIZE}&sort_key=name'
         expect = [('GET', url, {}, None)]
         self.assertEqual(expect, self.api.calls)
 
@@ -748,7 +751,7 @@ class ImageManagerTest(testtools.TestCase):
         self.assertEqual(value, headers["name"])
 
     def test_image_list_with_owner(self):
-        images = self.mgr.list(owner='A', page_size=20)
+        images = self.mgr.list(owner='A', page_size=DEFAULT_PAGE_SIZE)
         image_list = list(images)
         self.assertEqual('A', image_list[0].owner)
         self.assertEqual('a', image_list[0].id)
@@ -764,11 +767,11 @@ class ImageManagerTest(testtools.TestCase):
         self.assertEqual(['req-1234'], fields['return_req_id'])
 
     def test_image_list_with_notfound_owner(self):
-        images = self.mgr.list(owner='X', page_size=20)
+        images = self.mgr.list(owner='X', page_size=DEFAULT_PAGE_SIZE)
         self.assertEqual(0, len(list(images)))
 
     def test_image_list_with_empty_string_owner(self):
-        images = self.mgr.list(owner='', page_size=20)
+        images = self.mgr.list(owner='', page_size=DEFAULT_PAGE_SIZE)
         image_list = list(images)
         self.assertRaises(AttributeError, lambda: image_list[0].owner)
         self.assertEqual('c', image_list[0].id)

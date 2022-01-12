@@ -19,6 +19,7 @@ from glanceclient.tests.unit.v2 import base
 from glanceclient.tests import utils
 from glanceclient.v2 import metadefs
 
+DEFAULT_PAGE_SIZE = 20
 NAMESPACE1 = 'Namespace1'
 NAMESPACE2 = 'Namespace2'
 NAMESPACE3 = 'Namespace3'
@@ -60,7 +61,7 @@ def _get_namespace_fixture(ns_name, rt_name=RESOURCE_TYPE1, **kwargs):
 
 
 data_fixtures = {
-    "/v2/metadefs/namespaces?limit=20": {
+    f"/v2/metadefs/namespaces?limit={DEFAULT_PAGE_SIZE}": {
         "GET": (
             {},
             {
@@ -112,7 +113,7 @@ data_fixtures = {
             }
         )
     },
-    "/v2/metadefs/namespaces?limit=20&sort_dir=asc": {
+    f"/v2/metadefs/namespaces?limit={DEFAULT_PAGE_SIZE}&sort_dir=asc": {
         "GET": (
             {},
             {
@@ -124,7 +125,7 @@ data_fixtures = {
             }
         )
     },
-    "/v2/metadefs/namespaces?limit=20&sort_key=created_at": {
+    f"/v2/metadefs/namespaces?limit={DEFAULT_PAGE_SIZE}&sort_key=created_at": {
         "GET": (
             {},
             {
@@ -136,7 +137,8 @@ data_fixtures = {
             }
         )
     },
-    "/v2/metadefs/namespaces?limit=20&resource_types=%s" % RESOURCE_TYPE1: {
+    "/v2/metadefs/namespaces?limit=%d&resource_types=%s" % (
+        DEFAULT_PAGE_SIZE, RESOURCE_TYPE1): {
         "GET": (
             {},
             {
@@ -148,8 +150,8 @@ data_fixtures = {
             }
         )
     },
-    "/v2/metadefs/namespaces?limit=20&resource_types="
-    "%s%%2C%s" % (RESOURCE_TYPE1, RESOURCE_TYPE2): {
+    "/v2/metadefs/namespaces?limit=%d&resource_types="
+    "%s%%2C%s" % (DEFAULT_PAGE_SIZE, RESOURCE_TYPE1, RESOURCE_TYPE2): {
         "GET": (
             {},
             {
@@ -161,7 +163,7 @@ data_fixtures = {
             }
         )
     },
-    "/v2/metadefs/namespaces?limit=20&visibility=private": {
+    f"/v2/metadefs/namespaces?limit={DEFAULT_PAGE_SIZE}&visibility=private": {
         "GET": (
             {},
             {

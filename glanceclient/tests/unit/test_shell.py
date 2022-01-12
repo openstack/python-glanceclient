@@ -45,6 +45,7 @@ import json
 DEFAULT_IMAGE_URL = 'http://127.0.0.1:9292/'
 DEFAULT_IMAGE_URL_INTERNAL = 'http://127.0.0.1:9191/'
 DEFAULT_USERNAME = 'username'
+DEFAULT_PAGE_SIZE = 200
 DEFAULT_PASSWORD = 'password'
 DEFAULT_TENANT_ID = 'tenant_id'
 DEFAULT_TENANT_NAME = 'tenant_name'
@@ -711,7 +712,8 @@ class ShellTestWithNoOSImageURLPublic(ShellTestWithKeystoneV3Auth):
         glance_shell = openstack_shell.OpenStackImagesShell()
         glance_shell.main(args.split())
         self.assertEqual(self.requests.request_history[2].url,
-                         self.image_url + "v2/images?limit=200&"
+                         self.image_url + "v2/images?"
+                         f"limit={DEFAULT_PAGE_SIZE}&"
                          "sort_key=name&sort_dir=asc")
 
 
