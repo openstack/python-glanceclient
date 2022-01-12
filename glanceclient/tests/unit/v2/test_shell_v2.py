@@ -150,8 +150,44 @@ class ShellV2Test(testtools.TestCase):
         ]
     }
 
+    stores_info_detail_response = {
+        "stores": [
+            {
+                "default": "true",
+                "id": "ceph1",
+                "type": "rbd",
+                "description": "RBD backend for glance.",
+                "properties": {
+                    "pool": "pool1",
+                    "chunk_size": "4"
+                }
+            },
+            {
+                "id": "file2",
+                "type": "file",
+                "description": "Filesystem backend for glance.",
+                "properties": {}
+            },
+            {
+                "id": "file1",
+                "type": "file",
+                "description": "Filesystem backend for gkance.",
+                "properties": {}
+            },
+            {
+                "id": "ceph2",
+                "type": "rbd",
+                "description": "RBD backend for glance.",
+                "properties": {
+                    "pool": "pool2",
+                    "chunk_size": "4"
+                }
+            }
+        ]
+    }
+
     def test_do_stores_info(self):
-        args = []
+        args = self._make_args({'detail': False})
         with mock.patch.object(self.gc.images,
                                'get_stores_info') as mocked_list:
             mocked_list.return_value = self.stores_info_response
@@ -166,7 +202,7 @@ class ShellV2Test(testtools.TestCase):
     def test_neg_stores_info(
             self, mock_stdin, mock_utils_exit):
         expected_msg = ('Multi Backend support is not enabled')
-        args = []
+        args = self._make_args({'detail': False})
         mock_utils_exit.side_effect = self._mock_utils_exit
         with mock.patch.object(self.gc.images,
                                'get_stores_info') as mocked_info:
@@ -177,6 +213,18 @@ class ShellV2Test(testtools.TestCase):
             except SystemExit:
                 pass
         mock_utils_exit.assert_called_once_with(expected_msg)
+
+    def test_do_stores_info_with_detail(self):
+        args = self._make_args({'detail': True})
+        with mock.patch.object(self.gc.images,
+                               'get_stores_info_detail') as mocked_list:
+            mocked_list.return_value = self.stores_info_detail_response
+
+            test_shell.do_stores_info(self.gc, args)
+
+            mocked_list.assert_called_once_with()
+            utils.print_dict.assert_called_once_with(
+                self.stores_info_detail_response)
 
     @mock.patch('sys.stderr')
     def test_image_create_missing_disk_format(self, __):

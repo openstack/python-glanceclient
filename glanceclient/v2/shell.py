@@ -574,11 +574,15 @@ def do_import_info(gc, args):
     else:
         utils.print_dict(import_info)
 
-
+@utils.arg('--detail', default=False, action='store_true',
+           help='Shows details of stores. Admin only.')
 def do_stores_info(gc, args):
     """Print available backends from Glance."""
     try:
-        stores_info = gc.images.get_stores_info()
+        if args.detail:
+            stores_info = gc.images.get_stores_info_detail()
+        else:
+            stores_info = gc.images.get_stores_info()
     except exc.HTTPNotFound:
         utils.exit('Multi Backend support is not enabled')
     else:

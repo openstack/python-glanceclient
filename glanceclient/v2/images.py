@@ -323,6 +323,13 @@ class Controller(object):
         return body, resp
 
     @utils.add_req_id_to_object()
+    def get_stores_info_detail(self):
+        """Get available stores info from discovery endpoint."""
+        url = '/v2/info/stores/detail'
+        resp, body = self.http_client.get(url)
+        return body, resp
+
+    @utils.add_req_id_to_object()
     def delete_from_store(self, store_id, image_id):
         """Delete image data from specific store."""
         url = ('/v2/stores/%(store)s/%(image)s' % {'store': store_id,
