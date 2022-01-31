@@ -614,6 +614,16 @@ class ShellV2Test(testtools.TestCase):
             mock_exit.assert_called_once_with(
                 'Server does not support image tasks API (v2.12)')
 
+    def test_usage(self):
+        with mock.patch.object(self.gc.info, 'get_usage') as mock_usage:
+            mock_usage.return_value = {'quota1': {'limit': 10, 'usage': 0},
+                                       'quota2': {'limit': 20, 'usage': 5}}
+            test_shell.do_usage(self.gc, [])
+            utils.print_dict_list.assert_called_once_with(
+                [{'quota': 'quota1', 'limit': 10, 'usage': 0},
+                 {'quota': 'quota2', 'limit': 20, 'usage': 5}],
+                ['Quota', 'Limit', 'Usage'])
+
     @mock.patch('sys.stdin', autospec=True)
     def test_do_image_create_no_user_props(self, mock_stdin):
         args = self._make_args({'name': 'IMG-01', 'disk_format': 'vhd',

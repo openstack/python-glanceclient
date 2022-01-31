@@ -486,6 +486,15 @@ def do_image_tasks(gc, args):
         utils.exit('Server does not support image tasks API (v2.12)')
 
 
+def do_usage(gc, args):
+    """Get quota usage information."""
+    columns = ['Quota', 'Limit', 'Usage']
+    usage = gc.info.get_usage()
+    utils.print_dict_list(
+        [dict(v, quota=k) for k, v in usage.items()],
+        columns)
+
+
 @utils.arg('--image-id', metavar='<IMAGE_ID>', required=True,
            help=_('Image to display members of.'))
 def do_member_list(gc, args):

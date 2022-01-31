@@ -19,6 +19,7 @@ from glanceclient.common import utils
 from glanceclient.v2 import image_members
 from glanceclient.v2 import image_tags
 from glanceclient.v2 import images
+from glanceclient.v2 import info
 from glanceclient.v2 import metadefs
 from glanceclient.v2 import schemas
 from glanceclient.v2 import tasks
@@ -47,6 +48,8 @@ class Client(object):
                                                 self.schemas)
         self.image_members = image_members.Controller(self.http_client,
                                                       self.schemas)
+
+        self.info = info.Controller(self.http_client, self.schemas)
 
         self.tasks = tasks.Controller(self.http_client, self.schemas)
 
