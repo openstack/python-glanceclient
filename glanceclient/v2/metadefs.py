@@ -490,9 +490,8 @@ class TagController(object):
         """Create the list of tags.
 
         :param namespace: Name of a namespace to which the Tags belong.
-        :param kwargs: list of tags.
+        :param kwargs: list of tags, optional parameter append.
         """
-
         tag_names = kwargs.pop('tags', [])
         md_tag_list = []
 
@@ -502,11 +501,15 @@ class TagController(object):
             except (warlock.InvalidOperation) as e:
                 raise TypeError(encodeutils.exception_to_unicode(e))
         tags = {'tags': md_tag_list}
+        headers = {}
 
         url = '/v2/metadefs/namespaces/%(namespace)s/tags' % {
-            'namespace': namespace}
+              'namespace': namespace}
 
-        resp, body = self.http_client.post(url, data=tags)
+        append = kwargs.pop('append', False)
+        if append:
+            headers['X-Openstack-Append'] = True
+        resp, body = self.http_client.post(url, headers=headers, data=tags)
         body.pop('self', None)
         for tag in body['tags']:
             yield self.model(tag), resp
