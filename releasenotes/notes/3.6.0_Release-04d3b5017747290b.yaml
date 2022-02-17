@@ -1,0 +1,51 @@
+---
+prelude: |
+    This version of python-glanceclient introduces new commands ``usage``
+    to fetch quota related usage information and ``cache-clear``,
+    ``cache-delete``, ``cache-list`` and ``cache-queue`` for cache related
+    operations.
+
+features:
+  - |
+    Adds support for ``usage`` command which will report the usage
+    of unified limits configured. The following commands have been added to
+    the command line interface:
+
+    * ``usage`` - Get quota usage information.
+
+  - |
+    Client support has been added for the new caching functionality
+    introduced into Glance in this cycle. This feature is only available in
+    the Images API version 2 when the caching middleware is enabled in the
+    Glance service that the client is contacting. The following commands have
+    been added to the command line interface:
+
+    * ``cache-clear`` - Delete all the images from cache and queued for caching
+    * ``cache-delete`` - Delete the specified image from cache or from the queued
+      list
+    * ``cache-list`` - List all the images which are cached or being queued for
+      caching
+    * ``cache-queue`` - Queue specified image(s) for caching.
+
+  - |
+    Client side support has been added to fetch store specific configuration
+    information. With sufficient permissions, this will display additional
+    information about the stores.
+
+  - |
+    Client side support has been added to provide the facility of appending
+    the tags while creating new multiple tags rather than overwriting the
+    existing tags.
+
+upgrade:
+  - |
+    The following Command Line Interface call now takes ``--detail`` option:
+
+    * | ``glance stores-info``
+      | The value for ``--detail`` option could be True or False.
+
+  - |
+    The following Command Line Interface call now takes ``--append`` option:
+
+    * | ``glance md-tag-create-multiple``
+      | The value for ``--append`` option could be True or False.
