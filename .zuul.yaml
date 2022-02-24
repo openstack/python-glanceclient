@@ -34,7 +34,6 @@
       - ^(test-|)requirements.txt$
       - ^lower-constraints.txt$
       - ^setup.cfg$
-      - ^tox.ini$
 
 - job:
     name: glanceclient-tox-keystone-tips-base
