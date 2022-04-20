@@ -368,6 +368,12 @@ class ShellV2Test(testtools.TestCase):
                 {}, ['ID', 'Name', 'Disk_format', 'Container_format',
                      'Size', 'Status', 'Owner'])
 
+    def test_do_image_list_verbose_cmd(self):
+        self._run_command('--os-image-api-version 2 --verbose image-list')
+        utils.print_list.assert_called_once_with(
+            mock.ANY, ['ID', 'Name', 'Disk_format', 'Container_format',
+                       'Size', 'Status', 'Owner'])
+
     def test_do_image_list_with_include_stores_true(self):
         input = {
             'limit': None,

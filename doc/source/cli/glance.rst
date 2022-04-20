@@ -69,6 +69,10 @@ See available images::
 
     glance image-list
 
+To get a verbose output including more fields in the image list response::
+
+    glance --verbose image-list
+
 Create new image::
 
     glance image-create --name foo --disk-format=qcow2 \
