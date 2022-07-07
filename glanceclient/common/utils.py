@@ -447,7 +447,7 @@ def get_data_file(args):
         except OSError:
             # (1) stdin is not valid (closed...)
             return None
-        if not sys.stdin.isatty():
+        if hasattr(sys.stdin, 'isatty') and not sys.stdin.isatty():
             # (2) image data is provided through standard input
             image = sys.stdin
             if hasattr(sys.stdin, 'buffer'):
