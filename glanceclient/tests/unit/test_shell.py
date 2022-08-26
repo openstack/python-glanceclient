@@ -711,7 +711,7 @@ class ShellTestWithNoOSImageURLPublic(ShellTestWithKeystoneV3Auth):
         glance_shell = openstack_shell.OpenStackImagesShell()
         glance_shell.main(args.split())
         self.assertEqual(self.requests.request_history[2].url,
-                         self.image_url + "v2/images?limit=20&"
+                         self.image_url + "v2/images?limit=200&"
                          "sort_key=name&sort_dir=asc")
 
 

@@ -35,7 +35,7 @@ class ClientTestRequests(testutils.TestCase):
         self.requests = self.useFixture(rm_fixture.Fixture())
         self.requests.get('http://example.com/v2/schemas/image',
                           json=schema_fixture)
-        self.requests.get('http://example.com/v2/images?limit=20',
+        self.requests.get('http://example.com/v2/images?limit=200',
                           json=image_list_fixture)
         gc = client.Client(2.2, "http://example.com/v2.1")
         images = gc.images.list()

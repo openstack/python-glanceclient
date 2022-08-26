@@ -24,7 +24,7 @@ from glanceclient.common import utils
 from glanceclient import exc
 from glanceclient.v2 import schemas
 
-DEFAULT_PAGE_SIZE = 20
+DEFAULT_PAGE_SIZE = 200
 
 SORT_DIR_VALUES = ('asc', 'desc')
 SORT_KEY_VALUES = ('name', 'status', 'container_format', 'disk_format',
