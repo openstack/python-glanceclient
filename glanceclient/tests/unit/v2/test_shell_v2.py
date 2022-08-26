@@ -957,12 +957,14 @@ class ShellV2Test(testtools.TestCase):
                  'progress': False,
                  'file': None,
                  'uri': None,
+                 'remote_region': None,
                  'import_method': None}
 
     import_info_response = {'import-methods': {
         'type': 'array',
         'description': 'Import methods available.',
-        'value': ['glance-direct', 'web-download', 'copy-image']}}
+        'value': ['glance-direct', 'web-download', 'copy-image',
+                  'glance-download']}}
 
     def _mock_utils_exit(self, msg):
         sys.exit(msg)
@@ -1440,6 +1442,100 @@ class ShellV2Test(testtools.TestCase):
         my_args['file'] = 'my.browncow'
         args = self._make_args(my_args)
         mock_stdin.isatty = lambda: True
+        mock_utils_exit.side_effect = self._mock_utils_exit
+        with mock.patch.object(self.gc.images,
+                               'get_import_info') as mocked_info:
+            mocked_info.return_value = self.import_info_response
+            try:
+                test_shell.do_image_create_via_import(self.gc, args)
+                self.fail("utils.exit should have been called")
+            except SystemExit:
+                pass
+        mock_utils_exit.assert_called_once_with(expected_msg)
+
+    @mock.patch('glanceclient.common.utils.exit')
+    @mock.patch('sys.stdin', autospec=True)
+    def test_neg_image_create_via_import_glance_download_no_region_and_id(
+            self, mock_stdin, mock_utils_exit):
+        expected_msg = ('REMOTE GlANCE REGION and REMOTE IMAGE ID are '
+                        'required for glance-download import method. '
+                        'Please use --remote-region <region> and '
+                        '--remote-image-id <remote-image-id>.')
+        my_args = self.base_args.copy()
+        my_args['import_method'] = 'glance-download'
+        args = self._make_args(my_args)
+        mock_stdin.isatty = lambda: True
+        mock_utils_exit.side_effect = self._mock_utils_exit
+        with mock.patch.object(self.gc.images,
+                               'get_import_info') as mocked_info:
+            mocked_info.return_value = self.import_info_response
+            try:
+                test_shell.do_image_create_via_import(self.gc, args)
+                self.fail("utils.exit should have been called")
+            except SystemExit:
+                pass
+        mock_utils_exit.assert_called_once_with(expected_msg)
+
+    @mock.patch('glanceclient.common.utils.exit')
+    @mock.patch('sys.stdin', autospec=True)
+    def test_neg_image_create_via_import_glance_download_with_uri(
+            self, mock_stdin, mock_utils_exit):
+        expected_msg = ('You cannot specify a --uri with the '
+                        'glance-download import method.')
+        my_args = self.base_args.copy()
+        my_args['import_method'] = 'glance-download'
+        my_args['remote_region'] = 'REGION2'
+        my_args['remote_image_id'] = 'IMG2'
+        my_args['uri'] = 'https://example.com/some/stuff'
+        args = self._make_args(my_args)
+        mock_stdin.isatty = lambda: True
+        mock_utils_exit.side_effect = self._mock_utils_exit
+        with mock.patch.object(self.gc.images,
+                               'get_import_info') as mocked_info:
+            mocked_info.return_value = self.import_info_response
+            try:
+                test_shell.do_image_create_via_import(self.gc, args)
+                self.fail("utils.exit should have been called")
+            except SystemExit:
+                pass
+        mock_utils_exit.assert_called_once_with(expected_msg)
+
+    @mock.patch('glanceclient.common.utils.exit')
+    @mock.patch('sys.stdin', autospec=True)
+    def test_neg_image_create_via_import_glance_download_with_file(
+            self, mock_stdin, mock_utils_exit):
+        expected_msg = ('You cannot specify a --file with the '
+                        'glance-download import method.')
+        my_args = self.base_args.copy()
+        my_args['import_method'] = 'glance-download'
+        my_args['remote_region'] = 'REGION2'
+        my_args['remote_image_id'] = 'IMG2'
+        my_args['file'] = 'my.browncow'
+        args = self._make_args(my_args)
+        mock_stdin.isatty = lambda: True
+        mock_utils_exit.side_effect = self._mock_utils_exit
+        with mock.patch.object(self.gc.images,
+                               'get_import_info') as mocked_info:
+            mocked_info.return_value = self.import_info_response
+            try:
+                test_shell.do_image_create_via_import(self.gc, args)
+                self.fail("utils.exit should have been called")
+            except SystemExit:
+                pass
+        mock_utils_exit.assert_called_once_with(expected_msg)
+
+    @mock.patch('glanceclient.common.utils.exit')
+    @mock.patch('sys.stdin', autospec=True)
+    def test_neg_image_create_via_import_glance_download_with_data(
+            self, mock_stdin, mock_utils_exit):
+        expected_msg = ('You cannot pass data via stdin with the '
+                        'glance-download import method.')
+        my_args = self.base_args.copy()
+        my_args['import_method'] = 'glance-download'
+        my_args['remote_region'] = 'REGION2'
+        my_args['remote_image_id'] = 'IMG2'
+        args = self._make_args(my_args)
+        mock_stdin.isatty = lambda: False
         mock_utils_exit.side_effect = self._mock_utils_exit
         with mock.patch.object(self.gc.images,
                                'get_import_info') as mocked_info:
@@ -2114,13 +2210,16 @@ class ShellV2Test(testtools.TestCase):
                     mock_import.return_value = None
                     test_shell.do_image_import(self.gc, args)
                     mock_import.assert_called_once_with(
-                        'IMG-01', 'glance-direct', None, backend=None,
-                        all_stores=None, allow_failure=True, stores=None)
+                        'IMG-01', 'glance-direct', uri=None,
+                        remote_region=None, remote_image_id=None,
+                        remote_service_interface=None,
+                        backend=None, all_stores=None,
+                        allow_failure=True, stores=None)
 
     def test_image_import_web_download(self):
         args = self._make_args(
             {'id': 'IMG-01', 'uri': 'http://example.com/image.qcow',
-             'import_method': 'web-download'})
+                'import_method': 'web-download'})
         with mock.patch.object(self.gc.images, 'image_import') as mock_import:
             with mock.patch.object(self.gc.images, 'get') as mocked_get:
                 with mock.patch.object(self.gc.images,
@@ -2133,7 +2232,33 @@ class ShellV2Test(testtools.TestCase):
                     test_shell.do_image_import(self.gc, args)
                     mock_import.assert_called_once_with(
                         'IMG-01', 'web-download',
-                        'http://example.com/image.qcow',
+                        uri='http://example.com/image.qcow',
+                        remote_region=None, remote_image_id=None,
+                        remote_service_interface=None,
+                        all_stores=None, allow_failure=True,
+                        backend=None, stores=None)
+
+    def test_image_import_glance_download(self):
+        args = self._make_args(
+            {'id': 'IMG-01', 'uri': None, 'remote-region': 'REGION2',
+             'remote-image-id': 'IMG-02',
+             'import_method': 'glance-download',
+             'remote-service-interface': 'public'})
+        with mock.patch.object(self.gc.images, 'image_import') as mock_import:
+            with mock.patch.object(self.gc.images, 'get') as mocked_get:
+                with mock.patch.object(self.gc.images,
+                                       'get_import_info') as mocked_info:
+                    mocked_get.return_value = {'status': 'queued',
+                                               'container_format': 'bare',
+                                               'disk_format': 'raw'}
+                    mocked_info.return_value = self.import_info_response
+                    mock_import.return_value = None
+                    test_shell.do_image_import(self.gc, args)
+                    mock_import.assert_called_once_with(
+                        'IMG-01', 'glance-download',
+                        uri=None, remote_region='REGION2',
+                        remote_image_id='IMG-02',
+                        remote_service_interface='public',
                         all_stores=None, allow_failure=True,
                         backend=None, stores=None)
 
@@ -2175,9 +2300,11 @@ class ShellV2Test(testtools.TestCase):
                     mock_import.return_value = None
                     test_shell.do_image_import(self.gc, args)
                     mock_import.assert_called_once_with(
-                        'IMG-02', 'glance-direct', None, all_stores=None,
-                        allow_failure=True, stores=['site1', 'site2'],
-                        backend=None)
+                        'IMG-02', 'glance-direct', uri=None,
+                        remote_region=None, remote_image_id=None,
+                        remote_service_interface=None,
+                        all_stores=None, allow_failure=True,
+                        stores=['site1', 'site2'], backend=None)
 
     @mock.patch('glanceclient.common.utils.print_image')
     @mock.patch('glanceclient.v2.shell._validate_backend')
@@ -2197,9 +2324,11 @@ class ShellV2Test(testtools.TestCase):
                     mock_import.return_value = None
                     test_shell.do_image_import(self.gc, args)
                     mock_import.assert_called_once_with(
-                        'IMG-02', 'copy-image', None, all_stores=None,
-                        allow_failure=True, stores=['file1', 'file2'],
-                        backend=None)
+                        'IMG-02', 'copy-image', uri=None,
+                        remote_region=None, remote_image_id=None,
+                        remote_service_interface=None,
+                        all_stores=None, allow_failure=True,
+                        stores=['file1', 'file2'], backend=None)
 
     @mock.patch('glanceclient.common.utils.exit')
     def test_neg_image_import_copy_image_not_active(

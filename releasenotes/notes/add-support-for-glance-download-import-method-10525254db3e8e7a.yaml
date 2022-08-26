@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    Add support for new ``glance-download`` image-import method to
+    import image from another glance/region in federated deployment.
