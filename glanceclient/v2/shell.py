@@ -148,6 +148,14 @@ def do_image_create(gc, args):
                   'record if no import-method and no data is supplied'))
 @utils.arg('--uri', metavar='<IMAGE_URL>', default=None,
            help=_('URI to download the external image.'))
+@utils.arg('--remote-region', metavar='<GLANCE_REGION>', default=None,
+           help=_('REMOTE_GLANCE_REGION to download the image.'))
+@utils.arg('--remote-image-id', metavar='<REMOTE_IMAGE_ID>', default=None,
+           help=_('The IMAGE ID of the image of remote glance, which needs'
+                  'to be imported with glance-download'))
+@utils.arg('--remote-service-interface', metavar='<REMOTE_SERVICE_INTERFACE>',
+           default='public',
+           help=_('The Remote Glance Service Interface for glance-download'))
 @utils.arg('--store', metavar='<STORE>',
            default=utils.env('OS_IMAGE_STORE', default=None),
            help='Backend store to upload image to.')
@@ -292,6 +300,22 @@ def do_image_create_via_import(gc, args):
         if using_stdin:
             utils.exit("You cannot pass data via stdin with the web-download "
                        "import method.")
+
+    if args.import_method == 'glance-download':
+        if not (args.remote_region and args.remote_image_id):
+            utils.exit("REMOTE GlANCE REGION and REMOTE IMAGE ID are "
+                       "required for glance-download import method. "
+                       "Please use --remote-region <region> and "
+                       "--remote-image-id <remote-image-id>.")
+        if args.uri:
+            utils.exit("You cannot specify a --uri with the glance-download "
+                       "import method.")
+        if file_name:
+            utils.exit("You cannot specify a --file with the glance-download "
+                       "import method.")
+        if using_stdin:
+            utils.exit("You cannot pass data via stdin with the "
+                       "glance-download import method.")
 
     # process
     image = gc.images.create(**fields)
@@ -726,6 +750,14 @@ def do_image_stage(gc, args):
                   '"image-stage".'))
 @utils.arg('--uri', metavar='<IMAGE_URL>', default=None,
            help=_('URI to download the external image.'))
+@utils.arg('--remote-region', metavar='<REMOTE_GLANCE_REGION>', default=None,
+           help=_('REMOTE GLANCE REGION to download the image.'))
+@utils.arg('--remote-image-id', metavar='<REMOTE_IMAGE_ID>', default=None,
+           help=_('The IMAGE ID of the image of remote glance, which needs'
+                  'to be imported with glance-download'))
+@utils.arg('--remote-service-interface', metavar='<REMOTE_SERVICE_INTERFACE>',
+           default='public',
+           help=_('The Remote Glance Service Interface for glance-download'))
 @utils.arg('id', metavar='<IMAGE_ID>',
            help=_('ID of image to import.'))
 @utils.arg('--store', metavar='<STORE>',
@@ -757,6 +789,10 @@ def do_image_import(gc, args):
     stores = getattr(args, "stores", None)
     all_stores = getattr(args, "os_all_stores", None)
     allow_failure = getattr(args, "os_allow_failure", True)
+    uri = getattr(args, "uri", None)
+    remote_region = getattr(args, "remote-region", None)
+    remote_image_id = getattr(args, "remote-image-id", None)
+    remote_service_interface = getattr(args, "remote-service-interface", None)
 
     if not getattr(args, 'from_create', False):
         if (args.store and (stores or all_stores)) or (stores and all_stores):
@@ -800,6 +836,20 @@ def do_image_import(gc, args):
         utils.exit("Import method should be 'web-download' if URI is "
                    "provided.")
 
+    if args.import_method == 'glance-download' and \
+            not (remote_region and remote_image_id):
+        utils.exit("Provide REMOTE_IMAGE_ID and remote-region for "
+                   "'glance-download' import method.")
+    if remote_region and args.import_method != 'glance-download':
+        utils.exit("Import method should be 'glance-download' if "
+                   "REMOTE REGION is provided.")
+    if remote_image_id and args.import_method != 'glance-download':
+        utils.exit("Import method should be 'glance-download' if "
+                   "REMOTE IMAGE ID is provided.")
+    if remote_service_interface and args.import_method != 'glance-download':
+        utils.exit("Import method should be 'glance-download' if "
+                   "REMOTE SERVICE INTERFACE is provided.")
+
     if args.import_method == 'copy-image' and not (stores or all_stores):
         utils.exit("Provide either --stores or --all-stores for "
                    "'copy-image' import method.")
@@ -827,10 +877,12 @@ def do_image_import(gc, args):
                        "an image with status 'active'.")
 
     # finally, do the import
-    gc.images.image_import(args.id, args.import_method, args.uri,
-                           backend=backend,
-                           stores=stores, all_stores=all_stores,
-                           allow_failure=allow_failure)
+    gc.images.image_import(args.id, args.import_method, uri=uri,
+                           remote_region=remote_region,
+                           remote_image_id=remote_image_id,
+                           remote_service_interface=remote_service_interface,
+                           backend=backend, stores=stores,
+                           all_stores=all_stores, allow_failure=allow_failure)
 
     image = gc.images.get(args.id)
     utils.print_image(image)
