@@ -122,7 +122,7 @@ class TestUtils(testtools.TestCase):
         # test for removing 'u' from lists in print_list output
         columns = ['ID', 'Tags']
         images = [Struct(**{'id': 'b8e1c57e-907a-4239-aed8-0df8e54b8d2d',
-                  'tags': [u'Name1', u'Tag_123', u'veeeery long']})]
+                  'tags': ['Name1', 'Tag_123', 'veeeery long']})]
         saved_stdout = sys.stdout
         try:
             sys.stdout = output_list = io.StringIO()
@@ -177,12 +177,6 @@ class TestUtils(testtools.TestCase):
 +--------------+---------------+
 ''',
                          output_list.getvalue())
-
-    def test_unicode_key_value_to_string(self):
-        src = {u'key': u'\u70fd\u7231\u5a77'}
-        # u'xxxx' in PY3 is str, we will not get extra 'u' from cli
-        # output in PY3
-        self.assertEqual(src, utils.unicode_key_value_to_string(src))
 
     def test_schema_args_with_list_types(self):
         # NOTE(flaper87): Regression for bug

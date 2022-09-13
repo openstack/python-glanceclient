@@ -550,10 +550,10 @@ data_fixtures = {
             {
                 'id': 'a2b83adc-888e-11e3-8872-78acc0b951d8',
                 'name': 'image-location-tests',
-                'locations': [{u'url': u'http://foo.com/',
-                               u'metadata': {u'foo': u'foometa'}},
-                              {u'url': u'http://bar.com/',
-                               u'metadata': {u'bar': u'barmeta'}}],
+                'locations': [{'url': 'http://foo.com/',
+                               'metadata': {'foo': 'foometa'}},
+                              {'url': 'http://bar.com/',
+                               'metadata': {'bar': 'barmeta'}}],
             },
         ),
         'PATCH': (

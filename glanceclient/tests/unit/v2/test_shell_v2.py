@@ -854,7 +854,7 @@ class ShellV2Test(testtools.TestCase):
 
     @mock.patch('sys.stdin', autospec=True)
     def test_do_image_create_with_unicode(self, mock_stdin):
-        name = u'\u041f\u0420\u0418\u0412\u0415\u0422\u0418\u041a'
+        name = '\u041f\u0420\u0418\u0412\u0415\u0422\u0418\u041a'
 
         args = self._make_args({'name': name,
                                 'file': None})

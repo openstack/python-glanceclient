@@ -57,7 +57,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'python-glanceclient'
-copyright = u'OpenStack Foundation'
+copyright = 'OpenStack Foundation'
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 add_function_parentheses = True
@@ -83,8 +83,8 @@ htmlhelp_basename = '%sdoc' % project
 # -- Options for man page output ----------------------------------------------
 
 # Grouping the document tree for man pages.
-# List of tuples 'sourcefile', 'target', u'title', u'Authors name', 'manual'
+# List of tuples 'sourcefile', 'target', 'title', 'Authors name', 'manual'
 man_pages = [
-    ('cli/glance', 'glance', u'Client for OpenStack Images API',
-     [u'OpenStack Foundation'], 1),
+    ('cli/glance', 'glance', 'Client for OpenStack Images API',
+     ['OpenStack Foundation'], 1),
 ]

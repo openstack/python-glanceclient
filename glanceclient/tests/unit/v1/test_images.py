@@ -504,7 +504,7 @@ class ImageManagerTest(testtools.TestCase):
         self.assertEqual(False, image.is_public)
         self.assertEqual(False, image.protected)
         self.assertEqual(False, image.deleted)
-        self.assertEqual({u'arch': u'x86_64'}, image.properties)
+        self.assertEqual({'arch': 'x86_64'}, image.properties)
 
     def test_get_int(self):
         image = self.mgr.get(1)
@@ -515,7 +515,7 @@ class ImageManagerTest(testtools.TestCase):
         self.assertEqual(False, image.is_public)
         self.assertEqual(False, image.protected)
         self.assertEqual(False, image.deleted)
-        self.assertEqual({u'arch': u'x86_64'}, image.properties)
+        self.assertEqual({'arch': 'x86_64'}, image.properties)
 
     def test_get_encoding(self):
         image = self.mgr.get('3')
