@@ -49,11 +49,7 @@ def get_image_schema():
     return IMAGE_SCHEMA
 
 
-@utils.schema_args(get_image_schema, omit=['created_at', 'updated_at', 'file',
-                                           'checksum', 'virtual_size', 'size',
-                                           'status', 'schema', 'direct_url',
-                                           'locations', 'self', 'os_hidden',
-                                           'os_hash_value', 'os_hash_algo'])
+@utils.schema_args(get_image_schema, omit=['locations', 'os_hidden'])
 # NOTE(rosmaita): to make this option more intuitive for end users, we
 # do not use the Glance image property name 'os_hidden' here.  This means
 # we must include 'os_hidden' in the 'omit' list above and handle the
@@ -118,11 +114,7 @@ def do_image_create(gc, args):
         utils.print_image(image)
 
 
-@utils.schema_args(get_image_schema, omit=['created_at', 'updated_at', 'file',
-                                           'checksum', 'virtual_size', 'size',
-                                           'status', 'schema', 'direct_url',
-                                           'locations', 'self', 'os_hidden',
-                                           'os_hash_value', 'os_hash_algo'])
+@utils.schema_args(get_image_schema, omit=['locations', 'os_hidden'])
 # NOTE: --hidden requires special handling; see note at do_image_create
 @utils.arg('--hidden', type=strutils.bool_from_string, metavar='[True|False]',
            default=None,
@@ -354,12 +346,8 @@ def _validate_backend(backend, gc):
 
 
 @utils.arg('id', metavar='<IMAGE_ID>', help=_('ID of image to update.'))
-@utils.schema_args(get_image_schema, omit=['id', 'locations', 'created_at',
-                                           'updated_at', 'file', 'checksum',
-                                           'virtual_size', 'size', 'status',
-                                           'schema', 'direct_url', 'tags',
-                                           'self', 'os_hidden',
-                                           'os_hash_value', 'os_hash_algo'])
+@utils.schema_args(get_image_schema, omit=['id', 'locations', 'tags',
+                                           'os_hidden'])
 # NOTE: --hidden requires special handling; see note at do_image_create
 @utils.arg('--hidden', type=strutils.bool_from_string, metavar='[True|False]',
            default=None,
@@ -1105,8 +1093,7 @@ def do_md_namespace_import(gc, args):
 @utils.schema_args(get_namespace_schema, omit=['property_count', 'properties',
                                                'tag_count', 'tags',
                                                'object_count', 'objects',
-                                               'resource_type_associations',
-                                               'schema'])
+                                               'resource_type_associations'])
 def do_md_namespace_update(gc, args):
     """Update an existing metadata definitions namespace."""
     schema = gc.schemas.get('metadefs/namespace')

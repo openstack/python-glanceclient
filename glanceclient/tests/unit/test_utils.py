@@ -191,12 +191,17 @@ class TestUtils(testtools.TestCase):
         def schema_getter(_type='string', enum=False):
             prop = {
                 'type': ['null', _type],
-                'readOnly': True,
                 'description': 'Test schema',
+            }
+            prop_readonly = {
+                'type': ['null', _type],
+                'readOnly': True,
+                'description': 'Test schema read-only',
             }
 
             if enum:
                 prop['enum'] = [None, 'opt-1', 'opt-2']
+                prop_readonly['enum'] = [None, 'opt-ro-1', 'opt-ro-2']
 
             def actual_getter():
                 return {
@@ -205,6 +210,7 @@ class TestUtils(testtools.TestCase):
                     'name': 'test_schema',
                     'properties': {
                         'test': prop,
+                        'readonly-test': prop_readonly,
                     }
                 }
 
@@ -214,6 +220,7 @@ class TestUtils(testtools.TestCase):
             pass
 
         decorated = utils.schema_args(schema_getter())(dummy_func)
+        self.assertEqual(len(decorated.__dict__['arguments']), 1)
         arg, opts = decorated.__dict__['arguments'][0]
         self.assertIn('--test', arg)
         self.assertEqual(encodeutils.safe_decode, opts['type'])
