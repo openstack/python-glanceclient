@@ -103,7 +103,7 @@ def schema_args(schema_getter, omit=None):
     typemap = {
         'string': encodeutils.safe_decode,
         'integer': int,
-        'boolean': strutils.bool_from_string,
+        'boolean': lambda x: strutils.bool_from_string(x, strict=True),
         'array': list
     }
 

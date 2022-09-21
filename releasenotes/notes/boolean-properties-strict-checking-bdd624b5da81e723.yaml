@@ -1,0 +1,12 @@
+---
+prelude: >
+fixes:
+  - |
+    * Bug 1607317_: metadata def namespace update CLI is not working as expected for parameter "protected"
+
+    .. _1607317: https://code.launchpad.net/bugs/1607317
+other:
+  - |
+    Boolean arguments now expect one of the following values: '0', '1', 'f',
+    'false', 'n', 'no', 'off', 'on', 't', 'true', 'y', 'yes'
+    (case-insensitive). This will not change anything for most users.

@@ -229,6 +229,14 @@ class TestUtils(testtools.TestCase):
         self.assertEqual(encodeutils.safe_decode, opts['type'])
         self.assertIn('None, opt-1, opt-2', opts['help'])
 
+        # Make sure we use strict checking for boolean values.
+        decorated = utils.schema_args(schema_getter('boolean'))(dummy_func)
+        arg, opts = decorated.__dict__['arguments'][0]
+        type_function = opts['type']
+        self.assertEqual(type_function('False'), False)
+        self.assertEqual(type_function('True'), True)
+        self.assertRaises(ValueError, type_function, 'foo')
+
     def test_iterable_closes(self):
         # Regression test for bug 1461678.
         def _iterate(i):
