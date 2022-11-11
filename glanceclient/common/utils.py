@@ -123,6 +123,8 @@ def schema_args(schema_getter, omit=None):
             for name, property in properties.items():
                 if name in omit:
                     continue
+                if property.get('readOnly', False):
+                    continue
                 param = '--' + name.replace('_', '-')
                 kwargs = {}
 
