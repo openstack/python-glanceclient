@@ -51,7 +51,14 @@ class SimpleReadOnlyGlanceClientTest(base.ClientTestBase):
 
         commands = []
         cmds_start = lines.index('Positional arguments:')
-        cmds_end = lines.index('Optional arguments:')
+        try:
+            # Starting in Python 3.10, argparse displays options in the
+            # "Options:" section...
+            cmds_end = lines.index('Options:')
+        except ValueError:
+            # ... but before Python 3.10, options were displayed in the
+            # "Optional arguments:" section.
+            cmds_end = lines.index('Optional arguments:')
         command_pattern = re.compile(r'^ {4}([a-z0-9\-\_]+)')
         for line in lines[cmds_start:cmds_end]:
             match = command_pattern.match(line)
