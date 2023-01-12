@@ -55,8 +55,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'glanceclient Release Notes'
-copyright = u'2016, Glance Developers'
+project = 'glanceclient Release Notes'
+copyright = '2016, Glance Developers'
 
 openstackdocs_repo_name = 'openstack/python-glanceclient'
 openstackdocs_bug_project = 'python-glanceclient'
@@ -206,8 +206,8 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     ('index', 'glanceclientReleaseNotes.tex',
-     u'glanceclient Release Notes Documentation',
-     u'Glance Developers', 'manual'),
+     'glanceclient Release Notes Documentation',
+     'Glance Developers', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -237,8 +237,8 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'glanceclientreleasenotes',
-     u'glanceclient Release Notes Documentation',
-     [u'Glance Developers'], 1)
+     'glanceclient Release Notes Documentation',
+     ['Glance Developers'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -252,8 +252,8 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     ('index', 'glanceclientReleaseNotes',
-     u'glanceclient Release Notes Documentation',
-     u'Glance Developers', 'glanceclientReleaseNotes',
+     'glanceclient Release Notes Documentation',
+     'Glance Developers', 'glanceclientReleaseNotes',
      'Python bindings for the OpenStack Image service.',
      'Miscellaneous'),
 ]

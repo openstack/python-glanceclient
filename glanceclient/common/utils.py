@@ -271,32 +271,9 @@ def print_list(objs, fields, formatters=None, field_settings=None):
                 field_name = field.lower().replace(' ', '_')
                 data = getattr(o, field_name, None) or ''
                 row.append(data)
-        count = 0
-        # Converts unicode values in list to string
-        for part in row:
-            count = count + 1
-            if isinstance(part, list):
-                part = unicode_key_value_to_string(part)
-                row[count - 1] = part
         pt.add_row(row)
 
     print(encodeutils.safe_decode(pt.get_string()))
-
-
-def _encode(src):
-    """remove extra 'u' in PY2."""
-    return src
-
-
-def unicode_key_value_to_string(src):
-    """Recursively converts dictionary keys to strings."""
-    if isinstance(src, dict):
-        return dict((_encode(k),
-                    _encode(unicode_key_value_to_string(v)))
-                    for k, v in src.items())
-    if isinstance(src, list):
-        return [unicode_key_value_to_string(l) for l in src]
-    return _encode(src)
 
 
 def print_dict(d, max_column_width=80):

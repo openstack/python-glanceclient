@@ -66,7 +66,7 @@ class TestClient(testtools.TestCase):
 
         self.endpoint = 'http://example.com:9292'
         self.ssl_endpoint = 'https://example.com:9292'
-        self.token = u'abc123'
+        self.token = 'abc123'
 
         self.client = getattr(self, self.create_client)()
 
@@ -80,7 +80,7 @@ class TestClient(testtools.TestCase):
             'X-Service-Catalog': 'service_catalog',
         }
         # with token
-        kwargs = {'token': u'fake-token',
+        kwargs = {'token': 'fake-token',
                   'identity_headers': identity_headers}
         http_client_object = http.HTTPClient(self.endpoint, **kwargs)
         self.assertEqual('auth_token', http_client_object.auth_token)
@@ -96,10 +96,10 @@ class TestClient(testtools.TestCase):
             'X-Service-Catalog': 'service_catalog',
         }
         # without X-Auth-Token in identity headers
-        kwargs = {'token': u'fake-token',
+        kwargs = {'token': 'fake-token',
                   'identity_headers': identity_headers}
         http_client_object = http.HTTPClient(self.endpoint, **kwargs)
-        self.assertEqual(u'fake-token', http_client_object.auth_token)
+        self.assertEqual('fake-token', http_client_object.auth_token)
         self.assertTrue(http_client_object.identity_headers.
                         get('X-Auth-Token') is None)
 
@@ -210,12 +210,12 @@ class TestClient(testtools.TestCase):
         self.mock.get(self.endpoint + path, text=text,
                       headers={"Content-Type": "text/plain"})
 
-        headers = {"test": u'ni\xf1o'}
+        headers = {"test": 'ni\xf1o'}
         resp, body = self.client.get(path, headers=headers)
         self.assertEqual(text, resp.text)
 
     def test_headers_encoding(self):
-        value = u'ni\xf1o'
+        value = 'ni\xf1o'
         fake_location = b'http://web_server:80/images/fake.img'
         headers = {"test": value,
                    "none-val": None,
@@ -262,7 +262,7 @@ class TestClient(testtools.TestCase):
         ksarqh = mock_ksarq.call_args[1]['headers']
         # Only one Content-Type header (of any text-type)
         self.assertEqual(1, [encodeutils.safe_decode(key)
-                             for key in ksarqh.keys()].count(u'Content-Type'))
+                             for key in ksarqh.keys()].count('Content-Type'))
         # And it's the one we set
         self.assertEqual(b"application/openstack-images-v2.1-json-patch",
                          ksarqh[b"Content-Type"])
@@ -295,7 +295,7 @@ class TestClient(testtools.TestCase):
 
     def test_parse_endpoint(self):
         endpoint = 'http://example.com:9292'
-        test_client = http.HTTPClient(endpoint, token=u'adc123')
+        test_client = http.HTTPClient(endpoint, token='adc123')
         actual = test_client.parse_endpoint(endpoint)
         expected = parse.SplitResult(scheme='http',
                                      netloc='example.com:9292', path='',
@@ -304,7 +304,7 @@ class TestClient(testtools.TestCase):
 
     def test_get_connections_kwargs_http(self):
         endpoint = 'http://example.com:9292'
-        test_client = http.HTTPClient(endpoint, token=u'adc123')
+        test_client = http.HTTPClient(endpoint, token='adc123')
         self.assertEqual(600.0, test_client.timeout)
 
     def test__chunk_body_exact_size_chunk(self):
@@ -321,7 +321,7 @@ class TestClient(testtools.TestCase):
         path = '/v1/images/'
         self.mock.post(self.endpoint + path, text=text)
 
-        headers = {"test": u'chunked_request'}
+        headers = {"test": 'chunked_request'}
         resp, body = self.client.post(path, headers=headers, data=data)
         self.assertIsInstance(self.mock.last_request.body, types.GeneratorType)
         self.assertEqual(text, resp.text)
@@ -332,7 +332,7 @@ class TestClient(testtools.TestCase):
         text = 'OK'
         self.mock.post(self.endpoint + path, text=text)
 
-        headers = {"test": u'chunked_request'}
+        headers = {"test": 'chunked_request'}
         resp, body = self.client.post(path, headers=headers, data=data)
 
         self.assertEqual(text, resp.text)
@@ -487,7 +487,7 @@ class TestClient(testtools.TestCase):
         headers = self.mock.last_request.headers
         self.assertEqual(refreshed_token, headers['X-Auth-Token'])
         # regression check for bug 1448080
-        unicode_token = u'ni\xf1o+=='
+        unicode_token = 'ni\xf1o+=='
         http_client.auth_token = unicode_token
         http_client.get(path)
         headers = self.mock.last_request.headers
