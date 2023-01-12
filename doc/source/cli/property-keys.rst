@@ -27,3 +27,8 @@ in the Glance Administration Guide.
    For more information, refer to `Manage images
    <https://docs.openstack.org/glance/latest/admin/manage-images.html>`_
    in the Glance Administration Guide.
+
+.. note::
+
+   Boolean properties expect one of the following values: '0', '1', 'f',
+   'false', 'n', 'no', 'off', 'on', 't', 'true', 'y', 'yes' (case-insensitive).
