@@ -25,6 +25,9 @@ from glanceclient.tests import utils as testutils
 from glanceclient.v2.image_schema import _BASE_SCHEMA
 
 
+DEFAULT_PAGE_SIZE = 200
+
+
 class ClientTestRequests(testutils.TestCase):
     """Client tests using the requests mock library."""
 
@@ -35,7 +38,8 @@ class ClientTestRequests(testutils.TestCase):
         self.requests = self.useFixture(rm_fixture.Fixture())
         self.requests.get('http://example.com/v2/schemas/image',
                           json=schema_fixture)
-        self.requests.get('http://example.com/v2/images?limit=200',
+        self.requests.get('http://example.com/v2/images?'
+                          f'limit={DEFAULT_PAGE_SIZE}',
                           json=image_list_fixture)
         gc = client.Client(2.2, "http://example.com/v2.1")
         images = gc.images.list()
