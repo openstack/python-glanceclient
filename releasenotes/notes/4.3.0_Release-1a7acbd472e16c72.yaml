@@ -1,0 +1,9 @@
+---
+fixes:
+  - |
+    Bug 911805_: Scriptify the generation of man pages
+  - |
+    Bug 1561828_: unallowed and read-only parameters in namspace and resouce_type
+
+    .. _911805: https://code.launchpad.net/bugs/911805
+    .. _1561828: https://code.launchpad.net/bugs/1561828
