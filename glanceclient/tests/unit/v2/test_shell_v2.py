@@ -2279,7 +2279,9 @@ class ShellV2Test(testtools.TestCase):
                     test_shell.do_image_import(self.gc, args)
                     mock_import.assert_called_once_with(
                         'IMG-02', 'glance-direct', None, stores=None,
-                        all_stores=None, allow_failure=True, backend=None)
+                        all_stores=None, allow_failure=True,
+                        remote_region=None, remote_image_id=None,
+                        remote_service_interface=None, backend=None)
                     mocked_utils_print_image.assert_not_called()
 
     @mock.patch('glanceclient.common.utils.print_image')
