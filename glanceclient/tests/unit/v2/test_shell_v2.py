@@ -2240,10 +2240,10 @@ class ShellV2Test(testtools.TestCase):
 
     def test_image_import_glance_download(self):
         args = self._make_args(
-            {'id': 'IMG-01', 'uri': None, 'remote-region': 'REGION2',
-             'remote-image-id': 'IMG-02',
+            {'id': 'IMG-01', 'uri': None, 'remote_region': 'REGION2',
+             'remote_image_id': 'IMG-02',
              'import_method': 'glance-download',
-             'remote-service-interface': 'public'})
+             'remote_service_interface': 'public'})
         with mock.patch.object(self.gc.images, 'image_import') as mock_import:
             with mock.patch.object(self.gc.images, 'get') as mocked_get:
                 with mock.patch.object(self.gc.images,

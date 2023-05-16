@@ -778,9 +778,9 @@ def do_image_import(gc, args):
     all_stores = getattr(args, "os_all_stores", None)
     allow_failure = getattr(args, "os_allow_failure", True)
     uri = getattr(args, "uri", None)
-    remote_region = getattr(args, "remote-region", None)
-    remote_image_id = getattr(args, "remote-image-id", None)
-    remote_service_interface = getattr(args, "remote-service-interface", None)
+    remote_region = getattr(args, "remote_region", None)
+    remote_image_id = getattr(args, "remote_image_id", None)
+    remote_service_interface = getattr(args, "remote_service_interface", None)
 
     if not getattr(args, 'from_create', False):
         if (args.store and (stores or all_stores)) or (stores and all_stores):
