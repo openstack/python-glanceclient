@@ -46,6 +46,9 @@ openstackdocs_bug_tag = ''
 # text edit cycles.
 # execute "export SPHINX_DEBUG=1" in your terminal to disable
 
+# TODO: remove this once no dependency uses six anymore
+autodoc_mock_imports = ['six']
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
