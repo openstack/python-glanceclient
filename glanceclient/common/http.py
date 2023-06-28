@@ -40,7 +40,7 @@ osprofiler_web = importutils.try_import("osprofiler.web")
 
 LOG = logging.getLogger(__name__)
 USER_AGENT = 'python-glanceclient'
-CHUNKSIZE = 1024 * 64  # 64kB
+CHUNKSIZE = 1024 * 1024  # 1MiB
 REQ_ID_HEADER = 'X-OpenStack-Request-ID'
 TOKEN_HEADERS = ['X-Auth-Token', 'X-Service-Token']
 
