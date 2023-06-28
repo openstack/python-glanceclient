@@ -2940,13 +2940,15 @@ class ShellV2Test(testtools.TestCase):
         args = self._make_args({'namespace': 'MyNamespace',
                                 'name': "MyProperty",
                                 'title': "Title",
+                                'type': 'boolean',
                                 'schema': '{}'})
         with mock.patch.object(self.gc.metadefs_property,
                                'create') as mocked_create:
             expect_property = {
                 'namespace': 'MyNamespace',
                 'name': 'MyProperty',
-                'title': 'Title'
+                'title': 'Title',
+                'type': 'boolean',
             }
 
             mocked_create.return_value = expect_property
@@ -2955,13 +2957,15 @@ class ShellV2Test(testtools.TestCase):
 
             mocked_create.assert_called_once_with('MyNamespace',
                                                   name='MyProperty',
-                                                  title='Title')
+                                                  title='Title',
+                                                  type='boolean')
             utils.print_dict.assert_called_once_with(expect_property)
 
     def test_do_md_property_create_invalid_schema(self):
         args = self._make_args({'namespace': 'MyNamespace',
                                 'name': "MyProperty",
                                 'title': "Title",
+                                'type': "boolean",
                                 'schema': 'Invalid'})
         self.assertRaises(SystemExit, test_shell.do_md_property_create,
                           self.gc, args)

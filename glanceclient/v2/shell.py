@@ -1218,6 +1218,8 @@ def do_md_namespace_resource_type_list(gc, args):
            help=_('Property name displayed to the user.'))
 @utils.arg('--schema', metavar='<SCHEMA>', required=True,
            help=_('Valid JSON schema of a property.'))
+@utils.arg('--type', metavar='<TYPE>', required=True,
+           help=_('Type of the property'))
 def do_md_property_create(gc, args):
     """Create a new metadata definitions property inside a namespace."""
     try:
@@ -1225,7 +1227,7 @@ def do_md_property_create(gc, args):
     except ValueError:
         utils.exit('Schema is not a valid JSON object.')
     else:
-        fields = {'name': args.name, 'title': args.title}
+        fields = {'name': args.name, 'title': args.title, 'type': args.type}
         fields.update(schema)
         new_property = gc.metadefs_property.create(args.namespace, **fields)
         utils.print_dict(new_property)
