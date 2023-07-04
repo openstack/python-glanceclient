@@ -801,10 +801,14 @@ def do_image_import(gc, args):
     if getattr(args, 'from_create', False):
         # this command is being called "internally" so we can skip
         # validation -- just do the import and get out of here
-        gc.images.image_import(args.id, args.import_method, args.uri,
-                               backend=backend,
-                               stores=stores, all_stores=all_stores,
-                               allow_failure=allow_failure)
+        gc.images.image_import(
+            args.id, args.import_method, args.uri,
+            remote_region=remote_region,
+            remote_image_id=remote_image_id,
+            remote_service_interface=remote_service_interface,
+            backend=backend,
+            stores=stores, all_stores=all_stores,
+            allow_failure=allow_failure)
         return
 
     # do input validation
