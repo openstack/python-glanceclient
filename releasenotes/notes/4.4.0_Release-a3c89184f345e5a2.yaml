@@ -1,0 +1,9 @@
+---
+fixes:
+  - |
+    Bug 2012442_: import image with glance-download return 400
+  - |
+    Bug 1934626_: glanceclient has no support to add type while creating md-property for namespace
+
+    .. _2012442: https://code.launchpad.net/bugs/2012442
+    .. _1934626: https://code.launchpad.net/bugs/1934626
