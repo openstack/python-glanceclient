@@ -560,3 +560,33 @@ class Controller(object):
         req_id_hdr = {'x-openstack-request-id': response.request_ids[0]}
 
         return self._get(image_id, req_id_hdr)
+
+    def add_image_location(self, image_id, location_url, validation_data={}):
+        """Add a new location to an image.
+
+        :param image_id: ID of image to which the location is to be added.
+        :param location_url: URL of the location to add.
+        :param validation_data: Validation data for the image.
+        """
+        if not utils.has_version(self.http_client, 'v2.17'):
+            raise exc.HTTPNotImplemented(
+                'This operation is not supported by Glance.')
+
+        url = '/v2/images/%s/locations' % image_id
+        data = {'url': location_url,
+                'validation_data': validation_data}
+        resp, body = self.http_client.post(url, data=data)
+        return self._get(image_id)
+
+    @utils.add_req_id_to_object()
+    def get_image_locations(self, image_id):
+        """Fetch list of locations associated to the Image.
+
+        :param image_id: ID of image to which the location is to be fetched.
+        """
+        if not utils.has_version(self.http_client, 'v2.17'):
+            raise exc.HTTPNotImplemented(
+                'This operation is not supported by Glance.')
+        url = '/v2/images/%s/locations' % (image_id)
+        resp, locations = self.http_client.get(url)
+        return locations, resp

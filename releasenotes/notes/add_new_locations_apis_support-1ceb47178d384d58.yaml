@@ -1,0 +1,23 @@
+---
+features:
+  - |
+    Add support for the new Glance ``Locations`` APIs
+
+    - Add client support for newly added API,
+      ``POST /v2/images/{image_id}/locations`` in Glance.
+      New add location operation is allowed for service to service
+      interaction, end users only when `http` store is enabled in
+      deployment and images which are in ``queued`` state only.
+      This api replaces the image-update (old location-add) mechanism
+      for consumers like cinder and nova to address `OSSN-0090`_ and
+      `OSSN-0065`_. This client change adds support of new shell command
+      ``add-location`` and new client method ``add_image_location``.
+    - Add support for newly added API,
+      ``GET /v2/images/{image_id}/locations`` in Glance to fetch the
+      locations associated to an image. This change adds new client method
+      ``get_image_locations`` since this new get locations api is meant for
+      service user only hence it is not exposed to the end user as a shell
+      command.
+
+    .. _OSSN-0090: https://wiki.openstack.org/wiki/OSSN/OSSN-0090
+    .. _OSSN-0065: https://wiki.openstack.org/wiki/OSSN/OSSN-0065

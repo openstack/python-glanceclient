@@ -117,6 +117,15 @@ class BaseController(testtools.TestCase):
         resp = self.controller.image_import(*args, **kwargs)
         self._assertRequestId(resp)
 
+    def add_image_location(self, *args):
+        resp = self.controller.add_image_location(*args)
+        self._assertRequestId(resp)
+
+    def get_image_locations(self, *args):
+        resource = self.controller.get_image_locations(*args)
+        self._assertRequestId(resource)
+        return resource
+
 
 class BaseResourceTypeController(BaseController):
     def __init__(self, api, schema_api, controller_class):

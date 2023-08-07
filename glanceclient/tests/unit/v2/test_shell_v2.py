@@ -1989,6 +1989,68 @@ class ShellV2Test(testtools.TestCase):
                                                   loc['metadata'])
             utils.print_dict.assert_called_once_with(expect_image)
 
+    def test_do_add_location(self):
+        gc = self.gc
+        url = 'http://foo.com/',
+        validation_data = {'os_hash_algo': 'sha512',
+                           'os_hash_value': 'value'}
+        args = {'id': 'IMG-01',
+                'url': url,
+                'validation_data': json.dumps(validation_data)}
+        with mock.patch.object(gc.images,
+                               'add_image_location') as mock_addloc:
+            expect_image = {'id': 'pass'}
+            mock_addloc.return_value = expect_image
+
+            test_shell.do_add_location(self.gc, self._make_args(args))
+            mock_addloc.assert_called_once_with(
+                'IMG-01', url, validation_data=validation_data)
+            utils.print_dict.assert_called_once_with(expect_image)
+
+    @mock.patch('glanceclient.common.utils.exit')
+    def test_do_add_location_with_checksum_in_validation_data(self,
+                                                              mock_exit):
+        validation_data = {'checksum': 'value',
+                           'os_hash_algo': 'sha512',
+                           'os_hash_value': 'value'}
+
+        args = self._make_args(
+            {'id': 'IMG-01', 'url': 'http://foo.com/',
+             'validation_data': json.dumps(validation_data)})
+        expected_msg = ('Validation Data should contain only os_hash_algo'
+                        ' and os_hash_value. `checksum` is not allowed')
+        mock_exit.side_effect = self._mock_utils_exit
+        try:
+            test_shell.do_add_location(self.gc, args)
+            self.fail("utils.exit should have been called")
+        except SystemExit:
+            pass
+
+        mock_exit.assert_called_once_with(expected_msg)
+
+    @mock.patch('glanceclient.common.utils.exit')
+    def test_do_add_location_with_invalid_algo_in_validation_data(self,
+                                                                  mock_exit):
+        validation_data = {'os_hash_algo': 'algo',
+                           'os_hash_value': 'value'}
+
+        args = self._make_args(
+            {'id': 'IMG-01', 'url': 'http://foo.com/',
+             'validation_data': json.dumps(validation_data)})
+        allowed_hash_algo = ['sha512', 'sha256', 'sha1', 'md5']
+        expected_msg = ('os_hash_algo: `%s` is incorrect, '
+                        'allowed hashing algorithms: %s' %
+                        (validation_data['os_hash_algo'],
+                         allowed_hash_algo))
+        mock_exit.side_effect = self._mock_utils_exit
+        try:
+            test_shell.do_add_location(self.gc, args)
+            self.fail("utils.exit should have been called")
+        except SystemExit:
+            pass
+
+        mock_exit.assert_called_once_with(expected_msg)
+
     def test_image_upload(self):
         args = self._make_args(
             {'id': 'IMG-01', 'file': 'test', 'size': 1024, 'progress': False})

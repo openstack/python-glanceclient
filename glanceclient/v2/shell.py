@@ -1012,6 +1012,43 @@ def do_location_update(gc, args):
         utils.print_dict(image)
 
 
+@utils.arg('--url', metavar='<URL>', required=True,
+           help=_('URL of location to add.'))
+@utils.arg('--validation-data', metavar='<STRING>', default='{}',
+           help=_('Validation data containing os_hash_algo and os_hash_value '
+                  'only associated to the image. Must be a valid JSON object '
+                  '(default: %(default)s)'))
+@utils.arg('id', metavar='<IMAGE_ID>',
+           help=_('ID of image whose location is to be added.'))
+def do_add_location(gc, args):
+    """Add location to an image which is in `queued` state only. """
+    try:
+        invalid_val_data = None
+        validation_data = json.loads(args.validation_data)
+        accepted_values = ['os_hash_algo', 'os_hash_value']
+        invalid_val_data = list(set(validation_data.keys()).difference(
+            accepted_values))
+        if invalid_val_data:
+            utils.exit('Validation Data should contain only os_hash_algo '
+                       'and os_hash_value. `%s` is not allowed' %
+                       (*invalid_val_data,))
+
+        allowed_hash_algo = ['sha512', 'sha256', 'sha1', 'md5']
+        if validation_data and \
+                validation_data['os_hash_algo'] not in allowed_hash_algo:
+            raise utils.exit('os_hash_algo: `%s` is incorrect, '
+                             'allowed hashing algorithms: %s' %
+                             (validation_data['os_hash_algo'],
+                              allowed_hash_algo))
+
+    except ValueError:
+        utils.exit('validation-data is not a valid JSON object.')
+    else:
+        image = gc.images.add_image_location(args.id, args.url,
+                                             validation_data=validation_data)
+        utils.print_image(image)
+
+
 # Metadata - catalog
 NAMESPACE_SCHEMA = None
 

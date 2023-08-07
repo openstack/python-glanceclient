@@ -688,6 +688,18 @@ data_fixtures = {
             ]},
         ),
     },
+    '/v2/images/3a4560a1-e585-443e-9b39-553b46ec92d1/locations': {
+        'POST': ({}, '')
+    },
+    '/v2/images/a2b83adc-888e-11e3-8872-78acc0b951d8/locations': {
+        'GET': (
+            {},
+            [{'url': 'http://foo.com/',
+              'metadata': {'store': 'cheap'}},
+             {'url': 'http://bar.com/',
+              'metadata': {'store': 'fast'}}], ''
+        ),
+    },
 }
 
 schema_fixtures = {
@@ -1503,3 +1515,60 @@ class TestController(testtools.TestCase):
                                 self.controller.update_location,
                                 image_id, **new_loc)
         self.assertIn(err_str, str(err))
+
+    def test_add_image_location(self):
+        location_url = 'http://spam.com/'
+        image_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
+        expect = [
+            ('POST',
+             '/v2/images/%s/locations' % (image_id),
+             {},
+             [('url', location_url), ('validation_data', {})]),
+            ('GET', '/v2/images/%s' % (image_id), {}, None)]
+        with mock.patch.object(common_utils,
+                               'has_version') as mock_has_version:
+            mock_has_version.return_value = True
+            self.controller.add_image_location(image_id, location_url, {})
+            self.assertEqual(expect, self.api.calls)
+
+    def test_add_image_location_with_validation_data(self):
+        location_url = 'http://spam.com/'
+        image_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
+        expect = [
+            ('POST',
+             '/v2/images/%s/locations' % (image_id),
+             {},
+             [('url', location_url), ('validation_data',
+                                      {'os_hash_algo': 'sha512'})]),
+            ('GET', '/v2/images/%s' % (image_id), {}, None)]
+        with mock.patch.object(common_utils,
+                               'has_version') as mock_has_version:
+            mock_has_version.return_value = True
+            self.controller.add_image_location(image_id, location_url,
+                                               {'os_hash_algo': 'sha512'})
+            self.assertEqual(expect, self.api.calls)
+
+    def test_add_image_location_not_supported(self):
+        with mock.patch.object(common_utils,
+                               'has_version') as mock_has_version:
+            mock_has_version.return_value = False
+            self.assertRaises(exc.HTTPNotImplemented,
+                              self.controller.add_image_location,
+                              '3a4560a1-e585-443e-9b39-553b46ec92d1',
+                              'http://spam.com/')
+
+    def test_get_image_locations(self):
+        image_id = 'a2b83adc-888e-11e3-8872-78acc0b951d8'
+        with mock.patch.object(common_utils,
+                               'has_version') as mock_has_version:
+            mock_has_version.return_value = True
+            locations = self.controller.get_image_locations(image_id)
+            self.assertEqual(2, len(locations))
+
+    def test_get_image_location_not_supported(self):
+        with mock.patch.object(common_utils,
+                               'has_version') as mock_has_version:
+            mock_has_version.return_value = False
+            self.assertRaises(exc.HTTPNotImplemented,
+                              self.controller.get_image_locations,
+                              '3a4560a1-e585-443e-9b39-553b46ec92d1')
