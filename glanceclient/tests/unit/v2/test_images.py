@@ -1468,7 +1468,7 @@ class TestController(testtools.TestCase):
         headers = {'x-openstack-request-id': 'req-1234'}
         fixture_idx = '/v2/images/%s' % (image_id)
         orig_locations = data_fixtures[fixture_idx]['GET'][1]['locations']
-        loc_map = dict([(l['url'], l) for l in orig_locations])
+        loc_map = dict([(loc['url'], loc) for loc in orig_locations])
         loc_map[new_loc['url']] = new_loc
         mod_patch = [{'path': '/locations', 'op': 'replace',
                       'value': list(loc_map.values())}]

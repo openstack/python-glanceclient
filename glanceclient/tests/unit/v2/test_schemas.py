@@ -61,8 +61,8 @@ _SCHEMA = schemas.Schema({
 
 def compare_json_patches(a, b):
     """Return 0 if a and b describe the same JSON patch."""
-    return(jsonpatch.JsonPatch.from_string(a) ==
-           jsonpatch.JsonPatch.from_string(b))
+    return (jsonpatch.JsonPatch.from_string(a) ==
+            jsonpatch.JsonPatch.from_string(b))
 
 
 class TestSchemaProperty(testtools.TestCase):
