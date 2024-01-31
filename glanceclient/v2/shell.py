@@ -838,9 +838,6 @@ def do_image_import(gc, args):
     if remote_image_id and args.import_method != 'glance-download':
         utils.exit("Import method should be 'glance-download' if "
                    "REMOTE IMAGE ID is provided.")
-    if remote_service_interface and args.import_method != 'glance-download':
-        utils.exit("Import method should be 'glance-download' if "
-                   "REMOTE SERVICE INTERFACE is provided.")
 
     if args.import_method == 'copy-image' and not (stores or all_stores):
         utils.exit("Provide either --stores or --all-stores for "
