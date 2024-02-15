@@ -514,7 +514,7 @@ class Controller(object):
         :returns: None
         """
         image = self._get_image_with_locations_or_fail(image_id)
-        current_urls = [l['url'] for l in image.locations]
+        current_urls = [loc['url'] for loc in image.locations]
 
         missing_locs = url_set.difference(set(current_urls))
         if missing_locs:
@@ -541,7 +541,7 @@ class Controller(object):
         :returns: The updated image
         """
         image = self._get_image_with_locations_or_fail(image_id)
-        url_map = dict([(l['url'], l) for l in image.locations])
+        url_map = dict([(loc['url'], loc) for loc in image.locations])
         if url not in url_map:
             raise exc.HTTPNotFound('Unknown URL: %s, the URL must be one of'
                                    ' existing locations of current image' %

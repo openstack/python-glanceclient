@@ -57,5 +57,5 @@ class HttpHeadersTest(base.ClientTestBase):
                 image = glanceclient.glance.images.update(image.id,
                                                           disk_format="qcow2")
             except Exception as e:
-                self.assertFalse("415 Unsupported Media Type" in e.details)
+                self.assertNotIn("415 Unsupported Media Type", e.details)
             time.sleep(5)

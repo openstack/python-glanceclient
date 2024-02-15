@@ -526,6 +526,7 @@ def do_member_get(gc, args):
     member = gc.image_members.get(args.image_id, args.member_id)
     utils.print_dict(member)
 
+
 @utils.arg('image_id', metavar='<IMAGE_ID>',
            help=_('Image from which to remove member.'))
 @utils.arg('member_id', metavar='<MEMBER_ID>',
@@ -595,6 +596,7 @@ def do_import_info(gc, args):
         utils.exit('Target Glance does not support Image Import workflow')
     else:
         utils.print_dict(import_info)
+
 
 @utils.arg('--detail', default=False, action='store_true',
            help='Shows details of stores. Admin only.')

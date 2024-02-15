@@ -242,7 +242,7 @@ class TestUtils(testtools.TestCase):
         # Regression test for bug 1461678.
         def _iterate(i):
             for chunk in i:
-                raise(IOError)
+                raise IOError()
 
         data = io.StringIO('somestring')
         data.close = mock.Mock()
