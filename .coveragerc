@@ -1,6 +1,7 @@
 [run]
 branch = True
 source = glanceclient
+omit = glanceclient/tests/*
 
 [report]
 ignore_errors = True
