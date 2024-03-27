@@ -42,7 +42,10 @@ from glanceclient import exc
 
 _memoized_property_lock = threading.Lock()
 
-SENSITIVE_HEADERS = ('X-Auth-Token', )
+# NOTE(cyril): Sensitive headers must be bytes, not strings, because when we
+# compare them to actual headers in safe_header, headers have already been
+# encoded.
+SENSITIVE_HEADERS = (b'X-Auth-Token', )
 REQUIRED_FIELDS_ON_DATA = ('disk_format', 'container_format')
 
 
