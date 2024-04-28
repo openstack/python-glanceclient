@@ -15,6 +15,7 @@
 
 import copy
 import io
+import json
 import logging
 import socket
 
@@ -25,11 +26,6 @@ from oslo_utils import importutils
 from oslo_utils import netutils
 import requests
 import urllib.parse
-
-try:
-    import json
-except ImportError:
-    import simplejson as json
 
 from oslo_utils import encodeutils
 
