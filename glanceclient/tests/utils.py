@@ -14,6 +14,7 @@
 #    under the License.
 
 import copy
+from email.message import EmailMessage
 import io
 import json
 import testtools
@@ -112,7 +113,12 @@ class FakeResponse(object):
         self.body = body
         self.reason = reason
         self.version = version
-        self.headers = headers
+        # NOTE(tkajinam): Make the FakeResponse class compatible with
+        # http.client.HTTPResponse
+        # https://docs.python.org/3/library/http.client.html
+        self.headers = EmailMessage()
+        for header_key in headers:
+            self.headers[header_key] = headers[header_key]
         self.headers['x-openstack-request-id'] = 'req-1234'
         self.status_code = status_code
         self.raw = RawRequest(headers, body=body, reason=reason,
