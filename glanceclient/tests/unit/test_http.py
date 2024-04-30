@@ -43,6 +43,7 @@ def original_only(f):
             self.skipTest('Skip logging tests for session client')
 
         return f(self, *args, **kwargs)
+    return wrapper
 
 
 class TestClient(testtools.TestCase):
