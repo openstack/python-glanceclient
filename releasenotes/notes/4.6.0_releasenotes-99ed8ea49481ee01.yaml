@@ -1,0 +1,9 @@
+---
+fixes:
+  - |
+    Bug 2051712_: glanceclient leaks X-Auth-Token into debug log
+  - |
+    Bug 2064011_: Some unit test cases are broken with requests-mock >= 1.12.0
+
+    .. _2051712: https://code.launchpad.net/bugs/2051712
+    .. _2064011: https://code.launchpad.net/bugs/2064011
