@@ -45,12 +45,11 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
         cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
         cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
         (_sock, addr) = socketserver.TCPServer.get_request(self)
-        sock = ssl.wrap_socket(_sock,
-                               certfile=cert_file,
-                               keyfile=key_file,
-                               ca_certs=cacert,
-                               server_side=True,
-                               cert_reqs=ssl.CERT_REQUIRED)
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.verify_mode = ssl.CERT_REQUIRED
+        context.load_verify_locations(cacert)
+        context.load_cert_chain(cert_file, key_file)
+        sock = context.wrap_socket(_sock, server_side=True)
         return sock, addr
 
 
