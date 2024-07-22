@@ -786,15 +786,15 @@ class ShellCacheSchemaTest(testutils.TestCase):
         client = self.shell._get_versioned_client('2', args)
         self.shell._cache_schemas(args, client, home_dir=self.cache_dir)
 
-        self.assertEqual(12, open.mock_calls.__len__())
+        self.assertEqual(len(self.cache_files), len(open.call_args_list))
         self.assertEqual(mock.call(self.cache_files[0], 'w'),
-                         open.mock_calls[0])
+                         open.call_args_list[0])
         self.assertEqual(mock.call(self.cache_files[1], 'w'),
-                         open.mock_calls[4])
-        actual = json.loads(open.mock_calls[2][1][0])
-        self.assertEqual(schema_odict, actual)
-        actual = json.loads(open.mock_calls[6][1][0])
-        self.assertEqual(schema_odict, actual)
+                         open.call_args_list[1])
+        actual = json.loads(open().write.call_args_list[0][0][0])
+        self.assertEqual(schema_odict, OrderedDict(actual))
+        actual = json.loads(open().write.call_args_list[1][0][0])
+        self.assertEqual(schema_odict, OrderedDict(actual))
 
     @mock.patch('builtins.open', new=mock.mock_open(), create=True)
     @mock.patch('os.path.exists', side_effect=[True, False, False, False])
@@ -809,15 +809,15 @@ class ShellCacheSchemaTest(testutils.TestCase):
         client = self.shell._get_versioned_client('2', args)
         self.shell._cache_schemas(args, client, home_dir=self.cache_dir)
 
-        self.assertEqual(12, open.mock_calls.__len__())
+        self.assertEqual(len(self.cache_files), len(open.call_args_list))
         self.assertEqual(mock.call(self.cache_files[0], 'w'),
-                         open.mock_calls[0])
+                         open.call_args_list[0])
         self.assertEqual(mock.call(self.cache_files[1], 'w'),
-                         open.mock_calls[4])
-        actual = json.loads(open.mock_calls[2][1][0])
-        self.assertEqual(schema_odict, actual)
-        actual = json.loads(open.mock_calls[6][1][0])
-        self.assertEqual(schema_odict, actual)
+                         open.call_args_list[1])
+        actual = json.loads(open().write.call_args_list[0][0][0])
+        self.assertEqual(schema_odict, OrderedDict(actual))
+        actual = json.loads(open().write.call_args_list[1][0][0])
+        self.assertEqual(schema_odict, OrderedDict(actual))
 
     @mock.patch('builtins.open', new=mock.mock_open(), create=True)
     @mock.patch('os.path.exists', return_value=True)
