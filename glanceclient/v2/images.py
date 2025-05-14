@@ -295,12 +295,17 @@ class Controller(object):
 
         :param image_id: ID of the image to upload data for.
         :param image_data: File-like object supplying the data to upload.
-        :param image_size: Unused - present for backwards compatibility
+        :param image_size: If present pass it as header
         :param u_url: Upload url to upload the data to.
         :param backend: Backend store to upload image to.
         """
         url = u_url or '/v2/images/%s/file' % image_id
         hdrs = {'Content-Type': 'application/octet-stream'}
+        if image_size is not None:
+            if not isinstance(image_size, int):
+                raise TypeError("image_size must be an integer, "
+                                "got %s" % type(image_size).__name__)
+            hdrs.update({'x-openstack-image-size': '%i' % image_size})
         if backend is not None:
             hdrs['x-image-meta-store'] = backend
 
@@ -343,11 +348,12 @@ class Controller(object):
 
         :param image_id: ID of the image to upload data for.
         :param image_data: File-like object supplying the data to upload.
-        :param image_size: Unused - present for backwards compatibility
+        :param image_size: If present pass it to upload call
         """
         url = '/v2/images/%s/stage' % image_id
         resp, body = self.upload(image_id,
                                  image_data,
+                                 image_size=image_size,
                                  u_url=url)
         return body, resp
 

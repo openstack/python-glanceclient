@@ -87,6 +87,10 @@ class BaseController(testtools.TestCase):
         resp = self.controller.upload(*args, **kwargs)
         self._assertRequestId(resp)
 
+    def stage(self, *args, **kwargs):
+        resp = self.controller.stage(*args, **kwargs)
+        self._assertRequestId(resp)
+
     def data(self, *args, **kwargs):
         body = self.controller.data(*args, **kwargs)
         self._assertRequestId(body)

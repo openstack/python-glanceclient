@@ -49,6 +49,17 @@ def get_image_schema():
     return IMAGE_SCHEMA
 
 
+def get_filesize(args, image_data):
+    filesize = getattr(args, 'size', None) or utils.get_file_size(image_data)
+    if getattr(args, 'size', None) and getattr(args, 'file', None):
+        actual_size = utils.get_file_size(image_data)
+        if actual_size != args.size:
+            raise ValueError("Size mismatch: provided size %s does not match "
+                             "the size of the image %s" % (
+                                 args.size, actual_size))
+    return filesize
+
+
 @utils.schema_args(get_image_schema, omit=['locations', 'os_hidden'])
 # NOTE(rosmaita): to make this option more intuitive for end users, we
 # do not use the Glance image property name 'os_hidden' here.  This means
@@ -66,6 +77,11 @@ def get_image_schema():
            help=_('Local file that contains disk image to be uploaded '
                   'during creation. Alternatively, the image data can be '
                   'passed to the client via stdin.'))
+@utils.arg('--size', metavar='<IMAGE_SIZE>', type=int,
+           help=_('Size in bytes of image to be uploaded. Default is to get '
+                  'size from provided data object but this is supported in '
+                  'case where size cannot be inferred.'),
+           default=None)
 @utils.arg('--progress', action='store_true', default=False,
            help=_('Show upload progress bar.'))
 @utils.arg('--store', metavar='<STORE>',
@@ -90,6 +106,11 @@ def do_image_create(gc, args):
     backend = args.store
 
     file_name = fields.pop('file', None)
+    if 'size' in fields:
+        utils.exit(
+            "Setting 'size' during image creation is not supported. "
+            "Please use --size only when uploading data.")
+
     using_stdin = hasattr(sys.stdin, 'isatty') and not sys.stdin.isatty()
     if args.store and not (file_name or using_stdin):
         utils.exit("--store option should only be provided with --file "
@@ -107,7 +128,6 @@ def do_image_create(gc, args):
         if utils.get_data_file(args) is not None:
             backend = fields.get('store', None)
             args.id = image['id']
-            args.size = None
             do_image_upload(gc, args)
             image = gc.images.get(args.id)
     finally:
@@ -128,6 +148,11 @@ def do_image_create(gc, args):
            help=_('Local file that contains disk image to be uploaded '
                   'during creation. Alternatively, the image data can be '
                   'passed to the client via stdin.'))
+@utils.arg('--size', metavar='<IMAGE_SIZE>', type=int,
+           help=_('Size in bytes of image to be uploaded. Default is to get '
+                  'size from provided data object but this is supported in '
+                  'case where size cannot be inferred.'),
+           default=None)
 @utils.arg('--progress', action='store_true', default=False,
            help=_('Show upload progress bar.'))
 @utils.arg('--import-method', metavar='<METHOD>',
@@ -205,6 +230,11 @@ def do_image_create_via_import(gc, args):
         fields[key] = value
 
     file_name = fields.pop('file', None)
+    if 'size' in fields:
+        utils.exit(
+            "Setting 'size' during image creation is not supported. "
+            "Please use --size only when uploading data.")
+
     using_stdin = hasattr(sys.stdin, 'isatty') and not sys.stdin.isatty()
 
     # special processing for backward compatibility with image-create
@@ -315,7 +345,6 @@ def do_image_create_via_import(gc, args):
         args.id = image['id']
         if args.import_method:
             if utils.get_data_file(args) is not None:
-                args.size = None
                 do_image_stage(gc, args)
             args.from_create = True
             args.stores = stores
@@ -699,13 +728,14 @@ def do_image_upload(gc, args):
         _validate_backend(backend, gc)
 
     image_data = utils.get_data_file(args)
+    filesize = get_filesize(args, image_data)
+
     if args.progress:
-        filesize = utils.get_file_size(image_data)
         if filesize is not None:
             # NOTE(kragniz): do not show a progress bar if the size of the
             # input is unknown (most likely a piped input)
             image_data = progressbar.VerboseFileWrapper(image_data, filesize)
-    gc.images.upload(args.id, image_data, args.size, backend=backend)
+    gc.images.upload(args.id, image_data, filesize, backend=backend)
 
 
 @utils.arg('--file', metavar='<FILE>',
@@ -724,13 +754,14 @@ def do_image_upload(gc, args):
 def do_image_stage(gc, args):
     """Upload data for a specific image to staging."""
     image_data = utils.get_data_file(args)
+    filesize = get_filesize(args, image_data)
+
     if args.progress:
-        filesize = utils.get_file_size(image_data)
         if filesize is not None:
             # NOTE(kragniz): do not show a progress bar if the size of the
             # input is unknown (most likely a piped input)
             image_data = progressbar.VerboseFileWrapper(image_data, filesize)
-    gc.images.stage(args.id, image_data, args.size)
+    gc.images.stage(args.id, image_data, filesize)
 
 
 @utils.arg('--import-method', metavar='<METHOD>', default='glance-direct',
