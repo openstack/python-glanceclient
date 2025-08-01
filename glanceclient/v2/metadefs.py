@@ -46,7 +46,7 @@ class NamespaceController(object):
         try:
             namespace = self.model(kwargs)
         except (warlock.InvalidOperation, ValueError) as e:
-            raise TypeError(encodeutils.exception_to_unicode(e))
+            raise TypeError(str(e))
 
         resp, body = self.http_client.post(url, data=namespace)
         body.pop('self', None)
@@ -63,7 +63,7 @@ class NamespaceController(object):
             try:
                 setattr(namespace, key, value)
             except warlock.InvalidOperation as e:
-                raise TypeError(encodeutils.exception_to_unicode(e))
+                raise TypeError(str(e))
 
         # Remove read-only parameters.
         read_only = ['schema', 'updated_at', 'created_at']
@@ -212,7 +212,7 @@ class ResourceTypeController(object):
         try:
             res_type = self.model(kwargs)
         except (warlock.InvalidOperation, ValueError) as e:
-            raise TypeError(encodeutils.exception_to_unicode(e))
+            raise TypeError(str(e))
 
         url = '/v2/metadefs/namespaces/%(namespace)s/resource_types' % {
             'namespace': namespace}
@@ -272,7 +272,7 @@ class PropertyController(object):
         try:
             prop = self.model(kwargs)
         except (warlock.InvalidOperation, ValueError) as e:
-            raise TypeError(encodeutils.exception_to_unicode(e))
+            raise TypeError(str(e))
 
         url = '/v2/metadefs/namespaces/%(namespace)s/properties' % {
             'namespace': namespace}
@@ -292,7 +292,7 @@ class PropertyController(object):
             try:
                 setattr(prop, key, value)
             except warlock.InvalidOperation as e:
-                raise TypeError(encodeutils.exception_to_unicode(e))
+                raise TypeError(str(e))
 
         url = ('/v2/metadefs/namespaces/%(namespace)s/'
                'properties/%(prop_name)s') % {
@@ -374,7 +374,7 @@ class ObjectController(object):
         try:
             obj = self.model(kwargs)
         except (warlock.InvalidOperation, ValueError) as e:
-            raise TypeError(encodeutils.exception_to_unicode(e))
+            raise TypeError(str(e))
 
         url = '/v2/metadefs/namespaces/%(namespace)s/objects' % {
             'namespace': namespace}
@@ -395,7 +395,7 @@ class ObjectController(object):
             try:
                 setattr(obj, key, value)
             except warlock.InvalidOperation as e:
-                raise TypeError(encodeutils.exception_to_unicode(e))
+                raise TypeError(str(e))
 
         # Remove read-only parameters.
         read_only = ['schema', 'updated_at', 'created_at']
@@ -499,7 +499,7 @@ class TagController(object):
             try:
                 md_tag_list.append(self.model(name=tag_name))
             except (warlock.InvalidOperation) as e:
-                raise TypeError(encodeutils.exception_to_unicode(e))
+                raise TypeError(str(e))
         tags = {'tags': md_tag_list}
         headers = {}
 
@@ -526,7 +526,7 @@ class TagController(object):
             try:
                 setattr(tag, key, value)
             except warlock.InvalidOperation as e:
-                raise TypeError(encodeutils.exception_to_unicode(e))
+                raise TypeError(str(e))
 
         # Remove read-only parameters.
         read_only = ['updated_at', 'created_at']
