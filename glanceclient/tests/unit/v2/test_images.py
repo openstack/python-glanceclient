@@ -195,6 +195,12 @@ data_fixtures = {
             '',
         ),
     },
+    '/v2/images/606b0e88-7c5a-4d54-b5bb-046105d4de6f/stage': {
+        'PUT': (
+            {},
+            '',
+        ),
+    },
     '/v2/images/5cc4bebc-db27-11e1-a1eb-080027cbe205/file': {
         'GET': (
             {},
@@ -1010,6 +1016,16 @@ class TestController(testtools.TestCase):
         self.assertEqual('3a4560a1-e585-443e-9b39-553b46ec92d1', image.id)
         self.assertEqual('image-1', image.name)
 
+    def test_create_image_w_size(self):
+        properties = {
+            'name': 'image-1',
+            'size': '4'
+        }
+        image = self.controller.create(**properties)
+        self.assertEqual('3a4560a1-e585-443e-9b39-553b46ec92d1', image.id)
+        self.assertEqual('image-1', image.name)
+        self.assertIsNone(image.get('size'))
+
     def test_create_bad_additionalProperty_type(self):
         properties = {
             'name': 'image-1',
@@ -1054,12 +1070,63 @@ class TestController(testtools.TestCase):
                   image_data)]
         self.assertEqual(expect, self.api.calls)
 
-    def test_data_upload_w_size(self):
+    def test_data_upload_with_invalid_size(self):
+        image_data = 'CCC'
+        image_id = '606b0e88-7c5a-4d54-b5bb-046105d4de6f'
+        self.assertRaises(TypeError, self.controller.upload, image_id,
+                          image_data, image_size='invalid_size')
+        expect = []
+        self.assertEqual(expect, self.api.calls)
+
+    def test_data_upload_w_size_same_as_data(self):
         image_data = 'CCC'
         image_id = '606b0e88-7c5a-4d54-b5bb-046105d4de6f'
         self.controller.upload(image_id, image_data, image_size=3)
         expect = [('PUT', '/v2/images/%s/file' % image_id,
-                  {'Content-Type': 'application/octet-stream'},
+                  {'Content-Type': 'application/octet-stream',
+                   'x-openstack-image-size': str(len(image_data))},
+                  image_data)]
+        self.assertEqual(expect, self.api.calls)
+
+    def test_data_upload_w_size_diff_than_data(self):
+        image_data = 'CCCCCC'
+        image_size = '3'
+        image_id = '606b0e88-7c5a-4d54-b5bb-046105d4de6f'
+        self.controller.upload(image_id, image_data,
+                               image_size=int(image_size))
+        expect = [('PUT', '/v2/images/%s/file' % image_id,
+                  {'Content-Type': 'application/octet-stream',
+                   'x-openstack-image-size': image_size},
+                  image_data)]
+        self.assertEqual(expect, self.api.calls)
+
+    def test_data_stage_with_invalid_size(self):
+        image_data = 'CCC'
+        image_id = '606b0e88-7c5a-4d54-b5bb-046105d4de6f'
+        self.assertRaises(TypeError, self.controller.stage, image_id,
+                          image_data, image_size='invalid_size')
+        expect = []
+        self.assertEqual(expect, self.api.calls)
+
+    def test_data_stage_w_size_same_as_data(self):
+        image_data = 'CCC'
+        image_id = '606b0e88-7c5a-4d54-b5bb-046105d4de6f'
+        self.controller.stage(image_id, image_data, image_size=3)
+        expect = [('PUT', '/v2/images/%s/stage' % image_id,
+                  {'Content-Type': 'application/octet-stream',
+                   'x-openstack-image-size': str(len(image_data))},
+                  image_data)]
+        self.assertEqual(expect, self.api.calls)
+
+    def test_data_stage_w_size_diff_than_data(self):
+        image_data = 'CCCCCC'
+        image_size = '3'
+        image_id = '606b0e88-7c5a-4d54-b5bb-046105d4de6f'
+        self.controller.stage(image_id, image_data,
+                              image_size=int(image_size))
+        expect = [('PUT', '/v2/images/%s/stage' % image_id,
+                  {'Content-Type': 'application/octet-stream',
+                   'x-openstack-image-size': image_size},
                   image_data)]
         self.assertEqual(expect, self.api.calls)
 

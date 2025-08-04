@@ -679,6 +679,117 @@ class ShellV2Test(testtools.TestCase):
                  {'quota': 'quota2', 'limit': 20, 'usage': 5}],
                 ['Quota', 'Limit', 'Usage'])
 
+    def test_do_image_stage_size_match(self):
+        args = mock.Mock()
+        args.id = 'IMG-01'
+        args.file = 'testfile'
+        args.size = 1024
+        args.progress = False
+
+        with mock.patch('glanceclient.common.utils.get_data_file',
+                        return_value='fileobj'), \
+                mock.patch('glanceclient.common.utils.get_file_size',
+                           return_value=1024), \
+                mock.patch('glanceclient.v2.shell._validate_backend'), \
+                mock.patch.object(self.gc.images,
+                                  'stage') as mock_stage:
+            test_shell.do_image_stage(self.gc, args)
+            mock_stage.assert_called_once_with('IMG-01', 'fileobj',
+                                               1024)
+
+    def test_do_image_stage_size_mismatch(self):
+        args = mock.Mock()
+        args.id = 'IMG-01'
+        args.file = 'testfile'
+        args.size = 1024
+        args.progress = False
+
+        with mock.patch('glanceclient.common.utils.get_data_file',
+                        return_value='fileobj'), \
+                mock.patch('glanceclient.common.utils.get_file_size',
+                           return_value=2048), \
+                mock.patch('glanceclient.v2.shell._validate_backend'):
+            with self.assertRaisesRegex(ValueError,
+                                        "Size mismatch: provided size 1024 "
+                                        "does not match the size of the "
+                                        "image 2048"):
+                test_shell.do_image_stage(self.gc, args)
+
+    def test_do_image_stage_no_size_in_args(self):
+        args = mock.Mock()
+        args.id = 'IMG-01'
+        args.file = 'testfile'
+        args.size = None
+        args.progress = False
+
+        with mock.patch('glanceclient.common.utils.get_data_file',
+                        return_value='fileobj'), \
+                mock.patch('glanceclient.common.utils.get_file_size',
+                           return_value=1024), \
+                mock.patch('glanceclient.v2.shell._validate_backend'), \
+                mock.patch.object(self.gc.images,
+                                  'stage') as mock_upload:
+            test_shell.do_image_stage(self.gc, args)
+            mock_upload.assert_called_once_with('IMG-01', 'fileobj',
+                                                1024)
+
+    def test_do_image_upload_size_match(self):
+        args = mock.Mock()
+        args.id = 'IMG-01'
+        args.file = 'testfile'
+        args.size = 1024
+        args.store = None
+        args.progress = False
+
+        with mock.patch('glanceclient.common.utils.get_data_file',
+                        return_value='fileobj'), \
+                mock.patch('glanceclient.common.utils.get_file_size',
+                           return_value=1024), \
+                mock.patch('glanceclient.v2.shell._validate_backend'), \
+                mock.patch.object(self.gc.images,
+                                  'upload') as mock_upload:
+            test_shell.do_image_upload(self.gc, args)
+            mock_upload.assert_called_once_with('IMG-01', 'fileobj',
+                                                1024, backend=None)
+
+    def test_do_image_upload_size_mismatch(self):
+        args = mock.Mock()
+        args.id = 'IMG-01'
+        args.file = 'testfile'
+        args.size = 1024
+        args.store = None
+        args.progress = False
+
+        with mock.patch('glanceclient.common.utils.get_data_file',
+                        return_value='fileobj'), \
+                mock.patch('glanceclient.common.utils.get_file_size',
+                           return_value=2048), \
+                mock.patch('glanceclient.v2.shell._validate_backend'):
+            with self.assertRaisesRegex(ValueError,
+                                        "Size mismatch: provided size 1024 "
+                                        "does not match the size of the "
+                                        "image 2048"):
+                test_shell.do_image_upload(self.gc, args)
+
+    def test_do_image_upload_no_size_in_args(self):
+        args = mock.Mock()
+        args.id = 'IMG-01'
+        args.file = 'testfile'
+        args.size = None
+        args.store = None
+        args.progress = False
+
+        with mock.patch('glanceclient.common.utils.get_data_file',
+                        return_value='fileobj'), \
+                mock.patch('glanceclient.common.utils.get_file_size',
+                           return_value=1024), \
+                mock.patch('glanceclient.v2.shell._validate_backend'), \
+                mock.patch.object(self.gc.images,
+                                  'upload') as mock_upload:
+            test_shell.do_image_upload(self.gc, args)
+            mock_upload.assert_called_once_with('IMG-01', 'fileobj',
+                                                1024, backend=None)
+
     @mock.patch('sys.stdin', autospec=True)
     def test_do_image_create_no_user_props(self, mock_stdin):
         args = self._make_args({'name': 'IMG-01', 'disk_format': 'vhd',
@@ -780,6 +891,77 @@ class ShellV2Test(testtools.TestCase):
                 os.remove(f.name)
             except Exception:
                 pass
+
+    def _do_image_create(self, temp_args, expect_size=None):
+        self.mock_get_data_file.return_value = io.StringIO()
+        with open(tempfile.mktemp(), 'w+') as f:
+            f.write('Some data here')
+            f.flush()
+            f.seek(0)
+            file_name = f.name
+        self.addCleanup(lambda: os.remove(f.name) if os.path.exists(
+            f.name) else None)
+        temp_args = temp_args.copy()
+        temp_args['file'] = file_name
+        args = self._make_args(temp_args)
+        with mock.patch.object(self.gc.images, 'create') as mocked_create, \
+                mock.patch.object(self.gc.images, 'get') as mocked_get, \
+                mock.patch.object(utils, 'get_file_size') as mock_size:
+            expected_size = len('Some data here')
+            mock_size.return_value = expected_size
+            ignore_fields = ['self', 'access', 'schema']
+            expect_image = dict(
+                [(field, field) for field in ignore_fields])
+            expect_image['id'] = 'pass'
+            expect_image['name'] = 'IMG-01'
+            expect_image['disk_format'] = 'vhd'
+            expect_image['container_format'] = 'bare'
+            expect_image['checksum'] = 'fake-checksum'
+            expect_image['os_hash_algo'] = 'fake-hash_algo'
+            expect_image['os_hash_value'] = 'fake-hash_value'
+            if expect_size is not None:
+                expect_image['size'] = expect_size
+            mocked_create.return_value = expect_image
+            mocked_get.return_value = expect_image
+
+            test_shell.do_image_create(self.gc, args)
+
+            temp_args.pop('file', None)
+            mocked_create.assert_called_once_with(**temp_args)
+            mocked_get.assert_called_once_with('pass')
+            expected_dict = {
+                'id': 'pass', 'name': 'IMG-01',
+                'disk_format': 'vhd',
+                'container_format': 'bare',
+                'checksum': 'fake-checksum',
+                'os_hash_algo': 'fake-hash_algo',
+                'os_hash_value': 'fake-hash_value',
+            }
+            if expect_size is not None:
+                expected_dict['size'] = expect_size
+            utils.print_dict.assert_called_once_with(expected_dict)
+            mock_size.assert_called()
+
+    def test_do_image_create_without_size(self):
+        self._do_image_create(
+            temp_args={'name': 'IMG-01', 'disk_format': 'vhd',
+                       'container_format': 'bare', 'progress': False},
+            expect_size=14)
+
+    def test_do_image_create_with_size_exits(self):
+        args = self._make_args({'name': 'test-image', 'size': 1234})
+        expected_msg = ("Setting 'size' during image creation is "
+                        "not supported. Please use --size only when "
+                        "uploading data.")
+        with mock.patch('glanceclient.common.utils.exit') as mock_exit:
+            mock_exit.side_effect = self._mock_utils_exit
+            try:
+                test_shell.do_image_create(self.gc, args)
+                self.fail("utils.exit should have been called")
+            except SystemExit:
+                pass
+
+            mock_exit.assert_called_once_with(expected_msg)
 
     @mock.patch('sys.stdin', autospec=True)
     def test_do_image_create_hidden_image(self, mock_stdin):
@@ -1652,6 +1834,77 @@ class ShellV2Test(testtools.TestCase):
                         'id': 'via-stdin', 'name': 'Mortimer',
                         'disk_format': 'raw', 'container_format': 'bare'})
 
+    def _image_create_via_import_with_file_helper(
+            self, with_access=True):
+        """Helper for image create via import with file tests."""
+        @mock.patch('glanceclient.common.utils.get_file_size')
+        @mock.patch('glanceclient.v2.shell.do_image_import')
+        @mock.patch('os.access')
+        @mock.patch('sys.stdin', autospec=True)
+        def _test_with_access(mock_stdin, mock_access,
+                              mock_do_import, mock_size):
+            mock_stdin.isatty = lambda: True
+            self.mock_get_data_file.return_value = io.StringIO()
+            mock_access.return_value = with_access
+            mock_size.return_value = 14
+            with open(tempfile.mktemp(), 'w+') as f:
+                f.write('Some data here')
+                f.flush()
+                f.seek(0)
+                file_name = f.name
+            self.addCleanup(
+                lambda: os.remove(file_name) if os.path.exists(
+                    file_name) else None)
+            my_args = self.base_args.copy()
+            my_args.update({'file': file_name})
+            args = self._make_args(my_args)
+            with mock.patch.object(
+                    self.gc.images, 'create') as mocked_create, \
+                    mock.patch.object(
+                        self.gc.images, 'get') as mocked_get, \
+                    mock.patch.object(
+                        self.gc.images, 'get_import_info') as mocked_info:
+                ignore_fields = ['self', 'access', 'schema']
+                expect_image = dict(
+                    [(field, field) for field in ignore_fields])
+                expect_image['id'] = 'fake-image-id'
+                expect_image['name'] = 'Mortimer'
+                expect_image['disk_format'] = 'raw'
+                expect_image['container_format'] = 'bare'
+                mocked_create.return_value = expect_image
+                mocked_get.return_value = expect_image
+                mocked_info.return_value = self.import_info_response
+
+                test_shell.do_image_create_via_import(self.gc, args)
+                mocked_create.assert_called_once()
+                mock_do_import.assert_called_once()
+                mocked_get.assert_called_with(expect_image['id'])
+                mock_size.assert_called_once()
+                utils.print_dict.assert_called_with({
+                    'id': expect_image['id'], 'name': 'Mortimer',
+                    'disk_format': 'raw', 'container_format': 'bare'
+                })
+
+        _test_with_access()
+
+    def test_image_create_via_import_with_file(self):
+        self._image_create_via_import_with_file_helper()
+
+    def test_do_image_create_via_import_with_size_exits(self):
+        args = self._make_args({'name': 'test-image', 'size': 1234})
+        expected_msg = ("Setting 'size' during image creation is not "
+                        "supported. Please use --size only when "
+                        "uploading data.")
+        with mock.patch('glanceclient.common.utils.exit') as mock_exit:
+            mock_exit.side_effect = self._mock_utils_exit
+            try:
+                test_shell.do_image_create(self.gc, args)
+                self.fail("utils.exit should have been called")
+            except SystemExit:
+                pass
+
+            mock_exit.assert_called_once_with(expected_msg)
+
     @mock.patch('glanceclient.v2.shell.do_image_import')
     @mock.patch('glanceclient.v2.shell.do_image_stage')
     @mock.patch('os.access')
@@ -2056,11 +2309,13 @@ class ShellV2Test(testtools.TestCase):
             {'id': 'IMG-01', 'file': 'test', 'size': 1024, 'progress': False})
 
         with mock.patch.object(self.gc.images, 'upload') as mocked_upload:
-            utils.get_data_file = mock.Mock(return_value='testfile')
+            expected_data = '*' * 1024
+            utils.get_data_file = mock.Mock(return_value=expected_data)
+            utils.get_file_size = mock.Mock(return_value=1024)
             mocked_upload.return_value = None
             test_shell.do_image_upload(self.gc, args)
-            mocked_upload.assert_called_once_with('IMG-01', 'testfile', 1024,
-                                                  backend=None)
+            mocked_upload.assert_called_once_with('IMG-01', expected_data,
+                                                  1024, backend=None)
 
     @mock.patch('glanceclient.common.utils.exit')
     def test_image_upload_invalid_store(self, mock_utils_exit):
