@@ -678,6 +678,11 @@ def do_stores_delete(gc, args):
 @utils.arg('id', metavar='<IMAGE_ID>', help=_('ID of image to download.'))
 @utils.arg('--progress', action='store_true', default=False,
            help=_('Show download progress bar.'))
+@utils.arg('--prefer', metavar='<STORES>',
+           help=_('Comma-separated list of store identifiers suggesting the '
+                  'ordering of stores to try when downloading the image. '
+                  'Store identifiers are site-specific and can be discovered '
+                  'using the "stores-info" command.'))
 def do_image_download(gc, args):
     """Download a specific image."""
     if sys.stdout.isatty() and (args.file is None):
@@ -686,9 +691,14 @@ def do_image_download(gc, args):
                'downloaded image or redirect output to another source.')
         utils.exit(msg)
 
+    prefer = None
+    if args.prefer:
+        prefer = [s for s in (x.strip() for x in args.prefer.split(',')) if s]
+
     try:
         body = gc.images.data(args.id,
-                              allow_md5_fallback=args.allow_md5_fallback)
+                              allow_md5_fallback=args.allow_md5_fallback,
+                              prefer=prefer)
     except (exc.HTTPForbidden, exc.HTTPException) as e:
         msg = "Unable to download image '%s'. (%s)" % (args.id, e)
         utils.exit(msg)

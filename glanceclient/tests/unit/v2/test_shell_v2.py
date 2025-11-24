@@ -2774,7 +2774,7 @@ class ShellV2Test(testtools.TestCase):
     def test_image_download(self):
         args = self._make_args(
             {'id': 'IMG-01', 'file': 'test', 'progress': True,
-             'allow_md5_fallback': False})
+             'allow_md5_fallback': False, 'prefer': None})
 
         with mock.patch.object(self.gc.images, 'data') as mocked_data, \
                 mock.patch.object(utils, '_extract_request_id'):
@@ -2783,7 +2783,8 @@ class ShellV2Test(testtools.TestCase):
 
             test_shell.do_image_download(self.gc, args)
             mocked_data.assert_called_once_with('IMG-01',
-                                                allow_md5_fallback=False)
+                                                allow_md5_fallback=False,
+                                                prefer=None)
 
         # check that non-default value is being passed correctly
         args.allow_md5_fallback = True
@@ -2794,7 +2795,8 @@ class ShellV2Test(testtools.TestCase):
 
             test_shell.do_image_download(self.gc, args)
             mocked_data.assert_called_once_with('IMG-01',
-                                                allow_md5_fallback=True)
+                                                allow_md5_fallback=True,
+                                                prefer=None)
 
     @mock.patch.object(utils, 'exit')
     @mock.patch('sys.stdout', autospec=True)
@@ -2802,7 +2804,7 @@ class ShellV2Test(testtools.TestCase):
                                         mocked_utils_exit):
         # Indicate that no file name was given as command line argument
         args = self._make_args({'id': '1234', 'file': None, 'progress': False,
-                                'allow_md5_fallback': False})
+                                'allow_md5_fallback': False, 'prefer': None})
         # Indicate that no file is specified for output redirection
         mocked_stdout.isatty = lambda: True
         test_shell.do_image_download(self.gc, args)
@@ -2917,7 +2919,8 @@ class ShellV2Test(testtools.TestCase):
                                                  mocked_stdout):
         args = self._make_args({'id': 'IMG-01', 'file': None,
                                 'progress': False,
-                                'allow_md5_fallback': False})
+                                'allow_md5_fallback': False,
+                                'prefer': None})
         mocked_stdout.isatty = lambda: False
         with mock.patch.object(self.gc.images, 'data') as mocked_data:
             mocked_data.side_effect = exc.HTTPForbidden
@@ -2935,7 +2938,8 @@ class ShellV2Test(testtools.TestCase):
     def test_do_image_download_with_500(self, mocked_print_err, mocked_stdout):
         args = self._make_args({'id': 'IMG-01', 'file': None,
                                 'progress': False,
-                                'allow_md5_fallback': False})
+                                'allow_md5_fallback': False,
+                                'prefer': None})
         mocked_stdout.isatty = lambda: False
         with mock.patch.object(self.gc.images, 'data') as mocked_data:
             mocked_data.side_effect = exc.HTTPInternalServerError
@@ -2947,6 +2951,51 @@ class ShellV2Test(testtools.TestCase):
 
             self.assertEqual(1, mocked_data.call_count)
             self.assertEqual(1, mocked_print_err.call_count)
+
+    def test_image_download_with_prefer(self):
+        args = self._make_args(
+            {'id': 'IMG-01', 'file': 'test', 'progress': False,
+             'allow_md5_fallback': False, 'prefer': 'store1,store2'})
+
+        with mock.patch.object(self.gc.images, 'data') as mocked_data, \
+                mock.patch.object(utils, '_extract_request_id'):
+            mocked_data.return_value = utils.RequestIdProxy(
+                [c for c in 'abcdef'])
+
+            test_shell.do_image_download(self.gc, args)
+            mocked_data.assert_called_once_with('IMG-01',
+                                                allow_md5_fallback=False,
+                                                prefer=['store1', 'store2'])
+
+    def test_image_download_with_prefer_empty_string(self):
+        args = self._make_args(
+            {'id': 'IMG-01', 'file': 'test', 'progress': False,
+             'allow_md5_fallback': False, 'prefer': ''})
+
+        with mock.patch.object(self.gc.images, 'data') as mocked_data, \
+                mock.patch.object(utils, '_extract_request_id'):
+            mocked_data.return_value = utils.RequestIdProxy(
+                [c for c in 'abcdef'])
+
+            test_shell.do_image_download(self.gc, args)
+            mocked_data.assert_called_once_with('IMG-01',
+                                                allow_md5_fallback=False,
+                                                prefer=None)
+
+    def test_image_download_without_prefer(self):
+        args = self._make_args(
+            {'id': 'IMG-01', 'file': 'test', 'progress': False,
+             'allow_md5_fallback': False, 'prefer': None})
+
+        with mock.patch.object(self.gc.images, 'data') as mocked_data, \
+                mock.patch.object(utils, '_extract_request_id'):
+            mocked_data.return_value = utils.RequestIdProxy(
+                [c for c in 'abcdef'])
+
+            test_shell.do_image_download(self.gc, args)
+            mocked_data.assert_called_once_with('IMG-01',
+                                                allow_md5_fallback=False,
+                                                prefer=None)
 
     def test_do_member_list(self):
         args = self._make_args({'image_id': 'IMG-01'})

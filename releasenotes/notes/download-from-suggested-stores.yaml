@@ -1,0 +1,19 @@
+---
+features:
+  - |
+    The ``image-download`` command now supports the ``--prefer`` parameter
+    to suggest which stores to try when downloading images. The prefer
+    parameter accepts a comma-separated list of store identifiers.
+
+    If the image is not found in any of the specified stores, Glance will
+    fall back to trying all available stores.
+
+    Example usage:
+
+    .. code-block:: bash
+
+       glance image-download <image-id> --prefer store1,store2 --file image.qcow2
+
+    Store identifiers are site-specific and can be discovered using the
+    ``stores-info`` command.
+

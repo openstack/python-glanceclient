@@ -1323,6 +1323,36 @@ class TestController(testtools.TestCase):
         except exc.HTTPForbidden:
             pass
 
+    def test_data_with_prefer(self):
+        image_id = '606b0e88-7c5a-4d54-b5bb-046105d4de6f'
+        prefer = ['store1', 'store2']
+        resp = utils.FakeResponse(headers={'content-length': '3'},
+                                  status_code=200)
+        self.controller.controller.http_client.get = mock.Mock(
+            return_value=(resp, 'CCC'))
+        self.controller.data(image_id, do_checksum=False,
+                             prefer=prefer)
+        # Check that the prefer parameter was passed as query parameters
+        calls = self.controller.controller.http_client.get.call_args_list
+        self.assertEqual(1, len(calls))
+        expected_call = calls[0]
+        self.assertIn('prefer=store1%2Cstore2', expected_call[0][0])
+        self.assertNotIn('stores', expected_call[0][0])
+
+    def test_data_without_stores(self):
+        image_id = '606b0e88-7c5a-4d54-b5bb-046105d4de6f'
+        resp = utils.FakeResponse(headers={'content-length': '3'},
+                                  status_code=200)
+        self.controller.controller.http_client.get = mock.Mock(
+            return_value=(resp, 'CCC'))
+        self.controller.data(image_id, do_checksum=False)
+        # Check that no query parameters were added
+        calls = self.controller.controller.http_client.get.call_args_list
+        self.assertEqual(1, len(calls))
+        expected_call = calls[0]
+        self.assertEqual('/v2/images/%s/file' % image_id, expected_call[0][0])
+        self.assertNotIn('?', expected_call[0][0])
+
     def test_update_replace_prop(self):
         image_id = '3a4560a1-e585-443e-9b39-553b46ec92d1'
         params = {'name': 'pong'}

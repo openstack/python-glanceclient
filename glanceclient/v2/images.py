@@ -216,7 +216,8 @@ class Controller(object):
                 'This operation is not supported by Glance.')
 
     @utils.add_req_id_to_object()
-    def data(self, image_id, do_checksum=True, allow_md5_fallback=False):
+    def data(self, image_id, do_checksum=True, allow_md5_fallback=False,
+             prefer=None):
         """Retrieve data of an image.
 
         When do_checksum is enabled, validation proceeds as follows:
@@ -240,6 +241,8 @@ class Controller(object):
         :param allow_md5_fallback:
             Use the MD5 checksum for validation if the algorithm specified by
             the image's 'os_hash_algo' property is not available
+        :param prefer: List of store identifiers suggesting the ordering of
+                      stores to try when downloading
         :returns: An iterable body or ``None``
         """
         if do_checksum:
@@ -252,6 +255,13 @@ class Controller(object):
             meta_hash_algo = image_meta.get('os_hash_algo', None)
 
         url = '/v2/images/%s/file' % image_id
+        params = {}
+        if prefer:
+            params['prefer'] = ','.join(prefer)
+
+        if params:
+            url = '%s?%s' % (url, urllib.parse.urlencode(params))
+
         resp, body = self.http_client.get(url)
         if resp.status_code == codes.no_content:
             return None, resp
