@@ -10,12 +10,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import glanceclient
+import os
+
 from keystoneauth1 import loading
 from keystoneauth1 import session
-import os
-import os_client_config
+from openstack import config as occ
 from tempest.lib.cli import base
+
+import glanceclient
 
 
 def credentials(cloud='devstack-admin'):
@@ -31,7 +33,7 @@ def credentials(cloud='devstack-admin'):
     cloud as that is the current expected behavior.
     """
 
-    return os_client_config.OpenStackConfig().get_one_cloud(cloud=cloud)
+    return occ.OpenStackConfig().get_one(cloud=cloud)
 
 
 class ClientTestBase(base.ClientTestBase):
