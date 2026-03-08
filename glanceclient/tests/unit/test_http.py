@@ -318,7 +318,7 @@ class TestClient(testtools.TestCase):
 
     def test_http_chunked_request(self):
         text = "Ok"
-        data = io.StringIO(text)
+        data = io.BytesIO(text.encode())
         path = '/v1/images/'
         self.mock.post(self.endpoint + path, text=text)
 
@@ -341,9 +341,9 @@ class TestClient(testtools.TestCase):
         self.assertEqual(data, json.loads(self.mock.last_request.body))
 
     def test_http_chunked_response(self):
-        data = "TEST"
+        data = b"TEST"
         path = '/v1/images/'
-        self.mock.get(self.endpoint + path, body=io.StringIO(data),
+        self.mock.get(self.endpoint + path, body=io.BytesIO(data),
                       headers={"Content-Type": "application/octet-stream"})
 
         resp, body = self.client.get(path)
@@ -353,10 +353,10 @@ class TestClient(testtools.TestCase):
     @original_only
     def test_log_http_response_with_non_ascii_char(self):
         try:
-            response = 'Ok'
+            response = b'Ok'
             headers = {"Content-Type": "text/plain",
                        "test": "value1\xa5\xa6"}
-            fake = utils.FakeResponse(headers, io.StringIO(response))
+            fake = utils.FakeResponse(headers, io.BytesIO(response))
             self.client.log_http_response(fake)
         except UnicodeDecodeError as e:
             self.fail("Unexpected UnicodeDecodeError exception '%s'" % e)
@@ -457,9 +457,9 @@ class TestClient(testtools.TestCase):
 
     def test_log_request_id_once(self):
         logger = self.useFixture(fixtures.FakeLogger(level=logging.DEBUG))
-        data = "TEST"
+        data = b"TEST"
         path = '/v1/images/'
-        self.mock.get(self.endpoint + path, body=io.StringIO(data),
+        self.mock.get(self.endpoint + path, body=io.BytesIO(data),
                       headers={"Content-Type": "application/octet-stream",
                                'x-openstack-request-id': "1234"})
 

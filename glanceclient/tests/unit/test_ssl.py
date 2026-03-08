@@ -77,7 +77,7 @@ class TestHTTPSVerifyCert(testtools.TestCase):
     def test_v1_requests_cert_verification(self, __):
         """v1 regression test for bug 115260."""
         port = self.port
-        url = 'https://0.0.0.0:%d' % port
+        url = 'https://127.0.0.1:%d' % port
 
         try:
             client = v1.Client(url,
@@ -94,7 +94,7 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         """v1 regression test for bug 115260."""
         # Legacy test. Verify 'no compression' has no effect
         port = self.port
-        url = 'https://0.0.0.0:%d' % port
+        url = 'https://127.0.0.1:%d' % port
 
         try:
             client = v1.Client(url,
@@ -110,7 +110,7 @@ class TestHTTPSVerifyCert(testtools.TestCase):
     def test_v2_requests_cert_verification(self, __):
         """v2 regression test for bug 115260."""
         port = self.port
-        url = 'https://0.0.0.0:%d' % port
+        url = 'https://127.0.0.1:%d' % port
 
         try:
             gc = v2.Client(url,
@@ -127,7 +127,7 @@ class TestHTTPSVerifyCert(testtools.TestCase):
         """v2 regression test for bug 115260."""
         # Legacy test. Verify 'no compression' has no effect
         port = self.port
-        url = 'https://0.0.0.0:%d' % port
+        url = 'https://127.0.0.1:%d' % port
 
         try:
             gc = v2.Client(url,
@@ -143,7 +143,7 @@ class TestHTTPSVerifyCert(testtools.TestCase):
     def test_v2_requests_valid_cert_verification(self, __):
         """Test absence of SSL key file."""
         port = self.port
-        url = 'https://0.0.0.0:%d' % port
+        url = 'https://127.0.0.1:%d' % port
         cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
 
         try:
@@ -160,7 +160,7 @@ class TestHTTPSVerifyCert(testtools.TestCase):
     def test_v2_requests_valid_cert_verification_no_compression(self, __):
         """Test VerifiedHTTPSConnection: absence of SSL key file."""
         port = self.port
-        url = 'https://0.0.0.0:%d' % port
+        url = 'https://127.0.0.1:%d' % port
         cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
 
         try:
@@ -177,7 +177,7 @@ class TestHTTPSVerifyCert(testtools.TestCase):
     def test_v2_requests_valid_cert_no_key(self, __):
         """Test VerifiedHTTPSConnection: absence of SSL key file."""
         port = self.port
-        url = 'https://0.0.0.0:%d' % port
+        url = 'https://127.0.0.1:%d' % port
         cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
         cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
 
@@ -196,7 +196,7 @@ class TestHTTPSVerifyCert(testtools.TestCase):
     def test_v2_requests_bad_cert(self, __):
         """Test VerifiedHTTPSConnection: absence of SSL key file."""
         port = self.port
-        url = 'https://0.0.0.0:%d' % port
+        url = 'https://127.0.0.1:%d' % port
         cert_file = os.path.join(TEST_VAR_DIR, 'badcert.crt')
         cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
 
@@ -219,7 +219,7 @@ class TestHTTPSVerifyCert(testtools.TestCase):
     def test_v2_requests_bad_ca(self, __):
         """Test VerifiedHTTPSConnection: absence of SSL key file."""
         port = self.port
-        url = 'https://0.0.0.0:%d' % port
+        url = 'https://127.0.0.1:%d' % port
         cacert = os.path.join(TEST_VAR_DIR, 'badca.crt')
 
         try:
