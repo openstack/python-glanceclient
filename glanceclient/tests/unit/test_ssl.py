@@ -158,7 +158,7 @@ class TestHTTPSVerifyCert(testtools.TestCase):
 
     @mock.patch('sys.stderr')
     def test_v2_requests_valid_cert_verification_no_compression(self, __):
-        """Test VerifiedHTTPSConnection: absence of SSL key file."""
+        """Test SSL certificate verification with valid CA certificate."""
         port = self.port
         url = 'https://127.0.0.1:%d' % port
         cacert = os.path.join(TEST_VAR_DIR, 'ca.crt')
@@ -175,7 +175,7 @@ class TestHTTPSVerifyCert(testtools.TestCase):
 
     @mock.patch('sys.stderr')
     def test_v2_requests_valid_cert_no_key(self, __):
-        """Test VerifiedHTTPSConnection: absence of SSL key file."""
+        """Test client cert authentication fails without private key."""
         port = self.port
         url = 'https://127.0.0.1:%d' % port
         cert_file = os.path.join(TEST_VAR_DIR, 'certificate.crt')
@@ -194,7 +194,7 @@ class TestHTTPSVerifyCert(testtools.TestCase):
 
     @mock.patch('sys.stderr')
     def test_v2_requests_bad_cert(self, __):
-        """Test VerifiedHTTPSConnection: absence of SSL key file."""
+        """Test client cert authentication fails with bad certificate."""
         port = self.port
         url = 'https://127.0.0.1:%d' % port
         cert_file = os.path.join(TEST_VAR_DIR, 'badcert.crt')
@@ -217,7 +217,7 @@ class TestHTTPSVerifyCert(testtools.TestCase):
 
     @mock.patch('sys.stderr')
     def test_v2_requests_bad_ca(self, __):
-        """Test VerifiedHTTPSConnection: absence of SSL key file."""
+        """Test SSL verification fails with invalid CA certificate path."""
         port = self.port
         url = 'https://127.0.0.1:%d' % port
         cacert = os.path.join(TEST_VAR_DIR, 'badca.crt')
