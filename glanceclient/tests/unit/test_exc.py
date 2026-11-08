@@ -38,23 +38,40 @@ class TestHTTPExceptions(testtools.TestCase):
         self.assertIsInstance(out, exc.HTTPBadRequest)
 
     def test_handles_json(self):
-        """exc.from_response should not print JSON."""
-        mock_resp = mock.Mock()
-        mock_resp.status_code = 413
-        mock_resp.json.return_value = {
-            "overLimit": {
-                "code": 413,
-                "message": "OverLimit Retry...",
-                "details": "Error Details...",
-                "retryAt": "2014-12-03T13:33:06Z"
-            }
-        }
-        mock_resp.headers = {
-            "content-type": "application/json"
-        }
-        err = exc.from_response(mock_resp, "Non-empty body")
-        self.assertIsInstance(err, exc.HTTPOverLimit)
-        self.assertEqual("OverLimit Retry...", err.details)
+        """Extract the top-level message from Glance's JSON error response."""
+        for status, title, message, exception in (
+                (404, 'Not Found', 'Image not found', exc.HTTPNotFound),
+                (413, 'Request Entity Too Large', 'Image quota exceeded',
+                 exc.HTTPOverLimit)):
+            with self.subTest(status=status):
+                mock_resp = mock.Mock()
+                mock_resp.status_code = status
+                mock_resp.json.return_value = {
+                    'code': '%s %s' % (status, title),
+                    'title': title,
+                    'message': message,
+                }
+                mock_resp.headers = {'content-type': 'application/json'}
+                err = exc.from_response(mock_resp, b'Non-empty body')
+                self.assertIsInstance(err, exception)
+                self.assertEqual(message, err.details)
+
+    def test_handles_json_without_message(self):
+        for data in (
+                {'code': '404 Not Found', 'title': 'Not Found'},
+                {'message': None},
+                {'message': 404},
+                {'message': ['Not found']},
+                {'message': {'detail': 'Not found'}},
+                [], None, 'Not found'):
+            with self.subTest(data=data):
+                mock_resp = mock.Mock()
+                mock_resp.status_code = 404
+                mock_resp.json.return_value = data
+                mock_resp.headers = {'content-type': 'application/json'}
+                err = exc.from_response(mock_resp, b'Non-empty body')
+                self.assertIsInstance(err, exc.HTTPNotFound)
+                self.assertEqual('HTTPNotFound', err.details)
 
     def test_handles_html(self):
         """exc.from_response should not print HTML."""

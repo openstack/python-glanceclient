@@ -1,0 +1,5 @@
+---
+fixes:
+  - |
+    Fix parsing of Glance JSON error responses with a top-level ``message``
+    field.

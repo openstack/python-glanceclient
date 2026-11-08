@@ -155,11 +155,10 @@ def from_response(response, body=None):
     """Return an instance of an HTTPException based on httplib response."""
     cls = _code_map.get(response.status_code, HTTPException)
     if body and 'json' in response.headers['content-type']:
-        # Iterate over the nested objects and retrieve the "message" attribute.
-        messages = [obj.get('message') for obj in response.json().values()]
-        # Join all of the messages together nicely and filter out any objects
-        # that don't have a "message" attr.
-        details = '\n'.join(i for i in messages if i is not None)
+        data = response.json()
+        details = data.get('message') if isinstance(data, dict) else None
+        if not isinstance(details, str):
+            details = None
         return cls(details=details)
     elif body and 'html' in response.headers['content-type']:
         # Split the lines, strip whitespace and inline HTML from the response.
