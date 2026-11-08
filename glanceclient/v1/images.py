@@ -143,8 +143,9 @@ class ImageManager(base.ManagerWithFind):
         :rtype: iterable containing image data
         """
         image_id = base.getid(image)
-        resp, body = self.client.get('/v1/images/%s'
-                                     % urllib.parse.quote(str(image_id)))
+        resp, body = self.client.get(
+            '/v1/images/%s' % urllib.parse.quote(str(image_id)),
+            headers={'Accept': 'application/octet-stream, application/json'})
         content_length = int(resp.headers.get('content-length', 0))
         checksum = resp.headers.get('x-image-meta-checksum', None)
         if do_checksum and checksum is not None:

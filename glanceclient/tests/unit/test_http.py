@@ -71,6 +71,53 @@ class TestClient(testtools.TestCase):
 
         self.client = getattr(self, self.create_client)()
 
+    def test_accept_json_by_default(self):
+        url = self.endpoint + '/v2/images'
+        self.mock.get(url, json={'images': []})
+        self.client.get('/v2/images')
+        self.assertEqual('application/json',
+                         encodeutils.safe_decode(
+                             self.mock.last_request.headers['Accept']))
+
+    def test_accept_header_override(self):
+        url = self.endpoint + '/v2/images'
+        self.mock.get(url, json={'images': []})
+        for name in ('Accept', 'accept'):
+            with self.subTest(name=name):
+                self.client.get('/v2/images', headers={name: 'text/plain'})
+                actual = self.mock.last_request.headers['Accept']
+                self.assertEqual('text/plain', encodeutils.safe_decode(actual))
+
+    def test_accept_json_error(self):
+        url = self.endpoint + '/v2/images/missing'
+        self.mock.get(
+            url, status_code=404,
+            headers={'Content-Type': 'application/json'},
+            json={
+                'message': 'Image not found',
+                'code': '404 Not Found',
+                'title': 'Not Found',
+            })
+        err = self.assertRaises(glanceclient.exc.HTTPNotFound,
+                                self.client.get, '/v2/images/missing')
+        self.assertEqual('Image not found', err.details)
+        self.assertEqual('application/json',
+                         encodeutils.safe_decode(
+                             self.mock.last_request.headers['Accept']))
+
+    def test_accept_binary_download(self):
+        url = self.endpoint + '/v2/images/image-id/file'
+        self.mock.get(url, content=b'image data', headers={
+            'Content-Type': 'application/octet-stream',
+        })
+        accept = 'application/octet-stream, application/json'
+        resp, body = self.client.get(
+            '/v2/images/image-id/file', headers={'Accept': accept})
+        self.assertEqual(b'image data', b''.join(body))
+        self.assertEqual(accept,
+                         encodeutils.safe_decode(
+                             self.mock.last_request.headers['Accept']))
+
     def test_identity_headers_and_token(self):
         identity_headers = {
             'X-Auth-Token': 'auth_token',

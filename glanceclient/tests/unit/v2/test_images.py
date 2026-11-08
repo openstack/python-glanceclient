@@ -1194,6 +1194,9 @@ class TestController(testtools.TestCase):
                                     do_checksum=False)
         body = ''.join([b for b in body])
         self.assertEqual('A', body)
+        self.assertEqual(
+            {'Accept': 'application/octet-stream, application/json'},
+            self.api.calls[-1][2])
 
         body = self.controller.data('5cc4bebc-db27-11e1-a1eb-080027cbe205')
         body = ''.join([b for b in body])

@@ -67,6 +67,9 @@ def encode_headers(headers):
             # include an entire URL. We should avoid encoding the colon in
             # this case (bug #1788942)
             safe = '=+/' if h in TOKEN_HEADERS else '/:'
+            if h.lower() == 'accept':
+                # Preserve media ranges, separators and quality parameters.
+                safe = '/:*,;= '
             key = urllib.parse.quote(h, safe)
             value = urllib.parse.quote(v, safe)
             encoded_dict[key] = value
@@ -88,6 +91,10 @@ class _BaseHTTPClient(object):
 
     def _set_common_request_kwargs(self, headers, kwargs):
         """Handle the common parameters used to send the request."""
+
+        # Request JSON unless the operation specifies another representation.
+        if not any(key.lower() == 'accept' for key in headers):
+            headers['Accept'] = 'application/json'
 
         # Default Content-Type is octet-stream
         content_type = headers.get('Content-Type', 'application/octet-stream')

@@ -531,23 +531,25 @@ class ImageManagerTest(testtools.TestCase):
         self.assertEqual(expect_req_id, params['return_req_id'])
 
     def test_data(self):
+        headers = {'Accept': 'application/octet-stream, application/json'}
         data = ''.join([b for b in self.mgr.data('1', do_checksum=False)])
-        expect = [('GET', '/v1/images/1', {}, None)]
+        expect = [('GET', '/v1/images/1', headers, None)]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual('XXX', data)
 
-        expect += [('GET', '/v1/images/1', {}, None)]
+        expect += [('GET', '/v1/images/1', headers, None)]
         data = ''.join([b for b in self.mgr.data('1')])
         self.assertEqual(expect, self.api.calls)
         self.assertEqual('XXX', data)
 
     def test_data_with_wrong_checksum(self):
+        headers = {'Accept': 'application/octet-stream, application/json'}
         data = ''.join([b for b in self.mgr.data('2', do_checksum=False)])
-        expect = [('GET', '/v1/images/2', {}, None)]
+        expect = [('GET', '/v1/images/2', headers, None)]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual('YYY', data)
 
-        expect += [('GET', '/v1/images/2', {}, None)]
+        expect += [('GET', '/v1/images/2', headers, None)]
         data = self.mgr.data('2')
         self.assertEqual(expect, self.api.calls)
         try:
@@ -568,12 +570,13 @@ class ImageManagerTest(testtools.TestCase):
         self.assertEqual(expect_req_id, params['return_req_id'])
 
     def test_data_with_checksum(self):
+        headers = {'Accept': 'application/octet-stream, application/json'}
         data = ''.join([b for b in self.mgr.data('3', do_checksum=False)])
-        expect = [('GET', '/v1/images/3', {}, None)]
+        expect = [('GET', '/v1/images/3', headers, None)]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual('ZZZ', data)
 
-        expect += [('GET', '/v1/images/3', {}, None)]
+        expect += [('GET', '/v1/images/3', headers, None)]
         data = ''.join([b for b in self.mgr.data('3')])
         self.assertEqual(expect, self.api.calls)
         self.assertEqual('ZZZ', data)
@@ -861,34 +864,36 @@ class ImageTest(testtools.TestCase):
         self.assertEqual(expect, self.api.calls)
 
     def test_data(self):
+        headers = {'Accept': 'application/octet-stream, application/json'}
         image = self.mgr.get('1')
         data = ''.join([b for b in image.data()])
         expect = [
             ('HEAD', '/v1/images/1', {}, None),
             ('HEAD', '/v1/images/1', {}, None),
-            ('GET', '/v1/images/1', {}, None),
+            ('GET', '/v1/images/1', headers, None),
         ]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual('XXX', data)
 
         data = ''.join([b for b in image.data(do_checksum=False)])
-        expect += [('GET', '/v1/images/1', {}, None)]
+        expect += [('GET', '/v1/images/1', headers, None)]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual('XXX', data)
 
     def test_data_with_wrong_checksum(self):
+        headers = {'Accept': 'application/octet-stream, application/json'}
         image = self.mgr.get('2')
         data = ''.join([b for b in image.data(do_checksum=False)])
         expect = [
             ('HEAD', '/v1/images/2', {}, None),
             ('HEAD', '/v1/images/2', {}, None),
-            ('GET', '/v1/images/2', {}, None),
+            ('GET', '/v1/images/2', headers, None),
         ]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual('YYY', data)
 
         data = image.data()
-        expect += [('GET', '/v1/images/2', {}, None)]
+        expect += [('GET', '/v1/images/2', headers, None)]
         self.assertEqual(expect, self.api.calls)
         try:
             data = ''.join([b for b in image.data()])
@@ -899,18 +904,19 @@ class ImageTest(testtools.TestCase):
             self.assertIn(msg, str(e))
 
     def test_data_with_checksum(self):
+        headers = {'Accept': 'application/octet-stream, application/json'}
         image = self.mgr.get('3')
         data = ''.join([b for b in image.data(do_checksum=False)])
         expect = [
             ('HEAD', '/v1/images/3', {}, None),
             ('HEAD', '/v1/images/3', {}, None),
-            ('GET', '/v1/images/3', {}, None),
+            ('GET', '/v1/images/3', headers, None),
         ]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual('ZZZ', data)
 
         data = ''.join([b for b in image.data()])
-        expect += [('GET', '/v1/images/3', {}, None)]
+        expect += [('GET', '/v1/images/3', headers, None)]
         self.assertEqual(expect, self.api.calls)
         self.assertEqual('ZZZ', data)
 

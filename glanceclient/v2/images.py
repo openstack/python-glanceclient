@@ -262,7 +262,9 @@ class Controller(object):
         if params:
             url = '%s?%s' % (url, urllib.parse.urlencode(params))
 
-        resp, body = self.http_client.get(url)
+        resp, body = self.http_client.get(
+            url,
+            headers={'Accept': 'application/octet-stream, application/json'})
         if resp.status_code == codes.no_content:
             return None, resp
 

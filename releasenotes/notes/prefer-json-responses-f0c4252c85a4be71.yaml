@@ -1,0 +1,8 @@
+---
+fixes:
+  - |
+    Requests now send ``Accept: application/json`` by default to request JSON
+    metadata and error responses. Image downloads send
+    ``Accept: application/octet-stream, application/json`` to accept both
+    binary image data and JSON errors. Explicitly supplied ``Accept`` headers
+    are preserved.
